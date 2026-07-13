@@ -1,0 +1,92 @@
+﻿@import "tailwindcss";
+
+@theme {
+  --color-gold-50: #FCF9EE;
+  --color-gold-100: #F6F0D4;
+  --color-gold-200: #EDDFAB;
+  --color-gold-300: #E1CA7C;
+  --color-gold-400: #D4AF37; /* Luxury Gold */
+  --color-gold-500: #C5A028;
+  --color-gold-600: #93711F;
+  --color-gold-700: #6D5117;
+  --color-gold-800: #49330F;
+  --color-gold-900: #291C08;
+
+  --color-navy-50: #F4F6FA;
+  --color-navy-100: #E3E7F2;
+  --color-navy-200: #C2CCDF;
+  --color-navy-300: #93A6C5;
+  --color-navy-400: #5D79A5;
+  --color-navy-500: #3E5B89;
+  --color-navy-600: #2D4468;
+  --color-navy-700: #21324E;
+  --color-navy-800: #112240; /* Custom navy card background */
+  --color-navy-900: #0A192F; /* Custom deep navy */
+  --color-navy-950: #020C1B;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Base style enhancements */
+body {
+  font-family: var(--font-sans);
+  background-color: #fafafa;
+  color: #334155;
+  overflow-x: hidden;
+}
+
+html.dark body {
+  background-color: #020c1b !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .border-gray-100, .dark .border-gray-200 {
+  border-color: #112240 !important;
+}
+
+.dark input, .dark textarea, .dark select {
+  background-color: #020c1b !important;
+  color: #ffffff !important;
+  border-color: #112240 !important;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark-glass {
+  background: rgba(10, 25, 47, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Hide scrollbar for carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Golden glow keyframe */
+@keyframes gold-pulse {
+  0%, 100% {
+    text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 16px rgba(212, 175, 55, 0.8), 0 0 24px rgba(212, 175, 55, 0.4);
+  }
+}
+
+.gold-glow-text {
+  animation: gold-pulse 3s infinite ease-in-out;
+}
+
+
+

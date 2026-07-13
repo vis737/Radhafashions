@@ -1,0 +1,6 @@
+{
+  "name": "Meris E-Shop",
+  "description": "An exquisite premium e-commerce experience showcasing hand-crafted kids toys, wood gifts, luxury handbags, and festive Kolam stencils.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
