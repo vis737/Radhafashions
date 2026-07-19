@@ -1271,6 +1271,8 @@ async function sendBookingEmail(order: any) {
 }
 
 // Beautiful booking and system alert WhatsApp notification and sender helper
+// WhatsApp Alerts temporarily disabled
+/*
 async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refund_requested', order: any, extraData?: any) {
   const recipientPhone = normalizePhone(order.customerInfo?.phone) || '+919876543210';
   const customerName = order.customerInfo?.name || 'Valued Customer';
@@ -1395,6 +1397,8 @@ async function sendSMSAlert(order: any) {
   }
 }
 
+// WhatsApp endpoint controllers disabled
+/*
 app.get('/api/whatsapp', (req, res) => {
   try {
     const whatsappFilePath = path.join(process.cwd(), 'whatsapp_db.json');
@@ -1441,6 +1445,7 @@ app.post('/api/whatsapp/alert', async (req, res) => {
     res.status(500).json({ error: 'Failed to dispatch WhatsApp alert.' });
   }
 });
+*/
 
 // Persistent OTP store (survives server restarts on the same instance)
 const OTP_FILE_PATH = path.join(process.cwd(), 'otp_db.json');
@@ -1725,11 +1730,13 @@ app.post('/api/orders', async (req, res) => {
     }
 
     // Dispatch asynchronous booking confirmation WhatsApp Alert
+    /*
     try {
       await sendWhatsAppAlert('booking', newOrder);
     } catch (waErr) {
       console.error('Failed to dispatch order booking confirmation WhatsApp:', waErr);
     }
+    */
 
     // Dispatch asynchronous booking confirmation SMS
     try {
@@ -1763,11 +1770,13 @@ app.post('/api/orders/:orderNumber/status', async (req, res) => {
       writeOrdersDb(dbOrders);
 
       // Dispatch asynchronous status update WhatsApp Alert
+      /*
       try {
         await sendWhatsAppAlert('status_update', dbOrders[index]);
       } catch (waErr) {
         console.error('Failed to dispatch order status update WhatsApp:', waErr);
       }
+      */
 
       res.json({ success: true, order: dbOrders[index] });
     } else {

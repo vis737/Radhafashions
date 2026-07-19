@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle } from 'lucide-react';
+import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle, Plus, Trash2 } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
 import { jsPDF } from 'jspdf';
 import { getQrCodeUrl } from '../utils/qrCodeGenerator';
@@ -63,15 +63,33 @@ export default function AccountPanel({
   const [lockoutTime, setLockoutTime] = useState<number | null>(null);
 
   // Tab router inside account dashboard
-  const [subTab, setSubTab] = useState<'profile' | 'orders' | 'tracking' | 'wishlist' | 'coupons' | 'returns' | 'emails' | 'whatsapp'>('profile');
+  const [subTab, setSubTab] = useState<'profile' | 'orders' | 'tracking' | 'wishlist' | 'coupons' | 'returns' | 'emails' | 'child_profiles' | 'rewards'>('profile');
   const [wishlistPrivacy, setWishlistPrivacy] = useState<'Public' | 'Private' | 'Friends'>('Public');
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Email Notification States
   const [emails, setEmails] = useState<any[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
-  const [whatsappAlerts, setWhatsappAlerts] = useState<any[]>([]);
-  const [selectedWhatsapp, setSelectedWhatsapp] = useState<any | null>(null);
+
+  // Child Profiles States
+  const [childProfiles, setChildProfiles] = useState<{ id: string; name: string; ageGroup: string; preference: string }[]>([
+    { id: '1', name: 'Kabir', ageGroup: '2-4 Years', preference: 'Wooden Blocks & Puzzles' }
+  ]);
+  const [newChildName, setNewChildName] = useState('');
+  const [newChildAgeGroup, setNewChildAgeGroup] = useState('2-4 Years');
+  const [newChildPreference, setNewChildPreference] = useState('');
+
+  // Loyalty Rewards
+  const [redeemedCoupons, setRedeemedCoupons] = useState<string[]>([]);
+
+  // Address Coordinates Editor
+  const [shippingName, setShippingName] = useState(currentUser?.name || '');
+  const [shippingAddress, setShippingAddress] = useState('5/339, Fathima Road, nager');
+  const [shippingCity, setShippingCity] = useState('Azhagappapuram');
+  const [shippingPincode, setShippingPincode] = useState('629401');
+  const [shippingPhone, setShippingPhone] = useState('+91 98765 43210');
+  const [shippingCarrier, setShippingCarrier] = useState('BlueDart Express');
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   // Poll simulated booking emails
   useEffect(() => {
@@ -79,13 +97,8 @@ export default function AccountPanel({
 
     const fetchNotifications = async () => {
       try {
-        const [emailRes, whatsappRes] = await Promise.all([
-          fetch(`/api/emails?recipient=${encodeURIComponent(currentUser.email)}`),
-          fetch(`/api/whatsapp?recipient=${encodeURIComponent(currentUser.email)}`)
-        ]);
-
+        const emailRes = await fetch(`/api/emails?recipient=${encodeURIComponent(currentUser.email)}`);
         if (emailRes.ok) setEmails(await emailRes.json());
-        if (whatsappRes.ok) setWhatsappAlerts(await whatsappRes.json());
       } catch (err) {
         console.error('Error fetching account notifications:', err);
       }
@@ -104,10 +117,10 @@ export default function AccountPanel({
   }, [emails, selectedEmail]);
 
   useEffect(() => {
-    if (whatsappAlerts.length > 0 && !selectedWhatsapp) {
-      setSelectedWhatsapp(whatsappAlerts[0]);
+    if (currentUser) {
+      setShippingName(currentUser.name);
     }
-  }, [whatsappAlerts, selectedWhatsapp]);
+  }, [currentUser]);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -904,16 +917,16 @@ export default function AccountPanel({
               <span className="text-[9px] font-mono text-gray-400">{currentUser.email}</span>
             </div>
           </div>
-
-          <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-4">
+          <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-4 font-sans">
             {([
               { id: 'profile', label: 'My Profile', icon: MapPin },
+              { id: 'child_profiles', label: 'Kids Toy Profiles', icon: User },
               { id: 'orders', label: 'Purchase Ledger', icon: Clipboard, badge: orders.length },
               { id: 'tracking', label: 'Order Tracking', icon: Truck },
               { id: 'wishlist', label: 'Saved Wishlist', icon: Heart, badge: wishlistProducts.length },
               { id: 'coupons', label: 'Available Coupons', icon: Tag, badge: coupons.length },
+              { id: 'rewards', label: 'Loyalty Rewards Shop', icon: Gift },
               { id: 'emails', label: 'Email Notifications', icon: Mail, badge: emails.length },
-              { id: 'whatsapp', label: 'WhatsApp Alerts', icon: Smartphone, badge: whatsappAlerts.length },
               { id: 'returns', label: 'Returns & Refunds', icon: RotateCcw }
             ] as any[]).map((tab) => {
               const TabIcon = tab.icon;
@@ -992,13 +1005,100 @@ export default function AccountPanel({
                 </div>
 
                 <div>
-                  <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest pb-1 border-b border-gray-100">Saved Shipping Address</h3>
-                  <div className="p-4 rounded-xl bg-gray-50 border mt-4 text-xs font-light leading-relaxed max-w-md">
-                    <p className="font-semibold text-navy-900">{currentUser.name}</p>
-                    <p className="mt-1">5/339, Fathima Road, nager</p>
-                    <p>Azhagappapuram, Tamil Nadu, 629401</p>
-                    <p className="text-[10px] font-mono text-gray-400 mt-2">Preferred air deliveries via BlueDart Express</p>
+                  <div className="flex justify-between items-center pb-1 border-b border-gray-100">
+                    <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest">Saved Shipping Address</h3>
+                    <button
+                      onClick={() => setIsEditingAddress(!isEditingAddress)}
+                      className="text-xs font-semibold text-[#C5A021] hover:underline cursor-pointer"
+                    >
+                      {isEditingAddress ? 'Cancel' : 'Edit Coordinates'}
+                    </button>
                   </div>
+
+                  {isEditingAddress ? (
+                    <div className="p-4 rounded-xl bg-gray-50 border mt-4 text-xs space-y-3 font-sans max-w-md">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[9px] text-gray-450 uppercase tracking-wider font-mono">Receiver Name</label>
+                          <input
+                            type="text"
+                            value={shippingName}
+                            onChange={(e) => setShippingName(e.target.value)}
+                            className="w-full px-2 py-1.5 border rounded-lg bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-gray-450 uppercase tracking-wider font-mono">Phone Number</label>
+                          <input
+                            type="text"
+                            value={shippingPhone}
+                            onChange={(e) => setShippingPhone(e.target.value)}
+                            className="w-full px-2 py-1.5 border rounded-lg bg-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-gray-450 uppercase tracking-wider font-mono">Street Address</label>
+                        <input
+                          type="text"
+                          value={shippingAddress}
+                          onChange={(e) => setShippingAddress(e.target.value)}
+                          className="w-full px-2 py-1.5 border rounded-lg bg-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[9px] text-gray-450 uppercase tracking-wider font-mono">City / State</label>
+                          <input
+                            type="text"
+                            value={shippingCity}
+                            onChange={(e) => setShippingCity(e.target.value)}
+                            className="w-full px-2 py-1.5 border rounded-lg bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-gray-450 uppercase tracking-wider font-mono">Pincode</label>
+                          <input
+                            type="text"
+                            value={shippingPincode}
+                            onChange={(e) => setShippingPincode(e.target.value)}
+                            className="w-full px-2 py-1.5 border rounded-lg bg-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-gray-450 uppercase tracking-wider font-mono">Preferred Delivery Carrier</label>
+                        <select
+                          value={shippingCarrier}
+                          onChange={(e) => setShippingCarrier(e.target.value)}
+                          className="w-full px-2 py-1.5 border border-gray-200 rounded-lg bg-white focus:outline-none"
+                        >
+                          <option value="BlueDart Express">BlueDart Express</option>
+                          <option value="Delhivery Logistics">Delhivery Logistics</option>
+                          <option value="India Post (Registered)">India Post (Registered)</option>
+                          <option value="DHL Worldwide Express">DHL Worldwide Express</option>
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingAddress(false);
+                          alert("Shipping address updated successfully in your session database!");
+                        }}
+                        className="px-4 py-2 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 font-bold rounded-lg uppercase tracking-wide cursor-pointer transition text-[10px] text-center"
+                      >
+                        Save Coordinates
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-gray-50 border mt-4 text-xs font-light leading-relaxed max-w-md">
+                      <p className="font-semibold text-navy-900">{shippingName || currentUser.name}</p>
+                      <p className="mt-1">{shippingAddress}</p>
+                      <p>{shippingCity}, {shippingPincode}</p>
+                      <p className="text-[10px] mt-1">Contact: {shippingPhone}</p>
+                      <p className="text-[10px] font-mono text-gray-400 mt-2">Preferred air deliveries via {shippingCarrier}</p>
+                    </div>
+                  )}
                 </div>
                 </motion.div>
               );
@@ -2149,107 +2249,208 @@ export default function AccountPanel({
               </motion.div>
             )}
 
-            {/* Live WhatsApp Notifications Panel */}
-            {subTab === 'whatsapp' && (
+            {/* My Children Profiles Panel */}
+            {subTab === 'child_profiles' && (
               <motion.div
-                key="whatsapp"
+                key="child_profiles"
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -5 }}
                 className="space-y-6 text-left"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-2">
+                <div className="border-b border-gray-100 pb-3">
+                  <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest">
+                    My Children's Toy Profiles
+                  </h3>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    Save age categories and toy preferences to unlock personalized toy recommendations
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  {/* Left Column: Form to Add a New Profile */}
+                  <div className="bg-gray-50 border border-gray-100 rounded-3xl p-5 space-y-4">
+                    <h4 className="text-xs font-bold text-navy-950 uppercase tracking-wider flex items-center gap-1.5 font-display">
+                      <Plus className="w-4 h-4 text-gold-500" /> Add Child Profile
+                    </h4>
+                    
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1 uppercase tracking-wider">Child's Name / Nickname</label>
+                        <input
+                          type="text"
+                          value={newChildName}
+                          onChange={(e) => setNewChildName(e.target.value)}
+                          placeholder="e.g. Kabir"
+                          className="w-full px-3 py-2 border rounded-xl bg-white focus:outline-none focus:border-gold-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1 uppercase tracking-wider">Age Category</label>
+                        <select
+                          value={newChildAgeGroup}
+                          onChange={(e) => setNewChildAgeGroup(e.target.value)}
+                          className="w-full px-3 py-2 border rounded-xl bg-white focus:outline-none"
+                        >
+                          <option value="0–6 Months">0–6 Months</option>
+                          <option value="6–12 Months">6–12 Months</option>
+                          <option value="1–2 Years">1–2 Years</option>
+                          <option value="2–4 Years">2–4 Years</option>
+                          <option value="4–6 Years">4–6 Years</option>
+                          <option value="6–8 Years">6–8 Years</option>
+                          <option value="8–10 Years">8–10 Years</option>
+                          <option value="10–13 Years">10–13 Years</option>
+                          <option value="13+ Years">13+ Years</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1 uppercase tracking-wider">Toy Type Preferences</label>
+                        <input
+                          type="text"
+                          value={newChildPreference}
+                          onChange={(e) => setNewChildPreference(e.target.value)}
+                          placeholder="e.g. Puzzles, STEM kits, Wooden trains"
+                          className="w-full px-3 py-2 border rounded-xl bg-white focus:outline-none focus:border-gold-400"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newChildName.trim()) {
+                            alert("Please enter child's name.");
+                            return;
+                          }
+                          const newProfile = {
+                            id: 'child-' + Date.now(),
+                            name: newChildName.trim(),
+                            ageGroup: newChildAgeGroup,
+                            preference: newChildPreference.trim() || 'All Toys'
+                          };
+                          setChildProfiles(prev => [...prev, newProfile]);
+                          setNewChildName('');
+                          setNewChildPreference('');
+                        }}
+                        className="w-full py-2.5 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl font-bold uppercase transition text-center cursor-pointer"
+                      >
+                        Save Profile
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: List of saved children profiles */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-navy-950 uppercase tracking-wider">
+                      Saved Profiles ({childProfiles.length})
+                    </h4>
+                    
+                    {childProfiles.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic">No children profiles registered yet.</p>
+                    ) : (
+                      childProfiles.map((child) => (
+                        <div key={child.id} className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-between gap-4">
+                          <div className="space-y-1 text-xs">
+                            <h5 className="font-bold text-navy-950">{child.name}</h5>
+                            <div className="flex gap-2 items-center flex-wrap">
+                              <span className="px-2 py-0.5 rounded bg-gold-50 text-gold-700 text-[10px] font-semibold">{child.ageGroup}</span>
+                              <span className="text-[10px] text-gray-400 italic">Prefers: {child.preference}</span>
+                            </div>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChildProfiles(prev => prev.filter(c => c.id !== child.id));
+                            }}
+                            className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition border border-transparent hover:border-red-150 cursor-pointer"
+                          >
+                            <Trash2 className="w-4.5 h-4.5" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Loyalty Rewards Shop Panel */}
+            {subTab === 'rewards' && (
+              <motion.div
+                key="rewards"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="space-y-6 text-left animate-fade-in"
+              >
+                <div className="border-b border-gray-100 pb-3 flex justify-between items-center flex-wrap gap-2">
                   <div>
                     <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest">
-                      Live WhatsApp Alerts
+                      Loyalty Rewards Shop
                     </h3>
                     <p className="text-[10px] text-gray-400 mt-0.5">
-                      Booking, shipping, and refund messages linked to your account
+                      Exchange accumulated Meris points to unlock exclusive workshop discount coupons
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-mono rounded-full self-start">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>{whatsappAlerts.length} alerts</span>
+                  <div className="px-3.5 py-1.5 bg-gold-50 border border-gold-200 text-[#C5A021] font-mono font-bold text-xs rounded-full">
+                    Balance: {orders.length * 150 + 50} pts
                   </div>
                 </div>
 
-                {whatsappAlerts.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-50 border border-gray-100 rounded-2xl space-y-3">
-                    <Smartphone className="w-10 h-10 text-gray-300 mx-auto animate-bounce" />
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-navy-900">No WhatsApp Alerts Yet</p>
-                      <p className="text-[10px] text-gray-400 max-w-xs mx-auto leading-normal">
-                        Place an order from this account to see booking and delivery WhatsApp notifications here.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div className="lg:col-span-5 space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                      {whatsappAlerts.map((alertItem) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 font-sans">
+                  {[
+                    { id: 'RWD10', name: 'Artisanal 10% Off Voucher', cost: 100, desc: 'Get 10% off any order in the Toys category' },
+                    { id: 'RWD20', name: 'Premium 20% Off Coupon', cost: 250, desc: 'Unlock 20% flat discount on handcrafted blocks' },
+                    { id: 'RWDFREE', name: 'Free Shipping Voucher', cost: 75, desc: 'Get zero shipping charges on your next purchase' }
+                  ].map((reward) => {
+                    const balance = orders.length * 150 + 50;
+                    const canRedeem = balance >= reward.cost;
+                    const isRedeemed = redeemedCoupons.includes(reward.id);
+                    
+                    return (
+                      <div key={reward.id} className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col justify-between gap-3 text-xs leading-normal">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-mono font-bold text-[#C5A021] uppercase tracking-wider block">{reward.cost} Points</span>
+                          <h4 className="font-bold text-navy-950">{reward.name}</h4>
+                          <p className="text-[10px] text-gray-500 leading-snug">{reward.desc}</p>
+                        </div>
+                        
                         <button
-                          key={alertItem.id}
-                          onClick={() => setSelectedWhatsapp(alertItem)}
-                          className={`w-full text-left p-4 rounded-2xl border transition flex flex-col gap-2 cursor-pointer ${
-                            selectedWhatsapp?.id === alertItem.id
-                              ? 'bg-emerald-950 text-white border-emerald-950 shadow-md'
-                              : 'bg-white hover:bg-gray-50 border-gray-100 text-navy-950'
+                          type="button"
+                          disabled={!canRedeem || isRedeemed}
+                          onClick={() => {
+                            setRedeemedCoupons(prev => [...prev, reward.id]);
+                            alert(`Success! Copy this voucher code: ${reward.id} to use at checkout.`);
+                          }}
+                          className={`w-full py-1.5 rounded-xl font-bold uppercase transition text-center text-[10px] ${
+                            isRedeemed 
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 cursor-default'
+                              : canRedeem 
+                                ? 'bg-[#C5A021] hover:bg-[#C5A021]/80 text-navy-950 cursor-pointer' 
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <span className={`text-[9px] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded-md ${
-                              selectedWhatsapp?.id === alertItem.id ? 'bg-white/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700'
-                            }`}>
-                              {alertItem.badge || alertItem.type}
-                            </span>
-                            <span className="text-[9px] font-mono text-gray-400">
-                              {alertItem.sentAt?.split(',')[1] || alertItem.sentAt}
-                            </span>
-                          </div>
-                          <h4 className="text-[11px] font-bold truncate leading-snug">
-                            {alertItem.orderNumber}
-                          </h4>
-                          <p className={`text-[10px] line-clamp-2 leading-normal ${
-                            selectedWhatsapp?.id === alertItem.id ? 'text-emerald-100' : 'text-gray-500'
-                          }`}>
-                            {alertItem.message}
-                          </p>
+                          {isRedeemed ? 'Voucher Unlocked' : canRedeem ? 'Redeem Voucher' : 'Insufficient Points'}
                         </button>
-                      ))}
-                    </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                    <div className="lg:col-span-7 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm space-y-4">
-                      {selectedWhatsapp ? (
-                        <>
-                          <div className="flex items-center justify-between pb-3 border-b border-gray-100 gap-3">
-                            <div>
-                              <h4 className="text-xs font-bold text-navy-950">
-                                {selectedWhatsapp.badge || 'WhatsApp Alert'}
-                              </h4>
-                              <p className="text-[9px] text-gray-400 font-mono mt-0.5">
-                                Sent to: {selectedWhatsapp.recipientPhone} - {selectedWhatsapp.sentAt}
-                              </p>
-                            </div>
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[9px] font-mono font-bold uppercase shrink-0">
-                              Delivered
-                            </span>
-                          </div>
-                          <div className="rounded-3xl bg-emerald-50 border border-emerald-100 p-4">
-                            <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm">
-                              <div className="flex items-center gap-2 text-emerald-700 text-[10px] font-bold uppercase tracking-widest mb-3">
-                                <MessageSquare className="w-4 h-4" />
-                                WhatsApp Message
-                              </div>
-                              <pre className="whitespace-pre-wrap text-xs leading-relaxed text-navy-900 font-sans">{selectedWhatsapp.message}</pre>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center py-24 space-y-3">
-                          <Smartphone className="w-8 h-8 text-emerald-500 mx-auto animate-pulse" />
-                          <p className="text-xs font-bold text-navy-950">Select an alert to view</p>
+                {redeemedCoupons.length > 0 && (
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs space-y-2 animate-fade-in font-sans">
+                    <h4 className="font-bold text-emerald-800 flex items-center gap-1.5">
+                      <Check className="w-4 h-4 text-emerald-600" /> Your Redeemed Voucher Codes
+                    </h4>
+                    <div className="flex gap-2 flex-wrap pt-1">
+                      {redeemedCoupons.map((code) => (
+                        <div key={code} className="px-3 py-1.5 bg-white border border-emerald-200 font-mono font-bold rounded-lg flex items-center gap-2 select-all cursor-pointer">
+                          <span>{code}</span>
+                          <span className="text-[9px] font-sans font-bold text-emerald-600 uppercase bg-emerald-50 px-1.5 py-0.5 rounded">Active</span>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                 )}

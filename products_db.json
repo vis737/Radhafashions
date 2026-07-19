@@ -134,6 +134,173 @@
     "vendorId": null
   },
   {
+    "id": "toy-4",
+    "sku": "TOY-WD-BLOCKS",
+    "name": "Natural Premium Forest Wooden Blocks Set",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 1499,
+    "discountPrice": 1299,
+    "stock": 18,
+    "rating": 4.9,
+    "ratingCount": 88,
+    "images": [
+      "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "50-piece solid pine wood block set featuring smooth geometries and natural grain textures.",
+    "description": "Perfect for building, sorting, and early geometry. This block set contains cylinders, arches, blocks, and triangles made from solid premium pine wood. Supports spatial awareness and motor skills.",
+    "specifications": {
+      "Box": "Eco-friendly canvas storage bag",
+      "Pieces": "50 blocks",
+      "Material": "Solid Pinewood"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-5",
+    "sku": "TOY-WD-PUZZLE",
+    "name": "Montessori Wooden Alphabet Matching Tray",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 899,
+    "discountPrice": 799,
+    "stock": 20,
+    "rating": 4.8,
+    "ratingCount": 52,
+    "images": [
+      "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "High-contrast alphabet block puzzle designed for cognitive spelling and letter shape matching.",
+    "description": "An educational classic. Fits capital letter blocks securely into recessed slots, helping preschool children learn the alphabet visually and tactilely.",
+    "specifications": {
+      "Paint": "Water-based non-toxic paint",
+      "Material": "Birch plywood tray & beech blocks"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Learn",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-6",
+    "sku": "TOY-WD-BALANCE",
+    "name": "Artisanal Curved Wooden Balance Wobble Board",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 3299,
+    "discountPrice": 2899,
+    "stock": 6,
+    "rating": 4.9,
+    "ratingCount": 30,
+    "images": [
+      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Premium curved beechwood wobble board supporting posture balance and creative play.",
+    "description": "Designed to support open-ended movement play. Children can balance on it, use it as a bridge, slide, or rocking cradle. Hand-pressed multilayered beechwood core.",
+    "specifications": {
+      "Coating": "Natural oil protectant",
+      "Material": "Multilayered Pressed Beechwood",
+      "Weight Capacity": "120 kg"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Active",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-7",
+    "sku": "TOY-WD-GEARS",
+    "name": "3D Mechanical Gear Assembly Constructor",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 2499,
+    "discountPrice": 2199,
+    "stock": 12,
+    "rating": 4.7,
+    "ratingCount": 22,
+    "images": [
+      "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Interlocking wooden gear puzzle introducing kinetic energy transmission and physical mechanics.",
+    "description": "A STEM constructor puzzle set. Contains precision laser-cut plywood sheets. Kids can assemble standard gear configurations that move when hand-cranked.",
+    "specifications": {
+      "Material": "Laser-cut Birch Plywood",
+      "Skill level": "Intermediate",
+      "Time to build": "3-4 hours"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Tech",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-8",
+    "sku": "TOY-WD-CHESS",
+    "name": "Classic Handcrafted Deluxe Wooden Chess Set",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 2999,
+    "discountPrice": 2499,
+    "stock": 8,
+    "rating": 5,
+    "ratingCount": 14,
+    "images": [
+      "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Exquisite inlaid rosewood chess board with weighted hand-carved chess pieces.",
+    "description": "Premium chess set featuring storage slots for each individual piece. Finished in a semi-gloss natural lacquer, highlighting the rich grains of solid Indian rosewood.",
+    "specifications": {
+      "Wood Type": "Sheesham & Maple",
+      "King Height": "6.5 cm",
+      "Board Dimensions": "30 x 30 cm"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Games",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-9",
+    "sku": "TOY-WD-ARCH",
+    "name": "3D Laser-Cut Taj Mahal Architectural Model",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 3899,
+    "discountPrice": 3499,
+    "stock": 5,
+    "rating": 4.9,
+    "ratingCount": 19,
+    "images": [
+      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Intricate 3D architectural craft kit compiling 250 micro-laser wood puzzle nodes.",
+    "description": "A beautiful historical replica model. Perfect for teens and hobbyists. Hand-sanded laser edges allow slotting connections without requiring glue.",
+    "specifications": {
+      "Material": "Sustainably sourced Basswood Plywood",
+      "Complexity": "Advanced (250+ parts)",
+      "Recommended Age": "13+ Years"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Tech",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
     "id": "learn-1",
     "sku": "LN-ABACUS-PST",
     "name": "Pastel Decimal Wooden Abacus Toy",
@@ -269,44 +436,6 @@
     "vendorId": null
   },
   {
-    "id": "kolam-1",
-    "sku": "KL-ST-LOTUS",
-    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
-    "category": "Kolam Stencils",
-    "categorySlug": "kolam",
-    "price": 499,
-    "discountPrice": 399,
-    "stock": 22,
-    "rating": 4.8,
-    "ratingCount": 115,
-    "images": [
-      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
-    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
-    "specifications": {
-      "Material": "Military-Grade Shatterproof Acrylic",
-      "Thickness": "3.0 mm",
-      "Dimensions": "30 x 30 cm circular plate",
-      "Stencil Design": "Sacred Golden Mandala Lotus grid"
-    },
-    "reviews": [
-      {
-        "id": "r-8",
-        "date": "2026-06-11",
-        "author": "Meenakshi N.",
-        "rating": 5,
-        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
-        "approved": true
-      }
-    ],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris festive",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
     "id": "home-1",
     "sku": "HM-CANDLE-SOY",
     "name": "Symphony Organic Lavender Scented Soy Candle",
@@ -342,6 +471,44 @@
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Botanics",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "kolam-1",
+    "sku": "KL-ST-LOTUS",
+    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
+    "category": "Kolam Stencils",
+    "categorySlug": "kolam",
+    "price": 499,
+    "discountPrice": 399,
+    "stock": 22,
+    "rating": 4.8,
+    "ratingCount": 115,
+    "images": [
+      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
+    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
+    "specifications": {
+      "Material": "Military-Grade Shatterproof Acrylic",
+      "Thickness": "3.0 mm",
+      "Dimensions": "30 x 30 cm circular plate",
+      "Stencil Design": "Sacred Golden Mandala Lotus grid"
+    },
+    "reviews": [
+      {
+        "id": "r-8",
+        "date": "2026-06-11",
+        "author": "Meenakshi N.",
+        "rating": 5,
+        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
+        "approved": true
+      }
+    ],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris festive",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -654,35 +821,6 @@
     "vendorId": null
   },
   {
-    "id": "btl-1",
-    "sku": "BT-COPPER-INF",
-    "name": "Sovereign Ayurvedic Pure Hammered Copper Bottle",
-    "category": "Return Gift Bottles",
-    "categorySlug": "bottles",
-    "price": 1399,
-    "discountPrice": 1199,
-    "stock": 20,
-    "rating": 4.7,
-    "ratingCount": 55,
-    "images": [
-      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Sleek 950ml leakproof copper canister styled with micro-hammered indent decorations.",
-    "description": "Encourage holistic hydration with this stunning copper water storage flask, designed to naturally detoxify and alkaline water. Hand-beaten detailing creates a premium golden sparkle and outstanding tactile grip. Wrapped in eco-friendly protective packaging.",
-    "specifications": {
-      "Cap": "Threaded air-tight brass cap with silicone gasket",
-      "Design": "Traditional hand-hammered finish",
-      "Volume": "950 ml",
-      "Material": "99.9% Pure Food-Grade Copper"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Wellness",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
     "id": "wood-3",
     "sku": "WD-DESK-ORG",
     "name": "Royal Teakwood Desk Organizer & Letter Rack",
@@ -708,6 +846,35 @@
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Artisanal",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "btl-1",
+    "sku": "BT-COPPER-INF",
+    "name": "Sovereign Ayurvedic Pure Hammered Copper Bottle",
+    "category": "Return Gift Bottles",
+    "categorySlug": "bottles",
+    "price": 1399,
+    "discountPrice": 1199,
+    "stock": 20,
+    "rating": 4.7,
+    "ratingCount": 55,
+    "images": [
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Sleek 950ml leakproof copper canister styled with micro-hammered indent decorations.",
+    "description": "Encourage holistic hydration with this stunning copper water storage flask, designed to naturally detoxify and alkaline water. Hand-beaten detailing creates a premium golden sparkle and outstanding tactile grip. Wrapped in eco-friendly protective packaging.",
+    "specifications": {
+      "Cap": "Threaded air-tight brass cap with silicone gasket",
+      "Design": "Traditional hand-hammered finish",
+      "Volume": "950 ml",
+      "Material": "99.9% Pure Food-Grade Copper"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Wellness",
     "availability": "in-stock",
     "vendorId": null
   },

@@ -462,7 +462,7 @@ export default function CheckoutPanel({
                         <span className="px-2.5 py-0.5 rounded bg-[#C5A021]/15 text-[#C5A021] text-[9px] font-mono font-bold uppercase tracking-wider">UPI SCAN TO PAY</span>
                         <div className="w-40 h-40 bg-gray-50 border rounded-2xl overflow-hidden flex items-center justify-center">
                           <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=meriseshop@upi&pn=Meris%20E-Shop&am=${finalTotal}&cu=INR`)}`}
+                            src="/upi_qr_payment.jpg"
                             alt="Scan to pay via UPI"
                             className="w-36 h-36 object-contain"
                           />
