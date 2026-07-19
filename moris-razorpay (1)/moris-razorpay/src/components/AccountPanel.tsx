@@ -1210,6 +1210,8 @@ export default function AccountPanel({
                                 const form = e.currentTarget;
                                 const txnInput = form.elements.namedItem('txnId') as HTMLInputElement;
                                 const fileInput = form.elements.namedItem('screenshot') as HTMLInputElement;
+                                const urlInput = form.elements.namedItem('screenshotUrl') as HTMLInputElement;
+                                const proofType = (form.elements.namedItem('proofType') as HTMLSelectElement).value;
                                 const txnId = txnInput.value.trim();
                                 
                                 if (!txnId) {
@@ -1218,7 +1220,9 @@ export default function AccountPanel({
                                 }
 
                                 let screenshotUrl = ord.upiScreenshot || '';
-                                if (fileInput.files?.[0]) {
+                                if (proofType === 'url') {
+                                  screenshotUrl = urlInput.value.trim() || screenshotUrl;
+                                } else if (fileInput.files?.[0]) {
                                   const file = fileInput.files[0];
                                   if (file.size > 5 * 1024 * 1024) {
                                     alert("Maximum screenshot size is 5 MB.");
@@ -1249,12 +1253,35 @@ export default function AccountPanel({
                                   <label className="block text-[10px] text-gray-500 font-mono mb-0.5">New Transaction ID / Ref No.</label>
                                   <input type="text" name="txnId" required defaultValue={ord.upiTxnId} className="w-full px-3 py-1.5 border border-gray-200 rounded-lg bg-white" />
                                 </div>
-                                <div>
-                                  <label className="block text-[10px] text-gray-500 font-mono mb-0.5">New Screenshot (Optional)</label>
-                                  <input type="file" name="screenshot" accept="image/jpeg,image/jpg,image/png,image/webp" className="w-full text-[10px]" />
+                                <div className="space-y-1.5">
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[10px] text-gray-500 font-mono">New Screenshot Proof</label>
+                                    <select name="proofType" defaultValue="upload" className="text-[9px] border rounded bg-white focus:outline-none" onChange={(e) => {
+                                      const type = e.target.value;
+                                      const formEl = e.target.closest('form');
+                                      const upDiv = formEl?.querySelector('.proof-upload-div');
+                                      const urlDiv = formEl?.querySelector('.proof-url-div');
+                                      if (type === 'upload') {
+                                        upDiv?.classList.remove('hidden');
+                                        urlDiv?.classList.add('hidden');
+                                      } else {
+                                        upDiv?.classList.add('hidden');
+                                        urlDiv?.classList.remove('hidden');
+                                      }
+                                    }}>
+                                      <option value="upload">Upload File</option>
+                                      <option value="url">Paste Web URL</option>
+                                    </select>
+                                  </div>
+                                  <div className="proof-upload-div">
+                                    <input type="file" name="screenshot" accept="image/jpeg,image/jpg,image/png,image/webp" className="w-full text-[10px]" />
+                                  </div>
+                                  <div className="proof-url-div hidden">
+                                    <input type="url" name="screenshotUrl" placeholder="Paste image web URL here" className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-[10px] bg-white focus:outline-none" />
+                                  </div>
                                 </div>
                               </div>
-                              <button type="submit" className="px-4 py-2 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl font-bold uppercase transition cursor-pointer">
+                              <button type="submit" className="px-4 py-2 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl font-bold uppercase transition cursor-pointer text-xs">
                                 Resubmit Payment Details
                               </button>
                             </form>

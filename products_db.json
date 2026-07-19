@@ -23,24 +23,7 @@
       "Dimensions": "18 x 9 x 9 cm",
       "Age Recommendation": "12+ months"
     },
-    "reviews": [
-      {
-        "id": "r-1",
-        "date": "2026-05-12",
-        "author": "Anita S.",
-        "rating": 5,
-        "comment": "Simply gorgeous! The wood is so smooth and there is no paint smell at all.",
-        "approved": true
-      },
-      {
-        "id": "r-2",
-        "date": "2026-06-02",
-        "author": "Dev K.",
-        "rating": 4,
-        "comment": "Excellent organic toy. My 1-year-old is fully obsessed with the golden cap ring.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Kids",
@@ -70,16 +53,7 @@
       "Inner Liners": "Recycled linen-sateen canvas",
       "Metal Accents": "18k Gold plated premium electro-lacquered alloy"
     },
-    "reviews": [
-      {
-        "id": "r-5",
-        "date": "2026-06-10",
-        "author": "Ridhima M.",
-        "rating": 5,
-        "comment": "The golden clasps look so incredibly luxury! Stitching is super clean.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Couture",
@@ -109,24 +83,7 @@
       "Page Count": "160 ruled journal pages",
       "Paper Type": "120 GSM Acid-Free Archival cream lines"
     },
-    "reviews": [
-      {
-        "id": "rev-1784388916458",
-        "date": "2026-07-18",
-        "author": "jerish",
-        "rating": 3,
-        "comment": "best",
-        "approved": true
-      },
-      {
-        "id": "r-9",
-        "date": "2026-06-13",
-        "author": "Karandeep S.",
-        "rating": 5,
-        "comment": "The paper is incredibly lush. My wet ink fountain pens glide on it like glass.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Script",
@@ -352,16 +309,7 @@
       "Dark Wood Blocks": "Warm Indonesian Mahogany",
       "Light Wood Blocks": "Natural Hard Sugar Maple"
     },
-    "reviews": [
-      {
-        "id": "r-10",
-        "date": "2026-05-25",
-        "author": "Aditya G.",
-        "rating": 5,
-        "comment": "Phenomenal piece. This is heirloom quality. The weights of the knights feel so solid.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": true,
     "isBestseller": false,
     "brand": "Meris Heritage",
@@ -390,16 +338,7 @@
       "Material": "High-gloss Rust-resistant Brass Alloy",
       "Cleanliness": "Warm water rinse & towel dry"
     },
-    "reviews": [
-      {
-        "id": "r-k2-1",
-        "date": "2026-06-22",
-        "author": "Lakshmi S.",
-        "rating": 5,
-        "comment": "Spectacular quality! Brass is heavy and stays firmly in place during drawing.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": true,
     "isBestseller": false,
     "brand": "Meris festive",
@@ -457,16 +396,7 @@
       "Dimensions": "30 x 30 cm circular plate",
       "Stencil Design": "Sacred Golden Mandala Lotus grid"
     },
-    "reviews": [
-      {
-        "id": "r-8",
-        "date": "2026-06-11",
-        "author": "Meenakshi N.",
-        "rating": 5,
-        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris festive",
@@ -496,16 +426,7 @@
       "Container": "Terracotta ceramic reuseable tumled jar",
       "Burn Lifetime": "45+ clean burning hours"
     },
-    "reviews": [
-      {
-        "id": "r-7",
-        "date": "2026-06-05",
-        "author": "Ritu V.",
-        "rating": 5,
-        "comment": "Best lavender candle ever! The crackle sound from the wooden wick is incredibly calming.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Botanics",
@@ -535,16 +456,7 @@
       "Dimensions": "20 x 12 x 8 cm",
       "Timber Type": "Indian Rosewood (Sheesham)"
     },
-    "reviews": [
-      {
-        "id": "r-4",
-        "date": "2026-05-30",
-        "author": "Vikram J.",
-        "rating": 5,
-        "comment": "Outstanding craftsmanship. Smells exactly like real sweet rosewood.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Artisanal",
@@ -574,16 +486,7 @@
       "Material": "100% Organic Indigo Yarn",
       "Wash Care": "Gentle hand wash inside net pouch"
     },
-    "reviews": [
-      {
-        "id": "r-3",
-        "date": "2026-04-18",
-        "author": "Priyanka R.",
-        "rating": 5,
-        "comment": "Unbelievable quality. The stitches are extremely uniform. Highly recommend for infants.",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": true,
     "isBestseller": false,
     "brand": "Meris Handwoven",
@@ -612,16 +515,7 @@
       "Dimensions": "14 x 12 x 7 cm",
       "Age Recommendation": "10+ months"
     },
-    "reviews": [
-      {
-        "id": "r-t3-1",
-        "date": "2026-06-20",
-        "author": "Siddharth M.",
-        "rating": 5,
-        "comment": "Very sturdy, looks amazing on the shelf when not in use!",
-        "approved": true
-      }
-    ],
+    "reviews": [],
     "isNew": true,
     "isBestseller": false,
     "brand": "Meris Kids",
@@ -708,16 +602,7 @@
       "Dimensions": "32 cm diameter circular canvas",
       "Educational Focus": "Astrological paths and fine motor logic"
     },
-    "reviews": [
-      {
-        "id": "r-l2-1",
-        "date": "2026-06-18",
-        "author": "Dr. Aris V.",
-        "rating": 5,
-        "comment": "An amazing tool that is literally educational art. The detailing on Saturn is wonderful.",
-        "approved": false
-      }
-    ],
+    "reviews": [],
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Kids",
@@ -775,16 +660,7 @@
       "Base Fabric": "Silk Blend Deep Navy Velvet",
       "Chain Strap": "Removable vintage gold-link chain (110cm)"
     },
-    "reviews": [
-      {
-        "id": "r-6",
-        "date": "2026-05-18",
-        "author": "Sonal C.",
-        "rating": 5,
-        "comment": "Pure luxury! Took this to a family wedding and got continuous praise.",
-        "approved": false
-      }
-    ],
+    "reviews": [],
     "isNew": true,
     "isBestseller": false,
     "brand": "Meris Heritage",

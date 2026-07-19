@@ -605,8 +605,8 @@ export default function App() {
 
   // Moderation state togglers
   const handleApproveReviewContent = (productId: string, reviewId: string, approve: boolean) => {
-    setProducts((prev) =>
-      prev.map((p) => {
+    setProducts((prev) => {
+      const next = prev.map((p) => {
         if (p.id === productId) {
           return {
             ...p,
@@ -616,13 +616,19 @@ export default function App() {
           };
         }
         return p;
-      })
-    );
+      });
+      fetch('/api/catalog/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next)
+      }).catch(err => console.error('Failed to sync review approval:', err));
+      return next;
+    });
   };
 
   const handleDeleteReviewContent = (productId: string, reviewId: string) => {
-    setProducts((prev) =>
-      prev.map((p) => {
+    setProducts((prev) => {
+      const next = prev.map((p) => {
         if (p.id === productId) {
           const filteredRevs = p.reviews.filter((r) => r.id !== reviewId);
           return {
@@ -631,8 +637,14 @@ export default function App() {
           };
         }
         return p;
-      })
-    );
+      });
+      fetch('/api/catalog/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next)
+      }).catch(err => console.error('Failed to sync review deletion:', err));
+      return next;
+    });
   };
 
   const handleResubmitUpiDetails = (orderId: string, txnId: string, screenshot: string) => {
@@ -669,11 +681,10 @@ export default function App() {
       ...review
     };
 
-    setProducts((prev) =>
-      prev.map((p) => {
+    setProducts((prev) => {
+      const next = prev.map((p) => {
         if (p.id === productId) {
           const updatedRevs = [newRev, ...p.reviews];
-          // Recalculate average stars
           const approvedCount = updatedRevs.length;
           const totalRating = updatedRevs.reduce((acc, r) => acc + r.rating, 0);
           return {
@@ -684,8 +695,14 @@ export default function App() {
           };
         }
         return p;
-      })
-    );
+      });
+      fetch('/api/catalog/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next)
+      }).catch(err => console.error('Failed to sync new review:', err));
+      return next;
+    });
     handleLogActivity('Review Created', `Submitted client review rating [${review.rating} Stars] for Product ID: ${productId}`);
   };
 
@@ -729,6 +746,43 @@ export default function App() {
     userFilteredProducts.length > 0 && userFilteredProducts.length !== products.length
       ? userFilteredProducts.slice(0, 8)
       : [];
+
+  if (cms.maintenanceMode && activeView !== 'admin') {
+    return (
+      <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center p-6 text-center font-sans relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl" />
+
+        <div className="max-w-md w-full bg-navy-900/40 border border-gold-400/20 backdrop-blur-xl rounded-3xl p-8 space-y-6 shadow-2xl relative z-10 text-white">
+          <div className="mx-auto w-20 h-20 bg-gold-400/10 rounded-full flex items-center justify-center border border-gold-400/30 animate-pulse">
+            <span className="text-3xl text-gold-400">🔨</span>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="font-display font-bold text-lg text-white uppercase tracking-widest leading-snug">
+              Workshop Polishing Underway
+            </h1>
+            <p className="text-xs text-gray-400 leading-relaxed font-light">
+              We are currently making some adjustments to the MERIS workshop to bring you an even better experience. Check back with us shortly!
+            </p>
+          </div>
+
+          <div className="border-t border-navy-800 pt-4 flex justify-center gap-4 text-xs text-gray-500">
+            <span>Helpline: {cms.contactPhone || '+91 91083 19758'}</span>
+          </div>
+        </div>
+
+        <div className="absolute bottom-6 right-6 z-20">
+          <button 
+            onClick={() => setActiveView('admin')}
+            className="text-[10px] text-gray-600 hover:text-gold-400 transition uppercase font-mono font-bold tracking-wider cursor-pointer"
+          >
+            Staff Portal Bypass &rarr;
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-navy-950 text-gray-900 dark:text-slate-100 flex flex-col justify-between select-none transition-colors duration-300">
@@ -1412,10 +1466,11 @@ export default function App() {
                     return next;
                   });
                 }}
-                onApproveReview={handleApproveReviewContent}
-                onDeleteReview={handleDeleteReviewContent}
-                onUpdateCampaigns={(camp) => setCampaigns(camp)}
-                onUpdateCMS={(cM) => setCms(cM)}
+                 onApproveReview={handleApproveReviewContent}
+                 onDeleteReview={handleDeleteReviewContent}
+                 onAddReview={handleAddNewUserReview}
+                 onUpdateCampaigns={(camp) => setCampaigns(camp)}
+                 onUpdateCMS={(cM) => setCms(cM)}
                 onLogActivity={handleLogActivity}
                 autoAuthenticated={adminBypassed}
                 onLogoutAdmin={async () => {

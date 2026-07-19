@@ -48,6 +48,7 @@ export default function CheckoutPanel({
   const [upiNotes, setUpiNotes] = useState('');
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const [screenshotSourceType, setScreenshotSourceType] = useState<'upload' | 'url'>('upload');
   
   // Simulated gateway trigger
   const [gatewayProcessing, setGatewayProcessing] = useState(false);
@@ -515,32 +516,61 @@ export default function CheckoutPanel({
                             />
                           </div>
                           <div>
-                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Screenshot Upload (Optional, Max 5 MB)</label>
-                            <input
-                              type="file"
-                              accept="image/jpeg,image/jpg,image/png,image/webp"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                if (file.size > 5 * 1024 * 1024) {
-                                  alert("Maximum file size allowed is 5 MB.");
-                                  e.target.value = "";
-                                  return;
-                                }
-                                const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                                if (!allowed.includes(file.type)) {
-                                  alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
-                                  e.target.value = "";
-                                  return;
-                                }
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  setUpiScreenshot(reader.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                              }}
-                              className="w-full text-xs animate-none"
-                            />
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-[9px] text-gray-405 uppercase tracking-wider font-mono">Screenshot Receipt (Optional)</label>
+                              <div className="flex gap-1 bg-gray-50 border rounded-lg p-0.5 text-[8px] font-semibold font-sans">
+                                <button
+                                  type="button"
+                                  onClick={() => setScreenshotSourceType('upload')}
+                                  className={`px-1.5 py-0.5 rounded-md transition cursor-pointer ${screenshotSourceType === 'upload' ? 'bg-navy-950 text-white' : 'text-gray-500'}`}
+                                >
+                                  Upload Device
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setScreenshotSourceType('url')}
+                                  className={`px-1.5 py-0.5 rounded-md transition cursor-pointer ${screenshotSourceType === 'url' ? 'bg-navy-950 text-white' : 'text-gray-500'}`}
+                                >
+                                  Paste URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {screenshotSourceType === 'upload' ? (
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    alert("Maximum file size allowed is 5 MB.");
+                                    e.target.value = "";
+                                    return;
+                                  }
+                                  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                                  if (!allowed.includes(file.type)) {
+                                    alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
+                                    e.target.value = "";
+                                    return;
+                                  }
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setUpiScreenshot(reader.result as string);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }}
+                                className="w-full text-xs font-mono"
+                              />
+                            ) : (
+                              <input
+                                type="url"
+                                placeholder="Paste screenshot image URL (e.g. https://domain.com/receipt.jpg)"
+                                value={upiScreenshot.startsWith('data:') ? '' : upiScreenshot}
+                                onChange={(e) => setUpiScreenshot(e.target.value)}
+                                className="w-full px-3 py-1.5 border rounded-lg text-xs font-mono"
+                              />
+                            )}
                           </div>
                           <div>
                             <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Notes (Optional)</label>

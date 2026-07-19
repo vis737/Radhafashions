@@ -160,6 +160,7 @@ export interface CMSConfig {
   returnPolicy?: string;
   themePrimary?: string;
   themeMode?: 'light' | 'dark' | 'system';
+  maintenanceMode?: boolean;
 }
 
 export interface BundleOffer {

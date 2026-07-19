@@ -34,6 +34,7 @@ interface AdminDashboardProps {
   onUpdateCMS: (cms: CMSConfig) => void;
   onApproveReview: (productId: string, reviewId: string, approve: boolean) => void;
   onDeleteReview?: (productId: string, reviewId: string) => void;
+  onAddReview?: (productId: string, review: Omit<Review, 'id'>) => void;
   onLogActivity: (action: string, details: string) => void;
   autoAuthenticated?: boolean;
   onLogoutAdmin?: () => void;
@@ -60,6 +61,7 @@ export default function AdminDashboard({
   onUpdateCMS,
   onApproveReview,
   onDeleteReview,
+  onAddReview,
   onLogActivity,
   autoAuthenticated = false,
   onLogoutAdmin
@@ -193,7 +195,25 @@ export default function AdminDashboard({
   const [smtpPass, setSmtpPass] = useState(cms.smtpPass || 'lljl hfcn geye rdlt');
   const [whatsappNo, setWhatsappNo] = useState(cms.whatsappNumber || '+919108319758');
   const [shipCharge, setShipCharge] = useState(cms.shippingCharges || 80);
-  const [delivCharge, setDelivCharge] = useState(cms.deliveryCharges || 0);
+  const [delivCharge, setDelivCharge] = useState(cms.deliveryCharges || 2000);
+  const [logoUrl, setLogoUrl] = useState(cms.logoUrl || '');
+  const [headline, setHeadline] = useState(cms.headline || 'MERIS ARTISANAL STUDIO');
+  const [subheadline, setSubheadline] = useState(cms.subheadline || 'Premium Handcrafted Traditional Indian Toys');
+  const [aboutText, setAboutText] = useState(cms.aboutText || '');
+  const [contactEmail, setContactEmail] = useState(cms.contactEmail || '');
+  const [contactPhone, setContactPhone] = useState(cms.contactPhone || '');
+  const [contactAddress, setContactAddress] = useState(cms.contactAddress || '');
+  const [privacyPolicy, setPrivacyPolicy] = useState(cms.privacyPolicy || '');
+  const [termsConditions, setTermsConditions] = useState(cms.termsConditions || '');
+  const [returnPolicy, setReturnPolicy] = useState(cms.returnPolicy || '');
+  const [maintenanceMode, setMaintenanceMode] = useState(cms.maintenanceMode || false);
+
+  // Google reviews states
+  const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+  const [newRevProductId, setNewRevProductId] = useState('');
+  const [newRevAuthor, setNewRevAuthor] = useState('');
+  const [newRevComment, setNewRevComment] = useState('');
+  const [newRevRating, setNewRevRating] = useState(5);
 
   // Security 2FA states
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -331,7 +351,6 @@ export default function AdminDashboard({
     setNewCoupCode('');
   };
 
-  // Save Extended Settings Panel
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateCMS({
@@ -342,10 +361,21 @@ export default function AdminDashboard({
       smtpPass,
       whatsappNumber: whatsappNo,
       shippingCharges: shipCharge,
-      deliveryCharges: delivCharge
+      deliveryCharges: delivCharge,
+      logoUrl,
+      headline,
+      subheadline,
+      aboutText,
+      contactEmail,
+      contactPhone,
+      contactAddress,
+      privacyPolicy,
+      termsConditions,
+      returnPolicy,
+      maintenanceMode
     });
     addToast('General store settings saved successfully.');
-    onLogActivity('Update Settings', 'SMTP profiles and delivery charges updated.');
+    onLogActivity('Update Settings', 'Branding, Legal, SMTP and Maintenance Mode updated.');
   };
 
   // Save product form
@@ -1550,6 +1580,17 @@ export default function AdminDashboard({
                   <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
                     Client reviews moderation queue
                   </h3>
+                  <button
+                    onClick={() => {
+                      if (products.length > 0) {
+                        setNewRevProductId(products[0].id);
+                      }
+                      setIsAddReviewOpen(true);
+                    }}
+                    className="px-3 py-1.5 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl font-bold uppercase transition cursor-pointer text-[10px]"
+                  >
+                    Add Google Review
+                  </button>
                 </div>
 
                 <div className="space-y-4 text-xs font-sans">
@@ -1573,23 +1614,117 @@ export default function AdminDashboard({
                             review.approved ? 'bg-emerald-50 text-emerald-600 border' : 'bg-amber-50 text-amber-600 border'
                           }`}
                         >
-                          {review.approved ? 'Approved' : 'Suspended'}
+                          {review.approved ? 'Approved' : 'Approve'}
                         </button>
-                        <button
-                          onClick={() => {
-                            if (onDeleteReview) {
+                        {onDeleteReview && (
+                          <button
+                            onClick={() => {
                               onDeleteReview(product.id, review.id);
-                              addToast('Review deleted successfully.');
-                            }
-                          }}
-                          className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition cursor-pointer border"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                              addToast(`Review deleted.`);
+                            }}
+                            className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition cursor-pointer border border-transparent hover:border-red-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Add Review Modal */}
+                <AnimatePresence>
+                  {isAddReviewOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-sm p-4 font-sans text-navy-950">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="bg-white border rounded-3xl p-6 max-w-md w-full space-y-4 text-xs text-left"
+                      >
+                        <div className="flex justify-between items-center border-b pb-3">
+                          <h4 className="font-display font-bold text-sm text-navy-950 uppercase tracking-wider">Add External Google Review</h4>
+                          <button onClick={() => setIsAddReviewOpen(false)} className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded-lg cursor-pointer"><X className="w-5 h-5" /></button>
+                        </div>
+                        <form 
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!newRevProductId || !newRevAuthor.trim() || !newRevComment.trim()) {
+                              alert("Please fill all required review fields.");
+                              return;
+                            }
+                            if (onAddReview) {
+                              onAddReview(newRevProductId, {
+                                author: newRevAuthor.trim(),
+                                comment: newRevComment.trim(),
+                                rating: newRevRating,
+                                date: new Date().toISOString().split('T')[0],
+                                approved: true
+                              });
+                              addToast(`Google review added successfully to catalog.`);
+                              onLogActivity('Add Review', `Added external review for product ID: ${newRevProductId}`);
+                            }
+                            setIsAddReviewOpen(false);
+                            setNewRevAuthor('');
+                            setNewRevComment('');
+                            setNewRevRating(5);
+                          }}
+                          className="space-y-4 font-sans"
+                        >
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-mono mb-1">Select Catalog Product</label>
+                            <select 
+                              value={newRevProductId} 
+                              onChange={(e) => setNewRevProductId(e.target.value)}
+                              className="w-full px-3 py-2 border rounded-xl bg-white focus:outline-none text-xs"
+                            >
+                              {products.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-mono mb-1">Reviewer Name (Google Account)</label>
+                            <input 
+                              type="text" 
+                              required 
+                              value={newRevAuthor} 
+                              onChange={(e) => setNewRevAuthor(e.target.value)} 
+                              placeholder="e.g. Alok Sharma" 
+                              className="w-full px-3 py-2 border rounded-xl focus:outline-none" 
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-mono mb-1">Rating Stars (1 to 5)</label>
+                            <select 
+                              value={newRevRating} 
+                              onChange={(e) => setNewRevRating(Number(e.target.value))}
+                              className="w-full px-3 py-2 border rounded-xl bg-white focus:outline-none"
+                            >
+                              <option value="5">★★★★★ (5 Stars)</option>
+                              <option value="4">★★★★☆ (4 Stars)</option>
+                              <option value="3">★★★☆☆ (3 Stars)</option>
+                              <option value="2">★★☆☆☆ (2 Stars)</option>
+                              <option value="1">★☆☆☆☆ (1 Star)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-mono mb-1">Review Comment Text</label>
+                            <textarea 
+                              required 
+                              rows={3}
+                              value={newRevComment} 
+                              onChange={(e) => setNewRevComment(e.target.value)} 
+                              placeholder="Paste the review comment text left on Google here..." 
+                              className="w-full px-3 py-2 border rounded-xl focus:outline-none resize-none"
+                            />
+                          </div>
+                          <button type="submit" className="w-full py-2 bg-navy-950 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-[#C5A021] hover:text-navy-950 transition cursor-pointer text-xs">Publish Review</button>
+                        </form>
+                      </motion.div>
+                    </div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 
@@ -1833,7 +1968,7 @@ export default function AdminDashboard({
               </motion.div>
             )}
 
-            {/* VIEW 12: SETTINGS */}
+            {/* VIEW 12: SETTINGS (A-Z SYSTEM CONTROL) */}
             {activeTab === 'settings' && (
               <motion.div
                 key="settings"
@@ -1844,59 +1979,141 @@ export default function AdminDashboard({
               >
                 <div className="flex justify-between items-center pb-2 border-b border-gray-150">
                   <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
-                    General configurations panel
+                    A-Z Storefront System Configuration
                   </h3>
                 </div>
 
                 <form onSubmit={handleSaveSettings} className="bg-white dark:bg-navy-900 p-6 border rounded-3xl space-y-6 text-xs leading-normal font-sans">
                   
+                  {/* Maintenance Mode Toggle */}
+                  <div className="p-4 bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/50 rounded-2xl flex items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-amber-800 dark:text-amber-400 block text-xs">Website Maintenance Mode</span>
+                      <span className="text-[10px] text-gray-500 dark:text-slate-400">When enabled, the storefront is locked behind a maintenance cover screen. Admins can bypass using Staff Login.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setMaintenanceMode(!maintenanceMode)}
+                      className={`px-4 py-1.5 rounded-xl font-bold uppercase transition text-[10px] cursor-pointer ${
+                        maintenanceMode 
+                          ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-navy-950 dark:text-slate-300'
+                      }`}
+                    >
+                      {maintenanceMode ? 'Active (ON)' : 'Inactive (OFF)'}
+                    </button>
+                  </div>
+
+                  {/* Store Branding */}
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">1. Store Branding & Identity</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Store Name / Headline</label>
+                        <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Subheadline / Tagline</label>
+                        <input type="text" value={subheadline} onChange={(e) => setSubheadline(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Store Logo image URL</label>
+                        <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">About Store Summary description</label>
+                        <input type="text" value={aboutText} onChange={(e) => setAboutText(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* SMTP fields */}
                   <div className="space-y-3">
-                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">1. Transactional SMTP credentials</span>
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">2. Transactional SMTP Credentials</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">SMTP Host</label>
-                        <input type="text" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} className="w-full px-3 py-2 border rounded-xl" />
+                        <input type="text" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
                       </div>
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">SMTP Port</label>
-                        <input type="number" value={smtpPort} onChange={(e) => setSmtpPort(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl" />
+                        <input type="number" value={smtpPort} onChange={(e) => setSmtpPort(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">SMTP Sender User</label>
-                        <input type="email" value={smtpUser} onChange={(e) => setSmtpUser(e.target.value)} className="w-full px-3 py-2 border rounded-xl" />
+                        <input type="email" value={smtpUser} onChange={(e) => setSmtpUser(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
                       </div>
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">SMTP Password</label>
-                        <input type="password" value={smtpPass} onChange={(e) => setSmtpPass(e.target.value)} className="w-full px-3 py-2 border rounded-xl" />
+                        <input type="password" value={smtpPass} onChange={(e) => setSmtpPass(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
                       </div>
                     </div>
                   </div>
 
-                  {/* WhatsApp Support & Shipping Fees */}
+                  {/* Help & Shipping */}
                   <div className="space-y-3">
-                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">2. WhatsApp Helpline & shipping fees</span>
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">3. Helpline & Fees settings</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-[10px] text-gray-400 font-mono mb-1">WhatsApp phone number</label>
-                        <input type="text" value={whatsappNo} onChange={(e) => setWhatsappNo(e.target.value)} className="w-full px-3 py-2 border rounded-xl" />
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">WhatsApp Helpline</label>
+                        <input type="text" value={whatsappNo} onChange={(e) => setWhatsappNo(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
                       </div>
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">Shipping flat charge (Rs.)</label>
-                        <input type="number" value={shipCharge} onChange={(e) => setShipCharge(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl" />
+                        <input type="number" value={shipCharge} onChange={(e) => setShipCharge(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
                       </div>
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">Min cart for free delivery (Rs.)</label>
-                        <input type="number" value={delivCharge} onChange={(e) => setDelivCharge(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl" />
+                        <input type="number" value={delivCharge} onChange={(e) => setDelivCharge(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Coordinates */}
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">4. Contact Coordinates</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Contact Email</label>
+                        <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Contact Phone</label>
+                        <input type="text" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Contact Address</label>
+                        <input type="text" value={contactAddress} onChange={(e) => setContactAddress(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Legal Documents */}
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">5. Legal Documents (Markdown/Plain Text)</span>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Privacy Policy</label>
+                        <textarea value={privacyPolicy} rows={4} onChange={(e) => setPrivacyPolicy(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none resize-none font-mono text-[10px]" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Terms & Conditions</label>
+                        <textarea value={termsConditions} rows={4} onChange={(e) => setTermsConditions(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none resize-none font-mono text-[10px]" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Return & Refund Policy</label>
+                        <textarea value={returnPolicy} rows={4} onChange={(e) => setReturnPolicy(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none resize-none font-mono text-[10px]" />
                       </div>
                     </div>
                   </div>
 
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-navy-950 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-[#C5A021] hover:text-navy-950 transition cursor-pointer"
+                    className="px-6 py-2.5 bg-navy-950 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-[#C5A021] hover:text-navy-950 transition cursor-pointer text-xs"
                   >
                     Save configuration matrix
                   </button>
