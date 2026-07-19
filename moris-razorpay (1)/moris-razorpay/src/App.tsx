@@ -388,16 +388,21 @@ export default function App() {
 
   // Add to cart state logic
   const handleAddProductToCart = (product: Product, quantity = 1) => {
+    const limit = cms.maxCartQty || 10;
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
+        if (existing.quantity >= limit) {
+          alert(`You can purchase a maximum of ${limit} units per product item.`);
+          return prev;
+        }
         return prev.map((item) =>
           item.product.id === product.id
-            ? { ...item, quantity: Math.min(product.stock, item.quantity + quantity) }
+            ? { ...item, quantity: Math.min(product.stock, limit, item.quantity + quantity) }
             : item
         );
       }
-      return [...prev, { product, quantity }];
+      return [...prev, { product, quantity: Math.min(product.stock, limit, quantity) }];
     });
     setCartOpen(true);
     handleLogActivity('Item Added to Cart', `Added unit of ${product.name} to shopping bag.`);
@@ -1318,6 +1323,8 @@ export default function App() {
                   currentUser={currentUser}
                   onBackToCart={() => { setCartOpen(true); handleSwapView('home'); }}
                   onPlaceOrder={handlePlaceSecureOrder}
+                  codEnabled={cms.codEnabled !== false}
+                  upiEnabled={cms.upiEnabled !== false}
                 />
               ) : (
                 <div className="max-w-xl mx-auto px-4 py-16 text-center">
@@ -1399,6 +1406,7 @@ export default function App() {
                 onSelectProduct={handleViewProductDetails}
                 onResubmitUpiDetails={handleResubmitUpiDetails}
                 products={products}
+                rewardsEnabled={cms.rewardsEnabled !== false}
               />
             </motion.div>
           )}

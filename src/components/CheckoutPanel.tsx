@@ -23,6 +23,8 @@ interface CheckoutPanelProps {
     upiScreenshot?: string,
     upiNotes?: string
   ) => void;
+  codEnabled?: boolean;
+  upiEnabled?: boolean;
 }
 
 export default function CheckoutPanel({
@@ -31,7 +33,9 @@ export default function CheckoutPanel({
   activeCoupon,
   currentUser,
   onBackToCart,
-  onPlaceOrder
+  onPlaceOrder,
+  codEnabled = true,
+  upiEnabled = true
 }: CheckoutPanelProps) {
   // Form fields
   const [name, setName] = useState(currentUser.name || '');
@@ -41,15 +45,27 @@ export default function CheckoutPanel({
   const [pincode, setPincode] = useState('');
 
   // Selected payment route
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi_qr'>('upi_qr');
-  const [upiTxnId, setUpiTxnId] = useState('');
-  const [upiSenderName, setUpiSenderName] = useState('');
-  const [upiScreenshot, setUpiScreenshot] = useState('');
   const [upiNotes, setUpiNotes] = useState('');
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [screenshotSourceType, setScreenshotSourceType] = useState<'upload' | 'url'>('upload');
   
+  // Selected payment route
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi_qr'>(upiEnabled ? 'upi_qr' : 'cod');
+
+  useEffect(() => {
+    if (!upiEnabled && paymentMethod === 'upi_qr') {
+      setPaymentMethod('cod');
+    }
+    if (!codEnabled && paymentMethod === 'cod') {
+      setPaymentMethod('upi_qr');
+    }
+  }, [codEnabled, upiEnabled]);
+  
+  const [upiTxnId, setUpiTxnId] = useState('');
+  const [upiSenderName, setUpiSenderName] = useState('');
+  const [upiScreenshot, setUpiScreenshot] = useState('');
+
   // Simulated gateway trigger
   const [gatewayProcessing, setGatewayProcessing] = useState(false);
   const [gatewayStep, setGatewayStep] = useState<'idle' | 'authorizing' | 'success'>('idle');
@@ -416,25 +432,32 @@ export default function CheckoutPanel({
               <h3 className="font-display font-medium text-xs tracking-wider uppercase text-gold-500 text-left">2. Select Payment Route</h3>
               
               <div className="grid grid-cols-2 gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPaymentMethod('cod');
-                    setShowConfirmationForm(false);
-                  }}
-                  className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === 'cod' ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
-                >
-                  <Truck className="w-4.5 h-4.5 text-navy-950" />
-                  <span className="text-[10px]">Cash on Delivery</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('upi_qr')}
-                  className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
-                >
-                  <PhoneCall className="w-4.5 h-4.5 text-navy-950" />
-                  <span className="text-[10px]">UPI QR Code Payment</span>
-                </button>
+                {codEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod('cod');
+                      setShowConfirmationForm(false);
+                    }}
+                    className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === 'cod' ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
+                  >
+                    <Truck className="w-4.5 h-4.5 text-navy-950" />
+                    <span className="text-[10px]">Cash on Delivery</span>
+                  </button>
+                )}
+                {upiEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('upi_qr')}
+                    className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
+                  >
+                    <PhoneCall className="w-4.5 h-4.5 text-navy-950" />
+                    <span className="text-[10px]">UPI QR Code Payment</span>
+                  </button>
+                )}
+                {!codEnabled && !upiEnabled && (
+                  <p className="col-span-2 text-center text-xs text-red-500 p-2 font-semibold">Store checkouts are temporarily deactivated by administration.</p>
+                )}
               </div>
 
               {/* Dynamic inputs for selected payment route */}

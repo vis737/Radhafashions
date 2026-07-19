@@ -208,6 +208,17 @@ export default function AdminDashboard({
   const [returnPolicy, setReturnPolicy] = useState(cms.returnPolicy || '');
   const [maintenanceMode, setMaintenanceMode] = useState(cms.maintenanceMode || false);
 
+  const [aiConciergeEnabled, setAiConciergeEnabled] = useState(cms.aiConciergeEnabled !== false);
+  const [rewardsEnabled, setRewardsEnabled] = useState(cms.rewardsEnabled !== false);
+  const [codEnabled, setCodEnabled] = useState(cms.codEnabled !== false);
+  const [upiEnabled, setUpiEnabled] = useState(cms.upiEnabled !== false);
+  const [emailOrderSubject, setEmailOrderSubject] = useState(cms.emailOrderSubject || 'Order Confirmation - MERIS E-SHOP');
+  const [emailOrderBody, setEmailOrderBody] = useState(cms.emailOrderBody || 'Thank you for shopping with us! Your order is currently under validation.');
+  const [emailDispatchSubject, setEmailDispatchSubject] = useState(cms.emailDispatchSubject || 'Your Order Has Been Dispatched!');
+  const [emailDispatchBody, setEmailDispatchBody] = useState(cms.emailDispatchBody || 'Great news! Your handcrafted traditional toys are on their way.');
+  const [maxCartQty, setMaxCartQty] = useState(cms.maxCartQty || 10);
+  const [returnWindowDays, setReturnWindowDays] = useState(cms.returnWindowDays || 15);
+
   // Google reviews states
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [newRevProductId, setNewRevProductId] = useState('');
@@ -372,10 +383,20 @@ export default function AdminDashboard({
       privacyPolicy,
       termsConditions,
       returnPolicy,
-      maintenanceMode
+      maintenanceMode,
+      aiConciergeEnabled,
+      rewardsEnabled,
+      codEnabled,
+      upiEnabled,
+      emailOrderSubject,
+      emailOrderBody,
+      emailDispatchSubject,
+      emailDispatchBody,
+      maxCartQty,
+      returnWindowDays
     });
     addToast('General store settings saved successfully.');
-    onLogActivity('Update Settings', 'Branding, Legal, SMTP and Maintenance Mode updated.');
+    onLogActivity('Update Settings', 'Branding, Legal, SMTP, Advanced Feature controls and Maintenance Mode updated.');
   };
 
   // Save product form
@@ -1589,7 +1610,7 @@ export default function AdminDashboard({
                     }}
                     className="px-3 py-1.5 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl font-bold uppercase transition cursor-pointer text-[10px]"
                   >
-                    Add Google Review
+                    Add Review
                   </button>
                 </div>
 
@@ -1643,7 +1664,7 @@ export default function AdminDashboard({
                         className="bg-white border rounded-3xl p-6 max-w-md w-full space-y-4 text-xs text-left"
                       >
                         <div className="flex justify-between items-center border-b pb-3">
-                          <h4 className="font-display font-bold text-sm text-navy-950 uppercase tracking-wider">Add External Google Review</h4>
+                          <h4 className="font-display font-bold text-sm text-navy-950 uppercase tracking-wider">Add Review</h4>
                           <button onClick={() => setIsAddReviewOpen(false)} className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded-lg cursor-pointer"><X className="w-5 h-5" /></button>
                         </div>
                         <form 
@@ -1834,7 +1855,7 @@ export default function AdminDashboard({
               </motion.div>
             )}
 
-            {/* VIEW 10: REPORTS */}
+            {/* VIEW 10: REPORTS (PREMIUM ANALYTICS WORKSPACE) */}
             {activeTab === 'reports' && (
               <motion.div
                 key="reports"
@@ -1845,46 +1866,157 @@ export default function AdminDashboard({
               >
                 <div className="flex justify-between items-center pb-2 border-b border-gray-150">
                   <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
-                    Financial Reports & Charts
+                    Store Performance Analytics Reports
                   </h3>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleExportPDF('products')}
-                      className="px-3.5 py-2 bg-navy-950 text-white border border-navy-800 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                      className="px-3.5 py-1.5 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl text-[10px] font-semibold flex items-center gap-1.5 transition cursor-pointer border"
                     >
                       <Download className="w-3.5 h-3.5" /> PDF Catalog
                     </button>
                     <button
                       onClick={() => handleExportCSV('orders')}
-                      className="px-3.5 py-2 bg-[#C5A021]/15 hover:bg-[#C5A021]/25 text-[#C5A021] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer border"
+                      className="px-3.5 py-1.5 bg-[#C5A021]/15 hover:bg-[#C5A021]/25 text-[#C5A021] rounded-xl text-[10px] font-semibold flex items-center gap-1.5 transition cursor-pointer border border-[#C5A021]/30"
                     >
                       <Download className="w-3.5 h-3.5" /> CSV Orders
                     </button>
                   </div>
                 </div>
 
-                {/* SVG sales volume bar chart representation */}
-                <div className="bg-white dark:bg-navy-900 border rounded-3xl p-6 shadow-sm space-y-4">
-                  <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
-                    Revenue Stream breakdown (Monthly)
-                  </h4>
-                  <div className="h-44 w-full flex items-end">
-                    <svg viewBox="0 0 400 120" className="w-full h-full text-[#C5A021]">
-                      <rect x="30" y="70" width="22" height="50" rx="3" className="fill-[#C5A021]/80 hover:fill-[#C5A021] transition" />
-                      <rect x="80" y="50" width="22" height="70" rx="3" className="fill-[#C5A021]/80 hover:fill-[#C5A021] transition" />
-                      <rect x="130" y="60" width="22" height="60" rx="3" className="fill-[#C5A021]/80 hover:fill-[#C5A021] transition" />
-                      <rect x="180" y="30" width="22" height="90" rx="3" className="fill-[#C5A021]/80 hover:fill-[#C5A021] transition" />
-                      <rect x="230" y="20" width="22" height="100" rx="3" className="fill-[#C5A021]/80 hover:fill-[#C5A021] transition" />
-                      <rect x="280" y="10" width="22" height="110" rx="3" className="fill-[#C5A021]/80 hover:fill-[#C5A021] transition" />
-                    </svg>
+                {/* Performance Summary Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 font-sans">
+                  {/* Card 1: Total Revenue */}
+                  <div className="p-5 bg-white dark:bg-navy-900 border border-gray-100 rounded-3xl flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] text-gray-400 font-mono tracking-wider uppercase block">Total Sales Revenue</span>
+                      <h4 className="text-xl font-bold font-mono text-emerald-500 leading-none mt-1">
+                        Rs. {orders.reduce((sum, o) => sum + Number(o.total || 0), 0)}
+                      </h4>
+                      <span className="text-[9px] text-gray-400 block mt-1">Lifetime database aggregate</span>
+                    </div>
+                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0">
+                      <TrendingUp className="w-5 h-5" />
+                    </div>
                   </div>
-                  <div className="flex justify-between text-[9px] font-mono text-gray-400 uppercase tracking-widest pt-2">
-                    <span>Jan</span>
-                    <span>Mar</span>
-                    <span>May</span>
-                    <span>Jul</span>
-                    <span>Sep</span>
-                    <span>Nov</span>
+
+                  {/* Card 2: Total Bookings */}
+                  <div className="p-5 bg-white dark:bg-navy-900 border border-gray-100 rounded-3xl flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] text-gray-400 font-mono tracking-wider uppercase block">Total Bookings</span>
+                      <h4 className="text-xl font-bold font-mono text-navy-900 dark:text-white leading-none mt-1">
+                        {orders.length} Orders
+                      </h4>
+                      <span className="text-[9px] text-gray-400 block mt-1">Guest & logged portfolios</span>
+                    </div>
+                    <div className="w-10 h-10 bg-navy-50 dark:bg-navy-950 text-navy-800 dark:text-navy-200 rounded-2xl flex items-center justify-center shrink-0">
+                      <ShoppingBag className="w-5 h-5" />
+                    </div>
+                  </div>
+
+                  {/* Card 3: Average Order Value */}
+                  <div className="p-5 bg-white dark:bg-navy-900 border border-gray-100 rounded-3xl flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] text-gray-400 font-mono tracking-wider uppercase block">Avg. Ticket Value</span>
+                      <h4 className="text-xl font-bold font-mono text-[#C5A021] leading-none mt-1">
+                        Rs. {orders.length > 0 ? (orders.reduce((sum, o) => sum + Number(o.total || 0), 0) / orders.length).toFixed(0) : 0}
+                      </h4>
+                      <span className="text-[9px] text-gray-400 block mt-1">Average cart checkouts</span>
+                    </div>
+                    <div className="w-10 h-10 bg-gold-50 text-[#C5A021] rounded-2xl flex items-center justify-center shrink-0">
+                      <DollarSign className="w-5 h-5" />
+                    </div>
+                  </div>
+
+                  {/* Card 4: Pending Verifications */}
+                  <div className="p-5 bg-white dark:bg-navy-900 border border-gray-100 rounded-3xl flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] text-gray-400 font-mono tracking-wider uppercase block">Pending Receipts</span>
+                      <h4 className="text-xl font-bold font-mono text-amber-500 leading-none mt-1">
+                        {orders.filter(o => o.paymentStatus === 'pending').length} Receipts
+                      </h4>
+                      <span className="text-[9px] text-amber-500 font-bold block mt-1 animate-pulse">Requires validation</span>
+                    </div>
+                    <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Left Column: Visual Sales Distribution by Category */}
+                  <div className="md:col-span-2 bg-white dark:bg-navy-900 border rounded-3xl p-6 shadow-sm space-y-4">
+                    <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
+                      Order Breakdown by Category
+                    </h4>
+                    <div className="space-y-4 text-xs">
+                      {(() => {
+                        const categoryCounts: Record<string, number> = {};
+                        orders.flatMap(o => o.items).forEach(item => {
+                          const cat = item.productCategory || 'Other';
+                          categoryCounts[cat] = (categoryCounts[cat] || 0) + item.quantity;
+                        });
+
+                        const totalUnits = Object.values(categoryCounts).reduce((a, b) => a + b, 0) || 1;
+
+                        return Object.entries(categoryCounts).map(([cat, count]) => {
+                          const percent = Math.round((count / totalUnits) * 100);
+                          return (
+                            <div key={cat} className="space-y-1">
+                              <div className="flex justify-between items-center text-[11px] font-medium">
+                                <span className="text-navy-950 dark:text-white font-semibold uppercase">{cat}</span>
+                                <span className="text-gray-400 font-mono">{count} units ({percent}%)</span>
+                              </div>
+                              <div className="w-full h-2 bg-gray-100 dark:bg-navy-950 rounded-full overflow-hidden">
+                                <div 
+                                  style={{ width: `${percent}%` }}
+                                  className="h-full bg-gradient-to-r from-gold-400 to-[#C5A021] rounded-full transition-all duration-500" 
+                                />
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Top selling toys leaderboard */}
+                  <div className="bg-white dark:bg-navy-900 border rounded-3xl p-6 shadow-sm space-y-4 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white mb-3">
+                        Workshop Bestsellers
+                      </h4>
+                      <div className="space-y-3.5">
+                        {(() => {
+                          const salesMap: Record<string, { name: string; quantity: number; total: number }> = {};
+                          orders.flatMap(o => o.items).forEach(item => {
+                            if (!salesMap[item.productId]) {
+                              salesMap[item.productId] = { name: item.name, quantity: 0, total: 0 };
+                            }
+                            salesMap[item.productId].quantity += item.quantity;
+                            salesMap[item.productId].total += (item.discountPrice || item.price) * item.quantity;
+                          });
+
+                          const topSellers = Object.values(salesMap)
+                            .sort((a, b) => b.quantity - a.quantity)
+                            .slice(0, 3);
+
+                          if (topSellers.length === 0) {
+                            return <p className="text-xs text-gray-400 italic">No bookings recorded yet.</p>;
+                          }
+
+                          return topSellers.map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-xs border-b border-gray-50 pb-2.5 last:border-b-0 last:pb-0">
+                              <div className="space-y-0.5 text-left">
+                                <p className="font-bold text-navy-950 dark:text-white line-clamp-1">{item.name}</p>
+                                <p className="text-[10px] text-gray-400 font-mono">{item.quantity} bookings</p>
+                              </div>
+                              <span className="font-bold text-[#C5A021] font-mono">Rs.{item.total}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -2107,6 +2239,109 @@ export default function AdminDashboard({
                       <div>
                         <label className="block text-[10px] text-gray-400 font-mono mb-1">Return & Refund Policy</label>
                         <textarea value={returnPolicy} rows={4} onChange={(e) => setReturnPolicy(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none resize-none font-mono text-[10px]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Feature Switches Toggle */}
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">6. Storefront Feature Activation Controls</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-3 bg-gray-50 dark:bg-navy-950 border border-gray-100 rounded-2xl flex items-center justify-between">
+                        <span className="font-bold text-navy-900 dark:text-white">AI Toy Concierge</span>
+                        <button
+                          type="button"
+                          onClick={() => setAiConciergeEnabled(!aiConciergeEnabled)}
+                          className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer transition ${
+                            aiConciergeEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {aiConciergeEnabled ? 'Enabled' : 'Disabled'}
+                        </button>
+                      </div>
+
+                      <div className="p-3 bg-gray-50 dark:bg-navy-950 border border-gray-100 rounded-2xl flex items-center justify-between">
+                        <span className="font-bold text-navy-900 dark:text-white">Rewards shop</span>
+                        <button
+                          type="button"
+                          onClick={() => setRewardsEnabled(!rewardsEnabled)}
+                          className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer transition ${
+                            rewardsEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {rewardsEnabled ? 'Enabled' : 'Disabled'}
+                        </button>
+                      </div>
+
+                      <div className="p-3 bg-gray-50 dark:bg-navy-950 border border-gray-100 rounded-2xl flex items-center justify-between">
+                        <span className="font-bold text-navy-900 dark:text-white">COD Option</span>
+                        <button
+                          type="button"
+                          onClick={() => setCodEnabled(!codEnabled)}
+                          className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer transition ${
+                            codEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {codEnabled ? 'Enabled' : 'Disabled'}
+                        </button>
+                      </div>
+
+                      <div className="p-3 bg-gray-50 dark:bg-navy-950 border border-gray-100 rounded-2xl flex items-center justify-between">
+                        <span className="font-bold text-navy-900 dark:text-white">UPI QR Gateway</span>
+                        <button
+                          type="button"
+                          onClick={() => setUpiEnabled(!upiEnabled)}
+                          className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer transition ${
+                            upiEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {upiEnabled ? 'Enabled' : 'Disabled'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Limits and Constraints */}
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">7. Store rules & constraints</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Maximum items allowed per cart checkout</label>
+                        <input type="number" value={maxCartQty} onChange={(e) => setMaxCartQty(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 font-mono mb-1">Return request policy validation window (days)</label>
+                        <input type="number" value={returnWindowDays} onChange={(e) => setReturnWindowDays(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-navy-950 dark:border-navy-800 focus:outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Email Notifications Templates */}
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-[#C5A021] block font-bold uppercase tracking-widest border-b pb-1.5">8. Order transactional email notifications templates</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="p-4 bg-gray-50 dark:bg-navy-950 border border-gray-100 rounded-2xl space-y-3">
+                        <p className="font-bold text-navy-900 dark:text-white text-xs">Order Confirmed notification</p>
+                        <div>
+                          <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Email Subject</label>
+                          <input type="text" value={emailOrderSubject} onChange={(e) => setEmailOrderSubject(e.target.value)} className="w-full px-3 py-1.5 border rounded-lg bg-white dark:bg-navy-900 dark:border-navy-800 focus:outline-none text-xs" />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Email Body copy</label>
+                          <textarea value={emailOrderBody} rows={3} onChange={(e) => setEmailOrderBody(e.target.value)} className="w-full px-3 py-1.5 border rounded-lg bg-white dark:bg-navy-900 dark:border-navy-800 focus:outline-none resize-none text-[10px]" />
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-gray-50 dark:bg-navy-950 border border-gray-100 rounded-2xl space-y-3">
+                        <p className="font-bold text-navy-900 dark:text-white text-xs">Order Dispatched notification</p>
+                        <div>
+                          <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Email Subject</label>
+                          <input type="text" value={emailDispatchSubject} onChange={(e) => setEmailDispatchSubject(e.target.value)} className="w-full px-3 py-1.5 border rounded-lg bg-white dark:bg-navy-900 dark:border-navy-800 focus:outline-none text-xs" />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Email Body copy</label>
+                          <textarea value={emailDispatchBody} rows={3} onChange={(e) => setEmailDispatchBody(e.target.value)} className="w-full px-3 py-1.5 border rounded-lg bg-white dark:bg-navy-900 dark:border-navy-800 focus:outline-none resize-none text-[10px]" />
+                        </div>
                       </div>
                     </div>
                   </div>

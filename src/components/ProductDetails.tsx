@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Star, Heart, ShoppingCart, Share2, Sparkles, Check, Send, AlertCircle, Award } from 'lucide-react';
 import { Product, Review } from '../types';
@@ -153,6 +153,17 @@ export default function ProductDetails({
                 <span className="text-xs text-gray-400 ml-0.5">
                   ({product.ratingCount} reviews)
                 </span>
+                <button
+                  onClick={() => {
+                    setActiveTab('reviews');
+                    setTimeout(() => {
+                      document.getElementById('reviews-section-ref')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="text-[10px] text-navy-950 font-bold hover:underline cursor-pointer ml-2 bg-[#C5A021]/15 hover:bg-[#C5A021]/25 px-2 py-0.5 rounded-lg border border-[#C5A021]/30 transition select-none"
+                >
+                  + Add Review
+                </button>
               </div>
               <span className="text-gray-200">|</span>
               <div className="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
@@ -279,7 +290,7 @@ export default function ProductDetails({
       </div>
 
       {/* Structured tabs for details specifications and user reviews */}
-      <div className="mt-12 bg-white rounded-3xl p-6 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-left">
+      <div id="reviews-section-ref" className="mt-12 bg-white rounded-3xl p-6 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-left">
         {/* Navigation Headings */}
         <div className="flex gap-6 border-b border-gray-100 pb-3 mb-6">
           {(['description', 'specifications', 'reviews'] as const).map((tab) => (

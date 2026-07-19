@@ -161,6 +161,16 @@ export interface CMSConfig {
   themePrimary?: string;
   themeMode?: 'light' | 'dark' | 'system';
   maintenanceMode?: boolean;
+  aiConciergeEnabled?: boolean;
+  rewardsEnabled?: boolean;
+  codEnabled?: boolean;
+  upiEnabled?: boolean;
+  emailOrderSubject?: string;
+  emailOrderBody?: string;
+  emailDispatchSubject?: string;
+  emailDispatchBody?: string;
+  maxCartQty?: number;
+  returnWindowDays?: number;
 }
 
 export interface BundleOffer {

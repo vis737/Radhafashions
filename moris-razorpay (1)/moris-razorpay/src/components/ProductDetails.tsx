@@ -153,6 +153,17 @@ export default function ProductDetails({
                 <span className="text-xs text-gray-400 ml-0.5">
                   ({product.ratingCount} reviews)
                 </span>
+                <button
+                  onClick={() => {
+                    setActiveTab('reviews');
+                    setTimeout(() => {
+                      document.getElementById('reviews-section-ref')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="text-[10px] text-navy-950 font-bold hover:underline cursor-pointer ml-2 bg-[#C5A021]/15 hover:bg-[#C5A021]/25 px-2 py-0.5 rounded-lg border border-[#C5A021]/30 transition select-none"
+                >
+                  + Add Review
+                </button>
               </div>
               <span className="text-gray-200">|</span>
               <div className="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
@@ -168,11 +179,11 @@ export default function ProductDetails({
               <p className="text-[10px] text-gray-400 dark:text-gray-500 tracking-wider uppercase font-mono">Pricing (Gold Tag)</p>
               <div className="flex items-baseline gap-3 mt-1.5">
                 <span className="text-xl sm:text-2xl font-bold text-navy-900 dark:text-white">
-                  ₹{product.discountPrice || product.price}
+                  Rs.{product.discountPrice || product.price}
                 </span>
                 {product.discountPrice && (
                   <span className="text-xs sm:text-sm text-gray-400 line-through font-mono">
-                    ₹{product.price}
+                    Rs.{product.price}
                   </span>
                 )}
               </div>
@@ -205,7 +216,7 @@ export default function ProductDetails({
                 <>
                   <h5 className="font-display font-medium text-xs text-navy-950 dark:text-white uppercase tracking-wider">Boutique Carry & Keep Combo</h5>
                   <p className="text-[11px] text-gray-500 leading-tight">
-                    Combine the Serena Vegan Carryall with our intricate Royal Keepsake chest for a flat <span className="font-semibold text-gold-500">₹100 refund voucher</span> during checkout!
+                    Combine the Serena Vegan Carryall with our intricate Royal Keepsake chest for a flat <span className="font-semibold text-gold-500">Rs.100 refund voucher</span> during checkout!
                   </p>
                 </>
               )}
@@ -279,7 +290,7 @@ export default function ProductDetails({
       </div>
 
       {/* Structured tabs for details specifications and user reviews */}
-      <div className="mt-12 bg-white rounded-3xl p-6 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-left">
+      <div id="reviews-section-ref" className="mt-12 bg-white rounded-3xl p-6 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-left">
         {/* Navigation Headings */}
         <div className="flex gap-6 border-b border-gray-100 pb-3 mb-6">
           {(['description', 'specifications', 'reviews'] as const).map((tab) => (
@@ -386,7 +397,7 @@ export default function ProductDetails({
                       animate={{ scale: 1, opacity: 1 }}
                       className="p-4 bg-emerald-50 text-emerald-800 text-xs border border-emerald-100 rounded-xl space-y-1"
                     >
-                      <p className="font-bold flex items-center gap-1">✔ Review submitted!</p>
+                      <p className="font-bold flex items-center gap-1">Check Review submitted!</p>
                       <p>Your feedback goes live instantly in our catalog database.</p>
                     </motion.div>
                   ) : (
@@ -471,7 +482,7 @@ export default function ProductDetails({
                 <div className="text-left space-y-1">
                   <span className="text-[9px] font-mono uppercase text-gold-500">{relProduct.category}</span>
                   <h4 className="text-xs font-semibold text-navy-900 line-clamp-1">{relProduct.name}</h4>
-                  <p className="text-xs text-navy-950 font-bold font-sans">₹{relProduct.discountPrice || relProduct.price}</p>
+                  <p className="text-xs text-navy-950 font-bold font-sans">Rs.{relProduct.discountPrice || relProduct.price}</p>
                 </div>
               </div>
             ))}
@@ -505,3 +516,5 @@ export default function ProductDetails({
     </div>
   );
 }
+
+

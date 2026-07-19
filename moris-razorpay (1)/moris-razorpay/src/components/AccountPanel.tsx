@@ -20,6 +20,7 @@ interface AccountPanelProps {
   onSelectProduct: (productId: string) => void;
   onResubmitUpiDetails?: (orderId: string, txnId: string, screenshot: string) => void;
   products: Product[];
+  rewardsEnabled?: boolean;
 }
 
 export default function AccountPanel({
@@ -34,7 +35,8 @@ export default function AccountPanel({
   onRequestRefund,
   onSelectProduct,
   onResubmitUpiDetails,
-  products
+  products,
+  rewardsEnabled = true
 }: AccountPanelProps) {
   // Login/Signup Inputs
   const [isSignUp, setIsSignUp] = useState(false);
@@ -949,7 +951,7 @@ export default function AccountPanel({
               { id: 'tracking', label: 'Order Tracking', icon: Truck },
               { id: 'wishlist', label: 'Saved Wishlist', icon: Heart, badge: wishlistProducts.length },
               { id: 'coupons', label: 'Available Coupons', icon: Tag, badge: coupons.length },
-              { id: 'rewards', label: 'Loyalty Rewards Shop', icon: Gift },
+              ...(rewardsEnabled !== false ? [{ id: 'rewards', label: 'Loyalty Rewards Shop', icon: Gift }] : []),
               { id: 'emails', label: 'Email Notifications', icon: Mail, badge: emails.length },
               { id: 'returns', label: 'Returns & Refunds', icon: RotateCcw }
             ] as any[]).map((tab) => {
