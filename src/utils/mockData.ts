@@ -45,7 +45,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     isBestseller: true,
     isNew: false,
     brand: 'Meris Kids',
-    availability: 'in-stock'
+    availability: 'in-stock',
+    minimumAge: 1,
+    maximumAge: 2,
+    ageGroup: '1-2 Years',
+    skillType: 'Motor Skills',
+    educationalType: 'Montessori'
   },
   {
     id: 'toy-2',
@@ -75,7 +80,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     isNew: true,
     brand: 'Meris Handwoven',
-    availability: 'low-stock'
+    availability: 'low-stock',
+    minimumAge: 0,
+    maximumAge: 0.5,
+    ageGroup: '0-6 Months',
+    skillType: 'Creative Learning',
+    educationalType: 'Eco Friendly'
   },
 
   // --- WOOD CRAFTED GIFTS ---
@@ -462,7 +472,197 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     isNew: true,
     brand: 'Meris Kids',
-    availability: 'in-stock'
+    availability: 'in-stock',
+    minimumAge: 0.5,
+    maximumAge: 1,
+    ageGroup: '6-12 Months',
+    skillType: 'Motor Skills',
+    educationalType: 'Wooden Toys'
+  },
+  {
+    id: 'toy-4',
+    sku: 'TOY-WD-BLOCKS',
+    name: 'Natural Premium Forest Wooden Blocks Set',
+    category: 'Kids Toys',
+    categorySlug: 'toys',
+    price: 1499,
+    discountPrice: 1299,
+    stock: 18,
+    rating: 4.9,
+    ratingCount: 88,
+    images: [
+      'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&auto=format&fit=crop&q=80'
+    ],
+    shortDescription: '50-piece solid pine wood block set featuring smooth geometries and natural grain textures.',
+    description: 'Perfect for building, sorting, and early geometry. This block set contains cylinders, arches, blocks, and triangles made from solid premium pine wood. Supports spatial awareness and motor skills.',
+    specifications: {
+      'Material': 'Solid Pinewood',
+      'Pieces': '50 blocks',
+      'Box': 'Eco-friendly canvas storage bag'
+    },
+    reviews: [],
+    isNew: false,
+    brand: 'Meris Kids',
+    availability: 'in-stock',
+    minimumAge: 2,
+    maximumAge: 4,
+    ageGroup: '2-4 Years',
+    skillType: 'Puzzle',
+    educationalType: 'STEM'
+  },
+  {
+    id: 'toy-5',
+    sku: 'TOY-WD-PUZZLE',
+    name: 'Montessori Wooden Alphabet Matching Tray',
+    category: 'Kids Toys',
+    categorySlug: 'toys',
+    price: 899,
+    discountPrice: 799,
+    stock: 20,
+    rating: 4.8,
+    ratingCount: 52,
+    images: [
+      'https://images.unsplash.com/photo-1515488042361-404e9250afef?w=600&auto=format&fit=crop'
+    ],
+    shortDescription: 'High-contrast alphabet block puzzle designed for cognitive spelling and letter shape matching.',
+    description: 'An educational classic. Fits capital letter blocks securely into recessed slots, helping preschool children learn the alphabet visually and tactilely.',
+    specifications: {
+      'Material': 'Birch plywood tray & beech blocks',
+      'Paint': 'Water-based non-toxic paint'
+    },
+    reviews: [],
+    isNew: true,
+    brand: 'Meris Learn',
+    availability: 'in-stock',
+    minimumAge: 4,
+    maximumAge: 6,
+    ageGroup: '4-6 Years',
+    skillType: 'Puzzle',
+    educationalType: 'Montessori'
+  },
+  {
+    id: 'toy-6',
+    sku: 'TOY-WD-BALANCE',
+    name: 'Artisanal Curved Wooden Balance Wobble Board',
+    category: 'Kids Toys',
+    categorySlug: 'toys',
+    price: 3299,
+    discountPrice: 2899,
+    stock: 6,
+    rating: 4.9,
+    ratingCount: 30,
+    images: [
+      'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop'
+    ],
+    shortDescription: 'Premium curved beechwood wobble board supporting posture balance and creative play.',
+    description: 'Designed to support open-ended movement play. Children can balance on it, use it as a bridge, slide, or rocking cradle. Hand-pressed multilayered beechwood core.',
+    specifications: {
+      'Material': 'Multilayered Pressed Beechwood',
+      'Weight Capacity': '120 kg',
+      'Coating': 'Natural oil protectant'
+    },
+    reviews: [],
+    isNew: false,
+    brand: 'Meris Active',
+    availability: 'in-stock',
+    minimumAge: 6,
+    maximumAge: 8,
+    ageGroup: '6-8 Years',
+    skillType: 'Motor Skills',
+    educationalType: 'Indoor'
+  },
+  {
+    id: 'toy-7',
+    sku: 'TOY-WD-GEARS',
+    name: '3D Mechanical Gear Assembly Constructor',
+    category: 'Kids Toys',
+    categorySlug: 'toys',
+    price: 2499,
+    discountPrice: 2199,
+    stock: 12,
+    rating: 4.7,
+    ratingCount: 22,
+    images: [
+      'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=800&auto=format&fit=crop&q=80'
+    ],
+    shortDescription: 'Interlocking wooden gear puzzle introducing kinetic energy transmission and physical mechanics.',
+    description: 'A STEM constructor puzzle set. Contains precision laser-cut plywood sheets. Kids can assemble standard gear configurations that move when hand-cranked.',
+    specifications: {
+      'Material': 'Laser-cut Birch Plywood',
+      'Time to build': '3-4 hours',
+      'Skill level': 'Intermediate'
+    },
+    reviews: [],
+    isNew: false,
+    brand: 'Meris Tech',
+    availability: 'in-stock',
+    minimumAge: 8,
+    maximumAge: 10,
+    ageGroup: '8-10 Years',
+    skillType: 'Puzzle',
+    educationalType: 'STEM'
+  },
+  {
+    id: 'toy-8',
+    sku: 'TOY-WD-CHESS',
+    name: 'Classic Handcrafted Deluxe Wooden Chess Set',
+    category: 'Kids Toys',
+    categorySlug: 'toys',
+    price: 2999,
+    discountPrice: 2499,
+    stock: 8,
+    rating: 5.0,
+    ratingCount: 14,
+    images: [
+      'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800&auto=format&fit=crop&q=80'
+    ],
+    shortDescription: 'Exquisite inlaid rosewood chess board with weighted hand-carved chess pieces.',
+    description: 'Premium chess set featuring storage slots for each individual piece. Finished in a semi-gloss natural lacquer, highlighting the rich grains of solid Indian rosewood.',
+    specifications: {
+      'Wood Type': 'Sheesham & Maple',
+      'Board Dimensions': '30 x 30 cm',
+      'King Height': '6.5 cm'
+    },
+    reviews: [],
+    isNew: false,
+    brand: 'Meris Games',
+    availability: 'in-stock',
+    minimumAge: 10,
+    maximumAge: 13,
+    ageGroup: '10-13 Years',
+    skillType: 'Puzzle',
+    educationalType: 'Indoor'
+  },
+  {
+    id: 'toy-9',
+    sku: 'TOY-WD-ARCH',
+    name: '3D Laser-Cut Taj Mahal Architectural Model',
+    category: 'Kids Toys',
+    categorySlug: 'toys',
+    price: 3899,
+    discountPrice: 3499,
+    stock: 5,
+    rating: 4.9,
+    ratingCount: 19,
+    images: [
+      'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop'
+    ],
+    shortDescription: 'Intricate 3D architectural craft kit compiling 250 micro-laser wood puzzle nodes.',
+    description: 'A beautiful historical replica model. Perfect for teens and hobbyists. Hand-sanded laser edges allow slotting connections without requiring glue.',
+    specifications: {
+      'Material': 'Sustainably sourced Basswood Plywood',
+      'Complexity': 'Advanced (250+ parts)',
+      'Recommended Age': '13+ Years'
+    },
+    reviews: [],
+    isNew: true,
+    brand: 'Meris Tech',
+    availability: 'low-stock',
+    minimumAge: 13,
+    maximumAge: 99,
+    ageGroup: '13+ Years',
+    skillType: 'Puzzle',
+    educationalType: 'STEM'
   },
   {
     id: 'wood-3',

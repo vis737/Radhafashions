@@ -8,20 +8,30 @@ interface CheckoutPanelProps {
   cartItems: CartItem[];
   shippingMethod: 'standard' | 'express';
   activeCoupon: Coupon | null;
+  currentUser: { email: string; name: string };
   onBackToCart: () => void;
-  onPlaceOrder: (customer: CustomerInfo, paymentMethod: string, giftWrapped?: boolean, giftMessage?: string) => void;
+  onPlaceOrder: (
+    customer: CustomerInfo, 
+    paymentMethod: string, 
+    giftWrapped?: boolean, 
+    giftMessage?: string,
+    giftTheme?: string,
+    giftSender?: string,
+    giftHidePrice?: boolean
+  ) => void;
 }
 
 export default function CheckoutPanel({
   cartItems,
   shippingMethod,
   activeCoupon,
+  currentUser,
   onBackToCart,
   onPlaceOrder
 }: CheckoutPanelProps) {
   // Form fields
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(currentUser.name || '');
+  const [email] = useState(currentUser.email || '');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [pincode, setPincode] = useState('');
@@ -40,6 +50,9 @@ export default function CheckoutPanel({
   // Gift wrapping and messages options
   const [giftWrapped, setGiftWrapped] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
+  const [giftTheme, setGiftTheme] = useState<'Birthday' | 'Anniversary' | 'Wedding' | 'Baby Shower' | 'Christmas' | 'Diwali' | 'Generic'>('Generic');
+  const [giftSender, setGiftSender] = useState('');
+  const [giftHidePrice, setGiftHidePrice] = useState(false);
 
   // Math calculators
   const totals = calculateCartTotals(cartItems, activeCoupon, shippingMethod, giftWrapped);
@@ -60,7 +73,10 @@ export default function CheckoutPanel({
     setGatewayStep('authorizing');
 
     try {
-      // Step 1: Create a Razorpay order on the backend
+      if (!(window as unknown as { Razorpay?: unknown }).Razorpay) {
+        throw new Error('Razorpay checkout script is not loaded.');
+      }
+
       const orderRes = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,12 +89,10 @@ export default function CheckoutPanel({
 
       if (!orderRes.ok) {
         const err = await orderRes.json();
-        throw new Error(err.error || 'Failed to create payment order');
+        throw new Error(err.error || 'Failed to create payment order.');
       }
 
       const orderData = await orderRes.json();
-
-      // Step 2: Open the real Razorpay checkout popup
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID as string,
         amount: orderData.amount,
@@ -97,7 +111,6 @@ export default function CheckoutPanel({
           razorpay_payment_id: string;
           razorpay_signature: string;
         }) => {
-          // Step 3: Verify payment signature on backend
           const verifyRes = await fetch('/api/razorpay/verify-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -109,24 +122,27 @@ export default function CheckoutPanel({
           });
 
           const verifyData = await verifyRes.json();
-
-          if (verifyData.verified) {
-            setGatewayStep('success');
-            setTimeout(() => {
-              setGatewayProcessing(false);
-              setGatewayStep('idle');
-              onPlaceOrder(
-                { name, email, phone, address, pincode },
-                paymentMethod.toUpperCase(),
-                giftWrapped,
-                giftMessage
-              );
-            }, 1500);
-          } else {
-            alert('⚠️ Payment verification failed. Please contact support with your payment ID: ' + response.razorpay_payment_id);
+          if (!verifyData.verified) {
+            alert('Payment verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
             setGatewayProcessing(false);
             setGatewayStep('idle');
+            return;
           }
+
+          setGatewayStep('success');
+          setTimeout(() => {
+            setGatewayProcessing(false);
+            setGatewayStep('idle');
+            onPlaceOrder(
+              { name, email, phone, address, pincode },
+              paymentMethod.toUpperCase(),
+              giftWrapped,
+              giftMessage,
+              giftTheme,
+              giftSender,
+              giftHidePrice
+            );
+          }, 1500);
         },
         modal: {
           ondismiss: () => {
@@ -138,7 +154,6 @@ export default function CheckoutPanel({
 
       const rzp = new (window as unknown as { Razorpay: new (opts: typeof options) => { open: () => void } }).Razorpay(options);
       rzp.open();
-
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[Razorpay] Payment initiation error:', message);
@@ -173,6 +188,12 @@ export default function CheckoutPanel({
             {/* Customer coordinates */}
             <div className="space-y-3">
               <h3 className="font-display font-medium text-xs tracking-wider uppercase text-gold-500">1. Customer Shipment Address</h3>
+              <div className="flex items-start gap-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-800">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <p>
+                  Checkout is linked to your signed-in Meris account. Receipts and WhatsApp alerts will be saved against this profile.
+                </p>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -192,9 +213,9 @@ export default function CheckoutPanel({
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    readOnly
                     placeholder="e.g. charankumar@gmail.com"
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none focus:border-gold-400"
+                    className="w-full px-3 py-2 text-xs border border-emerald-100 bg-emerald-50/60 text-emerald-900 rounded-xl focus:outline-none cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -238,7 +259,7 @@ export default function CheckoutPanel({
             </div>
 
             {/* Gift Wrapping & Personalized Messaging */}
-            <div className="p-4 rounded-2xl bg-orange-50/40 dark:bg-navy-900/40 border border-orange-250/30 space-y-3.5 my-4">
+            <div className="p-4 rounded-2xl bg-orange-50/40 dark:bg-navy-900/40 border border-orange-200/60 space-y-3.5 my-4">
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -249,24 +270,88 @@ export default function CheckoutPanel({
                 <div className="text-left">
                   <span className="text-xs font-bold text-gray-800 dark:text-orange-300 flex items-center gap-1.5 uppercase tracking-wide">
                     <Gift className="w-4 h-4 text-orange-500" />
-                    Add Handcrafted Gift Wrap (₹100)
+                    Add Handcrafted Gift Wrap (Rs.100)
                   </span>
                   <p className="text-[10px] text-gray-400">Authentic wax-sealed banana fiber pouch with dried marigold buds.</p>
                 </div>
               </label>
 
               {giftWrapped && (
-                <div className="space-y-1.5 text-left pt-1">
-                  <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400">Handwritten Calligraphy Message</label>
-                  <textarea
-                    rows={2}
-                    maxLength={200}
-                    value={giftMessage}
-                    onChange={(e) => setGiftMessage(e.target.value)}
-                    placeholder="Enter a message to be written with an ink dip pen on handmade cotton pulp paper (max 200 chars)..."
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800"
-                  />
-                  <p className="text-[9px] text-gray-400 font-mono text-right">{giftMessage.length}/200 characters remaining</p>
+                <div className="space-y-4 text-left pt-2 border-t border-orange-200/10">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Gift Sender Name</label>
+                      <input
+                        type="text"
+                        value={giftSender}
+                        onChange={(e) => setGiftSender(e.target.value)}
+                        placeholder="e.g. Grandma & Grandpa"
+                        className="w-full px-3 py-2 text-xs border border-gray-250 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Select Theme</label>
+                      <select
+                        value={giftTheme}
+                        onChange={(e: any) => setGiftTheme(e.target.value)}
+                        className="w-full px-3 py-2 text-xs border border-gray-250 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 bg-white"
+                      >
+                        {['Birthday', 'Anniversary', 'Wedding', 'Baby Shower', 'Christmas', 'Diwali', 'Generic'].map(theme => (
+                          <option key={theme} value={theme}>{theme} Theme</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400">Calligraphy Message</label>
+                    <textarea
+                      rows={2}
+                      maxLength={250}
+                      value={giftMessage}
+                      onChange={(e) => setGiftMessage(e.target.value)}
+                      placeholder="Enter a message to be written with an ink dip pen on handmade cotton pulp paper (max 250 chars)..."
+                      className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800"
+                    />
+                    <p className="text-[9px] text-gray-400 font-mono text-right">{250 - giftMessage.length} characters remaining</p>
+                  </div>
+
+                  {/* Live Preview Card */}
+                  <div className="space-y-1.5">
+                    <span className="block text-[10px] font-mono tracking-wider uppercase text-gray-400">Live Note Preview</span>
+                    <div className={`p-4 rounded-2xl border border-dashed text-xs ${
+                      giftTheme === 'Diwali' ? 'bg-amber-600/10 border-amber-500 text-amber-950 dark:text-amber-100' :
+                      giftTheme === 'Christmas' ? 'bg-red-700/10 border-red-500 text-red-950 dark:text-red-100' :
+                      giftTheme === 'Wedding' ? 'bg-yellow-600/10 border-yellow-500 text-yellow-950 dark:text-yellow-100' :
+                      giftTheme === 'Anniversary' ? 'bg-rose-500/10 border-rose-400 text-rose-950 dark:text-rose-100' :
+                      giftTheme === 'Birthday' ? 'bg-sky-500/10 border-sky-400 text-sky-950 dark:text-sky-100' :
+                      giftTheme === 'Baby Shower' ? 'bg-emerald-500/10 border-emerald-400 text-emerald-950 dark:text-emerald-100' :
+                      'bg-amber-50/50 border-amber-200 text-amber-900 dark:bg-navy-950 dark:border-navy-800 dark:text-slate-100'
+                    }`}>
+                      <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-1.5 mb-2 font-mono text-[9px] tracking-wider uppercase">
+                        <span>{giftTheme} Greeting</span>
+                        <span>Meris Calligraphy</span>
+                      </div>
+                      <p className="italic leading-relaxed font-sans">{giftMessage || 'Your message will appear here...'}</p>
+                      {giftSender && (
+                        <p className="text-right font-semibold mt-3 text-[10px]">With Love, {giftSender}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Invoice Display Options */}
+                  <div className="pt-2">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={giftHidePrice}
+                        onChange={(e) => setGiftHidePrice(e.target.checked)}
+                        className="w-3.5 h-3.5 text-orange-500 rounded border-gray-300 focus:ring-orange-400"
+                      />
+                      <span className="text-[10px] text-gray-500 dark:text-slate-400 font-medium">Hide item prices on invoice receipt (Gift Invoice)</span>
+                    </label>
+                  </div>
+
                 </div>
               )}
             </div>
@@ -309,7 +394,7 @@ export default function CheckoutPanel({
                           required
                           value={cardNo}
                           onChange={(e) => setCardNo(e.target.value)}
-                          placeholder="4321 •••• •••• ••••"
+                          placeholder="4321 ---- ---- ----"
                           className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-400"
                         />
                       </div>
@@ -333,7 +418,7 @@ export default function CheckoutPanel({
                             maxLength={3}
                             value={cardCvv}
                             onChange={(e) => setCardCvv(e.target.value)}
-                            placeholder="•••"
+                            placeholder="---"
                             className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-400"
                           />
                         </div>
@@ -411,7 +496,7 @@ export default function CheckoutPanel({
               className="w-full py-3 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-semibold text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-1.5 shadow-xl shadow-gold-500/10 hover:scale-[1.01] transform active:scale-95 transition"
             >
               <Lock className="w-3.5 h-3.5 text-navy-950" />
-              <span>Authorize Secured Payment (₹{finalTotal})</span>
+              <span>Authorize Secured Payment (Rs.{finalTotal})</span>
             </button>
           </form>
         </div>
@@ -436,10 +521,10 @@ export default function CheckoutPanel({
                       </div>
                       <div className="text-left w-28 sm:w-40 font-sans">
                         <h5 className="text-xs font-semibold text-white line-clamp-1">{item.product.name}</h5>
-                        <p className="text-[9px] text-navy-200 truncate mt-0.5">x{item.quantity} units • {item.product.sku}</p>
+                        <p className="text-[9px] text-navy-200 truncate mt-0.5">x{item.quantity} units - {item.product.sku}</p>
                       </div>
                     </div>
-                    <span className="font-mono text-xs font-semibold text-gold-300 shrink-0">₹{itemPrice * item.quantity}</span>
+                    <span className="font-mono text-xs font-semibold text-gold-300 shrink-0">Rs.{itemPrice * item.quantity}</span>
                   </div>
                 );
               })}
@@ -449,12 +534,12 @@ export default function CheckoutPanel({
             <div className="space-y-2.5 text-xs border-t border-white/5 pt-4">
               <div className="flex justify-between text-navy-200">
                 <span>Items Subtotal</span>
-                <span>₹{subtotal}</span>
+                <span>Rs.{subtotal}</span>
               </div>
               {couponDiscount > 0 && (
                 <div className="flex justify-between text-emerald-400 font-semibold">
                   <span>Coupon Deduction</span>
-                  <span>-₹{couponDiscount}</span>
+                  <span>-Rs.{couponDiscount}</span>
                 </div>
               )}
               {bundleDiscount > 0 && (
@@ -463,7 +548,7 @@ export default function CheckoutPanel({
                     <Sparkles className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
                     Bundle Combo Save
                   </span>
-                  <span>-₹{bundleDiscount}</span>
+                  <span>-Rs.{bundleDiscount}</span>
                 </div>
               )}
               {giftWrappingCost > 0 && (
@@ -472,20 +557,20 @@ export default function CheckoutPanel({
                     <Gift className="w-3.5 h-3.5 text-[#ff9855]" />
                     Premium Gift Packing
                   </span>
-                  <span>+₹{giftWrappingCost}</span>
+                  <span>+Rs.{giftWrappingCost}</span>
                 </div>
               )}
               <div className="flex justify-between text-navy-200">
                 <span>GST Tax (18% rules)</span>
-                <span>₹{gstTax}</span>
+                <span>Rs.{gstTax}</span>
               </div>
               <div className="flex justify-between text-navy-200">
                 <span>Shipment delivery ({shippingMethod})</span>
-                <span>{shippingCharges === 0 ? 'FREE' : `₹${shippingCharges}`}</span>
+                <span>{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
               </div>
               <div className="flex justify-between text-sm font-bold text-white border-t border-white/10 pt-3 items-baseline">
                 <span className="font-display uppercase tracking-widest text-gold-400">Total Net Payable</span>
-                <span className="font-mono text-base text-gold-300">₹{finalTotal}</span>
+                <span className="font-mono text-base text-gold-300">Rs.{finalTotal}</span>
               </div>
             </div>
           </div>
@@ -512,7 +597,7 @@ export default function CheckoutPanel({
                   <span className="text-[9px] text-gray-400">Merchant Code: MERIS EST 2025</span>
                 </div>
               </div>
-              <span className="text-xs font-mono font-bold text-gray-300">₹{finalTotal}</span>
+              <span className="text-xs font-mono font-bold text-gray-300">Rs.{finalTotal}</span>
             </div>
 
             {/* Gateway processing content */}
@@ -540,7 +625,7 @@ export default function CheckoutPanel({
 
             {/* razorpay bottom badge */}
             <div className="bg-gray-50 p-3 text-center border-t border-gray-100 text-[10px] text-gray-400 font-mono">
-              Powered by Razorpay payment integrations • TLS 1.3 standard
+              Powered by Razorpay payment integrations - TLS 1.3 standard
             </div>
 
           </motion.div>
@@ -550,3 +635,5 @@ export default function CheckoutPanel({
     </div>
   );
 }
+
+

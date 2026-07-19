@@ -1,4 +1,4 @@
-﻿export interface Review {
+export interface Review {
   id: string;
   author: string;
   rating: number;
@@ -48,6 +48,15 @@ export interface Product {
   isFlashSale?: boolean;
   flashSaleEndTime?: string; // ISO String Date
   bundleSuggestedIds?: string[]; // IDs of products suggested as bundle
+  minimumAge?: number;
+  maximumAge?: number;
+  skillType?: string;
+  educationalType?: string;
+  recommendationScore?: number;
+  viewCount?: number;
+  purchaseCount?: number;
+  wishlistCount?: number;
+  trendScore?: number;
 }
 
 export interface CartItem {
@@ -96,6 +105,8 @@ export interface Order {
   giftWrappingRequested?: boolean;
   giftWrappingType?: string; // 'royal' | 'rustic' | 'classic'
   giftMessage?: string;
+  giftSenderName?: string;
+  giftHidePrice?: boolean;
   accountEmail?: string;
   accountName?: string;
 }
@@ -154,6 +165,15 @@ export interface BulkOrderInquiry {
   notes?: string;
   date: string;
   status: 'pending' | 'reviewed' | 'resolved';
+}
+
+export interface UserMembership {
+  level: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+  loyaltyPoints: number;
+  lifetimeSavings: number;
+  joinDate: string;
+  expiryDate?: string;
+  history: { date: string; action: string; points: number }[];
 }
 
 

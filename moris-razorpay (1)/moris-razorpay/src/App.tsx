@@ -13,6 +13,8 @@ import AccountPanel from './components/AccountPanel';
 import AdminDashboard from './components/AdminDashboard';
 import WhatsAppChat from './components/WhatsAppChat';
 import AiRecommendations from './components/AiRecommendations';
+import AgeToyFinder from './components/AgeToyFinder';
+import { getAIRecommendations } from './utils/aiRecommender';
 import FlashSaleSection from './components/FlashSaleSection';
 import InstagramGallery from './components/InstagramGallery';
 import ExitIntentOffer from './components/ExitIntentOffer';
@@ -105,6 +107,8 @@ export default function App() {
   // Category view filter state
   const [sortOrder, setSortOrder] = useState<'rating' | 'price-asc' | 'price-desc'>('rating');
   const [stockOnly, setStockOnly] = useState(false);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('');
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   // Active home carousel index
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
@@ -640,6 +644,20 @@ export default function App() {
   const categoryProductsFiltered = products
     .filter((p) => p.categorySlug === currentCategorySlug)
     .filter((p) => (stockOnly ? p.stock > 0 : true))
+    .filter((p) => {
+      if (currentCategorySlug === 'toys') {
+        if (selectedAgeGroup && p.ageGroup !== selectedAgeGroup) {
+          return false;
+        }
+        if (selectedSkills.length > 0) {
+          const matchSkill = selectedSkills.some(skill => {
+            return p.skillType === skill || p.educationalType === skill || p.shortDescription?.toLowerCase().includes(skill.toLowerCase());
+          });
+          if (!matchSkill) return false;
+        }
+      }
+      return true;
+    })
     .sort((a, b) => {
       if (sortOrder === 'rating') return b.rating - a.rating;
       if (sortOrder === 'price-asc') return a.price - b.price;
@@ -919,6 +937,63 @@ export default function App() {
                 </div>
               </section>
 
+              {/* Dynamic AI Recommendation Section */}
+              {(() => {
+                const recs = getAIRecommendations(
+                  products,
+                  cartItems,
+                  wishlistIds,
+                  recentlyViewedIds,
+                  orders,
+                  selectedAgeGroup
+                );
+
+                const renderShelf = (title: string, list: Product[]) => {
+                  if (list.length === 0) return null;
+                  return (
+                    <div className="space-y-4">
+                      <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1.5 border-b border-gray-150 dark:border-navy-850 pb-2">
+                        <Sparkles className="w-3.5 h-3.5 text-[#C5A021]" /> {title}
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 animate-fade-in">
+                        {list.map(p => (
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            isWishlisted={wishlistIds.includes(p.id)}
+                            onToggleWishlist={handleToggleProductWishlist}
+                            onAddToCart={(prod) => handleAddProductToCart(prod)}
+                            onQuickView={(prod) => setQuickViewProduct(prod)}
+                            onSelectProduct={handleViewProductDetails}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                };
+
+                return (
+                  <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left space-y-8 py-8 border-t border-gray-100 dark:border-navy-800">
+                    <div>
+                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-[#C5A021]" /> AI Personalized Recommendations
+                      </h3>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 font-sans mt-1">
+                        Moris algorithmic scoring engine computing affinity profiles dynamically.
+                      </p>
+                      <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
+                    </div>
+
+                    {renderShelf("Recommended For You", recs.recommendedForYou)}
+                    {renderShelf("You May Also Like", recs.youMayAlsoLike)}
+                    {renderShelf("Customers Similar To You Bought", recs.customersSimilar)}
+                    {renderShelf("Because You Viewed", recs.becauseYouViewed)}
+                    {renderShelf("Inspired By Your Wishlist", recs.inspiredByWishlist)}
+                    {renderShelf("Recently Trending", recs.recentlyTrending)}
+                  </section>
+                );
+              })()}
+
               {/* Professional testimonials review widgets */}
               <section className="bg-slate-950 text-white py-16 text-left select-none relative overflow-hidden border-t border-b border-emerald-300/25">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(20,184,166,0.18),transparent_30%)] pointer-events-none" />
@@ -997,7 +1072,7 @@ export default function App() {
                     >
                       <option value="rating">Sort by Rating Stars</option>
                       <option value="price-asc">Price: Low to High</option>
-                      <option value="price-desc">Price: High to Low</option>
+<option value="price-desc">Price: High to Low</option>
                     </select>
                   </div>
 
@@ -1013,6 +1088,25 @@ export default function App() {
                       <span>In-Stock Items Only</span>
                     </label>
                   </div>
+
+                  {currentCategorySlug === 'toys' && (
+                    <div className="border-t pt-4">
+                      <AgeToyFinder
+                        selectedAgeGroup={selectedAgeGroup}
+                        onSelectAgeGroup={setSelectedAgeGroup}
+                        selectedSkills={selectedSkills}
+                        onToggleSkill={(skill) => {
+                          setSelectedSkills(prev =>
+                            prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+                          );
+                        }}
+                        onClearFilters={() => {
+                          setSelectedAgeGroup('');
+                          setSelectedSkills([]);
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Products catalog list */}
@@ -1037,9 +1131,16 @@ export default function App() {
 
                   {/* dynamic list of products */}
                   {categoryProductsFiltered.length === 0 ? (
-                    <div className="p-16 text-center bg-white border border-dashed rounded-3xl">
-                      <Layers className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-xs text-gray-500 font-mono">No matching boutique craft found</p>
+                    <div className="p-16 text-center bg-white dark:bg-navy-900 border border-dashed border-gray-200 dark:border-navy-800 rounded-3xl space-y-4">
+                      <div className="w-12 h-12 bg-[#C5A021]/15 rounded-full flex items-center justify-center mx-auto text-[#C5A021]">
+                        <Heart className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-navy-950 dark:text-white">No Matching Crafts Found</p>
+                        <p className="text-[10px] text-gray-400 font-sans max-w-xs mx-auto">
+                          We couldn't discover any items matching your selected age groups or filter criteria. Try adjusting your selector.
+                        </p>
+                      </div>
                     </div>
                   ) : (
                     <motion.div

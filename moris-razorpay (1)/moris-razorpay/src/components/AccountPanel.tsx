@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
-import { generateInvoicePDF } from '../lib/invoiceGenerator';
+import { jsPDF } from 'jspdf';
+import { getQrCodeUrl } from '../utils/qrCodeGenerator';
+import MembershipDashboard from './MembershipDashboard';
 import DOMPurify from 'dompurify';
 
 interface AccountPanelProps {
@@ -60,6 +62,8 @@ export default function AccountPanel({
 
   // Tab router inside account dashboard
   const [subTab, setSubTab] = useState<'profile' | 'orders' | 'tracking' | 'wishlist' | 'coupons' | 'returns' | 'emails' | 'whatsapp'>('profile');
+  const [wishlistPrivacy, setWishlistPrivacy] = useState<'Public' | 'Private' | 'Friends'>('Public');
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Email Notification States
   const [emails, setEmails] = useState<any[]>([]);
@@ -944,17 +948,36 @@ export default function AccountPanel({
           <AnimatePresence mode="wait">
             
             {/* User credentials details */}
-            {subTab === 'profile' && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="space-y-6"
-              >
-                <div>
-                  <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest pb-1 border-b border-gray-100">Membership Coordinates</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-xs">
+            {subTab === 'profile' && (() => {
+              const mockMembership: any = {
+                level: orders.length >= 5 ? 'Platinum' : orders.length >= 3 ? 'Gold' : orders.length >= 1 ? 'Silver' : 'Bronze',
+                loyaltyPoints: orders.length * 150 + 50,
+                lifetimeSavings: orders.length * 120,
+                joinDate: '2026-02-15',
+                expiryDate: '2027-02-15',
+                history: [
+                  { date: '2026-02-15', action: 'Welcome Bonus Points Approved', points: 50 },
+                  ...orders.map(o => ({
+                    date: o.date,
+                    action: `Purchase Points #${o.orderNumber}`,
+                    points: 150
+                  }))
+                ]
+              };
+              
+              return (
+                <motion.div
+                  key="profile"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="space-y-6 animate-fade-in"
+                >
+                  <MembershipDashboard membership={mockMembership} />
+
+                  <div>
+                    <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest pb-1 border-b border-gray-100">Membership Coordinates</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-xs">
                     <div className="p-4 rounded-xl bg-gray-50 border">
                       <span className="text-[10px] text-gray-400 font-mono tracking-wider uppercase block">GUEST ID</span>
                       <span className="font-bold font-mono text-navy-950 mt-1 block">MR-MBR-2026-X839</span>
@@ -975,8 +998,9 @@ export default function AccountPanel({
                     <p className="text-[10px] font-mono text-gray-400 mt-2">Preferred air deliveries via BlueDart Express</p>
                   </div>
                 </div>
-              </motion.div>
-            )}
+                </motion.div>
+              );
+            })()}
 
             {/* Purchase ledger tracking milestones */}
             {subTab === 'orders' && (
@@ -1592,56 +1616,204 @@ export default function AccountPanel({
             )}
 
             {/* Wishlist management lists */}
-            {subTab === 'wishlist' && (
-              <motion.div
-                key="wishlist"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="space-y-6"
-              >
-                <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest pb-1 border-b border-gray-100">Saved Wishlist Items</h3>
+            {/* Wishlist management lists */}
+            {subTab === 'wishlist' && (() => {
+              const wishlistProductIds = wishlistProducts.map(p => p.id).join(',');
+              const shareUrl = `${window.location.origin}/?wishlist=${encodeURIComponent(wishlistProductIds)}`;
+              const shareText = `Check out my handcrafted wishlist on Meris E-Shop! 🌟 ${shareUrl}`;
 
-                {wishlistProducts.length === 0 ? (
-                  <div className="text-center py-10 space-y-2">
-                    <Heart className="w-8 h-8 text-gray-300 mx-auto" />
-                    <p className="text-xs text-gray-500">Your wishlist is currently clear.</p>
+              const downloadWishlistPdf = () => {
+                const doc = new jsPDF({
+                  orientation: 'portrait',
+                  unit: 'mm',
+                  format: 'a4',
+                });
+
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(22);
+                doc.text('M E R I S', 20, 20);
+                doc.setFontSize(10);
+                doc.setTextColor(202, 138, 4);
+                doc.text('MY HANDCRAFTED WISHLIST COLLECTION', 20, 25);
+
+                doc.setDrawColor(226, 232, 240);
+                doc.line(20, 28, 190, 28);
+
+                let currentY = 38;
+                doc.setFontSize(10);
+                doc.setTextColor(15, 23, 42);
+
+                wishlistProducts.forEach((p, index) => {
+                  if (currentY > 260) {
+                    doc.addPage();
+                    currentY = 20;
+                  }
+                  doc.setFont('Helvetica', 'bold');
+                  doc.text(`${index + 1}. ${p.name}`, 20, currentY);
+                  doc.setFont('Helvetica', 'normal');
+                  doc.setFontSize(9);
+                  doc.text(`Category: ${p.category} | Price: Rs. ${p.discountPrice || p.price}`, 20, currentY + 5);
+                  doc.text(p.shortDescription || '', 20, currentY + 10);
+                  currentY += 20;
+                });
+
+                doc.save('meris_my_wishlist.pdf');
+              };
+
+              const handleCopyLink = () => {
+                navigator.clipboard.writeText(shareUrl);
+                setCopiedLink(true);
+                setTimeout(() => setCopiedLink(false), 2000);
+              };
+
+              return (
+                <motion.div
+                  key="wishlist"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="space-y-6"
+                >
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-gray-100">
+                    <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest">Saved Wishlist Items</h3>
+                    {wishlistProducts.length > 0 && (
+                      <button
+                        onClick={downloadWishlistPdf}
+                        className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border cursor-pointer animate-fade-in"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Download PDF
+                      </button>
+                    )}
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {wishlistProducts.map((prod) => (
-                      <div key={prod.id} className="p-3.5 rounded-2xl border border-gray-100 bg-white shadow-sm flex items-center gap-3 justify-between">
-                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectProduct(prod.id)}>
-                          <img src={prod.images[0]} alt="" referrerPolicy="no-referrer" className="w-14 h-14 rounded-xl object-cover bg-gray-50 shrink-0" />
-                          <div className="text-left font-sans space-y-0.5">
-                            <h5 className="text-xs font-semibold text-navy-900 line-clamp-1">{prod.name}</h5>
-                            <span className="text-[10px] text-gray-400 font-mono block">{prod.category}</span>
-                            <span className="text-xs font-bold text-navy-900 block mt-0.5">Rs.{prod.discountPrice || prod.price}</span>
+
+                  {wishlistProducts.length === 0 ? (
+                    <div className="text-center py-10 space-y-2">
+                      <Heart className="w-8 h-8 text-gray-300 mx-auto" />
+                      <p className="text-xs text-gray-500">Your wishlist is currently clear.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      
+                      {/* Wishlist Sharing Controls Card */}
+                      <div className="p-4 rounded-3xl bg-gray-50 dark:bg-navy-950 border border-gray-150 dark:border-navy-800 text-xs font-sans space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                          <div className="space-y-1">
+                            <span className="font-bold text-navy-950 dark:text-white block">Share My Collection</span>
+                            <span className="text-[10px] text-gray-400">Share your handpicked crafts with friends or public visitors.</span>
+                          </div>
+                          
+                          {/* Privacy Toggle */}
+                          <div className="flex bg-white dark:bg-navy-900 p-0.5 rounded-lg border border-gray-250 dark:border-navy-800 text-[10px]">
+                            {['Public', 'Friends', 'Private'].map(priv => (
+                              <button
+                                key={priv}
+                                onClick={() => setWishlistPrivacy(priv as any)}
+                                className={`px-2.5 py-1 rounded-md font-bold uppercase transition cursor-pointer ${
+                                  wishlistPrivacy === priv ? 'bg-navy-950 dark:bg-navy-850 text-white' : 'text-gray-400'
+                                }`}
+                              >
+                                {priv}
+                              </button>
+                            ))}
                           </div>
                         </div>
 
-                        {/* action triggers */}
-                        <div className="flex flex-col gap-1.5 shrink-0 select-none">
-                          <button
-                            onClick={() => onMoveToCart(prod)}
-                            className="p-2 border border-gold-300 bg-gold-400 hover:bg-gold-500 rounded-lg text-navy-950 hover:text-navy-950 flex items-center justify-center gap-1 text-[11px] font-bold cursor-pointer transition active:scale-95"
-                          >
-                            <ShoppingCart className="w-3 h-3" />
-                            <span>Add Bag</span>
-                          </button>
-                          <button
-                            onClick={() => onRemoveFromWishlist(prod.id)}
-                            className="text-gray-400 hover:text-red-500 text-[10px] font-mono cursor-pointer underline text-center"
-                          >
-                            Remove
-                          </button>
-                        </div>
+                        {wishlistPrivacy !== 'Private' && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                            
+                            {/* QR Code display */}
+                            <div className="flex items-center gap-3 bg-white dark:bg-navy-900 p-3 rounded-2xl border border-gray-200 dark:border-navy-800">
+                              <img
+                                src={getQrCodeUrl(shareUrl)}
+                                alt="Wishlist QR Code"
+                                className="w-16 h-16 rounded border bg-white shrink-0"
+                              />
+                              <div className="space-y-0.5 text-left">
+                                <span className="font-semibold text-[10px] text-navy-950 dark:text-white block">Scan to Share</span>
+                                <span className="text-[9px] text-gray-400 leading-normal block">Scan QR Code with any camera to instantly load this wishlist.</span>
+                              </div>
+                            </div>
+
+                            {/* Share button links */}
+                            <div className="md:col-span-2 space-y-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                <a
+                                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-[10px] transition"
+                                >
+                                  WhatsApp
+                                </a>
+                                <a
+                                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl font-semibold text-[10px] transition"
+                                >
+                                  Twitter (X)
+                                </a>
+                                <a
+                                  href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold text-[10px] transition"
+                                >
+                                  Telegram
+                                </a>
+                                <button
+                                  onClick={handleCopyLink}
+                                  className="px-3 py-2 bg-gray-200 dark:bg-navy-800 hover:bg-gray-300 text-gray-700 dark:text-slate-300 rounded-xl font-semibold text-[10px] transition cursor-pointer"
+                                >
+                                  {copiedLink ? 'Copied!' : 'Copy Link'}
+                                </button>
+                              </div>
+                              <span className="font-mono text-[9px] text-gray-400 dark:text-gray-500 truncate block bg-white dark:bg-navy-900 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-navy-800">
+                                {shareUrl}
+                              </span>
+                            </div>
+
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
+
+                      {/* Wishlist Items Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {wishlistProducts.map((prod) => (
+                          <div key={prod.id} className="p-3.5 rounded-2xl border border-gray-100 dark:border-navy-800 bg-white dark:bg-navy-900 shadow-sm flex items-center gap-3 justify-between">
+                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectProduct(prod.id)}>
+                              <img src={prod.images[0]} alt="" referrerPolicy="no-referrer" className="w-14 h-14 rounded-xl object-cover bg-gray-50 shrink-0" />
+                              <div className="text-left font-sans space-y-0.5">
+                                <h5 className="text-xs font-semibold text-navy-900 dark:text-navy-50 line-clamp-1">{prod.name}</h5>
+                                <span className="text-[10px] text-gray-400 font-mono block">{prod.category}</span>
+                                <span className="text-xs font-bold text-navy-900 dark:text-navy-50 block mt-0.5">Rs.{prod.discountPrice || prod.price}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5 shrink-0 select-none">
+                              <button
+                                onClick={() => onMoveToCart(prod)}
+                                className="p-2 border border-gold-300 bg-gold-400 hover:bg-gold-500 rounded-lg text-navy-950 hover:text-navy-950 flex items-center justify-center gap-1 text-[11px] font-bold cursor-pointer transition active:scale-95"
+                              >
+                                <ShoppingCart className="w-3 h-3" />
+                                <span>Add Bag</span>
+                              </button>
+                              <button
+                                onClick={() => onRemoveFromWishlist(prod.id)}
+                                className="text-gray-400 hover:text-red-500 text-[10px] font-mono cursor-pointer underline text-center"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })()}
 
             {/* Coupons catalogs available */}
             {subTab === 'coupons' && (

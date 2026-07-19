@@ -5,6 +5,9 @@ import { ShieldAlert, BarChart3, Package, Layers, Settings, Users, Percent, Spar
 import { Product, Coupon, BannerCampaign, CMSConfig, Order, ActivityLog, Review, Vendor } from '../types';
 import { CATEGORIES } from '../utils/mockData';
 import VendorDashboard from './VendorDashboard';
+import AdminLiveMonitor from './AdminLiveMonitor';
+import AdminBusinessAnalytics from './AdminBusinessAnalytics';
+import AdminSecurityCenter from './AdminSecurityCenter';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -628,6 +631,9 @@ export default function AdminDashboard({
             { id: 'orders', label: 'Client Orders', icon: Layers, count: orders.length },
             { id: 'coupons', label: 'Campaign Coupons', icon: Percent, count: coupons.length },
             { id: 'vendors', label: 'Vendor Management', icon: Store, count: 3 },
+            { id: 'live-monitoring', label: 'Live Monitoring', icon: Users },
+            { id: 'business-analytics', label: 'Business Analytics', icon: BarChart3 },
+            { id: 'security-center', label: 'Security Center', icon: ShieldCheck },
             { id: 'cms', label: 'CMS Layout Editor', icon: FileEdit },
             { id: 'moderation', label: 'Reviews Moderation', icon: MessageSquareCode },
             { id: 'settings', label: 'Security & Settings', icon: Settings },
@@ -772,6 +778,39 @@ export default function AdminDashboard({
                     </div>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'live-monitoring' && (
+              <motion.div
+                key="live-monitoring"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+              >
+                <AdminLiveMonitor />
+              </motion.div>
+            )}
+
+            {activeTab === 'business-analytics' && (
+              <motion.div
+                key="business-analytics"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+              >
+                <AdminBusinessAnalytics products={products} />
+              </motion.div>
+            )}
+
+            {activeTab === 'security-center' && (
+              <motion.div
+                key="security-center"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+              >
+                <AdminSecurityCenter />
               </motion.div>
             )}
 

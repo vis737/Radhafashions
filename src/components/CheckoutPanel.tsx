@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles } from 'lucide-react';
 import { CartItem, CustomerInfo, Coupon, Order } from '../types';
@@ -10,7 +10,15 @@ interface CheckoutPanelProps {
   activeCoupon: Coupon | null;
   currentUser: { email: string; name: string };
   onBackToCart: () => void;
-  onPlaceOrder: (customer: CustomerInfo, paymentMethod: string, giftWrapped?: boolean, giftMessage?: string) => void;
+  onPlaceOrder: (
+    customer: CustomerInfo, 
+    paymentMethod: string, 
+    giftWrapped?: boolean, 
+    giftMessage?: string,
+    giftTheme?: string,
+    giftSender?: string,
+    giftHidePrice?: boolean
+  ) => void;
 }
 
 export default function CheckoutPanel({
@@ -42,6 +50,9 @@ export default function CheckoutPanel({
   // Gift wrapping and messages options
   const [giftWrapped, setGiftWrapped] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
+  const [giftTheme, setGiftTheme] = useState<'Birthday' | 'Anniversary' | 'Wedding' | 'Baby Shower' | 'Christmas' | 'Diwali' | 'Generic'>('Generic');
+  const [giftSender, setGiftSender] = useState('');
+  const [giftHidePrice, setGiftHidePrice] = useState(false);
 
   // Math calculators
   const totals = calculateCartTotals(cartItems, activeCoupon, shippingMethod, giftWrapped);
@@ -122,7 +133,15 @@ export default function CheckoutPanel({
           setTimeout(() => {
             setGatewayProcessing(false);
             setGatewayStep('idle');
-            onPlaceOrder({ name, email, phone, address, pincode }, paymentMethod.toUpperCase(), giftWrapped, giftMessage);
+            onPlaceOrder(
+              { name, email, phone, address, pincode },
+              paymentMethod.toUpperCase(),
+              giftWrapped,
+              giftMessage,
+              giftTheme,
+              giftSender,
+              giftHidePrice
+            );
           }, 1500);
         },
         modal: {
@@ -258,17 +277,81 @@ export default function CheckoutPanel({
               </label>
 
               {giftWrapped && (
-                <div className="space-y-1.5 text-left pt-1">
-                  <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400">Handwritten Calligraphy Message</label>
-                  <textarea
-                    rows={2}
-                    maxLength={200}
-                    value={giftMessage}
-                    onChange={(e) => setGiftMessage(e.target.value)}
-                    placeholder="Enter a message to be written with an ink dip pen on handmade cotton pulp paper (max 200 chars)..."
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800"
-                  />
-                  <p className="text-[9px] text-gray-400 font-mono text-right">{giftMessage.length}/200 characters remaining</p>
+                <div className="space-y-4 text-left pt-2 border-t border-orange-200/10">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Gift Sender Name</label>
+                      <input
+                        type="text"
+                        value={giftSender}
+                        onChange={(e) => setGiftSender(e.target.value)}
+                        placeholder="e.g. Grandma & Grandpa"
+                        className="w-full px-3 py-2 text-xs border border-gray-250 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Select Theme</label>
+                      <select
+                        value={giftTheme}
+                        onChange={(e: any) => setGiftTheme(e.target.value)}
+                        className="w-full px-3 py-2 text-xs border border-gray-250 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 bg-white"
+                      >
+                        {['Birthday', 'Anniversary', 'Wedding', 'Baby Shower', 'Christmas', 'Diwali', 'Generic'].map(theme => (
+                          <option key={theme} value={theme}>{theme} Theme</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400">Calligraphy Message</label>
+                    <textarea
+                      rows={2}
+                      maxLength={250}
+                      value={giftMessage}
+                      onChange={(e) => setGiftMessage(e.target.value)}
+                      placeholder="Enter a message to be written with an ink dip pen on handmade cotton pulp paper (max 250 chars)..."
+                      className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-orange-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800"
+                    />
+                    <p className="text-[9px] text-gray-400 font-mono text-right">{250 - giftMessage.length} characters remaining</p>
+                  </div>
+
+                  {/* Live Preview Card */}
+                  <div className="space-y-1.5">
+                    <span className="block text-[10px] font-mono tracking-wider uppercase text-gray-400">Live Note Preview</span>
+                    <div className={`p-4 rounded-2xl border border-dashed text-xs ${
+                      giftTheme === 'Diwali' ? 'bg-amber-600/10 border-amber-500 text-amber-950 dark:text-amber-100' :
+                      giftTheme === 'Christmas' ? 'bg-red-700/10 border-red-500 text-red-950 dark:text-red-100' :
+                      giftTheme === 'Wedding' ? 'bg-yellow-600/10 border-yellow-500 text-yellow-950 dark:text-yellow-100' :
+                      giftTheme === 'Anniversary' ? 'bg-rose-500/10 border-rose-400 text-rose-950 dark:text-rose-100' :
+                      giftTheme === 'Birthday' ? 'bg-sky-500/10 border-sky-400 text-sky-950 dark:text-sky-100' :
+                      giftTheme === 'Baby Shower' ? 'bg-emerald-500/10 border-emerald-400 text-emerald-950 dark:text-emerald-100' :
+                      'bg-amber-50/50 border-amber-200 text-amber-900 dark:bg-navy-950 dark:border-navy-800 dark:text-slate-100'
+                    }`}>
+                      <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-1.5 mb-2 font-mono text-[9px] tracking-wider uppercase">
+                        <span>{giftTheme} Greeting</span>
+                        <span>Meris Calligraphy</span>
+                      </div>
+                      <p className="italic leading-relaxed font-sans">{giftMessage || 'Your message will appear here...'}</p>
+                      {giftSender && (
+                        <p className="text-right font-semibold mt-3 text-[10px]">With Love, {giftSender}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Invoice Display Options */}
+                  <div className="pt-2">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={giftHidePrice}
+                        onChange={(e) => setGiftHidePrice(e.target.checked)}
+                        className="w-3.5 h-3.5 text-orange-500 rounded border-gray-300 focus:ring-orange-400"
+                      />
+                      <span className="text-[10px] text-gray-500 dark:text-slate-400 font-medium">Hide item prices on invoice receipt (Gift Invoice)</span>
+                    </label>
+                  </div>
+
                 </div>
               )}
             </div>
