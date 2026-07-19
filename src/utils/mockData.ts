@@ -1,14 +1,14 @@
 import { Product, Coupon, BannerCampaign, CMSConfig, Order, ActivityLog } from '../types';
 
 export const CATEGORIES = [
-  { id: 'toys', name: 'Kids Toys', description: 'Cute rotating pandas, dancing cacti, wind-up octopuses, projection flashlights & toys.', imageUrl: 'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=800&auto=format&fit=crop&q=80' },
-  { id: 'wood-gifts', name: 'Wood Crafted Gifts', description: 'Traditional handcrafted wooden miniature instruments (Veenas, drums) & art pieces.', imageUrl: 'https://images.unsplash.com/photo-1532330393533-443990a51d10?w=800&auto=format&fit=crop&q=80' },
-  { id: 'handbags', name: 'Handbags & Clutches', description: 'Handwoven plastic wire basket bags, jute gift bags & embroidered peacock clutches.', imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80' },
+  { id: 'toys', name: 'Kids Toys', description: 'Cute rotating pandas, dancing cacti, wind-up octopuses, projection flashlights & toys.', imageUrl: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&auto=format&fit=crop&q=80' },
+  { id: 'wood-gifts', name: 'Wood Crafted Gifts', description: 'Traditional handcrafted wooden miniature instruments (Veenas, drums) & art pieces.', imageUrl: 'https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=800&auto=format&fit=crop&q=80' },
+  { id: 'handbags', name: 'Handbags & Clutches', description: 'Handwoven plastic wire basket bags, jute gift bags & embroidered peacock clutches.', imageUrl: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop&q=80' },
   { id: 'learning', name: 'Learning Stuff', description: 'Wooden alphabet block puzzles, shape sorting trays & Montessori learning boards.', imageUrl: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&auto=format&fit=crop&q=80' },
   { id: 'home', name: 'Home Organizers', description: 'Stick-figure wall shelves, utility adhesive hooks & phone charging wall holders.', imageUrl: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=80' },
-  { id: 'kolam', name: 'Kolam Stencils', description: 'Round red felt stencils for tracing traditional white geometric & mandala patterns.', imageUrl: 'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=800&auto=format&fit=crop&q=80' },
+  { id: 'kolam', name: 'Kolam Stencils', description: 'Round red felt stencils for tracing traditional white geometric & mandala patterns.', imageUrl: 'https://images.unsplash.com/photo-1608976451610-ad2ee3c37b0f?w=800&auto=format&fit=crop&q=80' },
   { id: 'stationeries', name: 'Novelty Stationeries', description: 'Camera pencil sharpeners, spiro scales, cartoon erasers & ice cream highlighters.', imageUrl: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&auto=format&fit=crop&q=80' },
-  { id: 'entertainment', name: 'Entertainment & Novelties', description: 'Laser key rings, novelty stethoscope toys, shock chewing gums & car bird decor.', imageUrl: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80' },
+  { id: 'entertainment', name: 'Entertainment & Novelties', description: 'Laser key rings, novelty stethoscope toys, shock chewing gums & car bird decor.', imageUrl: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800&auto=format&fit=crop&q=80' },
   { id: 'bottles', name: 'Return Gift Bottles', description: 'Pastel rabbit vacuum flasks, penguin bottles & stainless steel jar tumblers.', imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80' },
 ];
 

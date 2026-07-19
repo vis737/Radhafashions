@@ -830,21 +830,24 @@ export default function App() {
                     <div
                       key={category.id}
                       onClick={() => handleSelectCategoryGroup(category.id)}
-                      className="group relative h-40 sm:h-44 rounded-lg overflow-hidden bg-slate-900 border cursor-pointer select-none border-gray-100 shadow-sm hover:shadow-lg transition-all"
+                      className="group relative h-40 sm:h-44 rounded-2xl overflow-hidden bg-slate-950 border border-slate-100/10 cursor-pointer select-none shadow-sm hover:shadow-xl hover:border-gold-500/25 transition-all duration-300"
                     >
                       <img
                         src={category.imageUrl}
                         alt={category.name}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-500"
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-60 group-hover:scale-105 transition duration-500"
                       />
                       
-                      {/* Gradient footer label */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
-                        <h4 className="font-display font-semibold text-xs sm:text-sm text-gold-300 tracking-wide leading-none group-hover:text-gold-400 transition">
+                      {/* Premium glassmorphic gradient footer label */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent flex flex-col justify-end p-4">
+                        <span className="text-[9px] font-mono text-gold-400 uppercase tracking-widest mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          Explore Collection
+                        </span>
+                        <h4 className="font-display font-semibold text-xs sm:text-sm text-white tracking-wide leading-none group-hover:text-gold-300 transition duration-300">
                           {category.name}
                         </h4>
-                        <p className="text-[10px] text-gray-300 font-sans mt-1 line-clamp-1 font-light opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-[9px] text-gray-300 font-sans mt-2 line-clamp-1 font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           {category.description}
                         </p>
                       </div>
