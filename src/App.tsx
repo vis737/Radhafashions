@@ -1019,12 +1019,18 @@ export default function App() {
                 <div className="lg:col-span-3 space-y-6">
                   {/* Category banner description card */}
                   {activeCategoryObject && (
-                    <div className="bg-gradient-to-tr from-navy-900 to-navy-950 p-6 md:p-8 rounded-3xl text-white text-left relative overflow-hidden border border-gold-400/20">
-                      <div className="absolute -top-12 -right-12 w-48 h-48 bg-gold-400/5 rounded-full" />
-                      <div className="space-y-1.5 relative z-10 max-w-xl">
-                        <span className="text-[10px] font-mono tracking-widest text-gold-400 font-semibold uppercase">Category Archives</span>
-                        <h2 className="font-display font-medium text-lg sm:text-2xl text-white uppercase">{activeCategoryObject.name}</h2>
-                        <p className="text-xs text-gray-300 leading-relaxed font-light">{activeCategoryObject.description}</p>
+                    <div className="relative h-44 sm:h-52 rounded-3xl overflow-hidden text-left border border-gold-400/10 shadow-lg select-none">
+                      <img 
+                        src={activeCategoryObject.imageUrl} 
+                        alt={activeCategoryObject.name}
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover" 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-transparent" />
+                      <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-10 space-y-1.5 z-10 max-w-xl">
+                        <span className="text-[9px] font-mono tracking-widest text-gold-400 font-semibold uppercase">Collection Category</span>
+                        <h2 className="font-display font-bold text-lg sm:text-2xl text-white uppercase leading-none">{activeCategoryObject.name}</h2>
+                        <p className="text-[11px] text-gray-200 leading-normal font-light">{activeCategoryObject.description}</p>
                       </div>
                     </div>
                   )}
