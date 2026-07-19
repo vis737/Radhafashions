@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -35,32 +35,16 @@ export default function ThemeSwitcher() {
     <motion.button
       id="theme-switcher-btn"
       onClick={toggleTheme}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      className="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-white dark:bg-navy-950 border border-gray-200 dark:border-navy-800 text-slate-800 dark:text-gold-400 shadow-xl cursor-pointer transition flex items-center justify-center group"
-      title={theme === 'light' ? 'Switch to Dark Motif' : 'Switch to Light Motif'}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="p-2 text-slate-300 hover:text-[#C5A021] hover:bg-slate-800 transition rounded-xl cursor-pointer flex items-center justify-center group focus:outline-none"
+      title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
     >
-      <div className="relative w-5 h-5">
+      <div className="relative w-5 h-5 flex items-center justify-center">
         {theme === 'light' ? (
-          <motion.div
-            key="sun"
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <Sun className="w-5 h-5 text-amber-500 group-hover:rotate-45 transition duration-300" />
-          </motion.div>
+          <Sun className="w-5 h-5 text-slate-300 group-hover:text-[#C5A021] group-hover:rotate-45 transition duration-300" />
         ) : (
-          <motion.div
-            key="moon"
-            initial={{ rotate: 90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: -90, opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <Moon className="w-5 h-5 text-gold-400 fill-gold-400 group-hover:-rotate-12 transition duration-300" />
-          </motion.div>
+          <Moon className="w-5 h-5 text-gold-400 fill-gold-400 group-hover:-rotate-12 transition duration-300" />
         )}
       </div>
     </motion.button>

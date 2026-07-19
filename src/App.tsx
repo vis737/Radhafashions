@@ -16,7 +16,6 @@ import AiRecommendations from './components/AiRecommendations';
 import FlashSaleSection from './components/FlashSaleSection';
 import InstagramGallery from './components/InstagramGallery';
 import ExitIntentOffer from './components/ExitIntentOffer';
-import ThemeSwitcher from './components/ThemeSwitcher';
 
 // Mock Data imports
 import {
@@ -1492,8 +1491,7 @@ export default function App() {
       {/* Exit Intent Offer Popup */}
       <ExitIntentOffer onApplyCoupon={setActiveCoupon} />
 
-      {/* Theme Switcher */}
-      <ThemeSwitcher />
+
 
       {/* Universal brand footer */}
       <footer className="bg-navy-950 text-white py-12 border-t border-gold-400/20 text-xs font-sans">

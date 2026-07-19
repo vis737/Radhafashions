@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, ShoppingCart, Heart, User, Key, Sparkles, LogIn, Menu, X, HelpCircle, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CartItem, Product } from '../types';
 import { CATEGORIES } from '../utils/mockData';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
   <svg
@@ -435,6 +436,9 @@ export default function Navbar({
                 <User className="w-5 h-5" />
               </button>
             )}
+
+            {/* Inline Theme Toggle */}
+            <ThemeSwitcher />
 
             {/* Shopping Cart Trigger */}
             <button

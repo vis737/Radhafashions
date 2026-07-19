@@ -3,6 +3,7 @@ import { Search, ShoppingCart, Heart, User, Key, Sparkles, LogIn, Menu, X, HelpC
 import { motion, AnimatePresence } from 'motion/react';
 import { CartItem, Product } from '../types';
 import { CATEGORIES } from '../utils/mockData';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
   <svg
@@ -127,7 +128,7 @@ const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       letterSpacing="0.3"
       className="opacity-80"
     >
-      • Kids Toys • Gifts •
+      - Kids Toys - Gifts -
     </text>
     <text
       x="100"
@@ -140,7 +141,7 @@ const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       letterSpacing="0.3"
       className="opacity-80"
     >
-      • Stationeries •
+      - Stationeries -
     </text>
   </svg>
 );
@@ -250,7 +251,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0F172A] border-b-3 border-[#C5A021] text-white font-sans shadow-lg">
+    <header className="sticky top-0 z-40 bg-[#0F172A] border-b-[3px] border-[#C5A021] text-white font-sans shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
           
@@ -344,7 +345,7 @@ export default function Navbar({
                   onClick={clearSearch}
                   className="absolute right-3.5 top-3 w-5 h-5 text-slate-400 hover:text-slate-200 font-mono text-xs"
                 >
-                  ✕
+                  x
                 </button>
               )}
             </div>
@@ -370,7 +371,7 @@ export default function Navbar({
                         }}
                         className="mt-2 text-[11px] font-semibold text-[#C5A021] hover:text-[#C5A021]/80 flex items-center gap-1"
                       >
-                        Visit Category Page →
+                        Visit Category Page &gt;
                       </button>
                     )}
                   </div>
@@ -429,12 +430,15 @@ export default function Navbar({
             ) : (
               <button
                 onClick={() => onNavigate('account')}
-                className="p-2 text-slate-400 hover:text-[#C5A021] hover:bg-slate-855 transition rounded-xl cursor-pointer"
+                className="p-2 text-slate-400 hover:text-[#C5A021] hover:bg-slate-800 transition rounded-xl cursor-pointer"
                 title="Account Login"
               >
                 <User className="w-5 h-5" />
               </button>
             )}
+
+            {/* Inline Theme Toggle */}
+            <ThemeSwitcher />
 
             {/* Shopping Cart Trigger */}
             <button
@@ -526,3 +530,5 @@ export default function Navbar({
     </header>
   );
 }
+
+
