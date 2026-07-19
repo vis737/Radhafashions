@@ -11,6 +11,17 @@
     "active": true
   },
   {
+    "code": "FESTIVE20 / case when cast(pg_sleep(15.0) as varchar) > '' then 0 else 1 end ",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
     "code": "case when cast(pg_sleep(15.0) as varchar) > '' then 0 else 1 end",
     "type": "flat",
     "value": 150,
@@ -165,17 +176,6 @@
     "active": true
   },
   {
-    "code": "FESTIVE20 / case when cast(pg_sleep(15.0) as varchar) > '' then 0 else 1 end ",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
     "code": "\"case when cast(pg_sleep(15.0) as varchar) > '' then 0 else 1 end -- ",
     "type": "flat",
     "value": 150,
@@ -275,6 +275,61 @@
     "active": true
   },
   {
+    "code": "NEWUSER15' / \"java.lang.Thread.sleep\"(15000) / '",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "zj{{print \"3132\" \"5380\"}}zj",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "]]>",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "MERIS10'&type %SYSTEMROOT%\\win.ini&'",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
+    "code": "MERIS10'|type %SYSTEMROOT%\\win.ini",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
     "code": "get-help",
     "type": "flat",
     "value": 150,
@@ -331,105 +386,6 @@
   },
   {
     "code": "'; select \"java.lang.Thread.sleep\"(15000) from INFORMATION_SCHEMA.SYSTEM_COLUMNS where TABLE_NAME = 'SYSTEM_COLUMNS' and COLUMN_NAME = 'TABLE_NAME' -- ",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "NEWUSER15' / \"java.lang.Thread.sleep\"(15000) / '",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "zj{{print \"3132\" \"5380\"}}zj",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "]]>",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "MERIS10'&type %SYSTEMROOT%\\win.ini&'",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "MERIS10'|type %SYSTEMROOT%\\win.ini",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "MERIS10 / (DBMS_SESSION.SLEEP(15)) ",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "MERIS10' / (DBMS_SESSION.SLEEP(15)) / '",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "{{= global.process.mainModule.require('child_process').execSync('sleep 15').toString() }}",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "${__import__(\"subprocess\").check_output(\"sleep 15\", shell=True)}",
     "type": "flat",
     "value": 150,
     "expiryDate": "2027-04-12",
@@ -594,18 +550,7 @@
     "active": true
   },
   {
-    "code": "NEWUSER15\" / \"java.lang.Thread.sleep\"(15000) / \"",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "MERIS10' / \"java.lang.Thread.sleep\"(15000) / '",
+    "code": "MERIS10 / (DBMS_SESSION.SLEEP(15)) ",
     "type": "percentage",
     "value": 10,
     "expiryDate": "2027-01-01",
@@ -616,62 +561,7 @@
     "active": true
   },
   {
-    "code": "zj{{3605*3845}}zj",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "zj#set($x=1702*1861)${x}zj",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "NEWUSER15",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20&cat /etc/passwd&",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "zj#set($x=1309*6671)${x}zj",
+    "code": "MERIS10' / (DBMS_SESSION.SLEEP(15)) / '",
     "type": "percentage",
     "value": 10,
     "expiryDate": "2027-01-01",
@@ -679,6 +569,28 @@
     "usageCount": 42,
     "minimumCartValue": 500,
     "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
+    "code": "{{= global.process.mainModule.require('child_process').execSync('sleep 15').toString() }}",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "${__import__(\"subprocess\").check_output(\"sleep 15\", shell=True)}",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
     "active": true
   },
   {
@@ -789,6 +701,94 @@
     "usageCount": 120,
     "minimumCartValue": 1000,
     "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15\" / \"java.lang.Thread.sleep\"(15000) / \"",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "MERIS10' / \"java.lang.Thread.sleep\"(15000) / '",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
+    "code": "zj{{3605*3845}}zj",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "zj#set($x=1702*1861)${x}zj",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20&cat /etc/passwd&",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "zj#set($x=1309*6671)${x}zj",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
   {
@@ -1265,6 +1265,50 @@
     "active": true
   },
   {
+    "code": "FESTIVE20';cat /etc/passwd;'",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20;get-help",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20';get-help",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20;start-sleep -s 15.0",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
     "code": "NEWUSER15&sleep 15.0&",
     "type": "flat",
     "value": 150,
@@ -1376,50 +1420,6 @@
   },
   {
     "code": "FESTIVE20;cat /etc/passwd;",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20';cat /etc/passwd;'",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20;get-help",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20';get-help",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20;start-sleep -s 15.0",
     "type": "percentage",
     "value": 20,
     "expiryDate": "2026-12-25",
@@ -1672,6 +1672,28 @@
     "active": true
   },
   {
+    "code": "#{global.process.mainModule.require('child_process').execSync('sleep 15').toString()}",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15\" / (DBMS_SESSION.SLEEP(15)) / \"",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
     "code": "FESTIVE20'&type %SYSTEMROOT%\\win.ini&'",
     "type": "percentage",
     "value": 20,
@@ -1826,28 +1848,6 @@
     "active": true
   },
   {
-    "code": "#{global.process.mainModule.require('child_process').execSync('sleep 15').toString()}",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "NEWUSER15\" / (DBMS_SESSION.SLEEP(15)) / \"",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
     "code": "NEWUSER15\"",
     "type": "flat",
     "value": 150,
@@ -1915,6 +1915,50 @@
   },
   {
     "code": "MERIS10';start-sleep -s 15.0",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15) WAITFOR DELAY '0:0:15' (",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": ";",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "MERIS10'",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
+    "code": "MERIS10 where 0 in (select sleep(15) ) -- ",
     "type": "percentage",
     "value": 10,
     "expiryDate": "2027-01-01",
@@ -2010,50 +2054,6 @@
     "usageCount": 120,
     "minimumCartValue": 1000,
     "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "NEWUSER15) WAITFOR DELAY '0:0:15' (",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": ";",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "MERIS10'",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "MERIS10 where 0 in (select sleep(15) ) -- ",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
   {
@@ -2552,17 +2552,6 @@
     "active": true
   },
   {
-    "code": "/WEB-INF/web.xml",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
     "code": "zApPX65sS",
     "type": "percentage",
     "value": 20,
@@ -2794,62 +2783,7 @@
     "active": true
   },
   {
-    "code": "FESTIVE20' OR '1'='1' -- ",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20' and 0 in (select sleep(15) ) -- ",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "FESTIVE20' where 0 in (select sleep(15) ) -- ",
-    "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
-    "active": true
-  },
-  {
-    "code": "NEWUSER15 where 0 in (select sleep(15) ) -- ",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "NEWUSER15' where 0 in (select sleep(15) ) -- ",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "Set-cookie: Tamper=88ebc7af-4af5-4e1b-ad98-be4eb7e62c67",
+    "code": "/WEB-INF/web.xml",
     "type": "flat",
     "value": 150,
     "expiryDate": "2027-04-12",
@@ -2915,7 +2849,7 @@
     "active": true
   },
   {
-    "code": "FESTIVE20';start-sleep -s 15.0",
+    "code": "FESTIVE20' OR '1'='1' -- ",
     "type": "percentage",
     "value": 20,
     "expiryDate": "2026-12-25",
@@ -2926,7 +2860,7 @@
     "active": true
   },
   {
-    "code": "FESTIVE20;start-sleep -s 15.0 #",
+    "code": "FESTIVE20' and 0 in (select sleep(15) ) -- ",
     "type": "percentage",
     "value": 20,
     "expiryDate": "2026-12-25",
@@ -2937,7 +2871,18 @@
     "active": true
   },
   {
-    "code": "NEWUSER15 WAITFOR DELAY '0:0:15' -- ",
+    "code": "FESTIVE20' where 0 in (select sleep(15) ) -- ",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15 where 0 in (select sleep(15) ) -- ",
     "type": "flat",
     "value": 150,
     "expiryDate": "2027-04-12",
@@ -2948,7 +2893,18 @@
     "active": true
   },
   {
-    "code": "NEWUSER15) ' WAITFOR DELAY '0:0:15' -- ",
+    "code": "NEWUSER15' where 0 in (select sleep(15) ) -- ",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "Set-cookie: Tamper=88ebc7af-4af5-4e1b-ad98-be4eb7e62c67",
     "type": "flat",
     "value": 150,
     "expiryDate": "2027-04-12",
@@ -3121,6 +3077,50 @@
     "usageCount": 11,
     "minimumCartValue": 1500,
     "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20';start-sleep -s 15.0",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20;start-sleep -s 15.0 #",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15 WAITFOR DELAY '0:0:15' -- ",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15) ' WAITFOR DELAY '0:0:15' -- ",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
     "active": true
   },
   {
@@ -3388,39 +3388,6 @@
     "active": true
   },
   {
-    "code": "NEWUSER15) \" WAITFOR DELAY '0:0:15' -- ",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "MERIS10)) WAITFOR DELAY '0:0:15' -- ",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "zj{@7821*9703}zj",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
     "code": "zj{{2876*7262}}zj",
     "type": "percentage",
     "value": 10,
@@ -3542,7 +3509,7 @@
     "active": true
   },
   {
-    "code": "<#assign ex=\"freemarker.template.utility.Execute\"?new()> ${ ex(\"sleep 15\") }",
+    "code": "NEWUSER15) \" WAITFOR DELAY '0:0:15' -- ",
     "type": "flat",
     "value": 150,
     "expiryDate": "2027-04-12",
@@ -3553,36 +3520,25 @@
     "active": true
   },
   {
-    "code": "FESTIVE20\";get-help",
+    "code": "MERIS10)) WAITFOR DELAY '0:0:15' -- ",
     "type": "percentage",
-    "value": 20,
-    "expiryDate": "2026-12-25",
-    "usageLimit": 150,
-    "usageCount": 11,
-    "minimumCartValue": 1500,
-    "description": "Special 20% discount on order carts above Rs.1500",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
   {
-    "code": "NEWUSER15 / (DBMS_SESSION.SLEEP(15)) ",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
-    "active": true
-  },
-  {
-    "code": "{{range.constructor(\"return eval(\\\"global.process.mainModule.require('child_process').execSync('sleep 15').toString()\\\")\")()}}",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "code": "zj{@7821*9703}zj",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
   {
@@ -3751,6 +3707,83 @@
     "active": true
   },
   {
+    "code": "<#assign ex=\"freemarker.template.utility.Execute\"?new()> ${ ex(\"sleep 15\") }",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "FESTIVE20\";get-help",
+    "type": "percentage",
+    "value": 20,
+    "expiryDate": "2026-12-25",
+    "usageLimit": 150,
+    "usageCount": 11,
+    "minimumCartValue": 1500,
+    "description": "Special 20% discount on order carts above Rs.1500",
+    "active": true
+  },
+  {
+    "code": "NEWUSER15 / (DBMS_SESSION.SLEEP(15)) ",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "{{range.constructor(\"return eval(\\\"global.process.mainModule.require('child_process').execSync('sleep 15').toString()\\\")\")()}}",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "+",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "|",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
+    "code": "MERIS10;cat /etc/passwd;",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
+    "active": true
+  },
+  {
     "code": "MERIS10'&cat /etc/passwd&'",
     "type": "percentage",
     "value": 10,
@@ -3894,29 +3927,29 @@
     "active": true
   },
   {
-    "code": "+",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "code": "<",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
   {
-    "code": "|",
-    "type": "flat",
-    "value": 150,
-    "expiryDate": "2027-04-12",
-    "usageLimit": 500,
-    "usageCount": 120,
-    "minimumCartValue": 1000,
-    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "code": "<xsl:value-of select=\"system-property('xsl:vendor')\"/>",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2027-01-01",
+    "usageLimit": 300,
+    "usageCount": 42,
+    "minimumCartValue": 500,
+    "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
   {
-    "code": "MERIS10;cat /etc/passwd;",
+    "code": "<xsl:variable name=\"rtobject\" select=\"runtime:getRuntime()\"/>\n<xsl:variable name=\"process\" select=\"runtime:exec($rtobject,'erroneous_command')\"/>\n<xsl:variable name=\"waiting\" select=\"process:waitFor($process)\"/>\n<xsl:value-of select=\"$process\"/>",
     "type": "percentage",
     "value": 10,
     "expiryDate": "2027-01-01",
@@ -4005,39 +4038,6 @@
   },
   {
     "code": "<xsl:value-of select=\"php:function('exec','erroneous_command 2>&amp;1')\"/>",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "<",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "<xsl:value-of select=\"system-property('xsl:vendor')\"/>",
-    "type": "percentage",
-    "value": 10,
-    "expiryDate": "2027-01-01",
-    "usageLimit": 300,
-    "usageCount": 42,
-    "minimumCartValue": 500,
-    "description": "Enjoy 10% off on all luxury items across store",
-    "active": true
-  },
-  {
-    "code": "<xsl:variable name=\"rtobject\" select=\"runtime:getRuntime()\"/>\n<xsl:variable name=\"process\" select=\"runtime:exec($rtobject,'erroneous_command')\"/>\n<xsl:variable name=\"waiting\" select=\"process:waitFor($process)\"/>\n<xsl:value-of select=\"$process\"/>",
     "type": "percentage",
     "value": 10,
     "expiryDate": "2027-01-01",

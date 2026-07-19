@@ -117,6 +117,66 @@ export default function AdminDashboard({
   const [bulkPricePercent, setBulkPricePercent] = useState<number>(0);
   const [bulkStockAdd, setBulkStockAdd] = useState<number>(0);
 
+  // Dynamic Customer Portfolios CRM Builder
+  const getDynamicCustomerPortfolios = () => {
+    const customerMap: Record<string, {
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+      ordersCount: number;
+      spent: number;
+      kidsCount: number;
+      tier: 'Platinum' | 'Gold' | 'Silver' | 'Bronze';
+    }> = {};
+
+    const defaultUsers = [
+      { name: 'Alok Sharma', email: 'aloksharma@gmail.com', phone: '+91 98765 43210', address: 'B-102, Saket, New Delhi', spent: 6480, ordersCount: 4, kidsCount: 2, tier: 'Gold' as const },
+      { name: 'Nisha Krishnan', email: 'nisha.k@yahoo.com', phone: '+91 98123 45678', address: 'Flat 4C, Royal Palm Apartments, Chennai', spent: 11990, ordersCount: 8, kidsCount: 1, tier: 'Platinum' as const },
+      { name: 'Rohan Advani', email: 'rohan.advani@hotmail.com', phone: '+91 97654 32109', address: '22, Hill Road, Bandra, Mumbai', spent: 3499, ordersCount: 2, kidsCount: 0, tier: 'Silver' as const }
+    ];
+
+    defaultUsers.forEach(u => {
+      customerMap[u.email.toLowerCase()] = u;
+    });
+
+    orders.forEach(o => {
+      const email = (o.accountEmail || o.customerInfo.email || 'guest@meris.com').toLowerCase();
+      const name = o.accountName || o.customerInfo.name || 'Guest Shopper';
+      const address = `${o.customerInfo.address || ''}, ${o.customerInfo.pincode || ''}`;
+      const phone = o.customerInfo.phone || '';
+
+      if (!customerMap[email]) {
+        customerMap[email] = {
+          name,
+          email,
+          phone,
+          address,
+          ordersCount: 0,
+          spent: 0,
+          kidsCount: 0,
+          tier: 'Bronze'
+        };
+      }
+    });
+
+    // Recompute ordersCount and spent from orders array for accurate matching
+    orders.forEach(o => {
+      const email = (o.accountEmail || o.customerInfo.email || 'guest@meris.com').toLowerCase();
+      if (customerMap[email]) {
+        customerMap[email].ordersCount += 1;
+        customerMap[email].spent += Number(o.total) || 0;
+      }
+    });
+
+    Object.keys(customerMap).forEach(email => {
+      const c = customerMap[email];
+      c.tier = c.ordersCount >= 5 ? 'Platinum' : c.ordersCount >= 3 ? 'Gold' : c.ordersCount >= 1 ? 'Silver' : 'Bronze';
+    });
+
+    return Object.values(customerMap);
+  };
+
   // Form states: Coupon Management
   const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
   const [newCoupCode, setNewCoupCode] = useState('');
@@ -1295,52 +1355,79 @@ export default function AdminDashboard({
               </motion.div>
             )}
 
-            {/* VIEW 5: CUSTOMERS */}
-            {activeTab === 'customers' && (
-              <motion.div
-                key="customers"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="space-y-6"
-              >
-                <div className="flex justify-between items-center pb-2 border-b border-gray-150">
-                  <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
-                    Customer Directories workspace
-                  </h3>
-                </div>
+            {/* VIEW 5: CUSTOMERS (CRM PORTFOLIOS) */}
+            {activeTab === 'customers' && (() => {
+              const customerList = getDynamicCustomerPortfolios();
+              const searchedCust = customerList.filter(c => 
+                c.name.toLowerCase().includes(globalSearch.toLowerCase()) || 
+                c.email.toLowerCase().includes(globalSearch.toLowerCase()) ||
+                c.address.toLowerCase().includes(globalSearch.toLowerCase())
+              );
 
-                <div className="bg-white dark:bg-navy-900 border rounded-3xl p-6 shadow-sm overflow-x-auto text-left text-xs">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b border-gray-100 text-gray-400 font-semibold">
-                        <th className="pb-3">Customer Identity</th>
-                        <th className="pb-3">Address coordinates</th>
-                        <th className="pb-3 text-center">Orders count</th>
-                        <th className="pb-3 text-right">Lifetime spent</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { name: 'Alok Sharma', email: 'aloksharma@gmail.com', address: 'B-102, Saket, New Delhi', spent: 6480, ordersCount: 4 },
-                        { name: 'Nisha Krishnan', email: 'nisha.k@yahoo.com', address: 'Flat 4C, Royal Palm Apartments, Chennai', spent: 11990, ordersCount: 8 },
-                        { name: 'Rohan Advani', email: 'rohan.advani@hotmail.com', address: '22, Hill Road, Bandra, Mumbai', spent: 3499, ordersCount: 2 }
-                      ].map((cust, idx) => (
-                        <tr key={idx} className="border-b last:border-b-0">
-                          <td className="py-3">
-                            <p className="font-semibold text-navy-950 dark:text-white leading-none">{cust.name}</p>
-                            <p className="text-[10px] text-gray-400 font-mono mt-1">{cust.email}</p>
-                          </td>
-                          <td className="py-3 text-gray-500 dark:text-slate-300 font-light">{cust.address}</td>
-                          <td className="py-3 text-center font-mono font-semibold">{cust.ordersCount} bookings</td>
-                          <td className="py-3 text-right font-mono font-bold text-emerald-500">Rs. {cust.spent}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </motion.div>
-            )}
+              return (
+                <motion.div
+                  key="customers"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="space-y-6"
+                >
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-150">
+                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-950 dark:text-white">
+                      Customer Portfolios CRM Workspace
+                    </h3>
+                    <span className="px-3 py-1 bg-navy-50 dark:bg-navy-950 text-navy-700 dark:text-navy-300 rounded-xl text-[10px] font-mono font-bold">
+                      {searchedCust.length} Active Records
+                    </span>
+                  </div>
+
+                  {/* Customer cards grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                    {searchedCust.length === 0 ? (
+                      <p className="col-span-full text-center text-gray-400 font-mono py-12 text-xs">No customer portfolios found.</p>
+                    ) : (
+                      searchedCust.map((cust, idx) => (
+                        <div key={idx} className="bg-white dark:bg-navy-900 border border-gray-100 rounded-3xl p-5 shadow-sm space-y-4 flex flex-col justify-between text-left text-xs leading-normal">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start gap-2">
+                              <div>
+                                <h4 className="font-bold text-navy-950 dark:text-white text-sm">{cust.name}</h4>
+                                <span className="text-[10px] text-gray-455 font-mono">{cust.email}</span>
+                              </div>
+                              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                                cust.tier === 'Platinum' ? 'bg-purple-100 text-purple-800' :
+                                cust.tier === 'Gold' ? 'bg-amber-100 text-amber-805 border border-amber-300/30' :
+                                cust.tier === 'Silver' ? 'bg-slate-100 text-slate-800' :
+                                'bg-orange-50 text-orange-700'
+                              }`}>
+                                {cust.tier}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5 border-t border-gray-100 pt-3">
+                              <p className="text-[10px] text-gray-400 uppercase font-mono tracking-wider">Coordinates</p>
+                              <p className="text-gray-650 dark:text-slate-350">{cust.address || 'No shipping address saved'}</p>
+                              <p className="text-[10px] text-gray-450 font-mono">Phone: {cust.phone || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-gray-100 pt-3 mt-2 grid grid-cols-2 gap-2 text-center">
+                            <div className="bg-gray-50 dark:bg-navy-950 p-2.5 rounded-2xl">
+                              <span className="text-[9px] text-gray-400 uppercase font-mono block">Bookings</span>
+                              <span className="font-bold font-mono text-navy-900 dark:text-white text-xs">{cust.ordersCount}</span>
+                            </div>
+                            <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-2.5 rounded-2xl">
+                              <span className="text-[9px] text-emerald-600 uppercase font-mono block">LTV Spent</span>
+                              <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400 text-xs">Rs. {cust.spent}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* VIEW 6: COUPONS */}
             {activeTab === 'coupons' && (

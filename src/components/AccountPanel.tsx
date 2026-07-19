@@ -19,6 +19,7 @@ interface AccountPanelProps {
   onRequestRefund: (orderId: string, itemName: string, reason: string) => void;
   onSelectProduct: (productId: string) => void;
   onResubmitUpiDetails?: (orderId: string, txnId: string, screenshot: string) => void;
+  products: Product[];
 }
 
 export default function AccountPanel({
@@ -32,12 +33,35 @@ export default function AccountPanel({
   onRemoveFromWishlist,
   onRequestRefund,
   onSelectProduct,
-  onResubmitUpiDetails
+  onResubmitUpiDetails,
+  products
 }: AccountPanelProps) {
   // Login/Signup Inputs
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+
+  // Age group helper for dynamic child profiles toy matching
+  const isProductAgeFit = (product: Product, ageGroup: string): boolean => {
+    let childMin = 0;
+    let childMax = 99;
+    
+    if (ageGroup.includes('Months')) {
+      if (ageGroup.includes('0–6')) { childMin = 0; childMax = 0.5; }
+      else if (ageGroup.includes('6–12')) { childMin = 0.5; childMax = 1.0; }
+    } else {
+      const match = ageGroup.match(/(\d+)\s*–\s*(\d+)/) || ageGroup.match(/(\d+)\+/);
+      if (match) {
+        childMin = parseInt(match[1], 10);
+        childMax = match[2] ? parseInt(match[2], 10) : 99;
+      }
+    }
+
+    const prodMin = product.minimum_age !== undefined ? Number(product.minimum_age) : 0;
+    const prodMax = product.maximum_age !== undefined ? Number(product.maximum_age) : 99;
+
+    return (prodMin <= childMax) && (prodMax >= childMin);
+  };
   const [password, setPassword] = useState('');
 
   // Simulated Google SSO States
@@ -2340,34 +2364,85 @@ export default function AccountPanel({
                     </div>
                   </div>
 
-                  {/* Right Column: List of saved children profiles */}
-                  <div className="space-y-3">
+                  {/* Right Column: List of saved children play portfolios */}
+                  <div className="space-y-4">
                     <h4 className="text-xs font-bold text-navy-950 uppercase tracking-wider">
-                      Saved Profiles ({childProfiles.length})
+                      Family Play Portfolios ({childProfiles.length})
                     </h4>
                     
                     {childProfiles.length === 0 ? (
-                      <p className="text-xs text-gray-400 italic">No children profiles registered yet.</p>
+                      <p className="text-xs text-gray-400 italic">No family play profiles registered yet.</p>
                     ) : (
                       childProfiles.map((child) => (
-                        <div key={child.id} className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-between gap-4">
-                          <div className="space-y-1 text-xs">
-                            <h5 className="font-bold text-navy-950">{child.name}</h5>
-                            <div className="flex gap-2 items-center flex-wrap">
-                              <span className="px-2 py-0.5 rounded bg-gold-50 text-gold-700 text-[10px] font-semibold">{child.ageGroup}</span>
-                              <span className="text-[10px] text-gray-400 italic">Prefers: {child.preference}</span>
+                        <div key={child.id} className="p-5 bg-white border border-gray-105 rounded-3xl shadow-xs space-y-4">
+                          <div className="flex items-center justify-between gap-4 border-b pb-3">
+                            <div className="space-y-1 text-xs">
+                              <h5 className="font-bold text-navy-950 text-xs">{child.name}</h5>
+                              <div className="flex gap-2 items-center flex-wrap">
+                                <span className="px-2 py-0.5 rounded bg-gold-50 text-gold-700 text-[9px] font-bold">{child.ageGroup}</span>
+                                {child.preference && (
+                                  <span className="text-[9px] text-gray-400 font-mono">Preference: {child.preference}</span>
+                                )}
+                              </div>
                             </div>
+                            
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setChildProfiles(prev => prev.filter(c => c.id !== child.id));
+                              }}
+                              className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition border border-transparent hover:border-red-150 cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
-                          
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setChildProfiles(prev => prev.filter(c => c.id !== child.id));
-                            }}
-                            className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition border border-transparent hover:border-red-150 cursor-pointer"
-                          >
-                            <Trash2 className="w-4.5 h-4.5" />
-                          </button>
+
+                          {/* Dynamic Age-Based Curation Carousel */}
+                          <div className="space-y-3">
+                            <h6 className="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-widest">Matched Toy Recommendations</h6>
+                            {(() => {
+                              const recommended = products.filter(p => {
+                                const ageFit = isProductAgeFit(p, child.ageGroup);
+                                const prefClean = child.preference ? child.preference.trim().toLowerCase() : '';
+                                const prefFit = !prefClean || prefClean === 'all toys' || 
+                                  p.name.toLowerCase().includes(prefClean) || 
+                                  p.description.toLowerCase().includes(prefClean) || 
+                                  p.category.toLowerCase().includes(prefClean);
+                                return ageFit && prefFit;
+                              }).slice(0, 3);
+
+                              if (recommended.length === 0) {
+                                return (
+                                  <p className="text-[10px] text-gray-400 italic">No matching products in current workshop inventory.</p>
+                                );
+                              }
+
+                              return (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                  {recommended.map(prod => (
+                                    <div key={prod.id} className="p-3 bg-gray-50 border border-gray-100 rounded-2xl flex flex-col justify-between gap-2 text-[10px] leading-normal font-sans">
+                                      <div className="space-y-1.5 text-left">
+                                        <div className="w-full h-16 rounded-xl overflow-hidden border bg-white flex items-center justify-center">
+                                          <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <h5 className="font-bold text-navy-950 line-clamp-1">{prod.name}</h5>
+                                      </div>
+                                      <div className="flex items-center justify-between border-t pt-1.5 mt-1">
+                                        <span className="font-bold text-[#C5A021] font-mono">Rs.{prod.discountPrice || prod.price}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => onSelectProduct(prod.id)}
+                                          className="px-2 py-0.5 bg-navy-950 text-white rounded text-[8px] font-bold hover:bg-[#C5A021] hover:text-navy-950 transition cursor-pointer text-center"
+                                        >
+                                          Details
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
                       ))
                     )}

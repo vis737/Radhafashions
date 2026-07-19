@@ -1344,6 +1344,7 @@ export default function App() {
                 }}
                 onSelectProduct={handleViewProductDetails}
                 onResubmitUpiDetails={handleResubmitUpiDetails}
+                products={products}
               />
             </motion.div>
           )}
