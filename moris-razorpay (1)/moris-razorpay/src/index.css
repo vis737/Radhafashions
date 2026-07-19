@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-gold-50: #FCF9EE;
   --color-gold-100: #F6F0D4;
@@ -87,4 +89,6 @@ html.dark body {
 .gold-glow-text {
   animation: gold-pulse 3s infinite ease-in-out;
 }
+
+
 
