@@ -269,44 +269,6 @@
     "vendorId": null
   },
   {
-    "id": "kolam-1",
-    "sku": "KL-ST-LOTUS",
-    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
-    "category": "Kolam Stencils",
-    "categorySlug": "kolam",
-    "price": 499,
-    "discountPrice": 399,
-    "stock": 22,
-    "rating": 4.8,
-    "ratingCount": 115,
-    "images": [
-      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
-    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
-    "specifications": {
-      "Material": "Military-Grade Shatterproof Acrylic",
-      "Thickness": "3.0 mm",
-      "Dimensions": "30 x 30 cm circular plate",
-      "Stencil Design": "Sacred Golden Mandala Lotus grid"
-    },
-    "reviews": [
-      {
-        "id": "r-8",
-        "date": "2026-06-11",
-        "author": "Meenakshi N.",
-        "rating": 5,
-        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
-        "approved": true
-      }
-    ],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris festive",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
     "id": "home-1",
     "sku": "HM-CANDLE-SOY",
     "name": "Symphony Organic Lavender Scented Soy Candle",
@@ -342,6 +304,44 @@
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Botanics",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "kolam-1",
+    "sku": "KL-ST-LOTUS",
+    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
+    "category": "Kolam Stencils",
+    "categorySlug": "kolam",
+    "price": 499,
+    "discountPrice": 399,
+    "stock": 22,
+    "rating": 4.8,
+    "ratingCount": 115,
+    "images": [
+      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
+    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
+    "specifications": {
+      "Material": "Military-Grade Shatterproof Acrylic",
+      "Thickness": "3.0 mm",
+      "Dimensions": "30 x 30 cm circular plate",
+      "Stencil Design": "Sacred Golden Mandala Lotus grid"
+    },
+    "reviews": [
+      {
+        "id": "r-8",
+        "date": "2026-06-11",
+        "author": "Meenakshi N.",
+        "rating": 5,
+        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
+        "approved": true
+      }
+    ],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris festive",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -548,7 +548,7 @@
         "author": "Dr. Aris V.",
         "rating": 5,
         "comment": "An amazing tool that is literally educational art. The detailing on Saturn is wonderful.",
-        "approved": true
+        "approved": false
       }
     ],
     "isNew": false,
@@ -615,7 +615,7 @@
         "author": "Sonal C.",
         "rating": 5,
         "comment": "Pure luxury! Took this to a family wedding and got continuous praise.",
-        "approved": true
+        "approved": false
       }
     ],
     "isNew": true,

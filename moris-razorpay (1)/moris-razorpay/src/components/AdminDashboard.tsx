@@ -29,6 +29,7 @@ interface AdminDashboardProps {
   onUpdateCampaigns: (campaigns: BannerCampaign[]) => void;
   onUpdateCMS: (cms: CMSConfig) => void;
   onApproveReview: (productId: string, reviewId: string, approve: boolean) => void;
+  onDeleteReview?: (productId: string, reviewId: string) => void;
   onLogActivity: (action: string, details: string) => void;
   autoAuthenticated?: boolean;
   onLogoutAdmin?: () => void;
@@ -1324,12 +1325,38 @@ export default function AdminDashboard({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-gradient-to-r from-gold-500 to-gold-400 text-navy-950 font-display font-semibold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
-                  >
-                    Save CMS Headings Layout
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-gradient-to-r from-gold-500 to-gold-400 text-navy-950 font-display font-semibold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
+                    >
+                      Save CMS Headings Layout
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Reset CMS headlines to default template?')) {
+                          setCmsHeadline('M E R I S');
+                          setCmsSubheadline('BOUTIQUE COTTAGE CRAFTS');
+                          setCmsAbout('Premium organic wooden toys and custom stencils handcrafted by rural artisans.');
+                          onUpdateCMS({
+                            headline: 'M E R I S',
+                            subheadline: 'BOUTIQUE COTTAGE CRAFTS',
+                            aboutText: 'Premium organic wooden toys and custom stencils handcrafted by rural artisans.',
+                            contactEmail: cms.contactEmail,
+                            contactPhone: cms.contactPhone,
+                            contactAddress: cms.contactAddress,
+                            privacyPolicy: cms.privacyPolicy,
+                            termsConditions: cms.termsConditions
+                          });
+                          onLogActivity('Reset CMS Content', 'CMS fields restored to default template.');
+                        }
+                      }}
+                      className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-display font-semibold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
+                    >
+                      Reset Defaults
+                    </button>
+                  </div>
                 </form>
               </motion.div>
             )}
@@ -1376,9 +1403,20 @@ export default function AdminDashboard({
                               onApproveReview(product.id, review.id, !review.approved);
                               onLogActivity('Toggle Review Approval', `Toggled certification for review ID: ${review.id} by ${role}`);
                             }}
-                            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:border-gold-300 transition text-[10px] font-semibold cursor-pointer"
+                            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:border-gold-300 transition text-[10px] font-semibold cursor-pointer text-center"
                           >
                             Toggle Approval
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (onDeleteReview) {
+                                onDeleteReview(product.id, review.id);
+                                onLogActivity('Purge Client Review', `Review ID: ${review.id} deleted by ${role}`);
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg hover:border-red-300 transition text-[10px] font-semibold cursor-pointer text-center"
+                          >
+                            Delete Review
                           </button>
                         </div>
                       </div>

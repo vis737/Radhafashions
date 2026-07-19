@@ -606,6 +606,21 @@ export default function App() {
     );
   };
 
+  const handleDeleteReviewContent = (productId: string, reviewId: string) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === productId) {
+          const filteredRevs = p.reviews.filter((r) => r.id !== reviewId);
+          return {
+            ...p,
+            reviews: filteredRevs
+          };
+        }
+        return p;
+      })
+    );
+  };
+
   // Add custom user reviews dynamically
   const handleAddNewUserReview = (productId: string, review: Omit<Review, 'id'>) => {
     const newRev: Review = {
@@ -1330,6 +1345,7 @@ export default function App() {
                   )
                 }
                 onApproveReview={handleApproveReviewContent}
+                onDeleteReview={handleDeleteReviewContent}
                 onUpdateCampaigns={(camp) => setCampaigns(camp)}
                 onUpdateCMS={(cM) => setCms(cM)}
                 onLogActivity={handleLogActivity}
