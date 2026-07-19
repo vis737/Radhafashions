@@ -1,5 +1,44 @@
 [
   {
+    "id": "wa_1784366988098_606",
+    "recipientPhone": "+919626773529",
+    "recipientEmail": "sigmacat118626@gmail.com",
+    "recipientName": "augustin",
+    "message": "💚 *MERIS ARTISANAL STUDIO* 💚\n\nHello *augustin*,\n\nWe are absolutely delighted to confirm that your booking *#MR-698617-976* has been successfully secured in our workshop ledger! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹101807*\nMethod: *UPI*\nEst. Shipping: *Standard Ground*\n\nOur master craftspeople are preparing your items. 🪵🧑‍🎨\n\n📍 *Track Live inside your Account Dashboard*:\n👉 http://localhost:3000/?track=MR-698617-976\n\nThank you for supporting traditional handmade toys and premium local gifts. 💚",
+    "badge": "BOOKING SECURED",
+    "type": "booking",
+    "sentAt": "7/18/2026, 2:59:48 PM",
+    "orderNumber": "MR-698617-976",
+    "status": "Delivered",
+    "trackLink": "http://localhost:3000/?track=MR-698617-976"
+  },
+  {
+    "id": "wa_1783932907127_142",
+    "recipientPhone": "+919626773529",
+    "recipientEmail": "sigmacat118626@gmail.com",
+    "recipientName": "augustin",
+    "message": "💚 *MERIS ARTISANAL STUDIO* 💚\n\nHello *augustin*,\n\nWe are absolutely delighted to confirm that your booking *#MR-291285-325* has been successfully secured in our workshop ledger! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹2178*\nMethod: *UPI*\nEst. Shipping: *Standard Ground*\n\nOur master craftspeople are preparing your items. 🪵🧑‍🎨\n\n📍 *Track Live inside your Account Dashboard*:\n👉 http://localhost:3000/?track=MR-291285-325\n\nThank you for supporting traditional handmade toys and premium local gifts. 💚",
+    "badge": "BOOKING SECURED",
+    "type": "booking",
+    "sentAt": "7/13/2026, 2:25:07 PM",
+    "orderNumber": "MR-291285-325",
+    "status": "Delivered",
+    "trackLink": "http://localhost:3000/?track=MR-291285-325"
+  },
+  {
+    "id": "wa_1783931332033_204",
+    "recipientPhone": "+919482886761",
+    "recipientEmail": "charankumar0607@gmail.com",
+    "recipientName": "charankumar0607",
+    "message": "💚 *MERIS ARTISANAL STUDIO* 💚\n\nHello *charankumar0607*,\n\nWe are absolutely delighted to confirm that your booking *#MR-132798-768* has been successfully secured in our workshop ledger! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹1633*\nMethod: *UPI*\nEst. Shipping: *Standard Ground*\n\nOur master craftspeople are preparing your items. 🪵🧑‍🎨\n\n📍 *Track Live inside your Account Dashboard*:\n👉 http://localhost:3000/?track=MR-132798-768\n\nThank you for supporting traditional handmade toys and premium local gifts. 💚",
+    "badge": "BOOKING SECURED",
+    "type": "booking",
+    "sentAt": "7/13/2026, 1:58:52 PM",
+    "orderNumber": "MR-132798-768",
+    "status": "Delivered",
+    "trackLink": "http://localhost:3000/?track=MR-132798-768"
+  },
+  {
     "id": "wa_1783758333497_903",
     "recipientPhone": "+919482886761",
     "recipientEmail": "charankumar0607@gmail.com",

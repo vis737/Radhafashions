@@ -17,11 +17,11 @@
     "shortDescription": "Organic wooden rings coated in safe herbal-dyed colors, supporting early sensory development.",
     "description": "This elegant Stacking Ring Tower is crafted from native beechwood and finished with food-grade seed oils and natural pigments. Non-toxic, fully hand-rounded, and exceptionally smooth for tender hands. It supports hand-eye coordination, size sorting, and visual acuity.",
     "specifications": {
-      "Material": "Sustainably sourced Beechwood",
-      "Age Recommendation": "12+ months",
-      "Dimensions": "18 x 9 x 9 cm",
       "Weight": "320g",
-      "Coating": "Natural plant-extract pigments"
+      "Coating": "Natural plant-extract pigments",
+      "Material": "Sustainably sourced Beechwood",
+      "Dimensions": "18 x 9 x 9 cm",
+      "Age Recommendation": "12+ months"
     },
     "reviews": [
       {
@@ -48,110 +48,6 @@
     "vendorId": null
   },
   {
-    "id": "toy-2",
-    "sku": "TOY-CR-BUNNY",
-    "name": "Meris Hand-Knit Crochet Cotton Bunny",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 1199,
-    "discountPrice": 999,
-    "stock": 8,
-    "rating": 4.9,
-    "ratingCount": 62,
-    "images": [
-      "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton.",
-    "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
-    "specifications": {
-      "Material": "100% Organic Indigo Yarn",
-      "Filling": "Hypoallergenic Recycled Plush Polyfill",
-      "Height": "28 cm",
-      "Wash Care": "Gentle hand wash inside net pouch"
-    },
-    "reviews": [
-      {
-        "id": "r-3",
-        "date": "2026-04-18",
-        "author": "Priyanka R.",
-        "rating": 5,
-        "comment": "Unbelievable quality. The stitches are extremely uniform. Highly recommend for infants.",
-        "approved": true
-      }
-    ],
-    "isNew": true,
-    "brand": "Meris Handwoven",
-    "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "wood-1",
-    "sku": "WD-BOX-ENGRAVED",
-    "name": "Imperial Floral-Carved Wooden Keepsake Box",
-    "category": "Wood Crafted Gifts",
-    "categorySlug": "wood-gifts",
-    "price": 1890,
-    "discountPrice": 1599,
-    "stock": 12,
-    "rating": 4.7,
-    "ratingCount": 88,
-    "images": [
-      "https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Delicate hand-engraved wooden jewelry chest crafted in block rosewood with premium gold hinges.",
-    "description": "An elegant addition to any vanity. Heavily inspired by conventional architecture, this storage and organizer box displays detailed floral motifs etched meticulously by expert carvers. The inside is cushioned in plush velvet fabric, providing outstanding protection for keys or jewelry.",
-    "specifications": {
-      "Timber Type": "Indian Rosewood (Sheesham)",
-      "Hardware": "Antique Solid Brass Latches & Hinges",
-      "Dimensions": "20 x 12 x 8 cm",
-      "Lining": "Crimson Premium Velvet interior"
-    },
-    "reviews": [
-      {
-        "id": "r-4",
-        "date": "2026-05-30",
-        "author": "Vikram J.",
-        "rating": 5,
-        "comment": "Outstanding craftsmanship. Smells exactly like real sweet rosewood.",
-        "approved": true
-      }
-    ],
-    "isBestseller": true,
-    "brand": "Meris Artisanal",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "wood-2",
-    "sku": "WD-SHELF-GEO",
-    "name": "Geometric Hexagonal Floating Timber Shelves",
-    "category": "Wood Crafted Gifts",
-    "categorySlug": "wood-gifts",
-    "price": 2499,
-    "discountPrice": 1999,
-    "stock": 4,
-    "rating": 4.6,
-    "ratingCount": 35,
-    "images": [
-      "https://images.unsplash.com/photo-1532372320978-9b4d8a3a0245?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Set of 3 interlocking luxury pine-wood bookshelves with natural oiled varnish finishes.",
-    "description": "Add depth to your home with these majestic modern honeycomb shelves. Precisely cut pine wood planks locked at precise angles. Lightweight yet durable enough to display small pots, candles, or souvenir clocks.",
-    "specifications": {
-      "Wood Type": "Radiata White Pine",
-      "Finish": "Satin matte heatproof sealant",
-      "Weight Capacity": "Up to 5 kg per bracket",
-      "Mounting Hardware": "Concealed metal brackets included"
-    },
-    "reviews": [],
-    "isNew": true,
-    "brand": "Meris Space",
-    "availability": "low-stock",
-    "vendorId": null
-  },
-  {
     "id": "bag-1",
     "sku": "BG-SADDLE-TAN",
     "name": "Serena Minimalist Vegan Saddle Tote",
@@ -169,10 +65,10 @@
     "shortDescription": "Structured top-tier synthetic leather handbag in tan finish, with gold-accent magnet buckles.",
     "description": "Upgrade your morning commute with our best-selling saddle shoulder container. Crafted from durable weather-resistant vegan polyurethane leather with exquisite top stitching. The dual interior chamber is extremely spacious, easily housing your tablet, cosmetic bags, and everyday carry essentials.",
     "specifications": {
+      "Strap Type": "Adjustable belt-style harness",
       "Outer Cover": "Ultra-soft Eco-polyurethane leather",
       "Inner Liners": "Recycled linen-sateen canvas",
-      "Metal Accents": "18k Gold plated premium electro-lacquered alloy",
-      "Strap Type": "Adjustable belt-style harness"
+      "Metal Accents": "18k Gold plated premium electro-lacquered alloy"
     },
     "reviews": [
       {
@@ -184,46 +80,57 @@
         "approved": true
       }
     ],
+    "isNew": false,
     "isBestseller": true,
     "brand": "Meris Couture",
     "availability": "in-stock",
     "vendorId": null
   },
   {
-    "id": "bag-2",
-    "sku": "BG-EMB-CLUTCH",
-    "name": "Royal Heritage Golden-Zardozi Evening Clutch",
-    "category": "Handbags",
-    "categorySlug": "handbags",
-    "price": 1999,
-    "discountPrice": 1699,
-    "stock": 0,
-    "rating": 4.9,
-    "ratingCount": 41,
+    "id": "stat-1",
+    "sku": "ST-JRN-LINEN",
+    "name": "Gold-Foil Archival Linen-Bound Journal",
+    "category": "Stationeries",
+    "categorySlug": "stationeries",
+    "price": 999,
+    "discountPrice": 849,
+    "stock": 40,
+    "rating": 4,
+    "ratingCount": 2,
     "images": [
-      "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Velvety dark clutch bag with handwoven metallic bullion thread vine pattern and chain strap.",
-    "description": "An outstanding luxury clutch ideal for festive weddings and elegant dinners. Intricately embellished with golden beads and coiled wire work known as Zardozi. Emits a stellar glistening reflect under dim evening lights.",
+    "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper.",
+    "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
     "specifications": {
-      "Base Fabric": "Silk Blend Deep Navy Velvet",
-      "Embroidery": "Artisan Handloom bullion metallic gold thread",
-      "Closure": "Secure golden magnetic lock",
-      "Chain Strap": "Removable vintage gold-link chain (110cm)"
+      "Accents": "Luxury hot-stamped gold foil text cover",
+      "Binding": "Lie-flat stitched Smyth Sewn",
+      "Page Count": "160 ruled journal pages",
+      "Paper Type": "120 GSM Acid-Free Archival cream lines"
     },
     "reviews": [
       {
-        "id": "r-6",
-        "date": "2026-05-18",
-        "author": "Sonal C.",
+        "id": "rev-1784388916458",
+        "date": "2026-07-18",
+        "author": "jerish",
+        "rating": 3,
+        "comment": "best",
+        "approved": true
+      },
+      {
+        "id": "r-9",
+        "date": "2026-06-13",
+        "author": "Karandeep S.",
         "rating": 5,
-        "comment": "Pure luxury! Took this to a family wedding and got continuous praise.",
+        "comment": "The paper is incredibly lush. My wet ink fountain pens glide on it like glass.",
         "approved": true
       }
     ],
-    "isNew": true,
-    "brand": "Meris Heritage",
-    "availability": "out-of-stock",
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Script",
+    "availability": "in-stock",
     "vendorId": null
   },
   {
@@ -243,13 +150,159 @@
     "shortDescription": "Classic math tutor abacus with 10 rows of colorful child-safe rounded timber sliders.",
     "description": "An educational tool designed to introduce basic counting, addition, and division. Crafted beautifully from light-colored beech wood with smooth non-splinter dowels. Finished in lovely pastel tones, blending harmoniously into modern nurseries.",
     "specifications": {
-      "Base Frame": "Light Birch Solid Wood",
       "Beads": "Rounded maple wood sliding units (100 total)",
+      "Base Frame": "Light Birch Solid Wood",
       "Dimensions": "24 x 21 x 6 cm",
       "Skill Focus": "Early math concept and motor precision"
     },
     "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
     "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "ent-1",
+    "sku": "EN-CH-WOOD",
+    "name": "Mahogany & Maple Handcarved Chess Board",
+    "category": "Entertainment Products",
+    "categorySlug": "entertainment",
+    "price": 4999,
+    "discountPrice": 4299,
+    "stock": 3,
+    "rating": 4.9,
+    "ratingCount": 18,
+    "images": [
+      "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1580541832626-2a7131ee809f?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Stately 14-inch solid wood checkers and chess console with velvet interior slots for pieces.",
+    "description": "Crafted with absolute tournament precision. Each chessman is carved individually by hand, and weighted in velvet bases for solid tactile response. The dual-hinged body folds into a sturdy felt-divided storage chest.",
+    "specifications": {
+      "Dimensions": "36 x 36 cm fully open",
+      "King Height": "3.25 inches (7.6 cm)",
+      "Dark Wood Blocks": "Warm Indonesian Mahogany",
+      "Light Wood Blocks": "Natural Hard Sugar Maple"
+    },
+    "reviews": [
+      {
+        "id": "r-10",
+        "date": "2026-05-25",
+        "author": "Aditya G.",
+        "rating": 5,
+        "comment": "Phenomenal piece. This is heirloom quality. The weights of the knights feel so solid.",
+        "approved": true
+      }
+    ],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Heritage",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
+    "id": "kolam-2",
+    "sku": "KL-ST-PEACOCK",
+    "name": "Royal Peacock Mandala Rangoli Brass Template",
+    "category": "Kolam Stencils",
+    "categorySlug": "kolam",
+    "price": 799,
+    "discountPrice": 649,
+    "stock": 14,
+    "rating": 4.9,
+    "ratingCount": 46,
+    "images": [
+      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Magnificent circular brass template displaying detailed laser-cut peacock and feather mandalas.",
+    "description": "A luxurious heirloom template for Indian festivals. Crafted from high-gloss solid brass plate, this mandala stenciler yields immaculate geometric lines of peacock feather motifs. Simply sprinkle traditional colored powders or rice flour.",
+    "specifications": {
+      "Pattern": "Bespoke Peacock Mandala",
+      "Diameter": "28 cm circular plate",
+      "Material": "High-gloss Rust-resistant Brass Alloy",
+      "Cleanliness": "Warm water rinse & towel dry"
+    },
+    "reviews": [
+      {
+        "id": "r-k2-1",
+        "date": "2026-06-22",
+        "author": "Lakshmi S.",
+        "rating": 5,
+        "comment": "Spectacular quality! Brass is heavy and stays firmly in place during drawing.",
+        "approved": true
+      }
+    ],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris festive",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "stat-3",
+    "sku": "ST-CAL-SET",
+    "name": "Calligraphy Starter Set with Raw Brass Inkwell",
+    "category": "Stationeries",
+    "categorySlug": "stationeries",
+    "price": 1850,
+    "discountPrice": 1599,
+    "stock": 8,
+    "rating": 4.8,
+    "ratingCount": 22,
+    "images": [
+      "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Stunning writing gift kit including a wood-nib stylus, 4 premium steel nib points, and an antique brass ink pot.",
+    "description": "Rekindle the majestic art of hand-written letters. This curation features an ergonomic polished rosewood handle stylus, fine steel drawing nibs, and a heavy brass inkwell containing 30ml of rich pigment organic charcoal black ink.",
+    "specifications": {
+      "Nibs": "4 high-flex spring steel calligraphy points",
+      "Stylus": "Hand-turned Rosewood stylus",
+      "Inkwell": "Solid machined Brass leakproof screw-cap vessel",
+      "Packaging": "Lined premium cardboard giftbox"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Script",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "kolam-1",
+    "sku": "KL-ST-LOTUS",
+    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
+    "category": "Kolam Stencils",
+    "categorySlug": "kolam",
+    "price": 499,
+    "discountPrice": 399,
+    "stock": 22,
+    "rating": 4.8,
+    "ratingCount": 115,
+    "images": [
+      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
+    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
+    "specifications": {
+      "Material": "Military-Grade Shatterproof Acrylic",
+      "Thickness": "3.0 mm",
+      "Dimensions": "30 x 30 cm circular plate",
+      "Stencil Design": "Sacred Golden Mandala Lotus grid"
+    },
+    "reviews": [
+      {
+        "id": "r-8",
+        "date": "2026-06-11",
+        "author": "Meenakshi N.",
+        "rating": 5,
+        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
+        "approved": true
+      }
+    ],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris festive",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -273,8 +326,8 @@
     "specifications": {
       "Wax": "100% Eco-friendly Organic Soy Wax",
       "Wick": "Crackling wooden wick plate",
-      "Burn Lifetime": "45+ clean burning hours",
-      "Container": "Terracotta ceramic reuseable tumled jar"
+      "Container": "Terracotta ceramic reuseable tumled jar",
+      "Burn Lifetime": "45+ clean burning hours"
     },
     "reviews": [
       {
@@ -286,206 +339,88 @@
         "approved": true
       }
     ],
+    "isNew": false,
     "isBestseller": true,
     "brand": "Meris Botanics",
     "availability": "in-stock",
     "vendorId": null
   },
   {
-    "id": "home-2",
-    "sku": "HM-MUG-CERAMIC",
-    "name": "Artisanal Studio Speckled Ripple Mug",
-    "category": "Home Gifts",
-    "categorySlug": "home",
-    "price": 549,
-    "discountPrice": 449,
-    "stock": 30,
-    "rating": 4.5,
-    "ratingCount": 142,
+    "id": "wood-1",
+    "sku": "WD-BOX-ENGRAVED",
+    "name": "Imperial Floral-Carved Wooden Keepsake Box",
+    "category": "Wood Crafted Gifts",
+    "categorySlug": "wood-gifts",
+    "price": 1890,
+    "discountPrice": 1599,
+    "stock": 12,
+    "rating": 4.7,
+    "ratingCount": 88,
     "images": [
-      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Stony clay ceramic Mug finished with a double-glazed speckled oatmeal and gold-rim effect.",
-    "description": "Each mug is single-thrown by hand on a potters wheel, rendering a completely unique swirling pattern and raw feel. Holds up to 350ml of your favorite fresh coffee filter brews. Double-fired to support heavy microwave use safely.",
+    "shortDescription": "Delicate hand-engraved wooden jewelry chest crafted in block rosewood with premium gold hinges.",
+    "description": "An elegant addition to any vanity. Heavily inspired by conventional architecture, this storage and organizer box displays detailed floral motifs etched meticulously by expert carvers. The inside is cushioned in plush velvet fabric, providing outstanding protection for keys or jewelry.",
     "specifications": {
-      "Production": "Hand-thrown studio stoneware clay",
-      "Volume Capacity": "350 ml",
-      "Safety": "Dishwasher and Microwave certified safe",
-      "Glazing Coating": "Lead-free food-compliant silica glaze"
-    },
-    "reviews": [],
-    "brand": "Meris Ceramics",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "kolam-1",
-    "sku": "KL-ST-LOTUS",
-    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
-    "category": "Kolam Stencils",
-    "categorySlug": "kolam",
-    "price": 499,
-    "discountPrice": 399,
-    "stock": 22,
-    "rating": 4.8,
-    "ratingCount": 115,
-    "images": [
-      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
-    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
-    "specifications": {
-      "Material": "Military-Grade Shatterproof Acrylic",
-      "Stencil Design": "Sacred Golden Mandala Lotus grid",
-      "Thickness": "3.0 mm",
-      "Dimensions": "30 x 30 cm circular plate"
+      "Lining": "Crimson Premium Velvet interior",
+      "Hardware": "Antique Solid Brass Latches & Hinges",
+      "Dimensions": "20 x 12 x 8 cm",
+      "Timber Type": "Indian Rosewood (Sheesham)"
     },
     "reviews": [
       {
-        "id": "r-8",
-        "date": "2026-06-11",
-        "author": "Meenakshi N.",
+        "id": "r-4",
+        "date": "2026-05-30",
+        "author": "Vikram J.",
         "rating": 5,
-        "comment": "So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.",
-        "approved": true
-      }
-    ],
-    "isBestseller": true,
-    "brand": "Meris festive",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "stat-1",
-    "sku": "ST-JRN-LINEN",
-    "name": "Gold-Foil Archival Linen-Bound Journal",
-    "category": "Stationeries",
-    "categorySlug": "stationeries",
-    "price": 999,
-    "discountPrice": 849,
-    "stock": 40,
-    "rating": 4.9,
-    "ratingCount": 95,
-    "images": [
-      "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper.",
-    "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
-    "specifications": {
-      "Paper Type": "120 GSM Acid-Free Archival cream lines",
-      "Page Count": "160 ruled journal pages",
-      "Binding": "Lie-flat stitched Smyth Sewn",
-      "Accents": "Luxury hot-stamped gold foil text cover"
-    },
-    "reviews": [
-      {
-        "id": "r-9",
-        "date": "2026-06-13",
-        "author": "Karandeep S.",
-        "rating": 5,
-        "comment": "The paper is incredibly lush. My wet ink fountain pens glide on it like glass.",
+        "comment": "Outstanding craftsmanship. Smells exactly like real sweet rosewood.",
         "approved": true
       }
     ],
     "isNew": false,
     "isBestseller": true,
-    "brand": "Meris Script",
+    "brand": "Meris Artisanal",
     "availability": "in-stock",
     "vendorId": null
   },
   {
-    "id": "stat-2",
-    "sku": "ST-PEN-BRASS",
-    "name": "Raw Sovereign Solid Brass Mechanical Pen",
-    "category": "Stationeries",
-    "categorySlug": "stationeries",
-    "price": 1499,
-    "discountPrice": 1199,
-    "stock": 5,
-    "rating": 4.6,
-    "ratingCount": 30,
-    "images": [
-      "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Hefty, perfectly balanced writing companion machined from premium lead-free hexagonal brass rods.",
-    "description": "An object of extreme luxury weight. This drafting and writing tool is milled from solid hexagonal brass. Develops a gorgeous antique patina over months of personal usage. Includes a premium smooth German-engineered ballpoint ink cartridge.",
-    "specifications": {
-      "Metal Core": "100% Solid Industrial Hex Brass",
-      "Weight": "42g (perfectly balanced offset)",
-      "Ink Cartridge": "Schmidt EasyFlow 9000 Black (inclusive)",
-      "Mechanism": "Precision silent spring lock action"
-    },
-    "reviews": [],
-    "isNew": true,
-    "brand": "Meris Script",
-    "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "ent-1",
-    "sku": "EN-CH-WOOD",
-    "name": "Mahogany & Maple Handcarved Chess Board",
-    "category": "Entertainment Products",
-    "categorySlug": "entertainment",
-    "price": 4999,
-    "discountPrice": 4299,
-    "stock": 3,
+    "id": "toy-2",
+    "sku": "TOY-CR-BUNNY",
+    "name": "Meris Hand-Knit Crochet Cotton Bunny",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 1199,
+    "discountPrice": 999,
+    "stock": 8,
     "rating": 4.9,
-    "ratingCount": 18,
+    "ratingCount": 62,
     "images": [
-      "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1580541832626-2a7131ee809f?w=600&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Stately 14-inch solid wood checkers and chess console with velvet interior slots for pieces.",
-    "description": "Crafted with absolute tournament precision. Each chessman is carved individually by hand, and weighted in velvet bases for solid tactile response. The dual-hinged body folds into a sturdy felt-divided storage chest.",
+    "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton.",
+    "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
     "specifications": {
-      "Light Wood Blocks": "Natural Hard Sugar Maple",
-      "Dark Wood Blocks": "Warm Indonesian Mahogany",
-      "Dimensions": "36 x 36 cm fully open",
-      "King Height": "3.25 inches (7.6 cm)"
+      "Height": "28 cm",
+      "Filling": "Hypoallergenic Recycled Plush Polyfill",
+      "Material": "100% Organic Indigo Yarn",
+      "Wash Care": "Gentle hand wash inside net pouch"
     },
     "reviews": [
       {
-        "id": "r-10",
-        "date": "2026-05-25",
-        "author": "Aditya G.",
+        "id": "r-3",
+        "date": "2026-04-18",
+        "author": "Priyanka R.",
         "rating": 5,
-        "comment": "Phenomenal piece. This is heirloom quality. The weights of the knights feel so solid.",
+        "comment": "Unbelievable quality. The stitches are extremely uniform. Highly recommend for infants.",
         "approved": true
       }
     ],
     "isNew": true,
-    "brand": "Meris Heritage",
+    "isBestseller": false,
+    "brand": "Meris Handwoven",
     "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "btl-1",
-    "sku": "BT-COPPER-INF",
-    "name": "Sovereign Ayurvedic Pure Hammered Copper Bottle",
-    "category": "Return Gift Bottles",
-    "categorySlug": "bottles",
-    "price": 1399,
-    "discountPrice": 1199,
-    "stock": 20,
-    "rating": 4.7,
-    "ratingCount": 55,
-    "images": [
-      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Sleek 950ml leakproof copper canister styled with micro-hammered indent decorations.",
-    "description": "Encourage holistic hydration with this stunning copper water storage flask, designed to naturally detoxify and alkaline water. Hand-beaten detailing creates a premium golden sparkle and outstanding tactile grip. Wrapped in eco-friendly protective packaging.",
-    "specifications": {
-      "Material": "99.9% Pure Food-Grade Copper",
-      "Volume": "950 ml",
-      "Cap": "Threaded air-tight brass cap with silicone gasket",
-      "Design": "Traditional hand-hammered finish"
-    },
-    "reviews": [],
-    "brand": "Meris Wellness",
-    "availability": "in-stock",
     "vendorId": null
   },
   {
@@ -505,8 +440,8 @@
     "shortDescription": "Charming organic push-along toy elephant with smooth rolling wheels and non-toxic herbal coatings.",
     "description": "A beautiful heirloom toy designed to stimulate early motor precision and toddlers first steps. Hand-carved from sustainable timber and dyed using natural vegetable extracts, this elephant features gentle curves and solid axle performance.",
     "specifications": {
-      "Material": "Solid Beechwood",
       "Finish": "Herbal-dyed natural beeswax coating",
+      "Material": "Solid Beechwood",
       "Dimensions": "14 x 12 x 7 cm",
       "Age Recommendation": "10+ months"
     },
@@ -521,36 +456,38 @@
       }
     ],
     "isNew": true,
+    "isBestseller": false,
     "brand": "Meris Kids",
     "availability": "in-stock",
     "vendorId": null
   },
   {
-    "id": "wood-3",
-    "sku": "WD-DESK-ORG",
-    "name": "Royal Teakwood Desk Organizer & Letter Rack",
+    "id": "wood-2",
+    "sku": "WD-SHELF-GEO",
+    "name": "Geometric Hexagonal Floating Timber Shelves",
     "category": "Wood Crafted Gifts",
     "categorySlug": "wood-gifts",
-    "price": 1650,
-    "discountPrice": 1399,
-    "stock": 10,
-    "rating": 4.7,
-    "ratingCount": 29,
+    "price": 2499,
+    "discountPrice": 1999,
+    "stock": 4,
+    "rating": 4.6,
+    "ratingCount": 35,
     "images": [
-      "https://images.unsplash.com/photo-1606166187734-a4cb74079027?w=800&auto=format&fit=crop&q=80"
+      "https://images.unsplash.com/photo-1532372320978-9b4d8a3a0245?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Exquisite hand-planed teakwood desktop tray featuring a slotted letter rack and brass pen grooves.",
-    "description": "Keep your desktop curated. This premium desk organizer is carved from seasoned solid teakwood and polished with direct oil sealants to highlight its stunning natural golden-brown grains. Complete with non-slip velvet protective padding.",
+    "shortDescription": "Set of 3 interlocking luxury pine-wood bookshelves with natural oiled varnish finishes.",
+    "description": "Add depth to your home with these majestic modern honeycomb shelves. Precisely cut pine wood planks locked at precise angles. Lightweight yet durable enough to display small pots, candles, or souvenir clocks.",
     "specifications": {
-      "Timber Type": "Premium seasoned Teakwood",
-      "Polish": "Matte Linseed Oil hand-rubbed finish",
-      "Compartments": "3 vertical letter slots, 2 pen cradles",
-      "Dimensions": "24 x 15 x 12 cm"
+      "Finish": "Satin matte heatproof sealant",
+      "Wood Type": "Radiata White Pine",
+      "Weight Capacity": "Up to 5 kg per bracket",
+      "Mounting Hardware": "Concealed metal brackets included"
     },
     "reviews": [],
-    "isBestseller": true,
-    "brand": "Meris Artisanal",
-    "availability": "in-stock",
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Space",
+    "availability": "low-stock",
     "vendorId": null
   },
   {
@@ -576,6 +513,8 @@
       "Strap length": "Adjustable 115cm sling"
     },
     "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
     "brand": "Meris Couture",
     "availability": "in-stock",
     "vendorId": null
@@ -597,8 +536,8 @@
     "shortDescription": "Magnificent circular orbital tracking disc puzzle detailing celestial bodies and planetary paths.",
     "description": "Introduce kids to astrology and astrophysics. This premium orbital tracker features laser-carved stellar bodies that slot into concentric maple tracks. Beautifully polished to double as high-end nursery room decorations.",
     "specifications": {
-      "Material": "High-density Maple and Walnut veneer panels",
       "Coating": "Organic organic wood waxes",
+      "Material": "High-density Maple and Walnut veneer panels",
       "Dimensions": "32 cm diameter circular canvas",
       "Educational Focus": "Astrological paths and fine motor logic"
     },
@@ -612,8 +551,163 @@
         "approved": true
       }
     ],
+    "isNew": false,
     "isBestseller": true,
     "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "stat-2",
+    "sku": "ST-PEN-BRASS",
+    "name": "Raw Sovereign Solid Brass Mechanical Pen",
+    "category": "Stationeries",
+    "categorySlug": "stationeries",
+    "price": 1499,
+    "discountPrice": 1199,
+    "stock": 5,
+    "rating": 4.6,
+    "ratingCount": 30,
+    "images": [
+      "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Hefty, perfectly balanced writing companion machined from premium lead-free hexagonal brass rods.",
+    "description": "An object of extreme luxury weight. This drafting and writing tool is milled from solid hexagonal brass. Develops a gorgeous antique patina over months of personal usage. Includes a premium smooth German-engineered ballpoint ink cartridge.",
+    "specifications": {
+      "Weight": "42g (perfectly balanced offset)",
+      "Mechanism": "Precision silent spring lock action",
+      "Metal Core": "100% Solid Industrial Hex Brass",
+      "Ink Cartridge": "Schmidt EasyFlow 9000 Black (inclusive)"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Script",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
+    "id": "bag-2",
+    "sku": "BG-EMB-CLUTCH",
+    "name": "Royal Heritage Golden-Zardozi Evening Clutch",
+    "category": "Handbags",
+    "categorySlug": "handbags",
+    "price": 1999,
+    "discountPrice": 1699,
+    "stock": 0,
+    "rating": 4.9,
+    "ratingCount": 41,
+    "images": [
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Velvety dark clutch bag with handwoven metallic bullion thread vine pattern and chain strap.",
+    "description": "An outstanding luxury clutch ideal for festive weddings and elegant dinners. Intricately embellished with golden beads and coiled wire work known as Zardozi. Emits a stellar glistening reflect under dim evening lights.",
+    "specifications": {
+      "Closure": "Secure golden magnetic lock",
+      "Embroidery": "Artisan Handloom bullion metallic gold thread",
+      "Base Fabric": "Silk Blend Deep Navy Velvet",
+      "Chain Strap": "Removable vintage gold-link chain (110cm)"
+    },
+    "reviews": [
+      {
+        "id": "r-6",
+        "date": "2026-05-18",
+        "author": "Sonal C.",
+        "rating": 5,
+        "comment": "Pure luxury! Took this to a family wedding and got continuous praise.",
+        "approved": true
+      }
+    ],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Heritage",
+    "availability": "out-of-stock",
+    "vendorId": null
+  },
+  {
+    "id": "btl-2",
+    "sku": "BT-FLASK-PASTEL",
+    "name": "Pastel Vacuum Insulated Double-Walled Flask",
+    "category": "Return Gift Bottles",
+    "categorySlug": "bottles",
+    "price": 1150,
+    "discountPrice": 950,
+    "stock": 35,
+    "rating": 4.8,
+    "ratingCount": 40,
+    "images": [
+      "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Stunning lavender-cream double-walled thermos keeping cold drinks frosty for 24 hours.",
+    "description": "Crafted with premium grade stainless steel, this double-walled thermal flask features a leakproof silicone-sealed cap with a hand-stitched vegan leather carry handle. Finished in sweatproof powder coated lavender-cream colors.",
+    "specifications": {
+      "Insulation": "TempShield double-wall vacuum seal",
+      "Steel Type": "18/8 Pro-Grade food safe Stainless Steel",
+      "Performance": "24 hrs cold, 12 hrs hot",
+      "Volume Capacity": "650 ml"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Wellness",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "btl-1",
+    "sku": "BT-COPPER-INF",
+    "name": "Sovereign Ayurvedic Pure Hammered Copper Bottle",
+    "category": "Return Gift Bottles",
+    "categorySlug": "bottles",
+    "price": 1399,
+    "discountPrice": 1199,
+    "stock": 20,
+    "rating": 4.7,
+    "ratingCount": 55,
+    "images": [
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Sleek 950ml leakproof copper canister styled with micro-hammered indent decorations.",
+    "description": "Encourage holistic hydration with this stunning copper water storage flask, designed to naturally detoxify and alkaline water. Hand-beaten detailing creates a premium golden sparkle and outstanding tactile grip. Wrapped in eco-friendly protective packaging.",
+    "specifications": {
+      "Cap": "Threaded air-tight brass cap with silicone gasket",
+      "Design": "Traditional hand-hammered finish",
+      "Volume": "950 ml",
+      "Material": "99.9% Pure Food-Grade Copper"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Wellness",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "wood-3",
+    "sku": "WD-DESK-ORG",
+    "name": "Royal Teakwood Desk Organizer & Letter Rack",
+    "category": "Wood Crafted Gifts",
+    "categorySlug": "wood-gifts",
+    "price": 1650,
+    "discountPrice": 1399,
+    "stock": 10,
+    "rating": 4.7,
+    "ratingCount": 29,
+    "images": [
+      "https://images.unsplash.com/photo-1606166187734-a4cb74079027?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Exquisite hand-planed teakwood desktop tray featuring a slotted letter rack and brass pen grooves.",
+    "description": "Keep your desktop curated. This premium desk organizer is carved from seasoned solid teakwood and polished with direct oil sealants to highlight its stunning natural golden-brown grains. Complete with non-slip velvet protective padding.",
+    "specifications": {
+      "Polish": "Matte Linseed Oil hand-rubbed finish",
+      "Dimensions": "24 x 15 x 12 cm",
+      "Timber Type": "Premium seasoned Teakwood",
+      "Compartments": "3 vertical letter slots, 2 pen cradles"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Artisanal",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -634,79 +728,45 @@
     "shortDescription": "Speckled stoneware clay diffuse burner styled with organic carved apertures and copper oil dish.",
     "description": "Elevate your sensory experiences. Simply place a wax tea-candle in the lower chamber and add organic oils to the deep top copper basin. The custom speckled clay filters a warm amber glow, diffusing soothing botanical fragrances perfectly.",
     "specifications": {
-      "Stoneware": "Speckled Oatmeal Studio Clay",
       "Basin": "100% Spun Copper heating plate",
-      "Dimensions": "11 x 10 cm cylindric body",
-      "Safety": "Heat-treated non-cracking glaze"
+      "Safety": "Heat-treated non-cracking glaze",
+      "Stoneware": "Speckled Oatmeal Studio Clay",
+      "Dimensions": "11 x 10 cm cylindric body"
     },
     "reviews": [],
     "isNew": true,
+    "isBestseller": false,
     "brand": "Meris Ceramics",
     "availability": "in-stock",
     "vendorId": null
   },
   {
-    "id": "kolam-2",
-    "sku": "KL-ST-PEACOCK",
-    "name": "Royal Peacock Mandala Rangoli Brass Template",
-    "category": "Kolam Stencils",
-    "categorySlug": "kolam",
-    "price": 799,
-    "discountPrice": 649,
-    "stock": 14,
-    "rating": 4.9,
-    "ratingCount": 46,
+    "id": "home-2",
+    "sku": "HM-MUG-CERAMIC",
+    "name": "Artisanal Studio Speckled Ripple Mug",
+    "category": "Home Gifts",
+    "categorySlug": "home",
+    "price": 549,
+    "discountPrice": 449,
+    "stock": 30,
+    "rating": 4.5,
+    "ratingCount": 142,
     "images": [
-      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=800&auto=format&fit=crop&q=80"
+      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Magnificent circular brass template displaying detailed laser-cut peacock and feather mandalas.",
-    "description": "A luxurious heirloom template for Indian festivals. Crafted from high-gloss solid brass plate, this mandala stenciler yields immaculate geometric lines of peacock feather motifs. Simply sprinkle traditional colored powders or rice flour.",
+    "shortDescription": "Stony clay ceramic Mug finished with a double-glazed speckled oatmeal and gold-rim effect.",
+    "description": "Each mug is single-thrown by hand on a potters wheel, rendering a completely unique swirling pattern and raw feel. Holds up to 350ml of your favorite fresh coffee filter brews. Double-fired to support heavy microwave use safely.",
     "specifications": {
-      "Material": "High-gloss Rust-resistant Brass Alloy",
-      "Pattern": "Bespoke Peacock Mandala",
-      "Diameter": "28 cm circular plate",
-      "Cleanliness": "Warm water rinse & towel dry"
-    },
-    "reviews": [
-      {
-        "id": "r-k2-1",
-        "date": "2026-06-22",
-        "author": "Lakshmi S.",
-        "rating": 5,
-        "comment": "Spectacular quality! Brass is heavy and stays firmly in place during drawing.",
-        "approved": true
-      }
-    ],
-    "isNew": true,
-    "brand": "Meris festive",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "stat-3",
-    "sku": "ST-CAL-SET",
-    "name": "Calligraphy Starter Set with Raw Brass Inkwell",
-    "category": "Stationeries",
-    "categorySlug": "stationeries",
-    "price": 1850,
-    "discountPrice": 1599,
-    "stock": 8,
-    "rating": 4.8,
-    "ratingCount": 22,
-    "images": [
-      "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Stunning writing gift kit including a wood-nib stylus, 4 premium steel nib points, and an antique brass ink pot.",
-    "description": "Rekindle the majestic art of hand-written letters. This curation features an ergonomic polished rosewood handle stylus, fine steel drawing nibs, and a heavy brass inkwell containing 30ml of rich pigment organic charcoal black ink.",
-    "specifications": {
-      "Stylus": "Hand-turned Rosewood stylus",
-      "Nibs": "4 high-flex spring steel calligraphy points",
-      "Inkwell": "Solid machined Brass leakproof screw-cap vessel",
-      "Packaging": "Lined premium cardboard giftbox"
+      "Safety": "Dishwasher and Microwave certified safe",
+      "Production": "Hand-thrown studio stoneware clay",
+      "Glazing Coating": "Lead-free food-compliant silica glaze",
+      "Volume Capacity": "350 ml"
     },
     "reviews": [],
-    "isNew": true,
-    "brand": "Meris Script",
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Ceramics",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -727,41 +787,15 @@
     "shortDescription": "Hand-turned walnut wood circular solitaire board styled with 33 hand-swirled custom glass spheres.",
     "description": "An object of outstanding intellectual engagement. This single-player strategic tabletop game is carved from dark American walnut and features a grooved perimeter track to secure captured glass marbles.",
     "specifications": {
-      "Platter Wood": "Natural high-grade American Walnut",
+      "Finish": "Polished silk-varnish coating",
       "Marbles": "33 hand-crafted swirled decorative glass spheres",
       "Diameter": "30 cm circular console",
-      "Finish": "Polished silk-varnish coating"
+      "Platter Wood": "Natural high-grade American Walnut"
     },
     "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
     "brand": "Meris Heritage",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "btl-2",
-    "sku": "BT-FLASK-PASTEL",
-    "name": "Pastel Vacuum Insulated Double-Walled Flask",
-    "category": "Return Gift Bottles",
-    "categorySlug": "bottles",
-    "price": 1150,
-    "discountPrice": 950,
-    "stock": 35,
-    "rating": 4.8,
-    "ratingCount": 40,
-    "images": [
-      "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Stunning lavender-cream double-walled thermos keeping cold drinks frosty for 24 hours.",
-    "description": "Crafted with premium grade stainless steel, this double-walled thermal flask features a leakproof silicone-sealed cap with a hand-stitched vegan leather carry handle. Finished in sweatproof powder coated lavender-cream colors.",
-    "specifications": {
-      "Steel Type": "18/8 Pro-Grade food safe Stainless Steel",
-      "Insulation": "TempShield double-wall vacuum seal",
-      "Volume Capacity": "650 ml",
-      "Performance": "24 hrs cold, 12 hrs hot"
-    },
-    "reviews": [],
-    "isNew": true,
-    "brand": "Meris Wellness",
     "availability": "in-stock",
     "vendorId": null
   }

@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
 import { generateInvoicePDF } from '../lib/invoiceGenerator';
+import DOMPurify from 'dompurify';
 
 interface AccountPanelProps {
   wishlistProducts: Product[];
@@ -1878,7 +1879,7 @@ export default function AccountPanel({
                           >
                             <div 
                               className="bg-white rounded-xl shadow-sm"
-                              dangerouslySetInnerHTML={{ __html: selectedEmail.bodyHtml }}
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.bodyHtml) }}
                             />
                           </div>
                         </div>

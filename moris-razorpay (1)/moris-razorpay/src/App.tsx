@@ -237,28 +237,35 @@ export default function App() {
   useEffect(() => {
     const loadCatalogFromBackend = async () => {
       try {
-        const [prodsRes, coupsRes, campsRes, cmsRes] = await Promise.all([
+        const [prodsRes, coupsRes, campsRes, cmsRes, sessionRes] = await Promise.all([
           fetch('/api/catalog/products'),
           fetch('/api/catalog/coupons'),
           fetch('/api/catalog/campaigns'),
-          fetch('/api/catalog/cms')
+          fetch('/api/catalog/cms'),
+          fetch('/api/admin/session').catch(() => null)
         ]);
         
-        if (prodsRes.ok) {
+        if (prodsRes && prodsRes.ok) {
           const prods = await prodsRes.json();
           setProducts(prods);
         }
-        if (coupsRes.ok) {
+        if (coupsRes && coupsRes.ok) {
           const coups = await coupsRes.json();
           setCoupons(coups);
         }
-        if (campsRes.ok) {
+        if (campsRes && campsRes.ok) {
           const camps = await campsRes.json();
           setCampaigns(camps);
         }
-        if (cmsRes.ok) {
+        if (cmsRes && cmsRes.ok) {
           const cmsData = await cmsRes.json();
           setCms(cmsData);
+        }
+        if (sessionRes && sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData.authenticated) {
+            setAdminBypassed(true);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch catalog from backend:', err);
@@ -1218,7 +1225,12 @@ export default function App() {
                 onUpdateCMS={(cM) => setCms(cM)}
                 onLogActivity={handleLogActivity}
                 autoAuthenticated={adminBypassed}
-                onLogoutAdmin={() => {
+                onLogoutAdmin={async () => {
+                  try {
+                    await fetch('/api/admin/logout', { method: 'POST' });
+                  } catch (err) {
+                    console.error('Logout sync failed:', err);
+                  }
                   setAdminBypassed(false);
                   handleSwapView('home');
                 }}

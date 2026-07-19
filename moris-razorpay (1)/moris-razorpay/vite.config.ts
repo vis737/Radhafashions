@@ -12,6 +12,8 @@ export default defineConfig(() => {
       },
     },
     server: {
+      host: true,
+      allowedHosts: true as const,
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify-file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
@@ -27,6 +29,11 @@ export default defineConfig(() => {
           '**/otp_db.json',
           '**/newsletter_db.json',
           '**/admin_config.json',
+          '**/products_db.json',
+          '**/coupons_db.json',
+          '**/campaigns_db.json',
+          '**/cms_db.json',
+          '**/activity_logs.json',
           '**/public/uploads/**',
         ],
       },

@@ -10,6 +10,9 @@ import multer from 'multer';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import cookieParser from 'cookie-parser';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import {
   INITIAL_PRODUCTS,
   INITIAL_COUPONS,
@@ -122,7 +125,8 @@ async function seedSupabaseDatabase() {
       console.log('Seeding Admin Config to Supabase...');
       const targetUser = process.env.ADMIN_USERNAME || 'admin';
       const targetPass = process.env.ADMIN_PASSWORD || 'meriseshop_admin_secure_2026';
-      await supabase.from('admin_config').insert({ username: targetUser, password: targetPass });
+      const hashedPass = bcrypt.hashSync(targetPass, 12);
+      await supabase.from('admin_config').insert({ username: targetUser, password: hashedPass });
     }
   } catch (err) {
     console.error('Failed to seed Supabase database:', err);
@@ -216,7 +220,168 @@ function writeLocalJsonDb(filePath: string, data: any) {
 const app = express();
 const PORT = 3000;
 
+const JWT_SECRET = process.env.JWT_SECRET || 'meriseshop_secure_jwt_secret_token_key_2026';
+const ALLOWED_ORIGIN = process.env.APP_URL || 'http://localhost:3000';
+
+const adminConfigPath = path.join(process.cwd(), 'admin_config.json');
+
+function readAdminConfig() {
+  try {
+    if (fs.existsSync(adminConfigPath)) {
+      return JSON.parse(fs.readFileSync(adminConfigPath, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Failed to read admin config JSON, using defaults');
+  }
+  return {
+    username: process.env.ADMIN_USERNAME || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'meriseshop_admin_secure_2026'
+  };
+}
+
+function writeAdminConfig(config: any) {
+  try {
+    fs.writeFileSync(adminConfigPath, JSON.stringify(config, null, 2), 'utf8');
+    if (supabase) {
+      supabase.from('admin_config').upsert({ username: config.username, password: config.password }).then(({ error }) => {
+        if (error) console.error('Supabase admin_config background upsert failed:', error);
+      });
+    }
+  } catch (err) {
+    console.error('Failed to write admin config JSON:', err);
+  }
+}
+
+function verifyAndUpgradeAdminPassword(plainInput: string, storedHashOrPlain: string): boolean {
+  if (storedHashOrPlain.startsWith('$2a$') || storedHashOrPlain.startsWith('$2b$')) {
+    return bcrypt.compareSync(plainInput, storedHashOrPlain);
+  }
+  
+  if (plainInput === storedHashOrPlain) {
+    const freshHash = bcrypt.hashSync(plainInput, 12);
+    const config = readAdminConfig();
+    config.password = freshHash;
+    writeAdminConfig(config);
+    console.log('◇ Transparently migrated plain administrative password to bcrypt hash.');
+    return true;
+  }
+  return false;
+}
+
+// Authentication verification middleware
+const verifyAdminToken = (req: any, res: any, next: any) => {
+  try {
+    const token = req.cookies?.admin_session;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthenticated administrative request.' });
+    }
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied: insufficient privileges.' });
+    }
+    req.admin = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Administrative session expired or invalid.' });
+  }
+};
+
 app.use(express.json());
+app.use(cookieParser());
+
+// HTTP to HTTPS Redirect & HSTS implementation
+app.use((req, res, next) => {
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  if (!isHttps && process.env.NODE_ENV === 'production') {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
+// Custom secure CORS Origin Handler
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin === ALLOWED_ORIGIN) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// OWASP Security Headers compliance
+app.use((req, res, next) => {
+  res.removeHeader('X-Powered-By');
+  
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' data: https://fonts.gstatic.com; " +
+    "img-src 'self' data: blob: https://images.unsplash.com https://hynmcyebbnhdrrxevkzg.supabase.co https://*.unsplash.com; " +
+    "connect-src 'self' https://hynmcyebbnhdrrxevkzg.supabase.co wss://hynmcyebbnhdrrxevkzg.supabase.co https://api.razorpay.com; " +
+    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; " +
+    "object-src 'none'; " +
+    "base-uri 'self';"
+  );
+  
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  
+  if (req.path.startsWith('/api/admin') || req.path.startsWith('/api/orders') || req.path.startsWith('/api/verify-otp')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+  }
+  
+  next();
+});
+
+// Memory Rate Limiter implementation
+interface RateLimitInfo {
+  count: number;
+  resetTime: number;
+}
+const rateLimitDb: Record<string, RateLimitInfo> = {};
+
+function rateLimiter(limit: number, windowMs: number) {
+  return (req: any, res: any, next: any) => {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const key = `${req.path}:${ip}`;
+    const now = Date.now();
+    
+    if (!rateLimitDb[key] || now > rateLimitDb[key].resetTime) {
+      rateLimitDb[key] = {
+        count: 1,
+        resetTime: now + windowMs,
+      };
+      return next();
+    }
+    
+    rateLimitDb[key].count++;
+    if (rateLimitDb[key].count > limit) {
+      const retryAfterSec = Math.ceil((rateLimitDb[key].resetTime - now) / 1000);
+      res.setHeader('Retry-After', retryAfterSec);
+      return res.status(429).json({
+        error: `Too many requests. Please try again in ${retryAfterSec} seconds.`,
+        retryAfterSec,
+      });
+    }
+    next();
+  };
+}
 
 const getRazorpayClient = () => {
   const keyId = process.env.RAZORPAY_KEY_ID;
@@ -254,7 +419,7 @@ const upload = multer({
 });
 
 // Image upload endpoint – returns { url } accessible from the browser
-app.post('/api/upload-image', upload.single('image'), (req: any, res: any) => {
+app.post('/api/upload-image', verifyAdminToken, upload.single('image'), (req: any, res: any) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file received.' });
   }
@@ -302,7 +467,7 @@ app.get('/api/catalog/products', async (req, res) => {
   }
 });
 
-app.post('/api/catalog/products', async (req, res) => {
+app.post('/api/catalog/products', verifyAdminToken, async (req, res) => {
   try {
     const productsList = req.body;
     if (!Array.isArray(productsList)) {
@@ -374,7 +539,7 @@ app.get('/api/catalog/coupons', async (req, res) => {
   }
 });
 
-app.post('/api/catalog/coupons', async (req, res) => {
+app.post('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
   try {
     const couponsList = req.body;
     if (!Array.isArray(couponsList)) {
@@ -431,7 +596,7 @@ app.get('/api/catalog/campaigns', async (req, res) => {
   }
 });
 
-app.post('/api/catalog/campaigns', async (req, res) => {
+app.post('/api/catalog/campaigns', verifyAdminToken, async (req, res) => {
   try {
     const campaignsList = req.body;
     if (!Array.isArray(campaignsList)) {
@@ -473,7 +638,7 @@ app.get('/api/catalog/cms', async (req, res) => {
   }
 });
 
-app.post('/api/catalog/cms', async (req, res) => {
+app.post('/api/catalog/cms', verifyAdminToken, async (req, res) => {
   try {
     const cmsConfig = req.body;
     writeLocalJsonDb(CMS_FILE_PATH, cmsConfig);
@@ -1563,7 +1728,7 @@ app.post('/api/orders/:orderNumber/status', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:orderNumber', async (req, res) => {
+app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
   try {
     const orderNum = req.params.orderNumber.trim().toUpperCase();
     const dbOrders = readOrdersDb();
@@ -1577,42 +1742,32 @@ app.delete('/api/orders/:orderNumber', async (req, res) => {
   }
 });
 
-const adminConfigPath = path.join(process.cwd(), 'admin_config.json');
 
-function readAdminConfig() {
-  try {
-    if (fs.existsSync(adminConfigPath)) {
-      return JSON.parse(fs.readFileSync(adminConfigPath, 'utf8'));
-    }
-  } catch (err) {
-    console.error('Failed to read admin config JSON, using defaults');
-  }
-  return {
-    username: process.env.ADMIN_USERNAME || 'admin',
-    password: process.env.ADMIN_PASSWORD || 'meriseshop_admin_secure_2026'
-  };
-}
 
-function writeAdminConfig(config: any) {
-  try {
-    fs.writeFileSync(adminConfigPath, JSON.stringify(config, null, 2), 'utf8');
-    if (supabase) {
-      supabase.from('admin_config').upsert({ username: config.username, password: config.password }).then(({ error }) => {
-        if (error) console.error('Supabase admin_config background upsert failed:', error);
-      });
-    }
-  } catch (err) {
-    console.error('Failed to write admin config JSON:', err);
-  }
-}
-
-app.post('/api/admin/login', (req, res) => {
+// Admin authentication endpoints
+app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), (req, res) => {
   try {
     const { username, password } = req.body;
-    const config = readAdminConfig();
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password fields are required.' });
+    }
 
-    if (username === config.username && password === config.password) {
-      return res.json({ success: true, token: 'admin_session_token_secure_2026' });
+    const config = readAdminConfig();
+    if (username === config.username && verifyAndUpgradeAdminPassword(password, config.password)) {
+      const token = jwt.sign(
+        { username, role: 'admin' },
+        JWT_SECRET,
+        { expiresIn: '2h' }
+      );
+      
+      res.cookie('admin_session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 2 * 60 * 60 * 1000 // 2 hours
+      });
+
+      return res.json({ success: true, username });
     }
     return res.status(401).json({ error: 'Invalid administrative credentials.' });
   } catch (err) {
@@ -1620,14 +1775,28 @@ app.post('/api/admin/login', (req, res) => {
   }
 });
 
-app.post('/api/admin/config', (req, res) => {
+app.get('/api/admin/session', verifyAdminToken, (req: any, res) => {
+  res.json({ authenticated: true, username: req.admin.username });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+  res.clearCookie('admin_session', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  res.json({ success: true, message: 'Admin session cleared.' });
+});
+
+app.post('/api/admin/config', verifyAdminToken, (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password fields are required.' });
     }
 
-    writeAdminConfig({ username, password });
+    const hashed = bcrypt.hashSync(password, 12);
+    writeAdminConfig({ username, password: hashed });
     res.json({ success: true, message: 'Administrative credentials updated successfully.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to save admin credentials' });
@@ -1828,6 +1997,21 @@ app.post('/api/razorpay/verify-payment', (req, res) => {
     console.warn(`[Razorpay] Signature mismatch for payment ${razorpay_payment_id}`);
     res.status(400).json({ verified: false, error: 'Payment signature mismatch.' });
   }
+});
+
+// Centralized Exception and Error Handling Middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('[Unhandled Exception Error]:', err.stack || err);
+  
+  const status = err.statusCode || err.status || 500;
+  const message = process.env.NODE_ENV === 'production' 
+    ? 'A secure server-side error occurred. Please contact the administrator.' 
+    : err.message || 'An unhandled server-error occurred.';
+    
+  res.status(status).json({
+    error: message,
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+  });
 });
 
 // Configure Vite or Static delivery depending on environment
