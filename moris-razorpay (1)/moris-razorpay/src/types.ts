@@ -139,6 +139,20 @@ export interface CMSConfig {
   contactAddress: string;
   privacyPolicy: string;
   termsConditions: string;
+  logoUrl?: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
+  whatsappNumber?: string;
+  instagramLink?: string;
+  facebookLink?: string;
+  twitterLink?: string;
+  shippingCharges?: number;
+  deliveryCharges?: number;
+  returnPolicy?: string;
+  themePrimary?: string;
+  themeMode?: 'light' | 'dark' | 'system';
 }
 
 export interface BundleOffer {
