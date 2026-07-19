@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Heart, Star, ShoppingCart, Eye, Sparkles } from 'lucide-react';
 import { Product } from '../types';
@@ -51,7 +51,7 @@ export default function ProductCard({
       whileHover={{ y: -6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] border border-gray-100 flex flex-col h-full group transition-all duration-300 relative select-none"
+      className="bg-white dark:bg-navy-900 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-navy-800 flex flex-col h-full group transition-all duration-300 relative select-none text-slate-800 dark:text-slate-200"
     >
       {/* Absolute Badges Layer */}
       <div className="absolute top-3.5 left-3.5 z-10 flex flex-col gap-1.5 items-start">
@@ -127,12 +127,12 @@ export default function ProductCard({
           
           <h4
             onClick={() => onSelectProduct(product.id)}
-            className="font-display font-medium text-xs sm:text-sm text-navy-900 group-hover:text-gold-500 transition cursor-pointer line-clamp-1 pr-4"
+            className="font-display font-medium text-xs sm:text-sm text-navy-900 dark:text-navy-50 group-hover:text-gold-500 transition cursor-pointer line-clamp-1 pr-4"
           >
             {product.name}
           </h4>
           
-          <p className="text-[11px] text-gray-500 line-clamp-2 pr-2 font-sans font-light leading-relaxed">
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 pr-2 font-sans font-light leading-relaxed">
             {product.shortDescription}
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function ProductCard({
           <div className="flex flex-col text-left">
             {product.discountPrice ? (
               <>
-                <span className="text-sm font-bold text-navy-900 font-sans leading-none">
+                <span className="text-sm font-bold text-navy-900 dark:text-white font-sans leading-none">
                   Rs.{product.discountPrice}
                 </span>
                 <span className="text-[10px] line-through text-gray-400 font-mono mt-1">
@@ -168,7 +168,7 @@ export default function ProductCard({
                 </span>
               </>
             ) : (
-              <span className="text-sm font-bold text-navy-900 font-sans">
+              <span className="text-sm font-bold text-navy-900 dark:text-white font-sans">
                 Rs.{product.price}
               </span>
             )}

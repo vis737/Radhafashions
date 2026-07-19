@@ -657,7 +657,7 @@ export default function App() {
       : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between select-none">
+    <div className="min-h-screen bg-gray-50 dark:bg-navy-950 text-gray-900 dark:text-slate-100 flex flex-col justify-between select-none transition-colors duration-300">
       
       {/* Scroll Viewport Progress Indicator */}
       <div id="scroll-progress-container" className="fixed top-0 left-0 w-full h-[3px] bg-transparent z-[9999] pointer-events-none">
@@ -770,7 +770,7 @@ export default function App() {
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                   <div className="flex justify-between items-end mb-6">
                     <div>
-                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800">
+                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
                         Search Results
                       </h3>
                       <p className="text-xs text-slate-500 mt-1">
@@ -818,7 +818,7 @@ export default function App() {
               {/* Dynamic Featured Category Grid Shelf */}
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="mb-6">
-                  <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800">
+                  <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
                     Featured Collection Categories
                   </h3>
                   <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
@@ -859,7 +859,7 @@ export default function App() {
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800">
+                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
                       Heritage Best Sellers
                     </h3>
                     <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
@@ -891,7 +891,7 @@ export default function App() {
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800">
+                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
                       New Craft Arrivals
                     </h3>
                     <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
