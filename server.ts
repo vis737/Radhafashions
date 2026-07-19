@@ -7,7 +7,9 @@ import fs from 'fs';
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import multer from 'multer';
-import Razorpay from 'razorpay';
+// Razorpay temporarily disabled.
+// Enable after GST registration and production credentials are available.
+// import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import cookieParser from 'cookie-parser';
@@ -427,12 +429,16 @@ function rateLimiter(limit: number, windowMs: number) {
   };
 }
 
+// Razorpay temporarily disabled.
+// Enable after GST registration and production credentials are available.
+/*
 const getRazorpayClient = () => {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
   if (!keyId || !keySecret || keyId === 'rzp_test_YOUR_KEY_ID') return null;
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 };
+*/
 
 // Serve uploaded product images as static files
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
@@ -2075,6 +2081,9 @@ app.get('/api/newsletter', (req, res) => {
   }
 });
 
+// Razorpay temporarily disabled.
+// Enable after GST registration and production credentials are available.
+/*
 app.post('/api/razorpay/create-order', async (req, res) => {
   const rzp = getRazorpayClient();
   if (!rzp) {
@@ -2131,6 +2140,7 @@ app.post('/api/razorpay/verify-payment', (req, res) => {
     res.status(400).json({ verified: false, error: 'Payment signature mismatch.' });
   }
 });
+*/
 
 // Centralized Exception and Error Handling Middleware
 app.use((err: any, req: any, res: any, next: any) => {

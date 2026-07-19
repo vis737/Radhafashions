@@ -99,7 +99,14 @@ export interface Order {
   couponCode?: string;
   date: string;
   paymentMethod: string;
-  paymentStatus: 'paid' | 'unpaid';
+  paymentStatus: 'paid' | 'unpaid' | 'pending' | 'rejected';
+  
+  // UPI QR parameters
+  upiTxnId?: string;
+  upiSenderName?: string;
+  upiScreenshot?: string;
+  upiNotes?: string;
+  upiRejectionReason?: string;
   
   // Festival & Seasonal Checkout Additions:
   giftWrappingRequested?: boolean;

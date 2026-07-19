@@ -457,7 +457,14 @@ export default function App() {
     customer: CustomerInfo,
     paymentMethod: string,
     giftWrapped?: boolean,
-    giftMsg?: string
+    giftMsg?: string,
+    giftTheme?: string,
+    giftSender?: string,
+    giftHidePrice?: boolean,
+    upiTxnId?: string,
+    upiSenderName?: string,
+    upiScreenshot?: string,
+    upiNotes?: string
   ) => {
     if (!currentUser) {
       setPendingCheckout(true);
@@ -495,11 +502,18 @@ export default function App() {
       status: 'pending',
       paymentMethod,
       shippingMethod,
-      paymentStatus: 'paid',
+      paymentStatus: paymentMethod === 'UPI QR Payment' ? 'pending' : (paymentMethod === 'COD' ? 'unpaid' : 'paid'),
       giftWrappingRequested: giftWrapped,
       giftMessage: giftMsg,
+      giftWrappingType: giftTheme,
+      giftSenderName: giftSender,
+      giftHidePrice,
       accountEmail: currentUser.email,
-      accountName: currentUser.name
+      accountName: currentUser.name,
+      upiTxnId,
+      upiSenderName,
+      upiScreenshot,
+      upiNotes
     };
 
     // Update real physical stock counts in database
@@ -619,6 +633,33 @@ export default function App() {
         return p;
       })
     );
+  };
+
+  const handleResubmitUpiDetails = (orderId: string, txnId: string, screenshot: string) => {
+    setOrders((prev) => {
+      const next = prev.map((o) => {
+        if (o.id === orderId) {
+          const updated = {
+            ...o,
+            upiTxnId: txnId,
+            upiScreenshot: screenshot || o.upiScreenshot,
+            paymentStatus: 'pending' as const
+          };
+          
+          // Sync update back to server database
+          fetch(`/api/orders/${o.orderNumber}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated)
+          }).catch(err => console.error('Failed to sync resubmission:', err));
+          
+          return updated;
+        }
+        return o;
+      });
+      return next;
+    });
+    handleLogActivity('UPI Resubmit', `Resubmitted UPI reference ID: ${txnId} for order ID: ${orderId}`);
   };
 
   // Add custom user reviews dynamically
@@ -1302,6 +1343,7 @@ export default function App() {
                   );
                 }}
                 onSelectProduct={handleViewProductDetails}
+                onResubmitUpiDetails={handleResubmitUpiDetails}
               />
             </motion.div>
           )}
@@ -1344,6 +1386,31 @@ export default function App() {
                     prev.map((o) => (o.id === ordId ? { ...o, status: nextStatus } : o))
                   )
                 }
+                onUpdatePaymentStatus={(ordId, nextPaymentStatus, reason) => {
+                  setOrders((prev) => {
+                    const next = prev.map((o) => {
+                      if (o.id === ordId) {
+                        const updated = {
+                          ...o,
+                          paymentStatus: nextPaymentStatus,
+                          upiRejectionReason: reason || '',
+                          status: nextPaymentStatus === 'paid' ? ('processing' as const) : o.status
+                        };
+                        
+                        // Sync updates back to server database
+                        fetch(`/api/orders/${o.orderNumber}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(updated)
+                        }).catch(err => console.error('Failed to sync payment validation:', err));
+                        
+                        return updated;
+                      }
+                      return o;
+                    });
+                    return next;
+                  });
+                }}
                 onApproveReview={handleApproveReviewContent}
                 onDeleteReview={handleDeleteReviewContent}
                 onUpdateCampaigns={(camp) => setCampaigns(camp)}

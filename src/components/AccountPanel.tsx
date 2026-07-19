@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink } from 'lucide-react';
+import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
 import { jsPDF } from 'jspdf';
 import { getQrCodeUrl } from '../utils/qrCodeGenerator';
@@ -18,6 +18,7 @@ interface AccountPanelProps {
   onRemoveFromWishlist: (productId: string) => void;
   onRequestRefund: (orderId: string, itemName: string, reason: string) => void;
   onSelectProduct: (productId: string) => void;
+  onResubmitUpiDetails?: (orderId: string, txnId: string, screenshot: string) => void;
 }
 
 export default function AccountPanel({
@@ -30,7 +31,8 @@ export default function AccountPanel({
   onMoveToCart,
   onRemoveFromWishlist,
   onRequestRefund,
-  onSelectProduct
+  onSelectProduct,
+  onResubmitUpiDetails
 }: AccountPanelProps) {
   // Login/Signup Inputs
   const [isSignUp, setIsSignUp] = useState(false);
@@ -1053,12 +1055,87 @@ export default function AccountPanel({
                           </div>
                           
                           <div className="flex items-center gap-2">
+                            {ord.paymentMethod === 'UPI QR Payment' && (
+                              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide border ${
+                                ord.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-255' :
+                                ord.paymentStatus === 'rejected' ? 'bg-red-50 text-red-600 border-red-255 animate-pulse' :
+                                'bg-amber-50 text-amber-600 border-amber-255'
+                              }`}>
+                                {ord.paymentStatus === 'paid' ? 'Payment Approved' :
+                                 ord.paymentStatus === 'rejected' ? 'Payment Rejected' :
+                                 'Payment Pending Verification'}
+                              </span>
+                            )}
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${ord.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' : ord.status === 'processing' ? 'bg-blue-50 text-blue-600' : 'bg-gold-50 text-gold-600'}`}>
                               {ord.status}
                             </span>
                             <span className="font-mono font-bold text-navy-950 text-xs">Total: Rs.{ord.total}</span>
                           </div>
                         </div>
+
+                        {ord.paymentMethod === 'UPI QR Payment' && ord.paymentStatus === 'rejected' && (
+                          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-left space-y-2 font-sans">
+                            <p className="text-red-800 font-bold flex items-center gap-1">
+                              <AlertTriangle className="w-4 h-4" /> UPI Payment Verification Failed
+                            </p>
+                            <p className="text-red-700">Reason: {ord.upiRejectionReason || 'No reason specified by administration.'}</p>
+                            
+                            <form 
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                const form = e.currentTarget;
+                                const txnInput = form.elements.namedItem('txnId') as HTMLInputElement;
+                                const fileInput = form.elements.namedItem('screenshot') as HTMLInputElement;
+                                const txnId = txnInput.value.trim();
+                                
+                                if (!txnId) {
+                                  alert("Please enter your UPI transaction ID.");
+                                  return;
+                                }
+
+                                let screenshotUrl = ord.upiScreenshot || '';
+                                if (fileInput.files?.[0]) {
+                                  const file = fileInput.files[0];
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    alert("Maximum screenshot size is 5 MB.");
+                                    return;
+                                  }
+                                  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                                  if (!allowed.includes(file.type)) {
+                                    alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
+                                    return;
+                                  }
+                                  
+                                  const reader = new FileReader();
+                                  screenshotUrl = await new Promise((resolve) => {
+                                    reader.onloadend = () => resolve(reader.result as string);
+                                    reader.readAsDataURL(file);
+                                  });
+                                }
+
+                                if (onResubmitUpiDetails) {
+                                  onResubmitUpiDetails(ord.id, txnId, screenshotUrl);
+                                  alert("UPI details resubmitted successfully. Pending administrative validation.");
+                                }
+                              }}
+                              className="space-y-3.5 pt-2"
+                            >
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[10px] text-gray-500 font-mono mb-0.5">New Transaction ID / Ref No.</label>
+                                  <input type="text" name="txnId" required defaultValue={ord.upiTxnId} className="w-full px-3 py-1.5 border border-gray-200 rounded-lg bg-white" />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] text-gray-500 font-mono mb-0.5">New Screenshot (Optional)</label>
+                                  <input type="file" name="screenshot" accept="image/jpeg,image/jpg,image/png,image/webp" className="w-full text-[10px]" />
+                                </div>
+                              </div>
+                              <button type="submit" className="px-4 py-2 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl font-bold uppercase transition cursor-pointer">
+                                Resubmit Payment Details
+                              </button>
+                            </form>
+                          </div>
+                        )}
 
                         {/* tracking milestone */}
                         <div className="p-3 bg-gray-50 border rounded-xl flex items-center justify-between text-xs gap-3">

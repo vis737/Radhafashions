@@ -17,7 +17,11 @@ interface CheckoutPanelProps {
     giftMessage?: string,
     giftTheme?: string,
     giftSender?: string,
-    giftHidePrice?: boolean
+    giftHidePrice?: boolean,
+    upiTxnId?: string,
+    upiSenderName?: string,
+    upiScreenshot?: string,
+    upiNotes?: string
   ) => void;
 }
 
@@ -37,11 +41,13 @@ export default function CheckoutPanel({
   const [pincode, setPincode] = useState('');
 
   // Selected payment route
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'netbanking' | 'wallet'>('card');
-  const [upiId, setUpiId] = useState('');
-  const [cardNo, setCardNo] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi_qr'>('upi_qr');
+  const [upiTxnId, setUpiTxnId] = useState('');
+  const [upiSenderName, setUpiSenderName] = useState('');
+  const [upiScreenshot, setUpiScreenshot] = useState('');
+  const [upiNotes, setUpiNotes] = useState('');
+  const [showConfirmationForm, setShowConfirmationForm] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
   
   // Simulated gateway trigger
   const [gatewayProcessing, setGatewayProcessing] = useState(false);
@@ -65,6 +71,9 @@ export default function CheckoutPanel({
   const giftWrappingCost = totals.giftWrappingCost;
   const finalTotal = totals.grandTotal;
 
+  // Razorpay temporarily disabled.
+  // Enable after GST registration and production credentials are available.
+  /*
   const handleTriggerPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !pincode.trim()) return;
@@ -162,6 +171,51 @@ export default function CheckoutPanel({
       setGatewayStep('idle');
     }
   };
+  */
+
+  const handleCheckoutSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !pincode.trim()) {
+      alert("Please fill in all shipment coordinates.");
+      return;
+    }
+
+    if (paymentMethod === 'cod') {
+      onPlaceOrder(
+        { name, email, phone, address, pincode },
+        'COD',
+        giftWrapped,
+        giftMessage,
+        giftTheme,
+        giftSender,
+        giftHidePrice
+      );
+    } else if (paymentMethod === 'upi_qr') {
+      if (!showConfirmationForm) {
+        setShowConfirmationForm(true);
+        return;
+      }
+
+      if (!upiTxnId.trim()) {
+        alert("Transaction ID is required to process UPI payments verification.");
+        return;
+      }
+
+      onPlaceOrder(
+        { name, email, phone, address, pincode },
+        'UPI QR Payment',
+        giftWrapped,
+        giftMessage,
+        giftTheme,
+        giftSender,
+        giftHidePrice,
+        upiTxnId,
+        upiSenderName,
+        upiScreenshot,
+        upiNotes
+      );
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
@@ -184,7 +238,7 @@ export default function CheckoutPanel({
             <h2 className="font-display font-medium text-sm tracking-wider uppercase text-navy-900">Secure Checkout Information</h2>
           </div>
 
-          <form onSubmit={handleTriggerPayment} className="space-y-4 text-left">
+          <form onSubmit={handleCheckoutSubmit} className="space-y-4 text-left">
             {/* Customer coordinates */}
             <div className="space-y-3">
               <h3 className="font-display font-medium text-xs tracking-wider uppercase text-gold-500">1. Customer Shipment Address</h3>
@@ -357,126 +411,163 @@ export default function CheckoutPanel({
             </div>
 
             {/* Select Gateway Method */}
-            <div className="space-y-3 pt-4 border-t border-gray-100">
-              <h3 className="font-display font-medium text-xs tracking-wider uppercase text-gold-500">2. Select Payment Route</h3>
+            <div className="space-y-3 pt-4 border-t border-gray-100 font-sans">
+              <h3 className="font-display font-medium text-xs tracking-wider uppercase text-gold-500 text-left">2. Select Payment Route</h3>
               
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
-                {(['card', 'upi', 'netbanking', 'wallet'] as const).map((method) => (
-                  <button
-                    key={method}
-                    type="button"
-                    onClick={() => setPaymentMethod(method)}
-                    className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === method ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
-                  >
-                    {method === 'card' && <CreditCard className="w-4 h-4" />}
-                    {method === 'upi' && <PhoneCall className="w-4 h-4" />}
-                    {method === 'netbanking' && <Landmark className="w-4 h-4" />}
-                    {method === 'wallet' && <Wallet className="w-4 h-4" />}
-                    <span className="text-[10px]">{method === 'upi' ? 'UPI / GPay' : method}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod('cod');
+                    setShowConfirmationForm(false);
+                  }}
+                  className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === 'cod' ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
+                >
+                  <Truck className="w-4.5 h-4.5 text-navy-950" />
+                  <span className="text-[10px]">Cash on Delivery</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('upi_qr')}
+                  className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1.5 transition capitalize cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-white border text-gold-500 border-gold-300 shadow-sm' : 'text-gray-500 hover:text-navy-950 hover:bg-white/40'}`}
+                >
+                  <PhoneCall className="w-4.5 h-4.5 text-navy-950" />
+                  <span className="text-[10px]">UPI QR Code Payment</span>
+                </button>
               </div>
 
               {/* Dynamic inputs for selected payment route */}
               <div className="p-4 rounded-2xl border border-gray-100 bg-gray-50/50 mt-3 min-h-24">
                 <AnimatePresence mode="wait">
-                  {paymentMethod === 'card' && (
+                  {paymentMethod === 'cod' && (
                     <motion.div
-                      key="cardForm"
+                      key="codForm"
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="space-y-3"
+                      className="space-y-1 text-left"
                     >
-                      <div>
-                        <label className="block text-[10px] font-mono tracking-wider text-gray-400 mb-0.5">Card Number</label>
-                        <input
-                          type="text"
-                          required
-                          value={cardNo}
-                          onChange={(e) => setCardNo(e.target.value)}
-                          placeholder="4321 ---- ---- ----"
-                          className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-400"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] font-mono tracking-wider text-gray-400 mb-0.5">Expiry Date</label>
-                          <input
-                            type="text"
-                            required
-                            value={cardExpiry}
-                            onChange={(e) => setCardExpiry(e.target.value)}
-                            placeholder="MM/YY"
-                            className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-400"
+                      <h5 className="font-bold text-navy-950">Cash on Delivery (COD) Option</h5>
+                      <p className="text-[10px] text-gray-400 font-sans leading-relaxed">Pay inside your delivery coordinates upon receiving packages. Secure handovers verified via dispatch signatures.</p>
+                    </motion.div>
+                  )}
+
+                  {paymentMethod === 'upi_qr' && (
+                    <motion.div
+                      key="upiQrForm"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4 text-left"
+                    >
+                      <div className="bg-white border rounded-3xl p-5 shadow-sm flex flex-col items-center text-center space-y-4 max-w-sm mx-auto">
+                        <span className="px-2.5 py-0.5 rounded bg-[#C5A021]/15 text-[#C5A021] text-[9px] font-mono font-bold uppercase tracking-wider">UPI SCAN TO PAY</span>
+                        <div className="w-40 h-40 bg-gray-50 border rounded-2xl overflow-hidden flex items-center justify-center">
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=meriseshop@upi&pn=Meris%20E-Shop&am=${finalTotal}&cu=INR`)}`}
+                            alt="Scan to pay via UPI"
+                            className="w-36 h-36 object-contain"
                           />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-mono tracking-wider text-gray-400 mb-0.5">CVV / CVV2</label>
-                          <input
-                            type="password"
-                            required
-                            maxLength={3}
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value)}
-                            placeholder="---"
-                            className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-400"
-                          />
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-mono text-gray-400">Total Net Amount Payable</p>
+                          <h4 className="text-sm font-bold text-navy-950">Rs. {finalTotal}</h4>
                         </div>
+                        <div className="flex gap-2 w-full justify-center">
+                          <span className="px-2 py-1 bg-gray-100 rounded-lg text-[10px] font-mono select-all">meriseshop@upi</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText('meriseshop@upi');
+                              setCopiedUpi(true);
+                              setTimeout(() => setCopiedUpi(false), 2000);
+                            }}
+                            className="px-2.5 py-1 bg-gold-400/20 text-[#C5A021] rounded-lg text-[9px] font-semibold cursor-pointer hover:bg-gold-400/35 transition"
+                          >
+                            {copiedUpi ? 'Copied!' : 'Copy ID'}
+                          </button>
+                        </div>
+                        <p className="text-[9px] text-gray-400 leading-relaxed max-w-xs font-sans">
+                          Please complete the payment before placing your order. Scan with Google Pay, PhonePe, Paytm, BHIM, or any UPI app.
+                        </p>
                       </div>
-                    </motion.div>
-                  )}
 
-                  {paymentMethod === 'upi' && (
-                    <motion.div
-                      key="upiForm"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-2"
-                    >
-                      <label className="block text-[10px] font-mono tracking-wider text-gray-400 mb-0.5">UPI ID (VPA Code)</label>
-                      <input
-                        type="text"
-                        required
-                        value={upiId}
-                        onChange={(e) => setUpiId(e.target.value)}
-                        placeholder="e.g. charankumar@apl"
-                        className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-400"
-                      />
-                      <span className="block text-[9px] text-gray-400">Supports Google Pay, PhonePe, Paytm, and BHIM UPI client grids.</span>
-                    </motion.div>
-                  )}
-
-                  {paymentMethod === 'netbanking' && (
-                    <motion.div
-                      key="nbForm"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-2"
-                    >
-                      <label className="block text-[10px] font-mono tracking-wider text-gray-400 mb-0.5">Choose Popular Indian Institution Bank</label>
-                      <select className="w-full px-3 py-2.5 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none">
-                        <option>State Bank of India (SBI)</option>
-                        <option>HDFC Bank Prime Portal</option>
-                        <option>ICICI Institution Bank</option>
-                        <option>Axis Bank Limited</option>
-                        <option>Kotak Mahindra Bank</option>
-                      </select>
-                    </motion.div>
-                  )}
-
-                  {paymentMethod === 'wallet' && (
-                    <motion.div
-                      key="wlForm"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-2 text-left"
-                    >
-                      <span className="text-xs text-gray-600 block">Available Mobile Wallets:</span>
-                      <div className="flex gap-2.5">
-                        <span className="px-3 py-1.5 bg-white rounded-lg border text-[10px] font-mono text-gray-500">Paytm Wallet</span>
-                        <span className="px-3 py-1.5 bg-white rounded-lg border text-[10px] font-mono text-gray-500">Amazon Pay</span>
-                        <span className="px-3 py-1.5 bg-white rounded-lg border text-[10px] font-mono text-gray-500">PhonePe Wallet</span>
-                      </div>
+                      {showConfirmationForm ? (
+                        <div className="p-4 bg-white border border-dashed rounded-3xl space-y-3 animate-fade-in font-sans">
+                          <span className="block text-[10px] font-semibold text-navy-950 uppercase tracking-wider">Payment Transaction Confirmation</span>
+                          <div>
+                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">UPI Transaction ID / Ref No. (Required)</label>
+                            <input
+                              type="text"
+                              required
+                              value={upiTxnId}
+                              onChange={(e) => setUpiTxnId(e.target.value)}
+                              placeholder="e.g. 12-digit transaction index"
+                              className="w-full px-3 py-2 text-xs border rounded-xl"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Sender Name (Optional)</label>
+                            <input
+                              type="text"
+                              value={upiSenderName}
+                              onChange={(e) => setUpiSenderName(e.target.value)}
+                              placeholder="e.g. Alok Sharma"
+                              className="w-full px-3 py-2 text-xs border rounded-xl"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Screenshot Upload (Optional, Max 5 MB)</label>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/jpg,image/png,image/webp"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 5 * 1024 * 1024) {
+                                  alert("Maximum file size allowed is 5 MB.");
+                                  e.target.value = "";
+                                  return;
+                                }
+                                const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                                if (!allowed.includes(file.type)) {
+                                  alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
+                                  e.target.value = "";
+                                  return;
+                                }
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setUpiScreenshot(reader.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                              className="w-full text-xs animate-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Notes (Optional)</label>
+                            <input
+                              type="text"
+                              value={upiNotes}
+                              onChange={(e) => setUpiNotes(e.target.value)}
+                              placeholder="Additional payment details"
+                              className="w-full px-3 py-2 text-xs border rounded-xl"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !pincode.trim()) {
+                              alert("Please fill in shipment coordinates first.");
+                              return;
+                            }
+                            setShowConfirmationForm(true);
+                          }}
+                          className="w-full py-2 bg-[#C5A021] text-navy-950 font-display font-semibold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-center"
+                        >
+                          I have completed the payment
+                        </button>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -493,10 +584,10 @@ export default function CheckoutPanel({
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-semibold text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-1.5 shadow-xl shadow-gold-500/10 hover:scale-[1.01] transform active:scale-95 transition"
+              className="w-full py-3 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-semibold text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-1.5 shadow-xl shadow-gold-500/10 hover:scale-[1.01] transform active:scale-95 transition cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5 text-navy-950" />
-              <span>Authorize Secured Payment (Rs.{finalTotal})</span>
+              <span>{paymentMethod === 'cod' ? `Place Order (Cash on Delivery - Rs.${finalTotal})` : `Place Order (Confirm UPI Payment - Rs.${finalTotal})`}</span>
             </button>
           </form>
         </div>
@@ -578,59 +669,7 @@ export default function CheckoutPanel({
 
       </div>
 
-      {/* --- Razorpay Simulated Payment Modal Portal Overlay --- */}
-      {gatewayProcessing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-gold-300/30"
-          >
-            {/* razorpay header banner */}
-            <div className="bg-[#1f2c47] text-white p-5 flex items-center justify-between border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-sm text-white">
-                  R
-                </div>
-                <div className="text-left font-sans">
-                  <h4 className="font-semibold text-xs text-white leading-none">Razorpay Secure</h4>
-                  <span className="text-[9px] text-gray-400">Merchant Code: MERIS EST 2025</span>
-                </div>
-              </div>
-              <span className="text-xs font-mono font-bold text-gray-300">Rs.{finalTotal}</span>
-            </div>
 
-            {/* Gateway processing content */}
-            <div className="p-8 text-center space-y-4 font-sans">
-              {gatewayStep === 'authorizing' ? (
-                <>
-                  <div className="w-14 h-14 rounded-full border-4 border-gold-400 border-t-transparent animate-spin mx-auto" />
-                  <div className="space-y-1">
-                    <h5 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest">Validating VPA/Card Core</h5>
-                    <p className="text-[11px] text-gray-400">Please do not hit back button or close client tabs...</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                    <CheckCircle className="w-8 h-8 text-emerald-500 animate-bounce" />
-                  </div>
-                  <div className="space-y-1">
-                    <h5 className="font-display font-semibold text-sm text-emerald-800 uppercase tracking-widest">Payment Confirmed</h5>
-                    <p className="text-[11px] text-gray-500">Authorized. Custom receipt generating via Express...</p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* razorpay bottom badge */}
-            <div className="bg-gray-50 p-3 text-center border-t border-gray-100 text-[10px] text-gray-400 font-mono">
-              Powered by Razorpay payment integrations - TLS 1.3 standard
-            </div>
-
-          </motion.div>
-        </div>
-      )}
 
     </div>
   );

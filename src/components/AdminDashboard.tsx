@@ -29,6 +29,7 @@ interface AdminDashboardProps {
   onDeleteLog: (logId: string) => void;
   onClearLogs: () => void;
   onUpdateOrderStatus: (orderId: string, status: Order['status']) => void;
+  onUpdatePaymentStatus?: (orderId: string, status: Order['paymentStatus'], reason?: string) => void;
   onUpdateCampaigns: (campaigns: BannerCampaign[]) => void;
   onUpdateCMS: (cms: CMSConfig) => void;
   onApproveReview: (productId: string, reviewId: string, approve: boolean) => void;
@@ -76,6 +77,9 @@ export default function AdminDashboard({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [ordersSubTab, setOrdersSubTab] = useState<'all' | 'pending_upi'>('all');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
 
   // Notifications bell list
   const [notifications, setNotifications] = useState<any[]>([
@@ -792,63 +796,193 @@ export default function AdminDashboard({
                   </button>
                 </div>
 
-                {/* Orders search & timeline list */}
-                <div className="space-y-4">
-                  {filteredOrders.length === 0 ? (
-                    <p className="text-center text-gray-400 font-mono py-12 text-xs">No matching orders found.</p>
-                  ) : (
-                    filteredOrders.map((ord) => (
-                      <div key={ord.id} className="bg-white dark:bg-navy-900 border rounded-3xl p-5 text-xs text-left shadow-sm space-y-4">
-                        <div className="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
-                          <div>
-                            <span className="font-mono font-bold text-sm text-navy-950 dark:text-white block">{ord.orderNumber}</span>
-                            <span className="text-[10px] text-gray-400 font-mono">Date: {ord.date} | Payment: {ord.paymentMethod}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <select
-                              value={ord.status}
-                              onChange={(e) => onUpdateOrderStatus(ord.id, e.target.value as any)}
-                              className="px-2.5 py-1.5 border border-gray-250 bg-white dark:bg-navy-950 rounded-xl"
-                            >
-                              {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(status => (
-                                <option key={status} value={status}>{status.toUpperCase()}</option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={() => {
-                                onDeleteOrder(ord.id, ord.orderNumber);
-                                onLogActivity('Purge Order', `Deleted order entry ${ord.orderNumber}`);
-                              }}
-                              className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl border border-transparent hover:border-red-200 transition cursor-pointer"
-                            >
-                              <Trash2 className="w-4.5 h-4.5" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 leading-normal font-sans">
-                          <div className="space-y-2">
-                            <h5 className="font-bold text-navy-950 dark:text-white">Customer Shipping Details</h5>
-                            <p>{ord.customerInfo.name} | {ord.customerInfo.phone}</p>
-                            <p>{ord.customerInfo.address}, {ord.customerInfo.pincode}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <h5 className="font-bold text-navy-950 dark:text-white">Line Items Purchased</h5>
-                            {ord.items.map((it, idx) => (
-                              <p key={idx}>
-                                {it.product.name} (x{it.quantity}) - Rs. {it.product.discountPrice || it.product.price}
-                              </p>
-                            ))}
-                            <p className="font-bold text-navy-950 dark:text-white border-t pt-2 mt-2">
-                              Grand Total Sum: Rs. {ord.total}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                {/* Sub Tab selectors */}
+                <div className="flex gap-2 border-b pb-px">
+                  <button
+                    onClick={() => setOrdersSubTab('all')}
+                    className={`py-1.5 px-3 font-semibold text-xs rounded-lg transition ${
+                      ordersSubTab === 'all'
+                        ? 'bg-navy-950 text-white'
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    All Shipments ({filteredOrders.length})
+                  </button>
+                  <button
+                    onClick={() => setOrdersSubTab('pending_upi')}
+                    className={`py-1.5 px-3 font-semibold text-xs rounded-lg transition ${
+                      ordersSubTab === 'pending_upi'
+                        ? 'bg-navy-950 text-white'
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    Pending UPI Verification ({
+                      orders.filter(o => o.paymentMethod === 'UPI QR Payment' && o.paymentStatus === 'pending').length
+                    })
+                  </button>
                 </div>
+
+                {ordersSubTab === 'pending_upi' ? (
+                  <div className="space-y-4 font-sans">
+                    {orders.filter(o => o.paymentMethod === 'UPI QR Payment' && o.paymentStatus === 'pending').length === 0 ? (
+                      <p className="text-center text-gray-400 font-mono py-12 text-xs">No pending UPI payments to verify.</p>
+                    ) : (
+                      orders
+                        .filter(o => o.paymentMethod === 'UPI QR Payment' && o.paymentStatus === 'pending')
+                        .map((ord) => (
+                          <div key={ord.id} className="bg-white dark:bg-navy-900 border rounded-3xl p-5 text-xs text-left shadow-sm space-y-4 animate-fade-in">
+                            <div className="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+                              <div>
+                                <span className="font-mono font-bold text-sm text-navy-900 dark:text-white block">{ord.orderNumber}</span>
+                                <span className="text-[10px] text-gray-400 font-mono">Date: {ord.date} | Ref: {ord.upiTxnId}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (onUpdatePaymentStatus) {
+                                      onUpdatePaymentStatus(ord.id, 'paid');
+                                      onLogActivity('Approve UPI Payment', `Transaction Ref ${ord.upiTxnId} approved for order ${ord.orderNumber}`);
+                                      addToast(`UPI Payment Approved for order ${ord.orderNumber}`);
+                                    }
+                                  }}
+                                  className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition cursor-pointer text-center"
+                                >
+                                  Approve Payment
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setRejectingOrderId(ord.id)}
+                                  className="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition cursor-pointer text-center"
+                                >
+                                  Reject Payment
+                                </button>
+                              </div>
+                            </div>
+
+                            {rejectingOrderId === ord.id && (
+                              <div className="p-3 bg-red-50 border border-red-200 rounded-2xl space-y-2 animate-fade-in">
+                                <label className="block text-[10px] text-red-800 font-semibold uppercase">Rejection Reason</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    placeholder="Enter reason for rejecting payment verification..."
+                                    className="flex-1 px-3 py-1.5 border rounded-lg bg-white outline-none text-xs"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!rejectionReason.trim()) {
+                                        alert("Please enter a rejection reason.");
+                                        return;
+                                      }
+                                      if (onUpdatePaymentStatus) {
+                                        onUpdatePaymentStatus(ord.id, 'rejected', rejectionReason.trim());
+                                        onLogActivity('Reject UPI Payment', `Transaction Ref ${ord.upiTxnId} rejected. Reason: ${rejectionReason}`);
+                                        addToast(`UPI Payment Rejected for order ${ord.orderNumber}`);
+                                      }
+                                      setRejectingOrderId(null);
+                                      setRejectionReason('');
+                                    }}
+                                    className="px-4 py-1.5 bg-red-600 text-white font-semibold rounded-lg cursor-pointer text-center text-xs"
+                                  >
+                                    Confirm
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 leading-normal">
+                              <div className="space-y-2">
+                                <h5 className="font-bold text-navy-950 dark:text-white">Verification Ledger</h5>
+                                <p>Customer Name: {ord.customerInfo.name}</p>
+                                <p>Payable Amount: Rs. {ord.total}</p>
+                                <p>Sender UPI Name: {ord.upiSenderName || 'Not provided'}</p>
+                                <p>Sender Notes: {ord.upiNotes || 'No notes'}</p>
+                              </div>
+
+                              <div className="space-y-2">
+                                <h5 className="font-bold text-navy-950 dark:text-white">Uploaded Screenshot Receipt</h5>
+                                {ord.upiScreenshot ? (
+                                  <div className="w-48 h-32 rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center">
+                                    <img
+                                      src={ord.upiScreenshot}
+                                      alt="UPI Screenshot Receipt"
+                                      className="w-full h-full object-contain cursor-pointer"
+                                      onClick={() => window.open(ord.upiScreenshot, '_blank')}
+                                      title="Click to view full image"
+                                    />
+                                  </div>
+                                ) : (
+                                  <p className="text-gray-400 font-mono italic">No screenshot uploaded by client.</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                ) : (
+                  /* Orders search & timeline list */
+                  <div className="space-y-4">
+                    {filteredOrders.length === 0 ? (
+                      <p className="text-center text-gray-400 font-mono py-12 text-xs">No matching orders found.</p>
+                    ) : (
+                      filteredOrders.map((ord) => (
+                        <div key={ord.id} className="bg-white dark:bg-navy-900 border rounded-3xl p-5 text-xs text-left shadow-sm space-y-4">
+                          <div className="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+                            <div>
+                              <span className="font-mono font-bold text-sm text-navy-950 dark:text-white block">{ord.orderNumber}</span>
+                              <span className="text-[10px] text-gray-400 font-mono">Date: {ord.date} | Payment: {ord.paymentMethod}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={ord.status}
+                                onChange={(e) => onUpdateOrderStatus(ord.id, e.target.value as any)}
+                                className="px-2.5 py-1.5 border border-gray-250 bg-white dark:bg-navy-950 rounded-xl"
+                              >
+                                {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(status => (
+                                  <option key={status} value={status}>{status.toUpperCase()}</option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => {
+                                  onDeleteOrder(ord.id, ord.orderNumber);
+                                  onLogActivity('Purge Order', `Deleted order entry ${ord.orderNumber}`);
+                                }}
+                                className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl border border-transparent hover:border-red-200 transition cursor-pointer"
+                              >
+                                <Trash2 className="w-4.5 h-4.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 leading-normal font-sans">
+                            <div className="space-y-2">
+                              <h5 className="font-bold text-navy-950 dark:text-white">Customer Shipping Details</h5>
+                              <p>{ord.customerInfo.name} | {ord.customerInfo.phone}</p>
+                              <p>{ord.customerInfo.address}, {ord.customerInfo.pincode}</p>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <h5 className="font-bold text-navy-950 dark:text-white">Line Items Purchased</h5>
+                              {ord.items.map((it, idx) => (
+                                <p key={idx}>
+                                  {it.product.name} (x{it.quantity}) - Rs. {it.product.discountPrice || it.product.price}
+                                </p>
+                              ))}
+                              <p className="font-bold text-navy-950 dark:text-white border-t pt-2 mt-2">
+                                Grand Total Sum: Rs. {ord.total}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </motion.div>
             )}
 
