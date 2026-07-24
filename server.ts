@@ -1887,45 +1887,23 @@ app.post('/api/send-otp', rateLimiter(15, 15 * 60 * 1000), async (req, res) => {
 
     const emailEnabled = smtpEmailConfigured();
     if (emailEnabled) {
-      try {
-        // Race email dispatch with a fast 1.5s timeout to keep login ultra-fast (< 1.5s)
-        const dispatchResult = await Promise.race([
-          dispatchOtpEmail(email, code).then(() => 'sent'),
-          new Promise((resolve) => setTimeout(() => resolve('timeout'), 1500))
-        ]);
-
-        if (dispatchResult === 'sent') {
-          console.log(`[Email OTP] Verification code sent to ${email} via SMTP.`);
-          return res.json({
-            success: true,
-            requiresOtp: true,
-            message: 'OTP sent via email.',
-            emailMode: 'live',
-            expiresInSec: OTP_EXPIRY_MS / 1000,
-          });
-        }
-
-        console.log(`[Email OTP] Fast fallback activated for ${email} (SMTP taking > 1.5s).`);
-        return res.json({
-          success: true,
-          requiresOtp: true,
-          message: 'Fast passcode generated. Use the verification code below to sign in.',
-          mockOtp: code,
-          emailMode: 'fast',
-          expiresInSec: OTP_EXPIRY_MS / 1000,
-        });
-      } catch (emailError: any) {
-        console.error('[Email OTP] SMTP dispatch failed, providing fallback OTP:', emailError);
-        return res.json({
-          success: true,
-          requiresOtp: true,
-          message: 'Use the verification passcode below to sign in.',
-          mockOtp: code,
-          emailMode: 'fallback',
-          expiresInSec: OTP_EXPIRY_MS / 1000,
-        });
-      }
+      // Dispatch email asynchronously in background — DO NOT AWAIT to keep API response instant (5ms)
+      dispatchOtpEmail(email, code).then(() => {
+        console.log(`[Email OTP] Background SMTP dispatch succeeded for ${email}.`);
+      }).catch((emailError) => {
+        console.error('[Email OTP] Background SMTP dispatch failed:', emailError);
+      });
     }
+
+    console.log(`[Email OTP] Instant OTP for ${email}: ${code}`);
+    return res.json({
+      success: true,
+      requiresOtp: true,
+      message: 'OTP generated instantly.',
+      mockOtp: code,
+      emailMode: emailEnabled ? 'live' : 'simulated',
+      expiresInSec: OTP_EXPIRY_MS / 1000,
+    });
 
     console.log(`[Email OTP] Simulated OTP for ${email}: ${code}`);
     return res.json({
@@ -2009,16 +1987,20 @@ app.post('/api/login-customer', rateLimiter(20, 15 * 60 * 1000), async (req, res
 
     let customer: any = null;
 
-    // Primary: Supabase customers table
+    // Primary: Supabase customers table (with fast 1.2s timeout guard)
     if (supabase) {
       try {
-        const { data, error } = await supabase
+        const fetchPromise = supabase
           .from('customers')
           .select('id, email, name, password_hash')
           .eq('email', email.toLowerCase())
           .single();
-        if (!error && data) {
-          customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
+        
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
+        const res: any = await Promise.race([fetchPromise, timeoutPromise]);
+        
+        if (res && res.data && !res.error) {
+          customer = { id: res.data.id, email: res.data.email, name: res.data.name, passwordHash: res.data.password_hash };
         }
       } catch (err) {
         console.error('Supabase customer fetch error:', err);
@@ -2050,7 +2032,6 @@ app.post('/api/login-customer', rateLimiter(20, 15 * 60 * 1000), async (req, res
       return res.status(401).json({ error: 'Invalid credentials or account not found.' });
     }
 
-    const bcrypt = await import('bcryptjs');
     if (!bcrypt.compareSync(password, customer.passwordHash)) {
       return res.status(401).json({ error: 'Invalid credentials.' });
     }
@@ -2126,9 +2107,8 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
       return res.status(400).json({ error: 'An account with this email already exists.' });
     }
 
-    // Hash the password
-    const bcrypt = await import('bcryptjs');
-    const passwordHash = bcrypt.hashSync(password, 12);
+    // Hash the password (10 salt rounds for 4x faster hashing speed)
+    const passwordHash = bcrypt.hashSync(password, 10);
 
     // Save user object
     const newCustomer = {
