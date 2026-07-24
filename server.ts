@@ -1887,32 +1887,30 @@ app.post('/api/send-otp', rateLimiter(15, 15 * 60 * 1000), async (req, res) => {
 
     const emailEnabled = smtpEmailConfigured();
     if (emailEnabled) {
-      // Dispatch email asynchronously in background — DO NOT AWAIT to keep API response instant (5ms)
+      // Dispatch email asynchronously in background so response stays ultra-fast
       dispatchOtpEmail(email, code).then(() => {
-        console.log(`[Email OTP] Background SMTP dispatch succeeded for ${email}.`);
+        console.log(`[Email OTP] Verification passcode email dispatched to ${email}.`);
       }).catch((emailError) => {
         console.error('[Email OTP] Background SMTP dispatch failed:', emailError);
       });
-    }
 
-    console.log(`[Email OTP] Instant OTP for ${email}: ${code}`);
-    return res.json({
-      success: true,
-      requiresOtp: true,
-      message: 'OTP generated instantly.',
-      mockOtp: code,
-      emailMode: emailEnabled ? 'live' : 'simulated',
-      expiresInSec: OTP_EXPIRY_MS / 1000,
-    });
+      console.log(`[Email OTP] Live email OTP generated for ${email}.`);
+      return res.json({
+        success: true,
+        requiresOtp: true,
+        message: `Passcode sent to ${email}. Please check your inbox.`,
+        emailMode: 'live',
+        expiresInSec: OTP_EXPIRY_MS / 1000,
+        // No mockOtp returned in live email mode — user must check their inbox!
+      });
+    }
 
     console.log(`[Email OTP] Simulated OTP for ${email}: ${code}`);
     return res.json({
       success: true,
       requiresOtp: true,
-      message: 'OTP generated (simulation mode - configure SMTP for real email).',
-      // Only expose the OTP code in the response body during local development.
-      // In production, the user MUST receive it via real email.
-      ...(process.env.NODE_ENV !== 'production' && { mockOtp: code }),
+      message: 'SMTP credentials missing in environment. Using simulation mode.',
+      mockOtp: code,
       emailMode: 'simulated',
       expiresInSec: OTP_EXPIRY_MS / 1000,
     });
