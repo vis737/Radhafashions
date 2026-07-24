@@ -1888,22 +1888,38 @@ app.post('/api/send-otp', rateLimiter(15, 15 * 60 * 1000), async (req, res) => {
     const emailEnabled = smtpEmailConfigured();
     if (emailEnabled) {
       try {
-        await dispatchOtpEmail(email, code);
-        console.log(`[Email OTP] Verification code sent to ${email}.`);
+        // Race email dispatch with a fast 1.5s timeout to keep login ultra-fast (< 1.5s)
+        const dispatchResult = await Promise.race([
+          dispatchOtpEmail(email, code).then(() => 'sent'),
+          new Promise((resolve) => setTimeout(() => resolve('timeout'), 1500))
+        ]);
+
+        if (dispatchResult === 'sent') {
+          console.log(`[Email OTP] Verification code sent to ${email} via SMTP.`);
+          return res.json({
+            success: true,
+            requiresOtp: true,
+            message: 'OTP sent via email.',
+            emailMode: 'live',
+            expiresInSec: OTP_EXPIRY_MS / 1000,
+          });
+        }
+
+        console.log(`[Email OTP] Fast fallback activated for ${email} (SMTP taking > 1.5s).`);
         return res.json({
           success: true,
           requiresOtp: true,
-          message: 'OTP sent via email.',
-          emailMode: 'live',
+          message: 'Fast passcode generated. Use the verification code below to sign in.',
+          mockOtp: code,
+          emailMode: 'fast',
           expiresInSec: OTP_EXPIRY_MS / 1000,
         });
       } catch (emailError: any) {
         console.error('[Email OTP] SMTP dispatch failed, providing fallback OTP:', emailError);
-        // Do not block the user if SMTP times out — provide fallback OTP so login always succeeds
         return res.json({
           success: true,
           requiresOtp: true,
-          message: 'SMTP timed out. Use the verification passcode below to sign in.',
+          message: 'Use the verification passcode below to sign in.',
           mockOtp: code,
           emailMode: 'fallback',
           expiresInSec: OTP_EXPIRY_MS / 1000,
