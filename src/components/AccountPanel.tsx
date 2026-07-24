@@ -202,6 +202,8 @@ export default function AccountPanel({
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setOtpError('');
+    setRateLimitMessage('');
     
     // Check rate limit safety
     if (!checkRateLimit()) return;
@@ -532,14 +534,14 @@ export default function AccountPanel({
               <div className="flex gap-2 p-1 bg-gray-50 dark:bg-navy-950 rounded-xl border border-gray-200/50">
                 <button
                   type="button"
-                  onClick={() => { setAuthMethod('password'); setOtpError(''); }}
+                  onClick={() => { setAuthMethod('password'); setOtpError(''); setRateLimitMessage(''); }}
                   className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer text-center ${authMethod === 'password' ? 'bg-white dark:bg-navy-800 text-gold-500 shadow-sm border border-gray-200' : 'text-gray-400 hover:text-navy-900 font-normal'}`}
                 >
                   Password Login
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setAuthMethod('otp'); setOtpError(''); }}
+                  onClick={() => { setAuthMethod('otp'); setOtpError(''); setRateLimitMessage(''); }}
                   className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer text-center ${authMethod === 'otp' ? 'bg-white dark:bg-navy-800 text-gold-500 shadow-sm border border-gray-200' : 'text-gray-400 hover:text-navy-900 font-normal'}`}
                 >
                   Email OTP Safe
@@ -655,7 +657,13 @@ export default function AccountPanel({
                 <div className="text-center pt-2">
                   <button
                     type="button"
-                    onClick={() => setIsSignUp(!isSignUp)}
+                    onClick={() => {
+                      setIsSignUp(!isSignUp);
+                      setOtpError('');
+                      setRateLimitMessage('');
+                      setPasswordErrors([]);
+                      setShowPasswordValidation(false);
+                    }}
                     className="text-[11px] text-gray-500 hover:text-gold-600 font-medium transition cursor-pointer"
                   >
                     {isSignUp ? 'Already have an account? Sign In' : 'Don\'t have an account? Sign Up'}
