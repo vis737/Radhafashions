@@ -1985,20 +1985,20 @@ app.post('/api/login-customer', rateLimiter(20, 15 * 60 * 1000), async (req, res
 
     let customer: any = null;
 
-    // Primary: Supabase customers table (with fast 1.2s timeout guard)
+    // Primary: Supabase customers table
     if (supabase) {
       try {
-        const fetchPromise = supabase
+        const { data, error } = await supabase
           .from('customers')
           .select('id, email, name, password_hash')
           .eq('email', email.toLowerCase())
-          .single();
-        
-        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
-        const res: any = await Promise.race([fetchPromise, timeoutPromise]);
-        
-        if (res && res.data && !res.error) {
-          customer = { id: res.data.id, email: res.data.email, name: res.data.name, passwordHash: res.data.password_hash };
+          .maybeSingle();
+        if (!error && data) {
+          customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
+          // Cache in memory for instant zero-latency future lookups
+          if (!inMemoryCustomers.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+            inMemoryCustomers.push(customer);
+          }
         }
       } catch (err) {
         console.error('Supabase customer fetch error:', err);
@@ -2074,7 +2074,7 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
           .from('customers')
           .select('id')
           .eq('email', email.toLowerCase())
-          .single();
+          .maybeSingle();
         if (existing) emailAlreadyExists = true;
       } catch { /* ignore Supabase lookup error */ }
     }
