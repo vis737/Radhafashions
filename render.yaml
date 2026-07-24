@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: meris-eshop
+    runtime: node
+    plan: free
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: APP_URL
+        sync: false        # Set this to your actual Render URL in the dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false        # Set a strong password in the dashboard
+      - key: SUPABASE_URL
+        sync: false        # Your Supabase project URL
+      - key: SUPABASE_KEY
+        sync: false        # Your Supabase service-role key (keep secret!)
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false        # Your Gmail address
+      - key: SMTP_PASS
+        sync: false        # Your Gmail App Password (16 chars, no spaces)
+      - key: SMTP_FROM_NAME
+        value: Meris E-Shop
+      - key: SMTP_FROM_EMAIL
+        sync: false        # Same as SMTP_USER typically
+      - key: ENABLE_REAL_NOTIFICATIONS
+        value: "true"
+      - key: GEMINI_API_KEY
+        sync: false        # Optional: for AI recommendations
+      - key: RAZORPAY_KEY_ID
+        sync: false        # Optional: Razorpay key ID
+      - key: RAZORPAY_KEY_SECRET
+        sync: false        # Optional: Razorpay secret
+      - key: VITE_RAZORPAY_KEY_ID
+        sync: false        # Same as RAZORPAY_KEY_ID (exposed to frontend)

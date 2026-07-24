@@ -199,7 +199,8 @@ const PRODUCTS_FILE_PATH = path.join(process.cwd(), 'products_db.json');
 const COUPONS_FILE_PATH = path.join(process.cwd(), 'coupons_db.json');
 const CAMPAIGNS_FILE_PATH = path.join(process.cwd(), 'campaigns_db.json');
 const CMS_FILE_PATH = path.join(process.cwd(), 'cms_db.json');
-const LOGS_FILE_PATH = path.join(process.cwd(), 'activity_logs.json');
+// Note: activity_logs.json is intentionally removed — Render has an ephemeral filesystem.
+// All persistent data is stored in Supabase.
 
 function readLocalJsonDb(filePath: string, defaultData: any) {
   try {
@@ -515,9 +516,15 @@ const getRazorpayClient = () => {
 */
 
 // Serve uploaded product images as static files
+// NOTE: On Render's free tier the filesystem is ephemeral — uploaded images are
+// lost on every deploy or restart. For persistent uploads, integrate Supabase Storage.
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn('[Uploads] Could not create uploads directory (ephemeral FS on Render):', err);
 }
 app.use('/uploads', express.static(UPLOADS_DIR));
 
@@ -1124,36 +1131,12 @@ function normalizePhone(value: unknown): string {
   return compact;
 }
 
-// Background simulation of real-time logistics updates
-setInterval(() => {
-  try {
-    const dbOrders = readOrdersDb();
-    let updated = false;
-    
-    const nextStatusMap: Record<string, string> = {
-      'pending': 'processing',
-      'processing': 'shipped',
-      'shipped': 'delivered'
-    };
-
-    const updatedOrders = dbOrders.map(order => {
-      if (order.status && nextStatusMap[order.status]) {
-        updated = true;
-        const oldStatus = order.status;
-        const newStatus = nextStatusMap[order.status];
-        console.log(`[Backend Database] Order ${order.orderNumber} advanced from ${oldStatus} to ${newStatus}`);
-        return { ...order, status: newStatus };
-      }
-      return order;
-    });
-
-    if (updated) {
-      writeOrdersDb(updatedOrders);
-    }
-  } catch (error) {
-    console.error('Error in background logistics update:', error);
-  }
-}, 15000); // Check and progress order stages on server database every 15 seconds
+// Order auto-advancement is intentionally DISABLED in production.
+// Auto-advancing all orders every 15 seconds would deliver everything within 45s — a critical bug.
+// Order status changes are handled manually by the admin panel.
+// To re-enable for demo purposes in development only:
+// if (process.env.NODE_ENV !== 'production') { setInterval(..., 15000); }
+console.log('[Orders] Auto-status-advancement disabled in production. Use admin panel to update order status.');
 
 // Live Tracking & Orders Endpoints
 app.get('/api/orders', verifyAdminToken, (req, res) => {
@@ -1344,17 +1327,7 @@ async function sendBookingEmail(order: any) {
 </html>
   `;
 
-  // Write to emails_db.json
-  const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
-  let currentEmails = [];
-  try {
-    if (fs.existsSync(emailsFilePath)) {
-      currentEmails = JSON.parse(fs.readFileSync(emailsFilePath, 'utf-8') || '[]');
-    }
-  } catch (err) {
-    console.error('Error reading emails database:', err);
-  }
-
+  // Log email to Supabase email_logs table (primary) for persistence across Render restarts
   const newEmailRecord = {
     id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
     recipient: recipientEmail,
@@ -1366,12 +1339,22 @@ async function sendBookingEmail(order: any) {
     dateText: new Date().toLocaleString()
   };
 
-  currentEmails.unshift(newEmailRecord);
-  try {
-    fs.writeFileSync(emailsFilePath, JSON.stringify(currentEmails, null, 2));
-    console.log(`[Email Service] Logged booking notification email to emails_db.json for ${recipientEmail}.`);
-  } catch (err) {
-    console.error('Error writing emails database:', err);
+  if (supabase) {
+    supabase.from('email_logs').insert({
+      id: newEmailRecord.id,
+      recipient: newEmailRecord.recipient,
+      subject: newEmailRecord.subject,
+      body_html: newEmailRecord.bodyHtml,
+      sent_at: newEmailRecord.sentAt,
+      order_number: newEmailRecord.orderNumber,
+      status: newEmailRecord.status,
+      date_text: newEmailRecord.dateText
+    }).then(({ error }) => {
+      if (error) console.error('[Email Service] Supabase email_logs insert failed:', error);
+      else console.log(`[Email Service] Logged booking email to Supabase for ${recipientEmail}.`);
+    });
+  } else {
+    console.log(`[Email Service] Supabase not configured — email log skipped for ${recipientEmail}.`);
   }
 
   // Attempt real SMTP if environment variables are provided
@@ -1498,16 +1481,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
 </html>
   `;
 
-  const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
-  let currentEmails = [];
-  try {
-    if (fs.existsSync(emailsFilePath)) {
-      currentEmails = JSON.parse(fs.readFileSync(emailsFilePath, 'utf-8') || '[]');
-    }
-  } catch (err) {
-    console.error('Error reading emails database:', err);
-  }
-
+  // Log payment email to Supabase email_logs table
   const newEmailRecord = {
     id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
     recipient: recipientEmail,
@@ -1519,12 +1493,22 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
     dateText: new Date().toLocaleString()
   };
 
-  currentEmails.unshift(newEmailRecord);
-  try {
-    fs.writeFileSync(emailsFilePath, JSON.stringify(currentEmails, null, 2));
-    console.log(`[Email Service] Logged payment notification email for ${recipientEmail}.`);
-  } catch (err) {
-    console.error('Error writing emails database:', err);
+  if (supabase) {
+    supabase.from('email_logs').insert({
+      id: newEmailRecord.id,
+      recipient: newEmailRecord.recipient,
+      subject: newEmailRecord.subject,
+      body_html: newEmailRecord.bodyHtml,
+      sent_at: newEmailRecord.sentAt,
+      order_number: newEmailRecord.orderNumber,
+      status: newEmailRecord.status,
+      date_text: newEmailRecord.dateText
+    }).then(({ error }) => {
+      if (error) console.error('[Email Service] Supabase email_logs insert failed (payment):', error);
+      else console.log(`[Email Service] Logged payment email to Supabase for ${recipientEmail}.`);
+    });
+  } else {
+    console.log(`[Email Service] Supabase not configured — payment email log skipped for ${recipientEmail}.`);
   }
 
   if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
@@ -1739,8 +1723,9 @@ app.post('/api/whatsapp/alert', async (req, res) => {
 });
 */
 
-// Persistent OTP store (survives server restarts on the same instance)
-const OTP_FILE_PATH = path.join(process.cwd(), 'otp_db.json');
+// In-memory OTP store — OTPs are intentionally transient (5 min TTL).
+// File persistence provided no benefit since Render's free tier spins down the server anyway.
+// If a user requests OTP while server is sleeping, they get a fresh one on wake-up.
 const OTP_EXPIRY_MS = 5 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 const OTP_MAX_SENDS_PER_HOUR = 5;
@@ -1755,27 +1740,19 @@ interface OtpRecord {
   windowStartAt: number;
 }
 
+// Pure in-memory map — no file I/O needed for ephemeral OTP data
+const otpMemoryStore: Record<string, OtpRecord> = {};
+
 function readOtpDb(): Record<string, OtpRecord> {
-  try {
-    if (!fs.existsSync(OTP_FILE_PATH)) {
-      fs.writeFileSync(OTP_FILE_PATH, JSON.stringify({}, null, 2));
-      return {};
-    }
-    const data = fs.readFileSync(OTP_FILE_PATH, 'utf-8');
-    const parsed = JSON.parse(data || '{}');
-    return typeof parsed === 'object' && parsed !== null ? parsed : {};
-  } catch (error) {
-    console.error('Error reading OTP database:', error);
-    return {};
-  }
+  return otpMemoryStore;
 }
 
 function writeOtpDb(db: Record<string, OtpRecord>) {
-  try {
-    fs.writeFileSync(OTP_FILE_PATH, JSON.stringify(db, null, 2));
-  } catch (error) {
-    console.error('Error writing OTP database:', error);
+  // Update the in-memory store (replace all keys)
+  for (const key of Object.keys(otpMemoryStore)) {
+    delete otpMemoryStore[key];
   }
+  Object.assign(otpMemoryStore, db);
 }
 
 function purgeExpiredOtps(db: Record<string, OtpRecord>): Record<string, OtpRecord> {
@@ -1788,6 +1765,16 @@ function purgeExpiredOtps(db: Record<string, OtpRecord>): Record<string, OtpReco
   }
   return cleaned;
 }
+
+// Periodically purge expired OTPs from memory (every 10 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const key of Object.keys(otpMemoryStore)) {
+    if (otpMemoryStore[key].expiresAt <= now) {
+      delete otpMemoryStore[key];
+    }
+  }
+}, 10 * 60 * 1000);
 
 function smtpEmailConfigured(): boolean {
   return (
@@ -2167,17 +2154,7 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
 </html>
     `;
 
-    // Save/log to emails_db.json
-    const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
-    let currentEmails = [];
-    if (fs.existsSync(emailsFilePath)) {
-      try {
-        currentEmails = JSON.parse(fs.readFileSync(emailsFilePath, 'utf-8') || '[]');
-      } catch (err) {
-        console.error('Error reading emails database:', err);
-      }
-    }
-
+    // Log welcome email to Supabase email_logs table
     const newEmailRecord = {
       id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
       recipient: email,
@@ -2189,8 +2166,20 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
       dateText: new Date().toLocaleString()
     };
 
-    currentEmails.unshift(newEmailRecord);
-    fs.writeFileSync(emailsFilePath, JSON.stringify(currentEmails, null, 2));
+    if (supabase) {
+      supabase.from('email_logs').insert({
+        id: newEmailRecord.id,
+        recipient: newEmailRecord.recipient,
+        subject: newEmailRecord.subject,
+        body_html: newEmailRecord.bodyHtml,
+        sent_at: newEmailRecord.sentAt,
+        order_number: newEmailRecord.orderNumber,
+        status: newEmailRecord.status,
+        date_text: newEmailRecord.dateText
+      }).then(({ error }) => {
+        if (error) console.error('[Registration] Supabase email_logs insert failed:', error);
+      });
+    }
 
     // Send real SMTP welcome email if configured
     if (smtpEmailConfigured()) {
@@ -2230,22 +2219,36 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
   }
 });
 
-app.get('/api/emails', verifyAdminToken, (req, res) => {
+app.get('/api/emails', verifyAdminToken, async (req, res) => {
   try {
-    const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
-    if (!fs.existsSync(emailsFilePath)) {
-      return res.json([]);
+    if (supabase) {
+      let query = supabase
+        .from('email_logs')
+        .select('id, recipient, subject, sent_at, order_number, status, date_text')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      const { recipient } = req.query;
+      if (recipient) {
+        query = query.eq('recipient', (recipient as string).toLowerCase());
+      }
+
+      const { data, error } = await query;
+      if (!error && data) {
+        // Map Supabase snake_case to camelCase for frontend compatibility
+        return res.json(data.map((e: any) => ({
+          id: e.id,
+          recipient: e.recipient,
+          subject: e.subject,
+          sentAt: e.sent_at,
+          orderNumber: e.order_number,
+          status: e.status,
+          dateText: e.date_text
+        })));
+      }
+      console.warn('Supabase email_logs fetch failed, returning empty:', error);
     }
-    const data = fs.readFileSync(emailsFilePath, 'utf-8');
-    const emails = JSON.parse(data || '[]');
-    
-    // Filter by recipient query parameter if provided
-    const { recipient } = req.query;
-    if (recipient) {
-      const filtered = emails.filter((e: any) => e.recipient.toLowerCase() === (recipient as string).toLowerCase());
-      return res.json(filtered);
-    }
-    res.json(emails);
+    res.json([]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch email logs' });
   }
@@ -2678,70 +2681,81 @@ JSON Output Schema:
   }
 });
 
-// Newsletter subscription endpoint
-const NEWSLETTER_FILE_PATH = path.join(process.cwd(), 'newsletter_db.json');
-
-function readNewsletterDb(): any[] {
-  try {
-    if (!fs.existsSync(NEWSLETTER_FILE_PATH)) {
-      fs.writeFileSync(NEWSLETTER_FILE_PATH, JSON.stringify([], null, 2));
-      return [];
-    }
-    const data = fs.readFileSync(NEWSLETTER_FILE_PATH, 'utf-8');
-    return JSON.parse(data || '[]');
-  } catch (error) {
-    console.error('Error reading newsletter database:', error);
-    return [];
-  }
-}
-
-function writeNewsletterDb(emails: any[]) {
-  try {
-    fs.writeFileSync(NEWSLETTER_FILE_PATH, JSON.stringify(emails, null, 2));
-  } catch (error) {
-    console.error('Error writing newsletter database:', error);
-  }
-}
-
+// Newsletter subscription endpoint — uses Supabase for persistence across Render restarts
 app.post('/api/newsletter', rateLimiter(3, 60 * 60 * 1000), async (req, res) => {
   try {
     const normalizedEmail = sanitizeEmail(req.body?.email);
     if (!normalizedEmail) {
       return res.status(400).json({ error: 'Valid email address is required.' });
     }
-    const dbEmails = readNewsletterDb();
 
-    if (dbEmails.some(e => e.email === normalizedEmail)) {
-      return res.status(409).json({ error: 'This email is already subscribed.' });
+    if (supabase) {
+      // Check for existing subscription
+      const { data: existing } = await supabase
+        .from('newsletter')
+        .select('id')
+        .eq('email', normalizedEmail)
+        .single();
+
+      if (existing) {
+        return res.status(409).json({ error: 'This email is already subscribed.' });
+      }
+
+      const { error: insertError } = await supabase.from('newsletter').insert({
+        id: `sub_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        email: normalizedEmail,
+        subscribed_at: new Date().toISOString(),
+        status: 'active',
+        source: 'footer_newsletter'
+      });
+
+      if (insertError) {
+        // Handle unique constraint violation (concurrent duplicate)
+        if (insertError.code === '23505') {
+          return res.status(409).json({ error: 'This email is already subscribed.' });
+        }
+        console.error('[Newsletter] Supabase insert failed:', insertError);
+        return res.status(500).json({ error: 'Failed to subscribe. Please try again.' });
+      }
+
+      console.log(`[Newsletter] New subscription saved to Supabase: ${normalizedEmail}`);
+      return res.json({ success: true, message: 'Successfully subscribed to newsletter!' });
     }
 
-    const newSubscription = {
-      id: `sub_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-      email: normalizedEmail,
-      subscribedAt: new Date().toISOString(),
-      status: 'active',
-      source: 'footer_newsletter'
-    };
-
-    dbEmails.unshift(newSubscription);
-    writeNewsletterDb(dbEmails);
-
-    console.log(`[Newsletter] New subscription: ${normalizedEmail}`);
-    res.json({ success: true, message: 'Successfully subscribed to newsletter!' });
+    // Fallback: no Supabase configured (local dev)
+    console.log(`[Newsletter] Supabase not configured. Subscription logged locally: ${normalizedEmail}`);
+    return res.json({ success: true, message: 'Successfully subscribed to newsletter!' });
   } catch (err) {
     console.error('Error subscribing to newsletter:', err);
     res.status(500).json({ error: 'Failed to subscribe. Please try again.' });
   }
 });
 
-app.get('/api/newsletter', verifyAdminToken, (req, res) => {
+app.get('/api/newsletter', verifyAdminToken, async (req, res) => {
   try {
-    const dbEmails = readNewsletterDb();
-    res.json(dbEmails);
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('newsletter')
+        .select('id, email, subscribed_at, status, source')
+        .order('subscribed_at', { ascending: false });
+
+      if (!error && data) {
+        return res.json(data.map((s: any) => ({
+          id: s.id,
+          email: s.email,
+          subscribedAt: s.subscribed_at,
+          status: s.status,
+          source: s.source
+        })));
+      }
+      console.warn('Supabase newsletter fetch failed:', error);
+    }
+    res.json([]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch newsletter subscriptions' });
   }
 });
+
 
 // Razorpay temporarily disabled.
 // Enable after GST registration and production credentials are available.

@@ -1,6 +1,5 @@
 node_modules/
 build/
-dist/
 coverage/
 .DS_Store
 *.log
@@ -17,3 +16,19 @@ otp_db.json
 whatsapp_db.json
 newsletter_db.json
 activity_logs.json
+
+# Ephemeral uploaded images (not persisted on Render's free tier)
+public/uploads/
+
+# npm cache
+.npm-cache/
+
+# Dev scripts
+dev-server.log
+dev-server.err.log
+take_screenshot.cjs
+check_dashboard_error.cjs
+test_login.cjs
+
+# Supabase migration (already applied — keep out of repo clutter)
+# supabase_full_migration.sql  # Keep this in repo for reference
