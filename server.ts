@@ -2027,11 +2027,11 @@ app.post('/api/login-customer', rateLimiter(20, 15 * 60 * 1000), async (req, res
     }
 
     if (!customer) {
-      return res.status(401).json({ error: 'Invalid credentials or account not found.' });
+      return res.status(401).json({ error: 'No account found with this email. Please check spelling or click "Sign Up".' });
     }
 
     if (!bcrypt.compareSync(password, customer.passwordHash)) {
-      return res.status(401).json({ error: 'Invalid credentials.' });
+      return res.status(401).json({ error: 'Incorrect password. Please try again.' });
     }
 
     res.json({
