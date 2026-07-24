@@ -30,6 +30,7 @@ export interface Product {
   price: number;
   discountPrice?: number;
   stock: number;
+  weightKg?: number;
   rating: number;
   ratingCount: number;
   images: string[];
@@ -57,6 +58,14 @@ export interface Product {
   purchaseCount?: number;
   wishlistCount?: number;
   trendScore?: number;
+  toyParameters?: {
+    minAge?: number;
+    maxAge?: number;
+    skillType?: string;
+    educationalType?: string;
+  };
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export interface CartItem {
@@ -91,6 +100,8 @@ export interface Order {
   items: CartItem[];
   shippingMethod: 'standard' | 'express';
   shippingCost: number;
+  shippingWeightKg?: number;
+  shippingZone?: string;
   tax: number;
   discount: number;
   subtotal: number;
@@ -107,6 +118,7 @@ export interface Order {
   upiScreenshot?: string;
   upiNotes?: string;
   upiRejectionReason?: string;
+  adminNotes?: string; // Internal admin comments
   
   // Festival & Seasonal Checkout Additions:
   giftWrappingRequested?: boolean;
@@ -116,6 +128,21 @@ export interface Order {
   giftHidePrice?: boolean;
   accountEmail?: string;
   accountName?: string;
+}
+
+export interface AdminNotification {
+  id: string;
+  type: 'order' | 'stock' | 'customer' | 'payment' | 'security';
+  message: string;
+  read: boolean;
+  timestamp: string;
+}
+
+export interface GiftOrderStats {
+  totalGiftRevenue: number;
+  popularThemes: Record<string, number>; // theme -> count
+  totalGiftOrders: number;
+  averageGiftValue: number;
 }
 
 export interface ActivityLog {
@@ -171,6 +198,8 @@ export interface CMSConfig {
   emailDispatchBody?: string;
   maxCartQty?: number;
   returnWindowDays?: number;
+  upiId?: string;
+  upiQrUrl?: string;
 }
 
 export interface BundleOffer {

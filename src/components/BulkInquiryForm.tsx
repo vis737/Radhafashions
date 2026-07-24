@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, CheckCircle, Package, Calendar, Award } from 'lucide-react';
 import { BulkOrderInquiry, Product } from '../types';
@@ -21,15 +21,14 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
   const [submitted, setSubmitted] = useState(false);
 
   // Volume pricing calculator
-  const getSimulatedDiscountRate = (qty: number) => {
-    if (qty >= 500) return 25;
-    if (qty >= 200) return 20;
-    if (qty >= 100) return 15;
-    if (qty >= 50) return 10;
+  const getDiscountRate = (qty: number) => {
+    if (qty >= 100) return 25;
+    if (qty >= 50) return 18;
+    if (qty >= 20) return 12;
     return 0;
   };
 
-  const currentRate = getSimulatedDiscountRate(quantity);
+  const currentRate = getDiscountRate(quantity);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,7 +271,7 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
                   Gold Inquiry Lodged Successfully
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
-                  Our guild master has logged your interest in <span className="font-semibold text-navy-950 dark:text-gold-400">{quantity}x {pName}</span> with a simulated <span className="text-emerald-500 font-bold">{currentRate}% bulk discount</span> applied. We will contact you at <span className="font-semibold">{email}</span> within 4 business hours.
+                  Our guild master has logged your interest in <span className="font-semibold text-navy-950 dark:text-gold-400">{quantity}x {pName}</span> with a <span className="text-emerald-500 font-bold">{currentRate}% bulk discount</span> applied. We will contact you at <span className="font-semibold">{email}</span> within 4 business hours.
                 </p>
               </div>
 

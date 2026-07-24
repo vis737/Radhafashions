@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Printer, HeartHandshake, Eye, Download, CheckCircle, Smartphone } from 'lucide-react';
 import { Order } from '../types';
@@ -231,7 +231,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
             <Smartphone className="w-5 h-5 text-gold-500 shrink-0" />
             <div>
               <h5 className="font-bold text-navy-900">Invoices details sent</h5>
-              <span>Simulated confirmation dispatched to {order.customerInfo.phone}.</span>
+              <span>Order confirmation dispatched to {order.customerInfo.phone}.</span>
             </div>
           </div>
           

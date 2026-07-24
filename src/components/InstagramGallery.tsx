@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Instagram, Heart, MessageCircle, ExternalLink, Sparkles } from 'lucide-react';
 
@@ -57,11 +57,8 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
 
 export default function InstagramGallery() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [simulatedInflow, setSimulatedInflow] = useState(false);
-
-  const handleTriggerSimulatedVisit = () => {
-    setSimulatedInflow(true);
-    setTimeout(() => setSimulatedInflow(false), 3000);
+  const handleInstagramVisit = () => {
+    window.open('https://instagram.com/meris_boutique', '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -78,7 +75,7 @@ export default function InstagramGallery() {
         </div>
 
         <button
-          onClick={handleTriggerSimulatedVisit}
+          onClick={handleInstagramVisit}
           className="py-2.5 px-4 bg-[#0F172A] hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl text-xs font-semibold uppercase tracking-wider transition flex items-center gap-2 border border-slate-700/50 cursor-pointer self-start sm:self-auto shadow-sm active:scale-95"
         >
           <Instagram className="w-4 h-4 shrink-0" />
@@ -92,7 +89,7 @@ export default function InstagramGallery() {
             key={post.id}
             onMouseEnter={() => setHoveredId(post.id)}
             onMouseLeave={() => setHoveredId(null)}
-            onClick={handleTriggerSimulatedVisit}
+            onClick={handleInstagramVisit}
             className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-gray-100 dark:border-navy-900 cursor-zoom-in group select-none shadow-sm hover:shadow-md transition duration-300"
           >
             <img
@@ -125,24 +122,7 @@ export default function InstagramGallery() {
         ))}
       </div>
 
-      <AnimatePresence>
-        {simulatedInflow && (
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            className="fixed bottom-6 left-6 z-50 p-4 rounded-2xl bg-slate-950 text-white border border-gold-400 shadow-2xl flex items-center gap-3 text-left max-w-sm"
-          >
-            <div className="w-10 h-10 bg-gold-400/20 rounded-xl flex items-center justify-center shrink-0 border border-gold-500/20">
-              <ExternalLink className="w-5 h-5 text-gold-400" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-gold-400 uppercase tracking-wider font-display">Redirecting to Instagram Vlog</p>
-              <p className="text-[10px] text-gray-400 font-mono mt-0.5">Mocking target: https://instagram.com/meris_boutique</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
     </section>
   );
 }

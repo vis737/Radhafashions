@@ -145,15 +145,233 @@ export interface CartTotals {
   couponDiscount: number;
   tax: number;
   shippingCost: number;
+  shippingWeightKg: number;
+  billableWeightKg: number;
+  shippingZone: string;
   giftWrappingCost: number;
   grandTotal: number;
+}
+
+const PRODUCT_WEIGHT_FALLBACKS_KG: Record<string, number> = {
+  handbags: 0.8,
+  toys: 0.7,
+  learning: 0.75,
+  stationeries: 0.35,
+  entertainment: 1.2,
+  home: 0.65,
+  kolam: 0.45,
+  'wood-gifts': 1,
+  bottles: 0.9
+};
+
+const SHIPPING_HANDLING_SURCHARGE = 50;
+
+function addShippingHandlingSurcharge(cost: number): number {
+  return cost > 0 ? cost + SHIPPING_HANDLING_SURCHARGE : cost;
+}
+
+function parseWeightValueToKg(value?: string | number): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+  if (!value) return null;
+
+  const normalized = value.toLowerCase().replace(/\s+/g, '');
+  const match = normalized.match(/(\d+(?:\.\d+)?)(kg|kgs|kilogram|kilograms|g|gm|grams)?/);
+  if (!match) return null;
+
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const unit = match[2] || '';
+  return unit === 'g' || unit === 'gm' || unit === 'grams' ? amount / 1000 : amount;
+}
+
+export function getProductWeightKg(product: Product): number {
+  const explicitWeight = parseWeightValueToKg(product.weightKg);
+  if (explicitWeight) return explicitWeight;
+
+  const specWeight = parseWeightValueToKg(product.specifications?.Weight);
+  if (specWeight) return specWeight;
+
+  return PRODUCT_WEIGHT_FALLBACKS_KG[product.categorySlug] || 0.5;
+}
+
+export function getCartShipmentWeightKg(cartItems: { product: Product; quantity: number }[]): number {
+  const total = cartItems.reduce((sum, item) => {
+    return sum + getProductWeightKg(item.product) * item.quantity;
+  }, 0);
+
+  return Math.round(total * 100) / 100;
+}
+
+interface PincodeRateProfile {
+  zone: string;
+  baseHalfKgRate: number;
+  additionalHalfKgRate: number;
+  remoteSurcharge: number;
+}
+
+function getLastMilePincodeAdjustment(pin: string): number {
+  if (pin.length !== 6) return 0;
+
+  // Courier partners often rate by serviceable pin clusters. This deterministic
+  // adjustment keeps quotes sensitive to the exact pincode without an external API.
+  const district = Number(pin.slice(0, 3));
+  const localRoute = Number(pin.slice(3));
+  const districtAdjustment = (district % 6) * 4;
+  const routeAdjustment = (localRoute % 5) * 3;
+
+  return districtAdjustment + routeAdjustment;
+}
+
+function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile {
+  const pin = (pincode || '').replace(/\D/g, '');
+  if (pin.length !== 6) {
+    return {
+      zone: 'Enter pincode for exact rate',
+      baseHalfKgRate: 80,
+      additionalHalfKgRate: 52,
+      remoteSurcharge: 0
+    };
+  }
+
+  const prefix2 = Number(pin.slice(0, 2));
+  const prefix3 = Number(pin.slice(0, 3));
+  const lastMileAdjustment = getLastMilePincodeAdjustment(pin);
+
+  if (prefix3 >= 600 && prefix3 <= 609) {
+    return {
+      zone: 'Chennai Metro Local',
+      baseHalfKgRate: 58 + lastMileAdjustment,
+      additionalHalfKgRate: 38,
+      remoteSurcharge: 0
+    };
+  }
+
+  if (prefix2 >= 60 && prefix2 <= 64) {
+    return {
+      zone: 'Tamil Nadu Local',
+      baseHalfKgRate: 62 + lastMileAdjustment,
+      additionalHalfKgRate: 40,
+      remoteSurcharge: prefix3 >= 643 ? 15 : 0
+    };
+  }
+
+  if (prefix2 >= 56 && prefix2 <= 59) {
+    return {
+      zone: prefix3 === 560 ? 'Bengaluru Metro' : 'Karnataka',
+      baseHalfKgRate: (prefix3 === 560 ? 74 : 82) + lastMileAdjustment,
+      additionalHalfKgRate: prefix3 === 560 ? 48 : 54,
+      remoteSurcharge: 0
+    };
+  }
+
+  if (prefix2 >= 50 && prefix2 <= 53) {
+    return {
+      zone: prefix3 === 500 ? 'Hyderabad Metro' : 'Telangana / Andhra',
+      baseHalfKgRate: (prefix3 === 500 ? 78 : 88) + lastMileAdjustment,
+      additionalHalfKgRate: prefix3 === 500 ? 50 : 58,
+      remoteSurcharge: 0
+    };
+  }
+
+  if (prefix2 >= 67 && prefix2 <= 69) {
+    return {
+      zone: 'Kerala',
+      baseHalfKgRate: 92 + lastMileAdjustment,
+      additionalHalfKgRate: 60,
+      remoteSurcharge: prefix3 >= 685 ? 18 : 0
+    };
+  }
+
+  if ((prefix2 >= 78 && prefix2 <= 79) || [194, 744].includes(prefix3)) {
+    return {
+      zone: 'Remote / Special Route',
+      baseHalfKgRate: 168 + lastMileAdjustment,
+      additionalHalfKgRate: 108,
+      remoteSurcharge: [194, 744].includes(prefix3) ? 45 : 30
+    };
+  }
+
+  if ((prefix2 >= 36 && prefix2 <= 49) || (prefix2 >= 30 && prefix2 <= 34)) {
+    return {
+      zone: 'West / Central India',
+      baseHalfKgRate: 108 + lastMileAdjustment,
+      additionalHalfKgRate: 70,
+      remoteSurcharge: 0
+    };
+  }
+
+  if ((prefix2 >= 11 && prefix2 <= 24) || (prefix2 >= 25 && prefix2 <= 29)) {
+    return {
+      zone: 'North India',
+      baseHalfKgRate: 118 + lastMileAdjustment,
+      additionalHalfKgRate: 78,
+      remoteSurcharge: [171, 172, 173, 174, 175, 176, 177].includes(prefix3) ? 25 : 0
+    };
+  }
+
+  if (prefix2 >= 70 && prefix2 <= 77) {
+    return {
+      zone: prefix3 === 700 ? 'Kolkata Metro' : 'East India',
+      baseHalfKgRate: (prefix3 === 700 ? 115 : 132) + lastMileAdjustment,
+      additionalHalfKgRate: prefix3 === 700 ? 76 : 86,
+      remoteSurcharge: 0
+    };
+  }
+
+  return {
+    zone: 'Rest of India',
+    baseHalfKgRate: 138 + lastMileAdjustment,
+    additionalHalfKgRate: 90,
+    remoteSurcharge: 10
+  };
+}
+
+function calculateLocalShippingCost(
+  totalWeightKg: number,
+  destinationPincode: string | undefined,
+  shippingMethod: 'standard' | 'express',
+  subtotal: number
+): { cost: number; billableWeightKg: number; zone: string } {
+  if (subtotal <= 0 || totalWeightKg <= 0) {
+    return { cost: 0, billableWeightKg: 0, zone: 'No shipment' };
+  }
+
+  const pin = (destinationPincode || '').replace(/\D/g, '');
+  const billableWeightKg = Math.max(0.5, Math.ceil(totalWeightKg * 2) / 2);
+  const rateProfile = getShippingRateProfileFromPincode(destinationPincode);
+  const zone = rateProfile.zone;
+
+  if (pin.length !== 6) {
+    const fallbackCost = shippingMethod === 'express' ? 180 : subtotal > 1500 ? 0 : 80;
+    return { cost: addShippingHandlingSurcharge(fallbackCost), billableWeightKg, zone };
+  }
+
+  const halfKgSlabs = Math.ceil(billableWeightKg / 0.5);
+  const standardCost =
+    rateProfile.baseHalfKgRate +
+    Math.max(0, halfKgSlabs - 1) * rateProfile.additionalHalfKgRate +
+    rateProfile.remoteSurcharge;
+
+  if (shippingMethod === 'express') {
+    return {
+      cost: addShippingHandlingSurcharge(Math.round(standardCost * 1.45 + 40)),
+      billableWeightKg,
+      zone
+    };
+  }
+
+  return { cost: addShippingHandlingSurcharge(standardCost), billableWeightKg, zone };
 }
 
 export function calculateCartTotals(
   cartItems: { product: Product; quantity: number }[],
   activeCoupon: { code: string; type: 'percentage' | 'flat'; value: number; minimumCartValue: number } | null,
   shippingMethod: 'standard' | 'express',
-  giftWrappingRequested?: boolean
+  giftWrappingRequested?: boolean,
+  destinationPincode?: string
 ): CartTotals {
   let subtotal = 0;
   let bundleDiscount = 0;
@@ -212,16 +430,10 @@ export function calculateCartTotals(
   const taxableAmount = Math.max(0, adjustedSubtotal - couponDiscount);
   const tax = Math.round(taxableAmount * 0.18);
 
-  // 7. Shipping logic
-  let shippingCost = 0;
-  if (subtotal > 0) {
-    if (shippingMethod === 'express') {
-      shippingCost = 180;
-    } else {
-      // standard is free above Rs.1500, else Rs.80
-      shippingCost = subtotal > 1500 ? 0 : 80;
-    }
-  }
+  // 7. Local shipping logic: billable weight slab + destination pincode zone
+  const shippingWeightKg = getCartShipmentWeightKg(cartItems);
+  const shippingQuote = calculateLocalShippingCost(shippingWeightKg, destinationPincode, shippingMethod, subtotal);
+  const shippingCost = shippingQuote.cost;
 
   // 8. Grand total payable
   const grandTotal = Math.max(0, taxableAmount + tax + shippingCost + giftWrappingCost);
@@ -233,6 +445,9 @@ export function calculateCartTotals(
     couponDiscount,
     tax,
     shippingCost,
+    shippingWeightKg,
+    billableWeightKg: shippingQuote.billableWeightKg,
+    shippingZone: shippingQuote.zone,
     giftWrappingCost,
     grandTotal
   };

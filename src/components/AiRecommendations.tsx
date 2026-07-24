@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, ArrowRight, UserCheck } from 'lucide-react';
 import { CartItem, Product } from '../types';
@@ -55,7 +55,7 @@ export default function AiRecommendations({
           setRecommendations(data);
         }
       } catch (err) {
-        console.log('AI recommendations offline fallback active.');
+        // Log removed for production
       } finally {
         setLoading(false);
       }

@@ -196,6 +196,119 @@
     "accountName": "augustin"
   },
   {
+    "id": "ord-1783931327981",
+    "orderNumber": "MR-132798-768",
+    "customerInfo": {
+      "name": "charankumar0607",
+      "email": "charankumar0607@gmail.com",
+      "phone": "9482886761",
+      "address": "No.39, 1st Floor, Ganesh Krupa, 10th Cross, Muninanjappa Layout, Ramamurthy Nagar, Bengaluru - 560016",
+      "pincode": "560016"
+    },
+    "items": [
+      {
+        "product": {
+          "id": "home-1",
+          "sku": "HM-CANDLE-SOY",
+          "name": "Symphony Organic Lavender Scented Soy Candle",
+          "brand": "Meris Botanics",
+          "isNew": false,
+          "price": 699,
+          "stock": 45,
+          "images": [
+            "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?w=600&auto=format&fit=crop"
+          ],
+          "rating": 4.8,
+          "reviews": [
+            {
+              "id": "r-7",
+              "date": "2026-06-05",
+              "author": "Ritu V.",
+              "rating": 5,
+              "comment": "Best lavender candle ever! The crackle sound from the wooden wick is incredibly calming.",
+              "approved": true
+            }
+          ],
+          "category": "Home Gifts",
+          "vendorId": null,
+          "description": "Bring absolute serenity to your relaxation spaces. The Symphony Candle uses 100% natural hydrogenated soy bean wax, burning cleanly for over 45 hours without leaving any smoke residue. Formulated with premium plant extracts to induce calm sleep.",
+          "ratingCount": 210,
+          "availability": "in-stock",
+          "categorySlug": "home",
+          "isBestseller": true,
+          "discountPrice": 599,
+          "specifications": {
+            "Wax": "100% Eco-friendly Organic Soy Wax",
+            "Wick": "Crackling wooden wick plate",
+            "Container": "Terracotta ceramic reuseable tumled jar",
+            "Burn Lifetime": "45+ clean burning hours"
+          },
+          "shortDescription": "Pure hand-poured soy wax core mixed with organic French lavender oils, inside a ceramic jar."
+        },
+        "quantity": 1
+      },
+      {
+        "product": {
+          "id": "stat-1",
+          "sku": "ST-JRN-LINEN",
+          "name": "Gold-Foil Archival Linen-Bound Journal",
+          "brand": "Meris Script",
+          "isNew": false,
+          "price": 999,
+          "stock": 40,
+          "images": [
+            "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
+          ],
+          "rating": 4.9,
+          "reviews": [
+            {
+              "id": "r-9",
+              "date": "2026-06-13",
+              "author": "Karandeep S.",
+              "rating": 5,
+              "comment": "The paper is incredibly lush. My wet ink fountain pens glide on it like glass.",
+              "approved": true
+            }
+          ],
+          "category": "Stationeries",
+          "vendorId": null,
+          "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
+          "ratingCount": 95,
+          "availability": "in-stock",
+          "categorySlug": "stationeries",
+          "isBestseller": true,
+          "discountPrice": 849,
+          "specifications": {
+            "Accents": "Luxury hot-stamped gold foil text cover",
+            "Binding": "Lie-flat stitched Smyth Sewn",
+            "Page Count": "160 ruled journal pages",
+            "Paper Type": "120 GSM Acid-Free Archival cream lines"
+          },
+          "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper."
+        },
+        "quantity": 1
+      }
+    ],
+    "shippingMethod": "standard",
+    "shippingCost": 80,
+    "tax": 222,
+    "discount": 217,
+    "subtotal": 1448,
+    "total": 1633,
+    "status": "delivered",
+    "couponCode": null,
+    "date": "2026-07-13",
+    "paymentMethod": "UPI",
+    "paymentStatus": "paid",
+    "giftWrappingRequested": true,
+    "giftWrappingType": null,
+    "giftMessage": "Hello this gift is for you!!!",
+    "accountEmail": "charankumar0607@gmail.com",
+    "accountName": "charankumar0607"
+  },
+  {
     "id": "ord-1783932912851",
     "orderNumber": "MR-291285-325",
     "customerInfo": {
@@ -309,8 +422,68 @@
     "accountName": "augustin"
   },
   {
-    "id": "ord-1783931327981",
-    "orderNumber": "MR-132798-768",
+    "id": "ord-1784826529013",
+    "orderNumber": "MR-652901-126",
+    "customerInfo": {
+      "name": "vishnu",
+      "email": "vishnuvardhan7219@gmail.com",
+      "phone": "+919108319758",
+      "address": "Muthkur\nYadagondanahalli",
+      "pincode": "560067"
+    },
+    "items": [
+      {
+        "product": {
+          "id": "toy-9",
+          "sku": "TOY-WD-ARCH",
+          "name": "3D Laser-Cut Taj Mahal Architectural Model",
+          "brand": "Meris Tech",
+          "isNew": true,
+          "price": 3899,
+          "stock": 5,
+          "images": [
+            "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
+          ],
+          "rating": 4.9,
+          "reviews": [],
+          "category": "Kids Toys",
+          "vendorId": null,
+          "description": "A beautiful historical replica model. Perfect for teens and hobbyists. Hand-sanded laser edges allow slotting connections without requiring glue.",
+          "ratingCount": 19,
+          "availability": "low-stock",
+          "categorySlug": "toys",
+          "isBestseller": false,
+          "discountPrice": 3499,
+          "specifications": {
+            "Material": "Sustainably sourced Basswood Plywood",
+            "Complexity": "Advanced (250+ parts)",
+            "Recommended Age": "13+ Years"
+          },
+          "shortDescription": "Intricate 3D architectural craft kit compiling 250 micro-laser wood puzzle nodes."
+        },
+        "quantity": 1
+      }
+    ],
+    "shippingMethod": "standard",
+    "shippingCost": 133,
+    "tax": 630,
+    "discount": 0,
+    "subtotal": 3499,
+    "total": 4262,
+    "status": "delivered",
+    "couponCode": null,
+    "date": "2026-07-23",
+    "paymentMethod": "UPI QR Payment",
+    "paymentStatus": "pending",
+    "giftWrappingRequested": false,
+    "giftWrappingType": "Generic",
+    "giftMessage": null,
+    "accountEmail": "vishnuvardhan7219@gmail.com",
+    "accountName": "vishnu"
+  },
+  {
+    "id": "ord-1784469435665",
+    "orderNumber": "MR-943566-357",
     "customerInfo": {
       "name": "charankumar0607",
       "email": "charankumar0607@gmail.com",
@@ -321,103 +494,114 @@
     "items": [
       {
         "product": {
-          "id": "home-1",
-          "sku": "HM-CANDLE-SOY",
-          "name": "Symphony Organic Lavender Scented Soy Candle",
-          "brand": "Meris Botanics",
+          "id": "bag-1",
+          "sku": "BG-SADDLE-TAN",
+          "name": "Serena Minimalist Vegan Saddle Tote",
+          "brand": "Meris Couture",
           "isNew": false,
-          "price": 699,
-          "stock": 45,
+          "price": 3290,
+          "stock": 15,
           "images": [
-            "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?w=600&auto=format&fit=crop"
+            "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&auto=format&fit=crop"
           ],
           "rating": 4.8,
-          "reviews": [
-            {
-              "id": "r-7",
-              "date": "2026-06-05",
-              "author": "Ritu V.",
-              "rating": 5,
-              "comment": "Best lavender candle ever! The crackle sound from the wooden wick is incredibly calming.",
-              "approved": true
-            }
-          ],
-          "category": "Home Gifts",
+          "reviews": [],
+          "category": "Handbags",
           "vendorId": null,
-          "description": "Bring absolute serenity to your relaxation spaces. The Symphony Candle uses 100% natural hydrogenated soy bean wax, burning cleanly for over 45 hours without leaving any smoke residue. Formulated with premium plant extracts to induce calm sleep.",
-          "ratingCount": 210,
+          "description": "Upgrade your morning commute with our best-selling saddle shoulder container. Crafted from durable weather-resistant vegan polyurethane leather with exquisite top stitching. The dual interior chamber is extremely spacious, easily housing your tablet, cosmetic bags, and everyday carry essentials.",
+          "ratingCount": 150,
           "availability": "in-stock",
-          "categorySlug": "home",
+          "categorySlug": "handbags",
           "isBestseller": true,
-          "discountPrice": 599,
+          "discountPrice": 2303,
           "specifications": {
-            "Wax": "100% Eco-friendly Organic Soy Wax",
-            "Wick": "Crackling wooden wick plate",
-            "Container": "Terracotta ceramic reuseable tumled jar",
-            "Burn Lifetime": "45+ clean burning hours"
+            "Strap Type": "Adjustable belt-style harness",
+            "Outer Cover": "Ultra-soft Eco-polyurethane leather",
+            "Inner Liners": "Recycled linen-sateen canvas",
+            "Metal Accents": "18k Gold plated premium electro-lacquered alloy"
           },
-          "shortDescription": "Pure hand-poured soy wax core mixed with organic French lavender oils, inside a ceramic jar."
+          "shortDescription": "Structured top-tier synthetic leather handbag in tan finish, with gold-accent magnet buckles."
         },
         "quantity": 1
-      },
+      }
+    ],
+    "shippingMethod": "standard",
+    "shippingCost": 0,
+    "tax": 415,
+    "discount": 0,
+    "subtotal": 2303,
+    "total": 2718,
+    "status": "delivered",
+    "couponCode": null,
+    "date": "2026-07-19",
+    "paymentMethod": "UPI QR Payment",
+    "paymentStatus": "paid",
+    "giftWrappingRequested": false,
+    "giftWrappingType": "Generic",
+    "giftMessage": null,
+    "accountEmail": "charankumar0607@gmail.com",
+    "accountName": "charankumar0607"
+  },
+  {
+    "id": "ord-1784469783153",
+    "orderNumber": "MR-978315-202",
+    "customerInfo": {
+      "name": "charankumar0607",
+      "email": "charankumar0607@gmail.com",
+      "phone": "9482886761",
+      "address": "No.39, 1st Floor, Ganesh Krupa, 10th Cross, Muninanjappa Layout, Ramamurthy Nagar, Bengaluru - 560016",
+      "pincode": "560016"
+    },
+    "items": [
       {
         "product": {
-          "id": "stat-1",
-          "sku": "ST-JRN-LINEN",
-          "name": "Gold-Foil Archival Linen-Bound Journal",
-          "brand": "Meris Script",
-          "isNew": false,
-          "price": 999,
-          "stock": 40,
+          "id": "toy-2",
+          "sku": "TOY-CR-BUNNY",
+          "name": "Meris Hand-Knit Crochet Cotton Bunny",
+          "brand": "Meris Handwoven",
+          "isNew": true,
+          "price": 1199,
+          "stock": 8,
           "images": [
-            "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
+            "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
           ],
           "rating": 4.9,
-          "reviews": [
-            {
-              "id": "r-9",
-              "date": "2026-06-13",
-              "author": "Karandeep S.",
-              "rating": 5,
-              "comment": "The paper is incredibly lush. My wet ink fountain pens glide on it like glass.",
-              "approved": true
-            }
-          ],
-          "category": "Stationeries",
+          "reviews": [],
+          "category": "Kids Toys",
           "vendorId": null,
-          "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
-          "ratingCount": 95,
-          "availability": "in-stock",
-          "categorySlug": "stationeries",
-          "isBestseller": true,
-          "discountPrice": 849,
+          "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
+          "ratingCount": 62,
+          "availability": "low-stock",
+          "categorySlug": "toys",
+          "isBestseller": false,
+          "discountPrice": 839,
           "specifications": {
-            "Accents": "Luxury hot-stamped gold foil text cover",
-            "Binding": "Lie-flat stitched Smyth Sewn",
-            "Page Count": "160 ruled journal pages",
-            "Paper Type": "120 GSM Acid-Free Archival cream lines"
+            "Height": "28 cm",
+            "Filling": "Hypoallergenic Recycled Plush Polyfill",
+            "Material": "100% Organic Indigo Yarn",
+            "Wash Care": "Gentle hand wash inside net pouch"
           },
-          "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper."
+          "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton."
         },
         "quantity": 1
       }
     ],
     "shippingMethod": "standard",
     "shippingCost": 80,
-    "tax": 222,
-    "discount": 217,
-    "subtotal": 1448,
-    "total": 1633,
+    "tax": 151,
+    "discount": 0,
+    "subtotal": 839,
+    "total": 1070,
     "status": "delivered",
     "couponCode": null,
-    "date": "2026-07-13",
-    "paymentMethod": "UPI",
+    "date": "2026-07-19",
+    "paymentMethod": "UPI QR Payment",
     "paymentStatus": "paid",
-    "giftWrappingRequested": true,
-    "giftWrappingType": null,
-    "giftMessage": "Hello this gift is for you!!!",
+    "giftWrappingRequested": false,
+    "giftWrappingType": "Generic",
+    "giftMessage": null,
     "accountEmail": "charankumar0607@gmail.com",
     "accountName": "charankumar0607"
   },

@@ -69,13 +69,13 @@ async function seedSupabaseDatabase() {
         images: p.images,
         short_description: p.shortDescription,
         description: p.description,
-        specifications: p.specifications || {},
         reviews: p.reviews || [],
         is_new: p.isNew || false,
         is_bestseller: p.isBestseller || false,
         brand: p.brand,
         availability: p.availability,
-        vendor_id: p.vendorId || null
+        vendor_id: p.vendorId || null,
+        specifications: { ...(p.specifications || {}), Weight: parseProductWeightKg(p) ? `${parseProductWeightKg(p)} kg` : p.specifications?.Weight }
       }));
       await supabase.from('products').insert(mapped);
     }
@@ -126,9 +126,13 @@ async function seedSupabaseDatabase() {
     if (!adminErr && (!adminConf || adminConf.length === 0)) {
       console.log('Seeding Admin Config to Supabase...');
       const targetUser = process.env.ADMIN_USERNAME || 'admin';
-      const targetPass = process.env.ADMIN_PASSWORD || 'meriseshop_admin_secure_2026';
-      const hashedPass = bcrypt.hashSync(targetPass, 12);
-      await supabase.from('admin_config').insert({ username: targetUser, password: hashedPass });
+      const targetPass = process.env.ADMIN_PASSWORD;
+      if (!targetPass) {
+        console.warn('⚠️  WARNING: ADMIN_PASSWORD not set in .env — skipping admin seeding to Supabase.');
+      } else {
+        const hashedPass = bcrypt.hashSync(targetPass, 12);
+        await supabase.from('admin_config').insert({ username: targetUser, password: hashedPass });
+      }
     }
   } catch (err) {
     console.error('Failed to seed Supabase database:', err);
@@ -219,10 +223,35 @@ function writeLocalJsonDb(filePath: string, data: any) {
   }
 }
 
-const app = express();
-const PORT = 3000;
+function parseProductWeightKg(product: any): number | undefined {
+  if (typeof product?.weightKg === 'number' && Number.isFinite(product.weightKg) && product.weightKg > 0) {
+    return product.weightKg;
+  }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'meriseshop_secure_jwt_secret_token_key_2026';
+  const rawWeight = String(product?.specifications?.Weight || '').toLowerCase().replace(/\s+/g, '');
+  const match = rawWeight.match(/(\d+(?:\.\d+)?)(kg|kgs|kilogram|kilograms|g|gm|grams)?/);
+  if (!match) return undefined;
+
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return undefined;
+
+  const unit = match[2] || '';
+  return unit === 'g' || unit === 'gm' || unit === 'grams' ? amount / 1000 : amount;
+}
+
+const app = express();
+const PORT = Number(process.env.PORT || 3000);
+
+// Fail fast if JWT_SECRET is missing or uses the hardcoded fallback.
+// Generate one with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  console.error('\n⛔  FATAL SECURITY ERROR: JWT_SECRET is missing or too short (< 32 chars).');
+  console.error('    Set JWT_SECRET in your .env file before starting the server.');
+  console.error('    Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"\n');
+  process.exit(1);
+}
+
 const ALLOWED_ORIGIN = process.env.APP_URL || 'http://localhost:3000';
 
 const adminConfigPath = path.join(process.cwd(), 'admin_config.json');
@@ -235,9 +264,13 @@ function readAdminConfig() {
   } catch (err) {
     console.error('Failed to read admin config JSON, using defaults');
   }
+  const defaultPass = process.env.ADMIN_PASSWORD;
+  if (!defaultPass) {
+    console.warn('⚠️  WARNING: ADMIN_PASSWORD env var is not set. Set it in your .env file.');
+  }
   return {
     username: process.env.ADMIN_USERNAME || 'admin',
-    password: process.env.ADMIN_PASSWORD || 'meriseshop_admin_secure_2026'
+    password: defaultPass || 'meriseshop_admin_secure_2026'
   };
 }
 
@@ -288,7 +321,9 @@ const verifyAdminToken = (req: any, res: any, next: any) => {
   }
 };
 
-app.use(express.json());
+// Restrict global body size to 1 MB. Admin bulk-upload routes override this locally.
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
 app.use(cookieParser());
 
 // HTTP to HTTPS Redirect & HSTS implementation
@@ -362,20 +397,25 @@ app.use((req, res, next) => {
 // OWASP Security Headers compliance
 app.use((req, res, next) => {
   res.removeHeader('X-Powered-By');
-  
+
+  // Build CSP dynamically — never hardcode Supabase project URL in source
+  const supabaseHost = supabaseUrl ? new URL(supabaseUrl).host : '';
+  const supabaseWs = supabaseHost ? `wss://${supabaseHost}` : '';
+  const supabaseHttps = supabaseHost ? `https://${supabaseHost}` : '';
+
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' data: https://fonts.gstatic.com; " +
-    "img-src 'self' data: blob: https://images.unsplash.com https://hynmcyebbnhdrrxevkzg.supabase.co https://*.unsplash.com https://api.qrserver.com; " +
-    "connect-src 'self' https://hynmcyebbnhdrrxevkzg.supabase.co wss://hynmcyebbnhdrrxevkzg.supabase.co https://api.razorpay.com; " +
+    `img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com ${supabaseHttps}; ` +
+    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://api.razorpay.com; ` +
     "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; " +
     "object-src 'none'; " +
     "base-uri 'self';"
   );
-  
+
   res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -383,7 +423,7 @@ app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  
+
   if (req.path.startsWith('/api/admin') || req.path.startsWith('/api/orders') || req.path.startsWith('/api/verify-otp')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -391,9 +431,42 @@ app.use((req, res, next) => {
   } else {
     res.setHeader('Cache-Control', 'public, max-age=3600');
   }
-  
+
   next();
 });
+
+// ---------------------------------------------------------------------------
+// Input sanitisation helpers
+// ---------------------------------------------------------------------------
+
+/** Strip control characters, HTML tags, and trim to a maximum length. */
+function sanitizeString(value: unknown, maxLength = 500): string {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // control chars
+    .replace(/<[^>]*>/g, '')                            // HTML tags
+    .trim()
+    .slice(0, maxLength);
+}
+
+/** Validate and normalise an email address. Returns '' if invalid. */
+function sanitizeEmail(value: unknown, maxLength = 254): string {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase().slice(0, maxLength) : '';
+  // RFC 5321 simplified email regex
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(raw) ? raw : '';
+}
+
+/** Strip prompt-injection patterns from strings destined for AI models. */
+function sanitizeAiPrompt(value: unknown, maxLength = 300): string {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/system\s*:/gi, '')      // strip system: prefix tricks
+    .replace(/\bignore\b.*\binstructions\b/gi, '') // ignore previous instructions
+    .replace(/<[^>]*>/g, '')          // HTML / XML tags
+    .replace(/[`{}<>]/g, '')          // template literal / object injection chars
+    .trim()
+    .slice(0, maxLength);
+}
 
 // Memory Rate Limiter implementation
 interface RateLimitInfo {
@@ -499,6 +572,7 @@ app.get('/api/catalog/products', async (req, res) => {
           shortDescription: p.short_description,
           description: p.description,
           specifications: p.specifications,
+          weightKg: parseProductWeightKg(p),
           reviews: p.reviews,
           isNew: p.is_new,
           isBestseller: p.is_bestseller,
@@ -517,11 +591,14 @@ app.get('/api/catalog/products', async (req, res) => {
   }
 });
 
-app.post('/api/catalog/products', verifyAdminToken, async (req, res) => {
+app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb' }), async (req, res) => {
   try {
     const productsList = req.body;
     if (!Array.isArray(productsList)) {
       return res.status(400).json({ error: 'Body must be an array of products.' });
+    }
+    if (productsList.length > 500) {
+      return res.status(400).json({ error: 'Too many products in a single request (max 500).' });
     }
 
     writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
@@ -541,7 +618,7 @@ app.post('/api/catalog/products', verifyAdminToken, async (req, res) => {
         images: p.images,
         short_description: p.shortDescription,
         description: p.description,
-        specifications: p.specifications || {},
+        specifications: { ...(p.specifications || {}), Weight: parseProductWeightKg(p) ? `${parseProductWeightKg(p)} kg` : p.specifications?.Weight },
         reviews: p.reviews || [],
         is_new: p.isNew || false,
         is_bestseller: p.isBestseller || false,
@@ -619,6 +696,49 @@ app.post('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
     res.json({ success: true, message: 'Coupons synchronized.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to sync coupons' });
+  }
+});
+
+app.post('/api/catalog/coupons/bulk-delete', verifyAdminToken, async (req, res) => {
+  try {
+    const { codes } = req.body;
+    if (!Array.isArray(codes)) {
+      return res.status(400).json({ error: 'Body must contain an array of coupon codes.' });
+    }
+
+    if (supabase) {
+      const { error } = await supabase.from('coupons').delete().in('code', codes);
+      if (error) {
+        console.error('Supabase coupons bulk delete failed:', error);
+        return res.status(500).json({ error: 'Supabase coupons bulk delete failed' });
+      }
+    }
+    
+    // Update local JSON DB
+    const currentCoupons: any[] = readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS);
+    const updatedCoupons = currentCoupons.filter(c => !codes.includes(c.code));
+    writeLocalJsonDb(COUPONS_FILE_PATH, updatedCoupons);
+
+    res.json({ success: true, message: `Deleted ${codes.length} coupons.` });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to bulk delete coupons' });
+  }
+});
+
+app.delete('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
+  try {
+    if (supabase) {
+      const { error } = await supabase.from('coupons').delete().neq('code', 'IMPOSSIBLE_VALUE_TO_DELETE_ALL');
+      if (error) {
+        console.error('Supabase coupons delete all failed:', error);
+        return res.status(500).json({ error: 'Supabase coupons wipe failed' });
+      }
+    }
+    
+    writeLocalJsonDb(COUPONS_FILE_PATH, []);
+    res.json({ success: true, message: 'All coupons permanently deleted.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete all coupons' });
   }
 });
 
@@ -751,7 +871,7 @@ function setCached(key: string, data: any) {
 }
 
 // AI Product Recommendations Proxy Route
-app.post('/api/gemini/recommendations', async (req, res) => {
+app.post('/api/gemini/recommendations', rateLimiter(20, 60 * 1000), async (req, res) => {
   const { cartItems, recentlyViewedIds, allProducts } = req.body;
   const ai = getGeminiClient();
 
@@ -835,8 +955,10 @@ Generate the recommendations JSON strictly adhering to the schema.`;
 });
 
 // Smart Search Assistant
-app.post('/api/gemini/search', async (req, res) => {
-  const { query, allCategories } = req.body;
+app.post('/api/gemini/search', rateLimiter(20, 60 * 1000), async (req, res) => {
+  const rawQuery = req.body?.query;
+  const query = sanitizeAiPrompt(rawQuery, 200);
+  const { allCategories } = req.body;
   const ai = getGeminiClient();
 
   const getLocalSearchFallback = () => {
@@ -1033,7 +1155,7 @@ setInterval(() => {
 }, 15000); // Check and progress order stages on server database every 15 seconds
 
 // Live Tracking & Orders Endpoints
-app.get('/api/orders', (req, res) => {
+app.get('/api/orders', verifyAdminToken, (req, res) => {
   try {
     const dbOrders = readOrdersDb();
     res.json(dbOrders);
@@ -1042,19 +1164,38 @@ app.get('/api/orders', (req, res) => {
   }
 });
 
-app.get('/api/orders/:orderNumber', (req, res) => {
+// Secure order lookup — requires orderNumber + accountEmail to prevent PII enumeration.
+// Guests can still track their order using the email they checked out with.
+app.get('/api/orders/:orderNumber', rateLimiter(20, 15 * 60 * 1000), (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
+    if (!orderNum || !/^[A-Z0-9\-_]+$/.test(orderNum)) {
+      return res.status(400).json({ error: 'Invalid order number format.' });
+    }
+
+    // Require the email associated with the order to prevent enumeration
+    const emailParam = sanitizeEmail(req.query.email);
+    if (!emailParam) {
+      return res.status(400).json({ error: 'Your account email is required to look up an order. Provide ?email=your@email.com' });
+    }
+
     const dbOrders = readOrdersDb();
     const order = dbOrders.find(
       o => o.orderNumber.toUpperCase() === orderNum || o.id.toUpperCase() === orderNum
     );
 
-    if (order) {
-      res.json(order);
-    } else {
-      res.status(404).json({ error: `Order ${orderNum} was not found in database.` });
+    if (!order) {
+      return res.status(404).json({ error: `Order ${orderNum} was not found.` });
     }
+
+    // Verify that the requester owns this order
+    const orderEmail = (order.accountEmail || order.customerInfo?.email || '').toLowerCase().trim();
+    if (orderEmail !== emailParam) {
+      // Return 404 to avoid confirming the order exists to an attacker
+      return res.status(404).json({ error: `Order ${orderNum} was not found.` });
+    }
+
+    res.json(order);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch tracking data' });
   }
@@ -1243,8 +1384,8 @@ async function sendBookingEmail(order: any) {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
-        debug: true,
-        logger: true
+        debug: process.env.NODE_ENV !== 'production',
+        logger: process.env.NODE_ENV !== 'production'
       });
 
       await transporter.sendMail({
@@ -1264,6 +1405,155 @@ async function sendBookingEmail(order: any) {
     console.log(`RECIPIENT: ${recipientEmail}`);
     console.log(`SUBJECT: ${subject}`);
     console.log(`TOTAL NET INVOICE: ₹${order.total}`);
+    console.log('======================================================\n');
+  }
+
+  return newEmailRecord;
+}
+
+async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reason?: string) {
+  const recipientEmail = order.customerInfo?.email || 'guest@example.com';
+  const customerName = order.customerInfo?.name || 'Valued Customer';
+  const isApproved = type === 'approved';
+  const subject = isApproved 
+    ? `💳 Meris E-Shop: Payment Approved - Order #${order.orderNumber}`
+    : `❌ Meris E-Shop: Payment Verification Failed - Order #${order.orderNumber}`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0; -webkit-font-smoothing: antialiased;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05);">
+    
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? '#10b981' : '#ef4444'};">
+      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">MERIS</h1>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
+    </div>
+
+    <div style="padding: 32px 24px 20px 24px;">
+      <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
+      ${isApproved ? `
+        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
+          We are pleased to inform you that your UPI payment for order <strong>#${order.orderNumber}</strong> has been successfully verified!
+        </p>
+        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
+          Your order has been moved to <strong>Processing</strong> status. Our master artisans have begun handcrafting your items. You will receive another notification once your package is dispatched.
+        </p>
+      ` : `
+        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
+          We regret to inform you that we could not verify your UPI payment for order <strong>#${order.orderNumber}</strong>.
+        </p>
+        <div style="background-color: #fef2f2; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #fee2e2;">
+          <p style="font-size: 13px; color: #991b1b; margin: 0; font-weight: bold;">Rejection Reason:</p>
+          <p style="font-size: 13px; color: #7f1d1d; margin: 4px 0 0 0; font-style: italic;">
+            "${reason || 'The transaction reference number or screenshot did not match our accounts ledger.'}"
+          </p>
+        </div>
+        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
+          Please log into your account dashboard, check your transaction credentials, and resubmit the correct UPI reference number or payment receipt screenshot to resume processing of your artisanal package.
+        </p>
+      `}
+    </div>
+
+    <div style="padding: 0 24px 24px 24px;">
+      <div style="background-color: #f1f5f9; border-radius: 14px; padding: 18px; border: 1px dashed #cbd5e1;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace;">
+          <tr>
+            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
+            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${order.orderNumber}</td>
+          </tr>
+          <tr>
+            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">TOTAL VALUE:</td>
+            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold;">₹${order.total}</td>
+          </tr>
+          <tr>
+            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">PAYMENT STATUS:</td>
+            <td style="color: ${isApproved ? '#10b981' : '#ef4444'}; text-align: right; padding-bottom: 6px; font-weight: bold;">${order.paymentStatus.toUpperCase()}</td>
+          </tr>
+          <tr>
+            <td style="color: #64748b; font-weight: bold;">CURRENT ORDER STATUS:</td>
+            <td style="color: #0f172a; text-align: right; font-weight: bold;">${order.status.toUpperCase()}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
+      <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0; line-height: 1.5;">
+        You can track your order status live in your Meris Account Dashboard at any time.
+      </p>
+      <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
+        Meris Artisanal Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
+  `;
+
+  const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
+  let currentEmails = [];
+  try {
+    if (fs.existsSync(emailsFilePath)) {
+      currentEmails = JSON.parse(fs.readFileSync(emailsFilePath, 'utf-8') || '[]');
+    }
+  } catch (err) {
+    console.error('Error reading emails database:', err);
+  }
+
+  const newEmailRecord = {
+    id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+    recipient: recipientEmail,
+    subject: subject,
+    bodyHtml: htmlContent,
+    sentAt: new Date().toLocaleString(),
+    orderNumber: order.orderNumber,
+    status: 'Delivered',
+    dateText: new Date().toLocaleString()
+  };
+
+  currentEmails.unshift(newEmailRecord);
+  try {
+    fs.writeFileSync(emailsFilePath, JSON.stringify(currentEmails, null, 2));
+    console.log(`[Email Service] Logged payment notification email for ${recipientEmail}.`);
+  } catch (err) {
+    console.error('Error writing emails database:', err);
+  }
+
+  if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        }
+      });
+
+      await transporter.sendMail({
+        from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+        to: recipientEmail,
+        subject: subject,
+        html: htmlContent
+      });
+      console.log(`[Email Service] Real SMTP payment notification email successfully dispatched to ${recipientEmail}.`);
+    } catch (smtpError) {
+      console.error('[Email Service] Failed sending payment notification via real SMTP:', smtpError);
+    }
+  } else {
+    console.log('\n======================================================');
+    console.log('📬 LUXURY PAYMENT STATUS EMAIL DISPATCHED (SIMULATED & CACHED)');
+    console.log(`RECIPIENT: ${recipientEmail}`);
+    console.log(`SUBJECT: ${subject}`);
+    console.log(`STATUS: ${order.paymentStatus}`);
     console.log('======================================================\n');
   }
 
@@ -1368,6 +1658,7 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
 
   return newAlertRecord;
 }
+*/
 
 // Real Twilio SMS notification helper
 async function sendSMSAlert(order: any) {
@@ -1507,38 +1798,52 @@ function smtpEmailConfigured(): boolean {
 }
 
 async function dispatchOtpEmail(email: string, code: string): Promise<void> {
+  const fromName = process.env.SMTP_FROM_NAME || 'Meris';
+  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || '';
+  const fromDomain = fromEmail.includes('@') ? fromEmail.split('@').pop() : 'meris.local';
+
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === 'true',
+    requireTLS: true,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
-    },
-    debug: true,
-    logger: true
+    }
   });
 
   await transporter.sendMail({
-    from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+    from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
     to: email,
-    subject: 'Meris E-Shop Login Verification Code',
+    replyTo: fromEmail,
+    envelope: {
+      from: fromEmail,
+      to: email,
+    },
+    messageId: `<otp-${Date.now()}-${Math.random().toString(36).slice(2)}@${fromDomain}>`,
+    headers: {
+      'Auto-Submitted': 'auto-generated',
+      'X-Auto-Response-Suppress': 'All',
+      'X-Entity-Ref-ID': `meris-otp-${Date.now()}`,
+    },
+    subject: 'Your Meris verification code',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
-        <h2 style="margin: 0 0 12px; color: #0f172a;">Meris E-Shop verification</h2>
+        <h2 style="margin: 0 0 12px; color: #0f172a;">Meris verification code</h2>
         <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Meris account. It is valid for 5 minutes.</p>
         <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
-        <p style="color: #64748b; font-size: 12px;">If you did not request this code, you can ignore this email.</p>
+        <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
       </div>
     `,
-    text: `Meris E-Shop verification code: ${code}. Valid for 5 minutes.`,
+    text: `Your Meris verification code is ${code}. It is valid for 5 minutes. If you did not request this code, no action is needed.`,
   });
 }
 
-app.post('/api/send-otp', async (req, res) => {
+app.post('/api/send-otp', rateLimiter(5, 15 * 60 * 1000), async (req, res) => {
   try {
-    const email = normalizeEmail(req.body?.email);
-    if (!email || !email.includes('@')) {
+    const email = sanitizeEmail(req.body?.email);
+    if (!email) {
       return res.status(400).json({ error: 'A valid email address is required.' });
     }
 
@@ -1587,6 +1892,7 @@ app.post('/api/send-otp', async (req, res) => {
         console.log(`[Email OTP] Verification code sent to ${email}.`);
         return res.json({
           success: true,
+          requiresOtp: true,
           message: 'OTP sent via email.',
           emailMode: 'live',
           expiresInSec: OTP_EXPIRY_MS / 1000,
@@ -1603,8 +1909,11 @@ app.post('/api/send-otp', async (req, res) => {
     console.log(`[Email OTP] Simulated OTP for ${email}: ${code}`);
     return res.json({
       success: true,
+      requiresOtp: true,
       message: 'OTP generated (simulation mode - configure SMTP for real email).',
-      mockOtp: code,
+      // Only expose the OTP code in the response body during local development.
+      // In production, the user MUST receive it via real email.
+      ...(process.env.NODE_ENV !== 'production' && { mockOtp: code }),
       emailMode: 'simulated',
       expiresInSec: OTP_EXPIRY_MS / 1000,
     });
@@ -1614,13 +1923,16 @@ app.post('/api/send-otp', async (req, res) => {
   }
 });
 
-app.post('/api/verify-otp', async (req, res) => {
+app.post('/api/verify-otp', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
   try {
-    const email = normalizeEmail(req.body?.email);
-    const code = typeof req.body?.code === 'string' ? req.body.code.trim() : '';
+    const email = sanitizeEmail(req.body?.email);
+    const code = sanitizeString(req.body?.code, 8).replace(/\s/g, '');
 
     if (!email || !code) {
       return res.status(400).json({ error: 'Email address and code are required.' });
+    }
+    if (!/^\d{4,8}$/.test(code)) {
+      return res.status(400).json({ error: 'Invalid OTP format.' });
     }
 
     let db = purgeExpiredOtps(readOtpDb());
@@ -1662,7 +1974,201 @@ app.post('/api/verify-otp', async (req, res) => {
   }
 });
 
-app.get('/api/emails', (req, res) => {
+app.post('/api/login-customer', rateLimiter(5, 15 * 60 * 1000), async (req, res) => {
+  try {
+    const email = sanitizeEmail(req.body?.email);
+    const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 256) : '';
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const customersDbPath = path.join(process.cwd(), 'customers_db.json');
+    if (!fs.existsSync(customersDbPath)) {
+      return res.status(401).json({ error: 'Invalid credentials or account not found.' });
+    }
+
+    let customers = [];
+    try {
+      customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
+    } catch (err) {
+      return res.status(500).json({ error: 'Database error.' });
+    }
+
+    const customer = customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase());
+    if (!customer) {
+      return res.status(401).json({ error: 'Invalid credentials or account not found.' });
+    }
+
+    const bcrypt = await import('bcryptjs');
+    if (!bcrypt.compareSync(password, customer.passwordHash)) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+
+    res.json({
+      success: true,
+      customer: {
+        id: customer.id,
+        email: customer.email,
+        name: customer.name
+      }
+    });
+  } catch (err) {
+    console.error('Error during customer login:', err);
+    res.status(500).json({ error: 'Failed to complete login.' });
+  }
+});
+
+app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, res) => {
+  try {
+    const email = sanitizeEmail(req.body?.email);
+    const name = sanitizeString(req.body?.name, 100);
+    const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 256) : '';
+
+    if (!email || !name || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    }
+
+    // Verify password strength rules
+    const { validatePassword } = await import('./src/utils/passwordValidator');
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.errors[0] || 'Password does not meet security criteria.' });
+    }
+
+    // Load or create customers database
+    const customersDbPath = path.join(process.cwd(), 'customers_db.json');
+    let customers = [];
+    if (fs.existsSync(customersDbPath)) {
+      try {
+        customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
+      } catch (err) {
+        console.error('Error reading customers db:', err);
+      }
+    }
+
+    // Check if email already registered
+    if (customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase())) {
+      return res.status(400).json({ error: 'An account with this email already exists.' });
+    }
+
+    // Hash the password
+    const bcrypt = await import('bcryptjs');
+    const passwordHash = bcrypt.hashSync(password, 12);
+
+    // Save user
+    const newCustomer = {
+      id: `cust_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      email: email.toLowerCase(),
+      name,
+      passwordHash,
+      createdAt: new Date().toISOString()
+    };
+    customers.push(newCustomer);
+    fs.writeFileSync(customersDbPath, JSON.stringify(customers, null, 2));
+
+
+    // Build the welcome email
+    const subject = `Welcome to MERIS E-SHOP - Happy Shopping!`;
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Welcome to MERIS</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden;">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
+      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;">MERIS</h1>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Handcrafted Toys & Premium Gifts</p>
+    </div>
+    <div style="padding: 32px 24px;">
+      <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">Thanks for choosing us, ${name}!</h2>
+      <p style="font-size: 14px; line-height: 1.6; color: #475569;">
+        We are absolutely thrilled to welcome you to the MERIS family! Your account has been securely created.
+      </p>
+      <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 12px;">
+        Explore our curated collection of developmental craft toys, customized stencils, and premium handcrafted gifts. We hope you enjoy browsing and shopping our unique heritage crafts.
+      </p>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="${process.env.APP_URL || 'http://localhost:3000'}" style="background-color: #f59e0b; color: #0f172a; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block;">Happy Shopping &rarr;</a>
+      </div>
+    </div>
+    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
+      <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+        Meris Artisanal Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    // Save/log to emails_db.json
+    const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
+    let currentEmails = [];
+    if (fs.existsSync(emailsFilePath)) {
+      try {
+        currentEmails = JSON.parse(fs.readFileSync(emailsFilePath, 'utf-8') || '[]');
+      } catch (err) {
+        console.error('Error reading emails database:', err);
+      }
+    }
+
+    const newEmailRecord = {
+      id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      recipient: email,
+      subject: subject,
+      bodyHtml: htmlContent,
+      sentAt: new Date().toLocaleString(),
+      orderNumber: 'REGISTRATION',
+      status: 'Delivered',
+      dateText: new Date().toLocaleString()
+    };
+
+    currentEmails.unshift(newEmailRecord);
+    fs.writeFileSync(emailsFilePath, JSON.stringify(currentEmails, null, 2));
+
+    // Send real SMTP welcome email if configured
+    if (smtpEmailConfigured()) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          }
+        });
+
+        await transporter.sendMail({
+          from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+          to: email,
+          subject: subject,
+          html: htmlContent
+        });
+        console.log(`[Registration] Welcome confirmation email successfully sent to ${email}.`);
+      } catch (smtpError) {
+        console.error('[Registration] Welcome email SMTP dispatch failed:', smtpError);
+      }
+    } else {
+      console.log('\n======================================================');
+      console.log('📬 WELCOME EMAIL DISPATCHED (SIMULATED & CACHED)');
+      console.log(`RECIPIENT: ${email}`);
+      console.log(`SUBJECT: ${subject}`);
+      console.log('======================================================\n');
+    }
+
+    res.json({ success: true, message: 'Account registered successfully.' });
+  } catch (err) {
+    console.error('Error during customer registration:', err);
+    res.status(500).json({ error: 'Failed to complete registration.' });
+  }
+});
+
+app.get('/api/emails', verifyAdminToken, (req, res) => {
   try {
     const emailsFilePath = path.join(process.cwd(), 'emails_db.json');
     if (!fs.existsSync(emailsFilePath)) {
@@ -1683,15 +2189,18 @@ app.get('/api/emails', (req, res) => {
   }
 });
 
-app.post('/api/orders', async (req, res) => {
+app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
   try {
     const newOrder = req.body;
     if (!newOrder || !newOrder.orderNumber) {
       return res.status(400).json({ error: 'Invalid order data.' });
     }
 
-    const accountEmail = normalizeEmail(newOrder.account?.email || newOrder.accountEmail);
-    const customerEmail = normalizeEmail(newOrder.customerInfo?.email);
+    // Sanitise order number to prevent injection via stored value
+    newOrder.orderNumber = sanitizeString(newOrder.orderNumber, 30);
+
+    const accountEmail = sanitizeEmail(newOrder.account?.email || newOrder.accountEmail);
+    const customerEmail = sanitizeEmail(newOrder.customerInfo?.email);
     if (!accountEmail) {
       return res.status(401).json({ error: 'Login is required before placing an order.' });
     }
@@ -1722,27 +2231,23 @@ app.post('/api/orders', async (req, res) => {
     writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber}`);
     
-    // Dispatch asynchronous booking confirmation email
-    try {
-      await sendBookingEmail(newOrder);
-    } catch (emailErr) {
-      console.error('Failed to dispatch order booking confirmation email:', emailErr);
-    }
+    const isUpiOrder = newOrder.paymentMethod?.toLowerCase().includes('upi');
+    if (!isUpiOrder) {
+      // Dispatch asynchronous booking confirmation email
+      try {
+        await sendBookingEmail(newOrder);
+      } catch (emailErr) {
+        console.error('Failed to dispatch order booking confirmation email:', emailErr);
+      }
 
-    // Dispatch asynchronous booking confirmation WhatsApp Alert
-    /*
-    try {
-      await sendWhatsAppAlert('booking', newOrder);
-    } catch (waErr) {
-      console.error('Failed to dispatch order booking confirmation WhatsApp:', waErr);
-    }
-    */
-
-    // Dispatch asynchronous booking confirmation SMS
-    try {
-      await sendSMSAlert(newOrder);
-    } catch (smsErr) {
-      console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
+      // Dispatch asynchronous booking confirmation SMS
+      try {
+        await sendSMSAlert(newOrder);
+      } catch (smsErr) {
+        console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
+      }
+    } else {
+      console.log(`[Order Service] UPI Order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until administrative approval.`);
     }
 
     res.status(201).json({ success: true, order: newOrder });
@@ -1751,7 +2256,7 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-app.post('/api/orders/:orderNumber/status', async (req, res) => {
+app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) => {
   try {
     const orderNum = req.params.orderNumber.trim().toUpperCase();
     const { status } = req.body;
@@ -1787,6 +2292,82 @@ app.post('/api/orders/:orderNumber/status', async (req, res) => {
   }
 });
 
+app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
+  try {
+    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const updatedOrder = req.body;
+
+    const dbOrders = readOrdersDb();
+    const index = dbOrders.findIndex(
+      o => o.orderNumber.toUpperCase() === orderNum || o.id.toUpperCase() === orderNum
+    );
+
+    if (index >= 0) {
+      const oldPaymentStatus = dbOrders[index].paymentStatus;
+      const newPaymentStatus = updatedOrder.paymentStatus;
+
+      dbOrders[index] = { ...dbOrders[index], ...updatedOrder };
+      writeOrdersDb(dbOrders);
+
+      // If Supabase is connected, update there too
+      if (supabase) {
+        await supabase.from('orders').upsert({
+          id: dbOrders[index].id,
+          order_number: dbOrders[index].orderNumber,
+          customer_info: dbOrders[index].customerInfo,
+          items: dbOrders[index].items,
+          shipping_method: dbOrders[index].shippingMethod,
+          shipping_cost: dbOrders[index].shippingCost,
+          tax: dbOrders[index].tax,
+          discount: dbOrders[index].discount,
+          subtotal: dbOrders[index].subtotal,
+          total: dbOrders[index].total,
+          status: dbOrders[index].status,
+          coupon_code: dbOrders[index].couponCode,
+          date: dbOrders[index].date,
+          payment_method: dbOrders[index].paymentMethod,
+          payment_status: dbOrders[index].paymentStatus,
+          upi_txn_id: dbOrders[index].upiTxnId,
+          upi_sender_name: dbOrders[index].upiSenderName,
+          upi_screenshot: dbOrders[index].upiScreenshot,
+          upi_notes: dbOrders[index].upiNotes,
+          upi_rejection_reason: dbOrders[index].upiRejectionReason,
+          gift_wrapping_requested: dbOrders[index].giftWrappingRequested,
+          gift_wrapping_type: dbOrders[index].giftWrappingType,
+          gift_message: dbOrders[index].giftMessage,
+          gift_sender_name: dbOrders[index].giftSenderName,
+          gift_hide_price: dbOrders[index].giftHidePrice,
+          account_email: dbOrders[index].accountEmail,
+          account_name: dbOrders[index].accountName
+        });
+      }
+
+      // Check if paymentStatus transitioned from pending to paid or rejected
+      if (oldPaymentStatus === 'pending' && newPaymentStatus === 'paid') {
+        try {
+          await sendBookingEmail(dbOrders[index]);
+          await sendSMSAlert(dbOrders[index]);
+        } catch (emailErr) {
+          console.error('Failed to send booking confirmation email:', emailErr);
+        }
+      } else if (oldPaymentStatus === 'pending' && newPaymentStatus === 'rejected') {
+        try {
+          await sendPaymentEmail(dbOrders[index], 'rejected', dbOrders[index].upiRejectionReason);
+        } catch (emailErr) {
+          console.error('Failed to send payment rejection email:', emailErr);
+        }
+      }
+
+      res.json({ success: true, order: dbOrders[index] });
+    } else {
+      res.status(404).json({ error: `Order ${orderNum} not found.` });
+    }
+  } catch (err) {
+    console.error('Failed to update order:', err);
+    res.status(500).json({ error: 'Failed to update order' });
+  }
+});
+
 app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
   try {
     const orderNum = req.params.orderNumber.trim().toUpperCase();
@@ -1806,13 +2387,17 @@ app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
 // Admin authentication endpoints
 app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = sanitizeString(req.body?.username, 100);
+    const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 256) : '';
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password fields are required.' });
     }
 
     const config = readAdminConfig();
-    if (username === config.username && verifyAndUpgradeAdminPassword(password, config.password)) {
+    // Use constant-time string compare for username to prevent timing attacks
+    const usernameMatch = username.length === config.username.length &&
+      crypto.timingSafeEqual(Buffer.from(username), Buffer.from(config.username));
+    if (usernameMatch && verifyAndUpgradeAdminPassword(password, config.password)) {
       const token = jwt.sign(
         { username, role: 'admin' },
         JWT_SECRET,
@@ -1892,7 +2477,7 @@ app.get('/api/admin/security-stats', verifyAdminToken, (req, res) => {
 
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    const products = readDatabase(productsDbPath, INITIAL_PRODUCTS);
+    const products = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -1936,11 +2521,19 @@ Sitemap: https://meriseshop.com/sitemap.xml
 `);
 });
 
-app.post('/api/admin/config', verifyAdminToken, (req, res) => {
+app.post('/api/admin/config', verifyAdminToken, async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = sanitizeString(req.body?.username, 100);
+    const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 256) : '';
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password fields are required.' });
+    }
+
+    // Enforce the same strong password rules as customer registration
+    const { evaluatePasswordStrength } = await import('./src/utils/passwordValidator');
+    const validation = evaluatePasswordStrength(password);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.errors[0] || 'Admin password does not meet strength requirements.' });
     }
 
     const hashed = bcrypt.hashSync(password, 12);
@@ -2048,14 +2641,12 @@ function writeNewsletterDb(emails: any[]) {
   }
 }
 
-app.post('/api/newsletter', async (req, res) => {
+app.post('/api/newsletter', rateLimiter(3, 60 * 60 * 1000), async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email || !email.includes('@')) {
+    const normalizedEmail = sanitizeEmail(req.body?.email);
+    if (!normalizedEmail) {
       return res.status(400).json({ error: 'Valid email address is required.' });
     }
-
-    const normalizedEmail = email.trim().toLowerCase();
     const dbEmails = readNewsletterDb();
 
     if (dbEmails.some(e => e.email === normalizedEmail)) {
@@ -2081,7 +2672,7 @@ app.post('/api/newsletter', async (req, res) => {
   }
 });
 
-app.get('/api/newsletter', (req, res) => {
+app.get('/api/newsletter', verifyAdminToken, (req, res) => {
   try {
     const dbEmails = readNewsletterDb();
     res.json(dbEmails);

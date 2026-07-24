@@ -1,4 +1,4 @@
-﻿import { jsPDF } from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { Order } from '../types';
 
 export function generateInvoicePDF(order: Order) {
@@ -235,7 +235,7 @@ export function generateInvoicePDF(order: Order) {
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2]);
-  doc.text('This is a simulated secure digitally certified voucher for your Meris active order ledger.', 105, currentY + 13, { align: 'center' });
+  doc.text('This is a secure digitally certified voucher for your Meris active order ledger.', 105, currentY + 13, { align: 'center' });
 
   // Save the PDF
   doc.save(`Invoice-MERIS-INV-${orderSlug}.pdf`);

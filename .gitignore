@@ -6,3 +6,14 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Sensitive config — never commit admin credentials
+admin_config.json
+
+# PII databases — contain customer emails, phone numbers, order details
+customers_db.json
+emails_db.json
+otp_db.json
+whatsapp_db.json
+newsletter_db.json
+activity_logs.json

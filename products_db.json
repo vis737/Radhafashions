@@ -1,36 +1,5 @@
 [
   {
-    "id": "toy-1",
-    "sku": "TOY-WD-STACK",
-    "name": "Handcrafted Wooden Stacking Ring Tower",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 899,
-    "discountPrice": 749,
-    "stock": 25,
-    "rating": 4.8,
-    "ratingCount": 124,
-    "images": [
-      "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Organic wooden rings coated in safe herbal-dyed colors, supporting early sensory development.",
-    "description": "This elegant Stacking Ring Tower is crafted from native beechwood and finished with food-grade seed oils and natural pigments. Non-toxic, fully hand-rounded, and exceptionally smooth for tender hands. It supports hand-eye coordination, size sorting, and visual acuity.",
-    "specifications": {
-      "Weight": "320g",
-      "Coating": "Natural plant-extract pigments",
-      "Material": "Sustainably sourced Beechwood",
-      "Dimensions": "18 x 9 x 9 cm",
-      "Age Recommendation": "12+ months"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Kids",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
     "id": "bag-1",
     "sku": "BG-SADDLE-TAN",
     "name": "Serena Minimalist Vegan Saddle Tote",
@@ -38,7 +7,7 @@
     "categorySlug": "handbags",
     "price": 3290,
     "discountPrice": 2490,
-    "stock": 15,
+    "stock": 14,
     "rating": 4.8,
     "ratingCount": 150,
     "images": [
@@ -57,36 +26,6 @@
     "isNew": false,
     "isBestseller": true,
     "brand": "Meris Couture",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "stat-1",
-    "sku": "ST-JRN-LINEN",
-    "name": "Gold-Foil Archival Linen-Bound Journal",
-    "category": "Stationeries",
-    "categorySlug": "stationeries",
-    "price": 999,
-    "discountPrice": 849,
-    "stock": 40,
-    "rating": 4,
-    "ratingCount": 2,
-    "images": [
-      "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper.",
-    "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
-    "specifications": {
-      "Accents": "Luxury hot-stamped gold foil text cover",
-      "Binding": "Lie-flat stitched Smyth Sewn",
-      "Page Count": "160 ruled journal pages",
-      "Paper Type": "120 GSM Acid-Free Archival cream lines"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Script",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -258,6 +197,37 @@
     "vendorId": null
   },
   {
+    "id": "toy-1",
+    "sku": "TOY-WD-STACK",
+    "name": "Handcrafted Wooden Stacking Ring Tower",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 899,
+    "discountPrice": 749,
+    "stock": 25,
+    "rating": 4.8,
+    "ratingCount": 124,
+    "images": [
+      "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Organic wooden rings coated in safe herbal-dyed colors, supporting early sensory development.",
+    "description": "This elegant Stacking Ring Tower is crafted from native beechwood and finished with food-grade seed oils and natural pigments. Non-toxic, fully hand-rounded, and exceptionally smooth for tender hands. It supports hand-eye coordination, size sorting, and visual acuity.",
+    "specifications": {
+      "Weight": "320g",
+      "Coating": "Natural plant-extract pigments",
+      "Material": "Sustainably sourced Beechwood",
+      "Dimensions": "18 x 9 x 9 cm",
+      "Age Recommendation": "12+ months"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
     "id": "learn-1",
     "sku": "LN-ABACUS-PST",
     "name": "Pastel Decimal Wooden Abacus Toy",
@@ -265,7 +235,7 @@
     "categorySlug": "learning",
     "price": 1250,
     "discountPrice": 999,
-    "stock": 14,
+    "stock": 13,
     "rating": 4.7,
     "ratingCount": 49,
     "images": [
@@ -283,6 +253,66 @@
     "isNew": false,
     "isBestseller": false,
     "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-2",
+    "sku": "TOY-CR-BUNNY",
+    "name": "Meris Hand-Knit Crochet Cotton Bunny",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 1199,
+    "discountPrice": 999,
+    "stock": 7,
+    "rating": 4.9,
+    "ratingCount": 62,
+    "images": [
+      "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton.",
+    "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
+    "specifications": {
+      "Height": "28 cm",
+      "Filling": "Hypoallergenic Recycled Plush Polyfill",
+      "Material": "100% Organic Indigo Yarn",
+      "Wash Care": "Gentle hand wash inside net pouch"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Handwoven",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
+    "id": "stat-1",
+    "sku": "ST-JRN-LINEN",
+    "name": "Gold-Foil Archival Linen-Bound Journal",
+    "category": "Stationeries",
+    "categorySlug": "stationeries",
+    "price": 999,
+    "discountPrice": 849,
+    "stock": 40,
+    "rating": 4,
+    "ratingCount": 2,
+    "images": [
+      "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper.",
+    "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
+    "specifications": {
+      "Accents": "Luxury hot-stamped gold foil text cover",
+      "Binding": "Lie-flat stitched Smyth Sewn",
+      "Page Count": "160 ruled journal pages",
+      "Paper Type": "120 GSM Acid-Free Archival cream lines"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Script",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -314,6 +344,36 @@
     "isBestseller": false,
     "brand": "Meris Heritage",
     "availability": "low-stock",
+    "vendorId": null
+  },
+  {
+    "id": "home-1",
+    "sku": "HM-CANDLE-SOY",
+    "name": "Symphony Organic Lavender Scented Soy Candle",
+    "category": "Home Gifts",
+    "categorySlug": "home",
+    "price": 699,
+    "discountPrice": 599,
+    "stock": 45,
+    "rating": 4.8,
+    "ratingCount": 210,
+    "images": [
+      "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Pure hand-poured soy wax core mixed with organic French lavender oils, inside a ceramic jar.",
+    "description": "Bring absolute serenity to your relaxation spaces. The Symphony Candle uses 100% natural hydrogenated soy bean wax, burning cleanly for over 45 hours without leaving any smoke residue. Formulated with premium plant extracts to induce calm sleep.",
+    "specifications": {
+      "Wax": "100% Eco-friendly Organic Soy Wax",
+      "Wick": "Crackling wooden wick plate",
+      "Container": "Terracotta ceramic reuseable tumled jar",
+      "Burn Lifetime": "45+ clean burning hours"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Botanics",
+    "availability": "in-stock",
     "vendorId": null
   },
   {
@@ -404,36 +464,6 @@
     "vendorId": null
   },
   {
-    "id": "home-1",
-    "sku": "HM-CANDLE-SOY",
-    "name": "Symphony Organic Lavender Scented Soy Candle",
-    "category": "Home Gifts",
-    "categorySlug": "home",
-    "price": 699,
-    "discountPrice": 599,
-    "stock": 45,
-    "rating": 4.8,
-    "ratingCount": 210,
-    "images": [
-      "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Pure hand-poured soy wax core mixed with organic French lavender oils, inside a ceramic jar.",
-    "description": "Bring absolute serenity to your relaxation spaces. The Symphony Candle uses 100% natural hydrogenated soy bean wax, burning cleanly for over 45 hours without leaving any smoke residue. Formulated with premium plant extracts to induce calm sleep.",
-    "specifications": {
-      "Wax": "100% Eco-friendly Organic Soy Wax",
-      "Wick": "Crackling wooden wick plate",
-      "Container": "Terracotta ceramic reuseable tumled jar",
-      "Burn Lifetime": "45+ clean burning hours"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Botanics",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
     "id": "wood-1",
     "sku": "WD-BOX-ENGRAVED",
     "name": "Imperial Floral-Carved Wooden Keepsake Box",
@@ -441,7 +471,7 @@
     "categorySlug": "wood-gifts",
     "price": 1890,
     "discountPrice": 1599,
-    "stock": 12,
+    "stock": 11,
     "rating": 4.7,
     "ratingCount": 88,
     "images": [
@@ -461,36 +491,6 @@
     "isBestseller": true,
     "brand": "Meris Artisanal",
     "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "toy-2",
-    "sku": "TOY-CR-BUNNY",
-    "name": "Meris Hand-Knit Crochet Cotton Bunny",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 1199,
-    "discountPrice": 999,
-    "stock": 8,
-    "rating": 4.9,
-    "ratingCount": 62,
-    "images": [
-      "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton.",
-    "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
-    "specifications": {
-      "Height": "28 cm",
-      "Filling": "Hypoallergenic Recycled Plush Polyfill",
-      "Material": "100% Organic Indigo Yarn",
-      "Wash Care": "Gentle hand wash inside net pouch"
-    },
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Meris Handwoven",
-    "availability": "low-stock",
     "vendorId": null
   },
   {

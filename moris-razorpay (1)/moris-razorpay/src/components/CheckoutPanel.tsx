@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles, QrCode, FileText, Check, Copy, Upload, Hash, User, Link, Image } from 'lucide-react';
 import { CartItem, CustomerInfo, Coupon, Order } from '../types';
 import { calculateCartTotals } from '../utils/premiumData';
 
@@ -482,128 +482,297 @@ export default function CheckoutPanel({
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-4 text-left"
                     >
-                      <div className="bg-white border rounded-3xl p-5 shadow-sm flex flex-col items-center text-center space-y-4 max-w-sm mx-auto">
-                        <span className="px-2.5 py-0.5 rounded bg-[#C5A021]/15 text-[#C5A021] text-[9px] font-mono font-bold uppercase tracking-wider">UPI SCAN TO PAY</span>
-                        <div className="w-40 h-40 bg-gray-50 border rounded-2xl overflow-hidden flex items-center justify-center">
-                          <img
-                            src="/upi_qr_payment.jpg"
-                            alt="Scan to pay via UPI"
-                            className="w-36 h-36 object-contain"
-                          />
+                      {/* Premium Secure Gateway Header */}
+                      <div className="w-full bg-navy-950 border border-[#C5A021]/30 rounded-3xl p-5 shadow-lg relative overflow-hidden text-center space-y-4">
+                        {/* Background light gradient effect */}
+                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C5A021] to-transparent animate-pulse" />
+                        
+                        <div className="flex justify-between items-center w-full pb-3 border-b border-white/10">
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-[#C5A021]" />
+                            <span className="text-[10px] font-display font-bold tracking-widest text-white uppercase">MERIS PAY</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                            <span className="text-[8px] font-mono font-bold text-emerald-400 uppercase tracking-wider">SECURE LINK</span>
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-mono text-gray-400">Total Net Amount Payable</p>
-                          <h4 className="text-sm font-bold text-navy-950">Rs. {finalTotal}</h4>
+
+                        {/* Transaction Receipt Card */}
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-left space-y-2">
+                          <div className="flex justify-between items-center text-[10px]">
+                            <span className="text-gray-400 font-sans">Merchant Name:</span>
+                            <span className="text-white font-semibold font-display">MERIS ARTISANAL STUDIO</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[10px]">
+                            <span className="text-gray-400 font-sans">Payment Method:</span>
+                            <span className="text-[#C5A021] font-medium font-mono">UPI Instant Transfer</span>
+                          </div>
+                          <div className="border-t border-white/5 pt-2 flex justify-between items-end">
+                            <span className="text-gray-400 text-[10px] font-sans pb-0.5">Amount Payable:</span>
+                            <span className="text-lg font-bold text-white font-mono">₹{finalTotal}</span>
+                          </div>
                         </div>
-                        <div className="flex gap-2 w-full justify-center">
-                          <span className="px-2 py-1 bg-gray-100 rounded-lg text-[10px] font-mono select-all">meriseshop@upi</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              navigator.clipboard.writeText('meriseshop@upi');
-                              setCopiedUpi(true);
-                              setTimeout(() => setCopiedUpi(false), 2000);
-                            }}
-                            className="px-2.5 py-1 bg-gold-400/20 text-[#C5A021] rounded-lg text-[9px] font-semibold cursor-pointer hover:bg-gold-400/35 transition"
-                          >
-                            {copiedUpi ? 'Copied!' : 'Copy ID'}
-                          </button>
+
+                        {/* Scan stage */}
+                        <div className="flex flex-col items-center space-y-3 pt-2">
+                          <span className="text-[9px] font-bold text-gray-400 tracking-widest uppercase">STEP 1 — SCAN QR CODE WITH ANY UPI APP</span>
+                          <div className="p-3 bg-white rounded-2xl border border-gray-100 shadow-inner inline-block transition hover:scale-102 transform duration-300">
+                            <img
+                              src="/upi_qr_payment.jpg"
+                              alt="Scan to pay via UPI"
+                              className="w-36 h-36 object-contain"
+                            />
+                          </div>
+                          
+                          <div className="flex flex-col items-center space-y-1.5 w-full max-w-xs mx-auto">
+                            <span className="text-[8px] text-gray-500 font-mono">OR PAY VIA UPI ID:</span>
+                            <div className="flex items-center justify-between w-full p-2 bg-white/5 border border-white/10 rounded-xl text-left">
+                              <span className="text-xs font-mono text-gray-200 select-all pl-1.5">meriseshop@upi</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText('meriseshop@upi');
+                                  setCopiedUpi(true);
+                                  setTimeout(() => setCopiedUpi(false), 2000);
+                                }}
+                                className="flex items-center gap-1 px-3 py-1 bg-[#C5A021]/20 hover:bg-[#C5A021]/30 text-[#C5A021] rounded-lg text-[9px] font-semibold transition cursor-pointer"
+                              >
+                                {copiedUpi ? (
+                                  <>
+                                    <Check className="w-3 h-3 text-emerald-400" />
+                                    <span className="text-emerald-400">Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3 h-3" />
+                                    <span>Copy ID</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-[9px] text-gray-400 leading-relaxed max-w-xs font-sans">
-                          Please complete the payment before placing your order. Scan with Google Pay, PhonePe, Paytm, BHIM, or any UPI app.
-                        </p>
+
+                        {/* Badges footer */}
+                        <div className="pt-2 border-t border-white/5 flex justify-center items-center gap-3 text-gray-400">
+                          <span className="text-[7px] tracking-wider uppercase font-semibold font-sans">PCI COMPLIANT</span>
+                          <span className="w-1 h-1 rounded-full bg-white/20" />
+                          <span className="text-[7px] tracking-wider uppercase font-semibold font-sans">256-BIT SSL ENCRYPTED</span>
+                          <span className="w-1 h-1 rounded-full bg-white/20" />
+                          <span className="text-[7px] tracking-wider uppercase font-semibold font-sans">UPI SECURE</span>
+                        </div>
+                      </div>
+
+                      {/* Payment Notice Banner */}
+                      <div className="flex items-start gap-2.5 p-3.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-250 dark:border-amber-500/20 rounded-2xl text-left">
+                        <svg className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                        </svg>
+                        <div>
+                          <p className="text-[10px] font-bold text-amber-850 dark:text-amber-300 uppercase tracking-wider mb-0.5">Payment Notice</p>
+                          <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed font-sans">
+                            Currently, payments are accepted through our secure UPI QR Code only. After scanning and completing the payment, click the button below to submit your transaction details. Your order will be confirmed once our team manually verifies your payment (typically within 2–4 hours during business hours).
+                          </p>
+                        </div>
                       </div>
 
                       {showConfirmationForm ? (
-                        <div className="p-4 bg-white border border-dashed rounded-3xl space-y-3 animate-fade-in font-sans">
-                          <span className="block text-[10px] font-semibold text-navy-950 uppercase tracking-wider">Payment Transaction Confirmation</span>
-                          <div>
-                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">UPI Transaction ID / Ref No. (Required)</label>
-                            <input
-                              type="text"
-                              required
-                              value={upiTxnId}
-                              onChange={(e) => setUpiTxnId(e.target.value)}
-                              placeholder="e.g. 12-digit transaction index"
-                              className="w-full px-3 py-2 text-xs border rounded-xl"
-                            />
+                        <div className="p-6 bg-navy-950/95 border border-[#C5A021]/30 dark:border-[#C5A021]/45 rounded-3xl shadow-xl space-y-4.5 animate-fade-in font-sans text-left relative overflow-hidden">
+                          {/* Background soft glowing badge */}
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-gold-500/5 rounded-full blur-xl pointer-events-none" />
+                          
+                          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4 text-[#C5A021]" />
+                              <span className="text-[10px] font-display font-bold tracking-wider text-white uppercase">Secure Audit Gateway</span>
+                            </div>
+                            <span className="text-[8px] font-mono font-bold text-gold-400 bg-gold-400/10 px-2 py-0.5 rounded uppercase">STEP 2 OF 2</span>
                           </div>
-                          <div>
-                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Sender Name (Optional)</label>
-                            <input
-                              type="text"
-                              value={upiSenderName}
-                              onChange={(e) => setUpiSenderName(e.target.value)}
-                              placeholder="e.g. Alok Sharma"
-                              className="w-full px-3 py-2 text-xs border rounded-xl"
-                            />
-                          </div>
-                          <div>
-                            <div className="flex justify-between items-center mb-1">
-                              <label className="block text-[9px] text-gray-405 uppercase tracking-wider font-mono">Screenshot Receipt (Optional)</label>
-                              <div className="flex gap-1 bg-gray-50 border rounded-lg p-0.5 text-[8px] font-semibold font-sans">
-                                <button
-                                  type="button"
-                                  onClick={() => setScreenshotSourceType('upload')}
-                                  className={`px-1.5 py-0.5 rounded-md transition cursor-pointer ${screenshotSourceType === 'upload' ? 'bg-navy-950 text-white' : 'text-gray-500'}`}
-                                >
-                                  Upload Device
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setScreenshotSourceType('url')}
-                                  className={`px-1.5 py-0.5 rounded-md transition cursor-pointer ${screenshotSourceType === 'url' ? 'bg-navy-950 text-white' : 'text-gray-500'}`}
-                                >
-                                  Paste URL
-                                </button>
+
+                          <div className="space-y-4">
+                            {/* Transaction ID */}
+                            <div>
+                              <label className="block text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1 font-mono">
+                                <Hash className="w-3 h-3 text-[#C5A021]" />
+                                <span>UPI Transaction ID / Ref No. <span className="text-red-500">*</span></span>
+                              </label>
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <Hash className="w-3.5 h-3.5 text-gray-500" />
+                                </div>
+                                <input
+                                  type="text"
+                                  required
+                                  value={upiTxnId}
+                                  onChange={(e) => setUpiTxnId(e.target.value)}
+                                  placeholder="12-digit transaction index / ref number"
+                                  className="w-full pl-9 pr-4 py-2.5 text-xs bg-navy-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-inner font-mono placeholder-gray-500"
+                                />
                               </div>
                             </div>
 
-                            {screenshotSourceType === 'upload' ? (
-                              <input
-                                type="file"
-                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file) return;
-                                  if (file.size > 5 * 1024 * 1024) {
-                                    alert("Maximum file size allowed is 5 MB.");
-                                    e.target.value = "";
-                                    return;
-                                  }
-                                  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                                  if (!allowed.includes(file.type)) {
-                                    alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
-                                    e.target.value = "";
-                                    return;
-                                  }
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    setUpiScreenshot(reader.result as string);
-                                  };
-                                  reader.readAsDataURL(file);
-                                }}
-                                className="w-full text-xs font-mono"
-                              />
-                            ) : (
-                              <input
-                                type="url"
-                                placeholder="Paste screenshot image URL (e.g. https://domain.com/receipt.jpg)"
-                                value={upiScreenshot.startsWith('data:') ? '' : upiScreenshot}
-                                onChange={(e) => setUpiScreenshot(e.target.value)}
-                                className="w-full px-3 py-1.5 border rounded-lg text-xs font-mono"
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-[9px] text-gray-400 font-mono mb-0.5">Notes (Optional)</label>
-                            <input
-                              type="text"
-                              value={upiNotes}
-                              onChange={(e) => setUpiNotes(e.target.value)}
-                              placeholder="Additional payment details"
-                              className="w-full px-3 py-2 text-xs border rounded-xl"
-                            />
+                            {/* Sender Name */}
+                            <div>
+                              <label className="block text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1 font-mono">
+                                <User className="w-3 h-3 text-[#C5A021]" />
+                                <span>Sender UPI Name (Optional)</span>
+                              </label>
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <User className="w-3.5 h-3.5 text-gray-500" />
+                                </div>
+                                <input
+                                  type="text"
+                                  value={upiSenderName}
+                                  onChange={(e) => setUpiSenderName(e.target.value)}
+                                  placeholder="e.g. Alok Sharma"
+                                  className="w-full pl-9 pr-4 py-2.5 text-xs bg-navy-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-inner placeholder-gray-500"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Screenshot Upload / URL Toggle */}
+                            <div>
+                              <div className="flex justify-between items-center mb-1.5">
+                                <label className="block text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1 font-mono">
+                                  <Image className="w-3 h-3 text-[#C5A021]" />
+                                  <span>Screenshot Receipt (Optional)</span>
+                                </label>
+                                <div className="flex gap-0.5 bg-white/5 border border-white/10 rounded-lg p-0.5 text-[8px] font-semibold font-sans">
+                                  <button
+                                    type="button"
+                                    onClick={() => setScreenshotSourceType('upload')}
+                                    className={`px-2 py-0.5 rounded-md transition cursor-pointer ${screenshotSourceType === 'upload' ? 'bg-[#C5A021] text-navy-950 font-bold shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                                  >
+                                    Device File
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setScreenshotSourceType('url')}
+                                    className={`px-2 py-0.5 rounded-md transition cursor-pointer ${screenshotSourceType === 'url' ? 'bg-[#C5A021] text-navy-950 font-bold shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                                  >
+                                    Image URL
+                                  </button>
+                                </div>
+                              </div>
+
+                              {screenshotSourceType === 'upload' ? (
+                                <div className="space-y-2">
+                                  {!upiScreenshot ? (
+                                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-white/10 hover:border-[#C5A021]/50 rounded-xl cursor-pointer bg-white/2 hover:bg-white/5 transition duration-200">
+                                      <div className="flex flex-col items-center justify-center pt-3 pb-3">
+                                        <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                                        <p className="text-[10px] text-gray-300 font-semibold">Click to select receipt screenshot</p>
+                                        <p className="text-[8px] text-gray-500 font-mono">JPG, PNG, or WEBP (Max 5MB)</p>
+                                      </div>
+                                      <input
+                                        type="file"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
+                                          if (file.size > 5 * 1024 * 1024) {
+                                            alert("Maximum file size allowed is 5 MB.");
+                                            e.target.value = "";
+                                            return;
+                                          }
+                                          const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                                          if (!allowed.includes(file.type)) {
+                                            alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
+                                            e.target.value = "";
+                                            return;
+                                          }
+                                          const reader = new FileReader();
+                                          reader.onloadend = () => {
+                                            setUpiScreenshot(reader.result as string);
+                                          };
+                                          reader.readAsDataURL(file);
+                                        }}
+                                        className="hidden"
+                                      />
+                                    </label>
+                                  ) : (
+                                    <div className="flex items-center gap-3 p-2.5 bg-white/5 border border-white/10 rounded-2xl">
+                                      <img
+                                        src={upiScreenshot}
+                                        alt="Receipt preview"
+                                        className="w-12 h-12 object-cover rounded-xl border border-white/10 bg-navy-900"
+                                      />
+                                      <div className="flex-1 text-left min-w-0">
+                                        <p className="text-[10px] font-semibold text-white truncate">Selected Receipt Image</p>
+                                        <p className="text-[8px] text-emerald-400 font-medium">Ready to upload</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => setUpiScreenshot('')}
+                                        className="text-red-400 text-[10px] hover:underline font-semibold pr-1.5 animate-pulse"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                      <Link className="w-3.5 h-3.5 text-gray-500" />
+                                    </div>
+                                    <input
+                                      type="url"
+                                      placeholder="Paste receipt image URL (e.g. https://domain.com/receipt.jpg)"
+                                      value={upiScreenshot.startsWith('data:') ? '' : upiScreenshot}
+                                      onChange={(e) => setUpiScreenshot(e.target.value)}
+                                      className="w-full pl-9 pr-4 py-2.5 text-xs bg-navy-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-inner placeholder-gray-500 font-sans"
+                                    />
+                                  </div>
+                                  {upiScreenshot && !upiScreenshot.startsWith('data:') && (
+                                    <div className="flex items-center gap-3 p-2.5 bg-white/5 border border-white/10 rounded-2xl">
+                                      <img
+                                        src={upiScreenshot}
+                                        alt="Receipt url preview"
+                                        className="w-12 h-12 object-cover rounded-xl border border-white/10 bg-navy-900"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=150";
+                                        }}
+                                      />
+                                      <div className="flex-1 text-left min-w-0">
+                                        <p className="text-[10px] font-semibold text-white truncate font-display">URL Receipt Image</p>
+                                        <p className="text-[8px] text-gray-400 truncate font-mono">{upiScreenshot}</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => setUpiScreenshot('')}
+                                        className="text-red-400 text-[10px] hover:underline font-semibold pr-1.5"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Additional Notes */}
+                            <div>
+                              <label className="block text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1 font-mono">
+                                <FileText className="w-3 h-3 text-[#C5A021]" />
+                                <span>Additional Notes (Optional)</span>
+                              </label>
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <FileText className="w-3.5 h-3.5 text-gray-500" />
+                                </div>
+                                <input
+                                  type="text"
+                                  value={upiNotes}
+                                  onChange={(e) => setUpiNotes(e.target.value)}
+                                  placeholder="e.g. Paid via GPay, reference code attached"
+                                  className="w-full pl-9 pr-4 py-2.5 text-xs bg-navy-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-inner placeholder-gray-500"
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -616,9 +785,10 @@ export default function CheckoutPanel({
                             }
                             setShowConfirmationForm(true);
                           }}
-                          className="w-full py-2 bg-[#C5A021] text-navy-950 font-display font-semibold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-center"
+                          className="w-full py-3 bg-[#C5A021] hover:bg-[#B3901E] text-navy-950 font-display font-bold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer text-center flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-98 transform duration-150"
                         >
-                          I have completed the payment
+                          <FileText className="w-4 h-4 text-navy-950" />
+                          <span>I have completed the payment</span>
                         </button>
                       )}
                     </motion.div>

@@ -321,52 +321,7 @@ export default function App() {
     return () => clearInterval(slideTimer);
   }, [campaigns]);
 
-  // Dynamic order progress simulator to make the e-commerce feel incredibly real-time!
-  useEffect(() => {
-    if (orders.length === 0) return;
-    
-    const hasActiveOrders = orders.some(o => o.status !== 'delivered' && o.status !== 'cancelled');
-    if (!hasActiveOrders) return;
 
-    const timer = setInterval(() => {
-      setOrders(prevOrders => {
-        let changed = false;
-        const updated = prevOrders.map(order => {
-          if (order.status === 'pending') {
-            changed = true;
-            return { ...order, status: 'processing' as const };
-          } else if (order.status === 'processing') {
-            changed = true;
-            return { ...order, status: 'shipped' as const };
-          } else if (order.status === 'shipped') {
-            changed = true;
-            return { ...order, status: 'delivered' as const };
-          }
-          return order;
-        });
-        if (changed) {
-          // Log to system activity logs
-          const latestChange = updated.find((o, idx) => o.status !== prevOrders[idx].status);
-          if (latestChange) {
-            setActivityLogs(prevLogs => [
-              {
-                id: 'log-' + Date.now(),
-                action: 'Logistics Update',
-                details: `Order ${latestChange.orderNumber} successfully advanced to ${latestChange.status.toUpperCase()} stage`,
-                user: currentUser ? currentUser.name : 'System Dispatcher',
-                timestamp: new Date().toISOString()
-              },
-              ...prevLogs
-            ]);
-          }
-          return updated;
-        }
-        return prevOrders;
-      });
-    }, 20000); // Advances order stages every 20 seconds for interactive live-testing!
-
-    return () => clearInterval(timer);
-  }, [orders, currentUser]);
 
   // Scroll back up on swapping screens layout
   const handleSwapView = (view: typeof activeView) => {
@@ -486,7 +441,7 @@ export default function App() {
     const orderNum = 'MR-' + Date.now().toString().substring(6, 12) + '-' + Math.floor(100 + Math.random() * 900);
     
     // Call our premium calculator to get mathematically aligned numbers!
-    const totals = calculateCartTotals(cartItems, activeCoupon, shippingMethod, giftWrapped);
+    const totals = calculateCartTotals(cartItems, activeCoupon, shippingMethod, giftWrapped, customer.pincode);
     const subtotal = totals.subtotal;
     const discount = totals.bundleDiscount + totals.couponDiscount;
     const tax = totals.tax;
@@ -502,6 +457,8 @@ export default function App() {
       discount,
       tax,
       shippingCost,
+      shippingWeightKg: totals.shippingWeightKg,
+      shippingZone: totals.shippingZone,
       total: finalTotal,
       date: new Date().toISOString().split('T')[0],
       status: 'pending',
@@ -562,7 +519,7 @@ export default function App() {
       return data;
     })
     .then(data => {
-      console.log('Order registered on backend database:', data);
+      // Log removed for production
     })
     .catch(err => {
       console.error('Error saving order to backend database:', err);
@@ -815,6 +772,8 @@ export default function App() {
         currentUser={currentUser}
         onLogout={() => {
           setCurrentUser(null);
+          setCartItems([]);
+          setWishlistIds([]);
           handleLogActivity('User Session Terminated', 'Shopper signed out of active cart.');
         }}
       />
@@ -1375,7 +1334,7 @@ export default function App() {
             >
               <AccountPanel
                 wishlistProducts={products.filter((p) => wishlistIds.includes(p.id))}
-                orders={orders}
+                orders={currentUser ? orders.filter(o => (o.customerInfo?.email || o.accountEmail) === currentUser.email) : []}
                 coupons={coupons}
                 currentUser={currentUser}
                 onLogin={(emailVal, nameVal) => {
@@ -1390,6 +1349,8 @@ export default function App() {
                 }}
                 onLogout={() => {
                   setCurrentUser(null);
+                  setCartItems([]);
+                  setWishlistIds([]);
                   handleLogActivity('Session Closed', 'Shopper terminated session.');
                 }}
                 onMoveToCart={(prod) => {
@@ -1432,7 +1393,38 @@ export default function App() {
                 }
                 onDeleteProduct={(delId) => setProducts((prev) => prev.filter((p) => p.id !== delId))}
                 onAddCoupon={(c) => setCoupons((prev) => [c, ...prev])}
-                onDeleteCoupon={(codeStr) => setCoupons((prev) => prev.filter((c) => c.code !== codeStr))}
+                onDeleteCoupon={async (codeStr) => {
+                  setCoupons((prev) => prev.filter((c) => c.code !== codeStr));
+                  try {
+                    const token = localStorage.getItem('adminToken') || '';
+                    await fetch('/api/catalog/coupons/bulk-delete', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                      body: JSON.stringify({ codes: [codeStr] })
+                    });
+                  } catch (err) { console.error('Failed to delete coupon:', err); }
+                }}
+                onBulkDeleteCoupons={async (codes) => {
+                  setCoupons((prev) => prev.filter((c) => !codes.includes(c.code)));
+                  try {
+                    const token = localStorage.getItem('adminToken') || '';
+                    await fetch('/api/catalog/coupons/bulk-delete', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                      body: JSON.stringify({ codes })
+                    });
+                  } catch (err) { console.error('Failed to bulk delete coupons:', err); }
+                }}
+                onDeleteAllCoupons={async () => {
+                  setCoupons([]);
+                  try {
+                    const token = localStorage.getItem('adminToken') || '';
+                    await fetch('/api/catalog/coupons', {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                  } catch (err) { console.error('Failed to delete all coupons:', err); }
+                }}
                 onDeleteCampaign={(campId) => setCampaigns((prev) => prev.filter((c) => c.id !== campId))}
                 onDeleteOrder={async (ordId, ordNum) => {
                   setOrders((prev) => prev.filter((o) => o.id !== ordId));
@@ -1795,5 +1787,4 @@ export default function App() {
     </div>
   );
 }
-
 

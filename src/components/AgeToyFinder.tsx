@@ -70,28 +70,72 @@ export default function AgeToyFinder({
         )}
       </div>
 
-      {/* Horizontal Age Selector */}
-      <div className="space-y-2">
-        <span className="text-[10px] font-mono tracking-wider text-gray-400 dark:text-gray-500 uppercase font-semibold block">
-          Developmental Age Group
-        </span>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2">
-          {AGE_GROUPS.map((age) => {
+      {/* Advanced Interactive Range Slider Selector */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center text-[10px] font-mono tracking-wider text-gray-400 dark:text-gray-500 uppercase font-semibold">
+          <span>Developmental Age Range</span>
+          <span className="text-[#C5A021] font-bold text-xs font-sans">
+            {(() => {
+              if (!selectedAgeGroup) return 'All Developmental Stages';
+              return `${selectedAgeGroup}`;
+            })()}
+          </span>
+        </div>
+
+        <div className="px-2">
+          {/* Dual Range/Category Slider UI */}
+          <input
+            type="range"
+            min={0}
+            max={AGE_GROUPS.length - 1}
+            value={selectedAgeGroup ? AGE_GROUPS.indexOf(selectedAgeGroup) : AGE_GROUPS.length - 1}
+            onChange={(e) => {
+              const idx = parseInt(e.target.value, 10);
+              onSelectAgeGroup(idx === AGE_GROUPS.length - 1 && !selectedAgeGroup ? '' : AGE_GROUPS[idx]);
+            }}
+            className="w-full h-1.5 bg-gray-150 dark:bg-navy-950 rounded-lg appearance-none cursor-pointer accent-[#C5A021]"
+          />
+          <div className="flex justify-between text-[9px] text-gray-400 dark:text-gray-500 font-mono pt-1">
+            <span>0 Months</span>
+            <span>2 Years</span>
+            <span>6 Years</span>
+            <span>10 Years</span>
+            <span>13+ Years</span>
+          </div>
+        </div>
+
+        {/* Quick select stages buttons/chips */}
+        <div className="flex flex-wrap gap-1.5">
+          {AGE_GROUPS.slice(0, 5).map((age) => {
             const isSelected = selectedAgeGroup === age;
             return (
-              <motion.button
+              <button
                 key={age}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
                 onClick={() => onSelectAgeGroup(isSelected ? '' : age)}
-                className={`px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-medium transition cursor-pointer border ${
                   isSelected
-                    ? 'bg-[#C5A021] text-navy-950 shadow-md shadow-[#C5A021]/10 font-bold border border-transparent'
-                    : 'bg-gray-50 dark:bg-navy-950 text-gray-600 dark:text-slate-300 border border-gray-100 dark:border-navy-800 hover:bg-gray-100 dark:hover:bg-navy-800'
+                    ? 'bg-[#C5A021]/15 text-[#C5A021] border-[#C5A021]'
+                    : 'bg-transparent border-gray-150 dark:border-navy-800 text-gray-500 dark:text-slate-400 hover:border-gray-300'
                 }`}
               >
                 {age}
-              </motion.button>
+              </button>
+            );
+          })}
+          {AGE_GROUPS.slice(5).map((age) => {
+            const isSelected = selectedAgeGroup === age;
+            return (
+              <button
+                key={age}
+                onClick={() => onSelectAgeGroup(isSelected ? '' : age)}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-medium transition cursor-pointer border ${
+                  isSelected
+                    ? 'bg-[#C5A021]/15 text-[#C5A021] border-[#C5A021]'
+                    : 'bg-transparent border-gray-150 dark:border-navy-800 text-gray-500 dark:text-slate-400 hover:border-gray-300'
+                }`}
+              >
+                {age}
+              </button>
             );
           })}
         </div>

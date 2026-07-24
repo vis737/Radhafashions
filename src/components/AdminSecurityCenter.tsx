@@ -34,21 +34,11 @@ export default function AdminSecurityCenter() {
           const data = await res.json();
           if (data.stats) setStats(data.stats);
           if (data.threatLogs) setThreatLogs(data.threatLogs);
-        } else {
-          simulateFallback();
+          console.warn('Security stats fetch failed.');
         }
       } catch (err) {
-        simulateFallback();
+        console.warn('Security stats fetch error:', err);
       }
-    };
-
-    const simulateFallback = () => {
-      const sampleThreats: ThreatEvent[] = [
-        { id: '1', timestamp: '2026-07-19 14:22:15', ip: '198.51.100.42', type: 'WAF Block', details: 'Brute-force limit tripped on endpoint /api/admin/login.', severity: 'medium' },
-        { id: '2', timestamp: '2026-07-19 13:05:44', ip: '203.0.113.110', type: 'CORS Block', details: 'Invalid Origin blocked header referer.', severity: 'low' },
-        { id: '3', timestamp: '2026-07-19 10:14:02', ip: '192.168.1.101', type: 'Failed Login', details: 'Wrong password attempt on administrative account.', severity: 'high' }
-      ];
-      setThreatLogs(sampleThreats);
     };
 
     fetchSecurityStats();

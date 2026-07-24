@@ -45,6 +45,7 @@ export default function CartDrawer({
   const discountAmount = bundleDiscount + couponDiscount;
   const gstTax = totals.tax;
   const shippingCharges = totals.shippingCost;
+  const billableWeightKg = totals.billableWeightKg;
   const finalTotal = totals.grandTotal;
 
   const handleApplyCouponCode = (e: React.FormEvent) => {
@@ -268,7 +269,7 @@ export default function CartDrawer({
                       />
                       Standard
                     </span>
-                    <span className="text-[10px] font-bold font-mono text-gray-500">{subtotal > 1500 ? 'FREE' : 'Rs.80'}</span>
+                    <span className="text-[10px] font-bold font-mono text-gray-500">{shippingMethod === 'standard' && shippingCharges === 0 ? 'FREE' : 'By pincode'}</span>
                   </label>
                   <label className="flex-1 p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gold-300 flex items-center justify-between cursor-pointer">
                     <span className="text-xs text-gray-700 flex items-center gap-1.5 font-medium">
@@ -281,7 +282,7 @@ export default function CartDrawer({
                       />
                       Express
                     </span>
-                    <span className="text-[10px] font-bold font-mono text-gray-500">Rs.180</span>
+                    <span className="text-[10px] font-bold font-mono text-gray-500">By pincode</span>
                   </label>
                 </div>
               </div>
@@ -312,7 +313,7 @@ export default function CartDrawer({
                   <span className="font-mono">Rs.{gstTax}</span>
                 </div>
                 <div className="flex justify-between text-gray-500 pb-2">
-                  <span>Delivery Charges</span>
+                  <span>Delivery Charges <span className="text-[10px]">(final by pincode, {billableWeightKg.toFixed(2)} kg)</span></span>
                   <span className="font-mono">{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-navy-950 border-t border-gray-200 pt-2.5">

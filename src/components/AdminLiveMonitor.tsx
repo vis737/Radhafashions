@@ -46,40 +46,11 @@ export default function AdminLiveMonitor() {
           if (data.liveRevenue) setLiveRevenue(data.liveRevenue);
           setHistoryTraffic((prev) => [...prev.slice(1), data.stats.activeVisitors || 35]);
         } else {
-          // Fallback simulation if offline
-          simulateFallback();
+          console.warn('Live monitor backend offline. Waiting for reconnection...');
         }
       } catch (err) {
-        simulateFallback();
+        console.warn('Live monitor fetch error:', err);
       }
-    };
-
-    const simulateFallback = () => {
-      // Create random guest sessions
-      const sampleSessions: LiveSession[] = [
-        { ip: '192.168.1.102', type: 'guest', activePage: 'home', cartTotal: 0, durationSeconds: 45 },
-        { ip: '103.45.2.19', type: 'user', name: 'Alok S.', activePage: 'category/toys', cartTotal: 1648, durationSeconds: 320 },
-        { ip: '157.23.44.11', type: 'guest', activePage: 'product/toy-1', cartTotal: 899, durationSeconds: 150 },
-        { ip: '109.11.22.45', type: 'user', name: 'Nisha K.', activePage: 'checkout', cartTotal: 3490, durationSeconds: 610 }
-      ];
-      setSessions(sampleSessions);
-
-      // Create sample live alerts
-      const sampleAlerts: LiveAlert[] = [
-        { id: '1', type: 'visitor', message: 'New Guest Visitor from Mumbai, India joined session.', timestamp: new Date().toLocaleTimeString() },
-        { id: '2', type: 'cart', message: 'Product [Wooden Stacking Tower] added to cart.', timestamp: new Date().toLocaleTimeString() },
-        { id: '3', type: 'login', message: 'Admin authenticated successfully.', timestamp: new Date().toLocaleTimeString() }
-      ];
-      setAlerts(prev => [...sampleAlerts, ...prev].slice(0, 10));
-      
-      const newVisitorCount = Math.floor(Math.random() * 8) + 20;
-      setStats(prev => ({
-        ...prev,
-        activeVisitors: newVisitorCount,
-        todayVisitors: prev.todayVisitors + 1,
-        todayOrders: prev.todayOrders + (Math.random() > 0.8 ? 1 : 0)
-      }));
-      setHistoryTraffic(prev => [...prev.slice(1), newVisitorCount]);
     };
 
     fetchLiveStats();

@@ -68,7 +68,7 @@ export default function ProductDetails({
       rating,
       comment: commentText,
       date: new Date().toISOString().split('T')[0],
-      approved: true // Default auto-approve for simulated instant display!
+      approved: false // Requires admin approval before display
     });
 
     setAuthorName('');
