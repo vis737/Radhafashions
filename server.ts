@@ -7,9 +7,6 @@ import fs from 'fs';
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import multer from 'multer';
-// Razorpay temporarily disabled.
-// Enable after GST registration and production credentials are available.
-// import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import cookieParser from 'cookie-parser';
@@ -409,12 +406,13 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' data: https://fonts.gstatic.com; " +
     `img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com ${supabaseHttps}; ` +
-    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://api.razorpay.com; ` +
-    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; " +
+    `connect-src 'self' ${supabaseHttps} ${supabaseWs}; ` +
+    "frame-src 'self'; " +
+    "form-action 'self' https://test.payu.in https://secure.payu.in; " +
     "object-src 'none'; " +
     "base-uri 'self';"
   );
@@ -512,17 +510,6 @@ function rateLimiter(limit: number, windowMs: number) {
     next();
   };
 }
-
-// Razorpay temporarily disabled.
-// Enable after GST registration and production credentials are available.
-/*
-const getRazorpayClient = () => {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret || keyId === 'rzp_test_YOUR_KEY_ID') return null;
-  return new Razorpay({ key_id: keyId, key_secret: keySecret });
-};
-*/
 
 // Serve uploaded product images as static files
 // NOTE: On Render's free tier the filesystem is ephemeral — uploaded images are
@@ -1100,7 +1087,7 @@ function writeOrdersDb(orders: any[]) {
         status: o.status,
         coupon_code: o.couponCode || null,
         date: o.date,
-        payment_method: o.paymentMethod || 'Razorpay',
+        payment_method: o.paymentMethod || 'PayU Secure Online Payment',
         payment_status: o.paymentStatus || 'unpaid',
         gift_wrapping_requested: o.giftWrappingRequested || false,
         gift_wrapping_type: o.giftWrappingType || null,
@@ -1887,14 +1874,18 @@ app.post('/api/send-otp', rateLimiter(15, 15 * 60 * 1000), async (req, res) => {
 
     const emailEnabled = smtpEmailConfigured();
     if (emailEnabled) {
-      // Dispatch email asynchronously in background so response stays ultra-fast
-      dispatchOtpEmail(email, code).then(() => {
+      try {
+        await dispatchOtpEmail(email, code);
         console.log(`[Email OTP] Verification passcode email dispatched to ${email}.`);
-      }).catch((emailError) => {
+      } catch (emailError: any) {
+        delete db[email];
+        writeOtpDb(db);
         console.error('[Email OTP] Background SMTP dispatch failed:', emailError);
-      });
+        return res.status(502).json({
+          error: `Failed to send email OTP: ${emailError?.message || 'SMTP server rejected the email request.'}`
+        });
+      }
 
-      console.log(`[Email OTP] Live email OTP generated for ${email}.`);
       return res.json({
         success: true,
         requiresOtp: true,
@@ -1902,6 +1893,14 @@ app.post('/api/send-otp', rateLimiter(15, 15 * 60 * 1000), async (req, res) => {
         emailMode: 'live',
         expiresInSec: OTP_EXPIRY_MS / 1000,
         // No mockOtp returned in live email mode — user must check their inbox!
+      });
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      delete db[email];
+      writeOtpDb(db);
+      return res.status(503).json({
+        error: 'Email OTP is not configured on this deployment. Set ENABLE_REAL_NOTIFICATIONS=true and SMTP credentials in Render.'
       });
     }
 
@@ -2287,6 +2286,235 @@ app.get('/api/emails', verifyAdminToken, async (req, res) => {
   }
 });
 
+function getPayUActionUrl() {
+  return process.env.PAYU_ENV === 'production'
+    ? 'https://secure.payu.in/_payment'
+    : 'https://test.payu.in/_payment';
+}
+
+function getPublicAppUrl(req: any) {
+  if (isConfigured(process.env.APP_URL)) {
+    return process.env.APP_URL!.replace(/\/$/, '');
+  }
+  return `${req.protocol}://${req.get('host')}`;
+}
+
+function buildPayURequestHashString(params: Record<string, any>, merchantKey: string, merchantSalt: string) {
+  const amount = Number(params.amount).toFixed(2);
+  return [
+    merchantKey.trim(),
+    String(params.txnid || '').trim(),
+    amount,
+    String(params.productinfo || '').trim(),
+    String(params.firstname || '').trim(),
+    String(params.email || '').trim(),
+    String(params.udf1 || ''),
+    String(params.udf2 || ''),
+    String(params.udf3 || ''),
+    String(params.udf4 || ''),
+    String(params.udf5 || ''),
+    '',
+    '',
+    '',
+    '',
+    '',
+    merchantSalt.trim()
+  ].join('|');
+}
+
+function buildPayUResponseHashString(payload: Record<string, any>, merchantSalt: string) {
+  const amount = Number(payload.amount || 0).toFixed(2);
+  return [
+    merchantSalt.trim(),
+    String(payload.status || '').trim(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    String(payload.udf5 || '').trim(),
+    String(payload.udf4 || '').trim(),
+    String(payload.udf3 || '').trim(),
+    String(payload.udf2 || '').trim(),
+    String(payload.udf1 || '').trim(),
+    String(payload.email || '').trim(),
+    String(payload.firstname || '').trim(),
+    String(payload.productinfo || '').trim(),
+    amount,
+    String(payload.txnid || '').trim(),
+    String(payload.key || '').trim()
+  ].join('|');
+}
+
+function verifyPayUResponse(payload: Record<string, any>) {
+  const merchantSalt = process.env.PAYU_MERCHANT_SALT;
+  if (!isConfigured(merchantSalt)) {
+    return { verified: false, calculatedHash: '', error: 'PayU salt is not configured.' };
+  }
+
+  const calculatedHash = crypto
+    .createHash('sha512')
+    .update(buildPayUResponseHashString(payload, merchantSalt!))
+    .digest('hex');
+
+  const receivedHash = String(payload.hash || '').toLowerCase();
+  return {
+    verified: Boolean(receivedHash) && calculatedHash.toLowerCase() === receivedHash,
+    calculatedHash
+  };
+}
+
+async function applyPayUResult(payload: Record<string, any>, fallbackStatus: 'success' | 'failure') {
+  const txnid = sanitizeString(payload.txnid || payload.udf1, 60);
+  if (!txnid) return null;
+
+  const dbOrders = readOrdersDb();
+  const index = dbOrders.findIndex(
+    o => String(o.orderNumber || '').toUpperCase() === txnid.toUpperCase() ||
+      String(o.payuTxnId || '').toUpperCase() === txnid.toUpperCase()
+  );
+
+  if (index < 0) return null;
+
+  const previousPaymentStatus = dbOrders[index].paymentStatus;
+  const gatewayStatus = String(payload.status || fallbackStatus).toLowerCase();
+  const paid = gatewayStatus === 'success';
+
+  dbOrders[index] = {
+    ...dbOrders[index],
+    paymentMethod: 'PayU Secure Online Payment',
+    paymentStatus: paid ? 'paid' : 'rejected',
+    status: paid ? 'processing' : dbOrders[index].status,
+    payuTxnId: txnid,
+    payuPaymentId: payload.mihpayid || payload.payuMoneyId || payload.bank_ref_num || dbOrders[index].payuPaymentId,
+    payuHash: payload.hash || dbOrders[index].payuHash,
+    payuStatus: gatewayStatus
+  };
+
+  writeOrdersDb(dbOrders);
+
+  if (previousPaymentStatus === 'pending' && paid) {
+    try {
+      await sendBookingEmail(dbOrders[index]);
+      await sendSMSAlert(dbOrders[index]);
+    } catch (notifyErr) {
+      console.error('Failed to dispatch PayU confirmation notifications:', notifyErr);
+    }
+  }
+
+  return dbOrders[index];
+}
+
+app.post('/api/payu/hash', rateLimiter(20, 15 * 60 * 1000), (req, res) => {
+  try {
+    const merchantKey = process.env.PAYU_MERCHANT_KEY;
+    const merchantSalt = process.env.PAYU_MERCHANT_SALT;
+
+    if (!isConfigured(merchantKey) || !isConfigured(merchantSalt)) {
+      return res.status(503).json({
+        error: 'PayU is not configured yet. Set PAYU_MERCHANT_KEY and PAYU_MERCHANT_SALT in local .env and in Render Environment before accepting online payments.'
+      });
+    }
+
+    const txnid = sanitizeString(req.body?.txnid, 60);
+    const amount = Number(req.body?.amount);
+    const productinfo = sanitizeString(req.body?.productinfo, 120);
+    const firstname = sanitizeString(req.body?.firstname, 80);
+    const email = sanitizeEmail(req.body?.email);
+
+    if (!txnid || !Number.isFinite(amount) || amount <= 0 || !productinfo || !firstname || !email) {
+      return res.status(400).json({ error: 'Missing required PayU parameters.' });
+    }
+
+    const payload = {
+      txnid,
+      amount: amount.toFixed(2),
+      productinfo,
+      firstname,
+      email,
+      udf1: sanitizeString(req.body?.udf1 || txnid, 60),
+      udf2: sanitizeString(req.body?.udf2 || '', 60),
+      udf3: sanitizeString(req.body?.udf3 || '', 60),
+      udf4: sanitizeString(req.body?.udf4 || '', 60),
+      udf5: sanitizeString(req.body?.udf5 || '', 60),
+    };
+
+    const hash = crypto
+      .createHash('sha512')
+      .update(buildPayURequestHashString(payload, merchantKey!, merchantSalt!))
+      .digest('hex');
+
+    const appUrl = getPublicAppUrl(req);
+    res.json({
+      success: true,
+      key: merchantKey,
+      ...payload,
+      hash,
+      environment: process.env.PAYU_ENV === 'production' ? 'production' : 'test',
+      actionUrl: getPayUActionUrl(),
+      surl: process.env.PAYU_SUCCESS_URL || `${appUrl}/api/payu/success`,
+      furl: process.env.PAYU_FAILURE_URL || `${appUrl}/api/payu/failure`,
+    });
+  } catch (err) {
+    console.error('Failed to calculate PayU transaction hash:', err);
+    res.status(500).json({ error: 'Failed to calculate PayU transaction hash.' });
+  }
+});
+
+app.post('/api/payu/verify', rateLimiter(30, 15 * 60 * 1000), async (req, res) => {
+  try {
+    const verification = verifyPayUResponse(req.body || {});
+    const order = verification.verified ? await applyPayUResult(req.body, req.body?.status === 'success' ? 'success' : 'failure') : null;
+    res.json({
+      success: verification.verified,
+      verified: verification.verified,
+      status: req.body?.status,
+      txnid: req.body?.txnid,
+      payuMoneyId: req.body?.mihpayid,
+      order
+    });
+  } catch (err) {
+    console.error('PayU hash verification failed:', err);
+    res.status(500).json({ error: 'PayU hash verification failed.' });
+  }
+});
+
+app.all('/api/payu/success', rateLimiter(40, 15 * 60 * 1000), async (req, res) => {
+  const payload = { ...(req.query || {}), ...(req.body || {}) };
+  const verification = verifyPayUResponse(payload);
+  if (verification.verified) {
+    await applyPayUResult(payload, 'success');
+  }
+  const appUrl = getPublicAppUrl(req);
+  const order = encodeURIComponent(String(payload.txnid || payload.udf1 || ''));
+  res.redirect(`${appUrl}/?payu=${verification.verified ? 'success' : 'verification_failed'}&order=${order}`);
+});
+
+app.all('/api/payu/failure', rateLimiter(40, 15 * 60 * 1000), async (req, res) => {
+  const payload = { ...(req.query || {}), ...(req.body || {}) };
+  const verification = verifyPayUResponse(payload);
+  if (verification.verified) {
+    await applyPayUResult(payload, 'failure');
+  }
+  const appUrl = getPublicAppUrl(req);
+  const order = encodeURIComponent(String(payload.txnid || payload.udf1 || ''));
+  res.redirect(`${appUrl}/?payu=failure&order=${order}`);
+});
+
+app.post('/api/payu/webhook', rateLimiter(80, 15 * 60 * 1000), async (req, res) => {
+  try {
+    const verification = verifyPayUResponse(req.body || {});
+    if (!verification.verified) {
+      return res.status(400).json({ success: false, error: 'Invalid PayU hash.' });
+    }
+    const order = await applyPayUResult(req.body, req.body?.status === 'success' ? 'success' : 'failure');
+    res.json({ success: true, order });
+  } catch (err) {
+    console.error('PayU webhook handling failed:', err);
+    res.status(500).json({ error: 'PayU webhook handling failed.' });
+  }
+});
+
 app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
   try {
     const newOrder = req.body;
@@ -2315,6 +2543,14 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     newOrder.accountName = newOrder.account?.name || newOrder.accountName || newOrder.customerInfo?.name || '';
     delete newOrder.account;
 
+    const isCodOrder = newOrder.paymentMethod?.toLowerCase().includes('cash on delivery') ||
+      newOrder.paymentMethod?.toUpperCase() === 'COD';
+    if (isCodOrder) {
+      newOrder.paymentMethod = 'Cash on Delivery';
+      newOrder.paymentStatus = newOrder.paymentStatus || 'unpaid';
+      newOrder.codStatus = newOrder.codStatus || 'pending';
+    }
+
     const dbOrders = readOrdersDb();
     const existingIndex = dbOrders.findIndex(
       o => o.orderNumber.toUpperCase() === newOrder.orderNumber.toUpperCase()
@@ -2327,10 +2563,11 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     }
 
     writeOrdersDb(dbOrders);
-    console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber}`);
+    console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
     
     const isUpiOrder = newOrder.paymentMethod?.toLowerCase().includes('upi');
-    if (!isUpiOrder) {
+    const isPendingPayUOrder = newOrder.paymentMethod?.toLowerCase().includes('payu') && newOrder.paymentStatus === 'pending';
+    if (!isUpiOrder && !isPendingPayUOrder) {
       // Dispatch asynchronous booking confirmation email
       try {
         await sendBookingEmail(newOrder);
@@ -2345,7 +2582,7 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
         console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
       }
     } else {
-      console.log(`[Order Service] UPI Order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until administrative approval.`);
+      console.log(`[Order Service] Pending payment order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until payment approval.`);
     }
 
     res.status(201).json({ success: true, order: newOrder });
@@ -2357,10 +2594,10 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
 app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) => {
   try {
     const orderNum = req.params.orderNumber.trim().toUpperCase();
-    const { status } = req.body;
+    const { status, codStatus, paymentStatus } = req.body;
 
-    if (!status) {
-      return res.status(400).json({ error: 'Status field is required.' });
+    if (!status && !codStatus && !paymentStatus) {
+      return res.status(400).json({ error: 'Status, COD status, or payment status is required.' });
     }
 
     const dbOrders = readOrdersDb();
@@ -2369,7 +2606,9 @@ app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) =
     );
 
     if (index >= 0) {
-      dbOrders[index].status = status;
+      if (status) dbOrders[index].status = status;
+      if (codStatus) dbOrders[index].codStatus = codStatus;
+      if (paymentStatus) dbOrders[index].paymentStatus = paymentStatus;
       writeOrdersDb(dbOrders);
 
       // Dispatch asynchronous status update WhatsApp Alert
@@ -2788,68 +3027,6 @@ app.get('/api/newsletter', verifyAdminToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch newsletter subscriptions' });
   }
 });
-
-
-// Razorpay temporarily disabled.
-// Enable after GST registration and production credentials are available.
-/*
-app.post('/api/razorpay/create-order', async (req, res) => {
-  const rzp = getRazorpayClient();
-  if (!rzp) {
-    return res.status(503).json({
-      error: 'Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your .env file.',
-    });
-  }
-
-  const { amount, currency = 'INR', receipt } = req.body;
-  if (!amount || isNaN(Number(amount))) {
-    return res.status(400).json({ error: 'Valid amount in rupees is required.' });
-  }
-
-  try {
-    const order = await rzp.orders.create({
-      amount: Math.round(Number(amount) * 100),
-      currency,
-      receipt: receipt || `receipt_${Date.now()}`,
-    });
-    console.log(`[Razorpay] Created order ${order.id} for Rs.${amount}`);
-    res.json(order);
-  } catch (err: any) {
-    console.error('[Razorpay] Order creation failed:', err?.error || err);
-    res.status(500).json({
-      error: 'Failed to create Razorpay order',
-      details: err?.error?.description,
-    });
-  }
-});
-
-app.post('/api/razorpay/verify-payment', (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return res.status(400).json({ verified: false, error: 'Missing required payment fields.' });
-  }
-
-  const secret = process.env.RAZORPAY_KEY_SECRET;
-  if (!secret) {
-    return res.status(503).json({ verified: false, error: 'Razorpay secret not configured.' });
-  }
-
-  const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(body)
-    .digest('hex');
-
-  if (expectedSignature === razorpay_signature) {
-    console.log(`[Razorpay] Payment ${razorpay_payment_id} verified successfully.`);
-    res.json({ verified: true, payment_id: razorpay_payment_id });
-  } else {
-    console.warn(`[Razorpay] Signature mismatch for payment ${razorpay_payment_id}`);
-    res.status(400).json({ verified: false, error: 'Payment signature mismatch.' });
-  }
-});
-*/
 
 // Centralized Exception and Error Handling Middleware
 app.use((err: any, req: any, res: any, next: any) => {

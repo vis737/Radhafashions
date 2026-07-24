@@ -106,11 +106,18 @@ export interface Order {
   discount: number;
   subtotal: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'confirmed' | 'returned';
   couponCode?: string;
   date: string;
   paymentMethod: string;
-  paymentStatus: 'paid' | 'unpaid' | 'pending' | 'rejected';
+  paymentStatus: 'paid' | 'unpaid' | 'pending' | 'rejected' | 'refunded';
+  codStatus?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
+
+  // PayU gateway parameters
+  payuTxnId?: string;
+  payuPaymentId?: string;
+  payuHash?: string;
+  payuStatus?: string;
   
   // UPI QR parameters
   upiTxnId?: string;

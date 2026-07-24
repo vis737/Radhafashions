@@ -137,15 +137,22 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-gray-100">
             <div className="space-y-1">
               <span className="font-display font-bold text-lg tracking-wider text-navy-900">MERIS <span className="text-gold-400">E-SHOP</span></span>
-              <p className="text-[10px] text-gray-400 leading-relaxed font-light">
-                5/339, Fathima Road, nager, Azhagappapuram, Tamil Nadu 629401<br />
-                support@meris.com | +91 93842 92229
+              <p className="text-[10px] text-gray-500 leading-relaxed font-light">
+                5/339, Fathima Road, Nager, Azhagappapuram, Tamil Nadu 629401<br />
+                support@meriseshop.com | +91 93842 92229
               </p>
             </div>
             <div className="sm:text-right text-xs text-gray-500 space-y-0.5">
-              <p><span className="font-semibold text-navy-900">Invoice Serial:</span> INV-{order.orderNumber.split('-')[1]}</p>
+              <p><span className="font-semibold text-navy-900">Invoice Serial:</span> INV-{order.orderNumber.includes('-') ? order.orderNumber.split('-')[1] : order.orderNumber}</p>
               <p><span className="font-semibold text-navy-900">Receipt Date:</span> {order.date}</p>
-              <p><span className="font-semibold text-navy-900">Payment Status:</span> PAID ({order.paymentMethod})</p>
+              <p><span className="font-semibold text-navy-900">Payment Method:</span> {order.paymentMethod}</p>
+              <p><span className="font-semibold text-navy-900">Payment Status:</span> <span className="uppercase text-emerald-600 font-bold">{order.paymentStatus}</span></p>
+              {order.codStatus && (
+                <p><span className="font-semibold text-navy-900">COD Status:</span> <span className="uppercase text-amber-600 font-bold">{order.codStatus}</span></p>
+              )}
+              {order.payuPaymentId && (
+                <p><span className="font-semibold text-navy-900">PayU Ref:</span> {order.payuPaymentId}</p>
+              )}
             </div>
           </div>
 

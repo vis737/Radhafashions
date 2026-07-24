@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles, Copy, Check, Upload, Image, FileText, QrCode, AlertCircle, Hash, User, Link, ChevronRight, Edit3 } from 'lucide-react';
 import { CartItem, CustomerInfo, Coupon, Order } from '../types';
 import { calculateCartTotals } from '../utils/premiumData';
+import { preparePayUPaymentPayload } from '../utils/payu';
 
 interface CheckoutPanelProps {
   cartItems: CartItem[];
@@ -21,8 +22,12 @@ interface CheckoutPanelProps {
     upiTxnId?: string,
     upiSenderName?: string,
     upiScreenshot?: string,
-    upiNotes?: string
-  ) => void;
+    upiNotes?: string,
+    payuTxnId?: string,
+    payuPaymentId?: string,
+    payuHash?: string,
+    payuStatus?: string
+  ) => Order | Promise<Order | void> | void;
   codEnabled?: boolean;
   upiEnabled?: boolean;
 }
@@ -40,6 +45,7 @@ export default function CheckoutPanel({
   // Stepper state
   const [activeStep, setActiveStep] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   // Form fields
   const [name, setName] = useState(currentUser.name || '');
@@ -54,14 +60,14 @@ export default function CheckoutPanel({
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [screenshotSourceType, setScreenshotSourceType] = useState<'upload' | 'url'>('upload');
   
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi_qr'>(upiEnabled ? 'upi_qr' : 'cod');
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod' | 'upi_qr'>('payu');
 
   useEffect(() => {
     if (!upiEnabled && paymentMethod === 'upi_qr') {
-      setPaymentMethod('cod');
+      setPaymentMethod('payu');
     }
     if (!codEnabled && paymentMethod === 'cod') {
-      setPaymentMethod('upi_qr');
+      setPaymentMethod('payu');
     }
   }, [codEnabled, upiEnabled]);
   
@@ -115,7 +121,25 @@ export default function CheckoutPanel({
     }
   };
 
-  const handleCheckoutSubmit = (e?: React.FormEvent) => {
+  const submitPayUForm = (actionUrl: string, fields: Record<string, string>) => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = actionUrl;
+    form.style.display = 'none';
+
+    Object.entries(fields).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  const handleCheckoutSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !pincode.trim()) {
       alert("Please fill in all shipment coordinates.");
@@ -124,13 +148,62 @@ export default function CheckoutPanel({
     }
 
     setIsProcessing(true);
-    
-    // Simulate network delay for loading overlay
-    setTimeout(() => {
+    setPaymentError('');
+
+    try {
+      if (paymentMethod === 'payu') {
+        const orderNumber = 'MR-' + Date.now().toString().substring(6, 12) + '-' + Math.floor(100 + Math.random() * 900);
+        const payuPayload = preparePayUPaymentPayload(orderNumber, finalTotal, name, email, phone, pincode);
+        const hashResponse = await fetch('/api/payu/hash', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payuPayload)
+        });
+        const payuData = await hashResponse.json();
+
+        if (!hashResponse.ok || !payuData?.hash || !payuData?.actionUrl) {
+          throw new Error(payuData?.error || 'Unable to initialize PayU payment.');
+        }
+
+        await Promise.resolve(onPlaceOrder(
+          { name, email, phone, address, pincode },
+          'PayU Secure Online Payment',
+          giftWrapped,
+          giftMessage,
+          giftTheme,
+          giftSender,
+          giftHidePrice,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          orderNumber,
+          undefined,
+          payuData.hash,
+          'initiated'
+        ));
+
+        submitPayUForm(payuData.actionUrl, {
+          key: payuData.key,
+          txnid: payuData.txnid,
+          amount: payuData.amount,
+          productinfo: payuData.productinfo,
+          firstname: payuData.firstname,
+          email: payuData.email,
+          phone,
+          surl: payuData.surl,
+          furl: payuData.furl,
+          hash: payuData.hash,
+          udf1: payuPayload.udf1 || '',
+          udf2: payuPayload.udf2 || '',
+        });
+        return;
+      }
+
       if (paymentMethod === 'cod') {
         onPlaceOrder(
           { name, email, phone, address, pincode },
-          'COD',
+          'Cash on Delivery',
           giftWrapped,
           giftMessage,
           giftTheme,
@@ -152,8 +225,11 @@ export default function CheckoutPanel({
           upiNotes
         );
       }
+    } catch (err: any) {
+      setPaymentError(err?.message || 'Payment initialization failed. Please try again.');
+    } finally {
       setIsProcessing(false);
-    }, 1200);
+    }
   };
 
   const StepHeader = ({ step, title, icon: Icon }: { step: number, title: string, icon: any }) => (
@@ -407,49 +483,92 @@ export default function CheckoutPanel({
                   className="overflow-hidden"
                 >
                   <div className="pt-6 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {/* Disabled Credit Card */}
-                      <div className="relative group">
-                        <button type="button" disabled className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all capitalize border bg-gray-50 dark:bg-navy-950 border-gray-200 dark:border-navy-800 text-gray-400 dark:text-gray-600 cursor-not-allowed">
-                          <CreditCard className="w-5 h-5" />
-                          <span>Credit / Debit Card</span>
-                        </button>
-                        <div className="absolute -top-2.5 -right-2 bg-slate-800 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                          <Lock className="w-3 h-3" /> Coming Soon
-                        </div>
-                      </div>
-
-                      {/* Disabled Net Banking */}
-                      <div className="relative group">
-                        <button type="button" disabled className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all capitalize border bg-gray-50 dark:bg-navy-950 border-gray-200 dark:border-navy-800 text-gray-400 dark:text-gray-600 cursor-not-allowed">
-                          <Landmark className="w-5 h-5" />
-                          <span>Net Banking</span>
-                        </button>
-                        <div className="absolute -top-2.5 -right-2 bg-slate-800 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                          <Lock className="w-3 h-3" /> Coming Soon
-                        </div>
-                      </div>
-
-                      {/* UPI QR Code Payment (Active) */}
-                      <div className="relative col-span-1 md:col-span-2 lg:col-span-1">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setPaymentMethod('upi_qr')}
-                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all capitalize border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'}`}
+                          onClick={() => setPaymentMethod('payu')}
+                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'payu' ? 'bg-gold-50 dark:bg-gold-500/10 text-navy-950 dark:text-gold-300 border-gold-400 dark:border-gold-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
                         >
-                          <QrCode className="w-6 h-6" />
-                          <span className="uppercase tracking-wider">UPI QR Payment</span>
+                          <ShieldCheck className="w-6 h-6 text-gold-500" />
+                          <span className="uppercase tracking-wider font-bold">PayU Secure Online</span>
+                          <span className="text-[10px] text-gray-500 font-normal">Cards, NetBanking, UPI, Wallets</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Active
+                        <div className="absolute -top-2.5 -right-2 bg-gold-500 text-navy-950 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Recommended
                         </div>
                       </div>
+
+                      {codEnabled && (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setPaymentMethod('cod')}
+                            className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'cod' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-400 dark:border-amber-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
+                          >
+                            <Truck className="w-6 h-6 text-amber-500" />
+                            <span className="uppercase tracking-wider font-bold">Cash on Delivery</span>
+                            <span className="text-[10px] text-gray-500 font-normal">Pay cash at doorstep</span>
+                          </button>
+                          <div className="absolute -top-2.5 -right-2 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Available
+                          </div>
+                        </div>
+                      )}
+
+                      {upiEnabled && (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setPaymentMethod('upi_qr')}
+                            className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
+                          >
+                            <QrCode className="w-6 h-6 text-emerald-500" />
+                            <span className="uppercase tracking-wider font-bold">Instant UPI QR</span>
+                            <span className="text-[10px] text-gray-500 font-normal">Manual bank verification</span>
+                          </button>
+                          <div className="absolute -top-2.5 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Backup
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="p-4 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl text-xs text-blue-700 dark:text-blue-400 flex items-start gap-3">
-                      <Lock className="w-4.5 h-4.5 shrink-0 mt-0.5" />
-                      <p>Our developers are currently integrating secure online payment gateways. Until then, only UPI QR payment is available for this session.</p>
+                    <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-xs text-emerald-900 dark:text-emerald-300 flex items-start gap-3">
+                      <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                      <p className="leading-relaxed font-light">
+                        <strong>Payments are securely processed through PayU. Cash on Delivery and manual UPI are available as backup routes for eligible orders.</strong>
+                      </p>
                     </div>
+
+                    {paymentMethod === 'payu' && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-gold-50/40 dark:bg-gold-950/10 border border-gold-200 dark:border-gold-800/30 rounded-2xl space-y-2 text-xs text-navy-900 dark:text-gold-200">
+                        <div className="flex items-center gap-2 font-bold uppercase text-gold-600 dark:text-gold-400">
+                          <ShieldCheck className="w-4 h-4" /> PayU Secure Gateway
+                        </div>
+                        <p className="font-light">
+                          Clicking place order will redirect you to PayU for cards, netbanking, UPI, and wallet payments. Your order stays pending until PayU confirms the transaction.
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {paymentError && (
+                      <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-2xl text-xs text-rose-700 dark:text-rose-300 flex items-start gap-3">
+                        <AlertCircle className="w-4.5 h-4.5 shrink-0 mt-0.5" />
+                        <p className="leading-relaxed">{paymentError}</p>
+                      </div>
+                    )}
+
+                    {paymentMethod === 'cod' && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl space-y-2 text-xs text-amber-900 dark:text-amber-200">
+                        <div className="flex items-center gap-2 font-bold uppercase text-amber-700 dark:text-amber-300">
+                          <Truck className="w-4 h-4" /> Cash on Delivery Confirmation
+                        </div>
+                        <p className="font-light">
+                          Please keep Rs.{finalTotal} ready for the courier agent. COD orders may be verified before dispatch.
+                        </p>
+                      </motion.div>
+                    )}
 
                     {/* UPI UI Block */}
                     {paymentMethod === 'upi_qr' && (

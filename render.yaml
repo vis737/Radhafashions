@@ -41,9 +41,15 @@ services:
         value: "true"
       - key: GEMINI_API_KEY
         sync: false        # Optional: for AI recommendations
-      - key: RAZORPAY_KEY_ID
-        sync: false        # Optional: Razorpay key ID
-      - key: RAZORPAY_KEY_SECRET
-        sync: false        # Optional: Razorpay secret
-      - key: VITE_RAZORPAY_KEY_ID
-        sync: false        # Same as RAZORPAY_KEY_ID (exposed to frontend)
+      - key: PAYU_MERCHANT_KEY
+        sync: false        # Your PayU merchant key
+      - key: PAYU_MERCHANT_SALT
+        sync: false        # Your PayU merchant salt
+      - key: PAYU_ENV
+        value: production
+      - key: PAYU_SUCCESS_URL
+        sync: false        # Optional: https://your-app.onrender.com/api/payu/success
+      - key: PAYU_FAILURE_URL
+        sync: false        # Optional: https://your-app.onrender.com/api/payu/failure
+      - key: PAYU_WEBHOOK_URL
+        sync: false        # Optional: https://your-app.onrender.com/api/payu/webhook

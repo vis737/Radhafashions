@@ -238,8 +238,8 @@ export default function AdminSettingsTab({ cms, onUpdateCMS, onLogActivity, addT
         {/* Section 8: PAYMENT CONFIGURATION */}
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm xl:col-span-2">
           <SectionLabel title="Payment Configuration" />
-          <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded mb-4 border border-rose-200">
-            Note: Razorpay gateway is currently disabled. Active modes: COD & UPI Transfer.
+          <div className="p-3 bg-emerald-50 text-emerald-700 text-sm rounded mb-4 border border-emerald-200">
+            PayU secure online payments are active through server-side hash generation. COD and UPI transfer remain available as backup modes.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

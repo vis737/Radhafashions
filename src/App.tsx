@@ -413,7 +413,7 @@ export default function App() {
   };
 
   // Authorize checkout purchase
-  const handlePlaceSecureOrder = (
+  const handlePlaceSecureOrder = async (
     customer: CustomerInfo,
     paymentMethod: string,
     giftWrapped?: boolean,
@@ -424,8 +424,12 @@ export default function App() {
     upiTxnId?: string,
     upiSenderName?: string,
     upiScreenshot?: string,
-    upiNotes?: string
-  ) => {
+    upiNotes?: string,
+    payuTxnId?: string,
+    payuPaymentId?: string,
+    payuHash?: string,
+    payuStatus?: string
+  ): Promise<Order | void> => {
     if (!currentUser) {
       setPendingCheckout(true);
       setShowLoginGate(true);
@@ -438,7 +442,7 @@ export default function App() {
       return;
     }
 
-    const orderNum = 'MR-' + Date.now().toString().substring(6, 12) + '-' + Math.floor(100 + Math.random() * 900);
+    const orderNum = payuTxnId || 'MR-' + Date.now().toString().substring(6, 12) + '-' + Math.floor(100 + Math.random() * 900);
     
     // Call our premium calculator to get mathematically aligned numbers!
     const totals = calculateCartTotals(cartItems, activeCoupon, shippingMethod, giftWrapped, customer.pincode);
@@ -447,6 +451,10 @@ export default function App() {
     const tax = totals.tax;
     const shippingCost = totals.shippingCost;
     const finalTotal = totals.grandTotal;
+
+    const isUpiPayment = paymentMethod === 'UPI QR Payment';
+    const isCodPayment = paymentMethod === 'Cash on Delivery' || paymentMethod === 'COD';
+    const isPayUPayment = paymentMethod.toLowerCase().includes('payu');
 
     const newOrder: Order = {
       id: 'ord-' + Date.now(),
@@ -464,7 +472,8 @@ export default function App() {
       status: 'pending',
       paymentMethod,
       shippingMethod,
-      paymentStatus: paymentMethod === 'UPI QR Payment' ? 'pending' : (paymentMethod === 'COD' ? 'unpaid' : 'paid'),
+      paymentStatus: isUpiPayment || isPayUPayment ? 'pending' : (isCodPayment ? 'unpaid' : 'paid'),
+      codStatus: isCodPayment ? 'pending' : undefined,
       giftWrappingRequested: giftWrapped,
       giftMessage: giftMsg,
       giftWrappingType: giftTheme,
@@ -475,8 +484,35 @@ export default function App() {
       upiTxnId,
       upiSenderName,
       upiScreenshot,
-      upiNotes
+      upiNotes,
+      payuTxnId: isPayUPayment ? orderNum : undefined,
+      payuPaymentId,
+      payuHash,
+      payuStatus
     };
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newOrder,
+          account: {
+            email: currentUser.email,
+            name: currentUser.name
+          }
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Order registration failed');
+      }
+    } catch (err) {
+      console.error('Error saving order to backend database:', err);
+      if (isPayUPayment) {
+        throw err;
+      }
+    }
 
     // Update real physical stock counts in database
     setProducts((prevProducts) =>
@@ -499,34 +535,9 @@ export default function App() {
       sessionStorage.setItem('meris_pending_success_order', JSON.stringify(newOrder));
     } catch { /* storage unavailable */ }
 
-    // Sync newly placed order to backend database
-    fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...newOrder,
-        account: {
-          email: currentUser.email,
-          name: currentUser.name
-        }
-      })
-    })
-    .then(async res => {
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || 'Order registration failed');
-      }
-      return data;
-    })
-    .then(data => {
-      // Log removed for production
-    })
-    .catch(err => {
-      console.error('Error saving order to backend database:', err);
-    });
-
     handleSwapView('ordersuccess');
     handleLogActivity('Order Dispatched', `Received fresh secure order ${orderNum} for total sum of Rs.${finalTotal}`);
+    return newOrder;
   };
 
   // Newsletter form submission - calls backend API
@@ -1787,4 +1798,3 @@ export default function App() {
     </div>
   );
 }
-

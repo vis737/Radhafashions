@@ -1251,6 +1251,7 @@ function parseProductWeightKg(product) {
   return unit === "g" || unit === "gm" || unit === "grams" ? amount / 1e3 : amount;
 }
 var app = (0, import_express.default)();
+app.set("trust proxy", true);
 var PORT = Number(process.env.PORT || 3e3);
 var JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET || JWT_SECRET.length < 32) {
@@ -1382,7 +1383,7 @@ app.use((req, res, next) => {
   const supabaseHttps = supabaseHost ? `https://${supabaseHost}` : "";
   res.setHeader(
     "Content-Security-Policy",
-    `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com ${supabaseHttps}; connect-src 'self' ${supabaseHttps} ${supabaseWs} https://api.razorpay.com; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; object-src 'none'; base-uri 'self';`
+    `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com ${supabaseHttps}; connect-src 'self' ${supabaseHttps} ${supabaseWs}; frame-src 'self'; form-action 'self' https://test.payu.in https://secure.payu.in; object-src 'none'; base-uri 'self';`
   );
   res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   res.setHeader("X-Frame-Options", "DENY");
@@ -1413,9 +1414,16 @@ function sanitizeAiPrompt(value, maxLength = 300) {
   return value.replace(/system\s*:/gi, "").replace(/\bignore\b.*\binstructions\b/gi, "").replace(/<[^>]*>/g, "").replace(/[`{}<>]/g, "").trim().slice(0, maxLength);
 }
 var rateLimitDb = {};
+function getClientIp(req) {
+  const xff = req.headers["x-forwarded-for"];
+  if (typeof xff === "string" && xff.length > 0) {
+    return xff.split(",")[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || "unknown";
+}
 function rateLimiter(limit, windowMs) {
   return (req, res, next) => {
-    const ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+    const ip = getClientIp(req);
     const key = `${req.path}:${ip}`;
     const now = Date.now();
     if (!rateLimitDb[key] || now > rateLimitDb[key].resetTime) {
@@ -1943,7 +1951,7 @@ function writeOrdersDb(orders) {
         status: o.status,
         coupon_code: o.couponCode || null,
         date: o.date,
-        payment_method: o.paymentMethod || "Razorpay",
+        payment_method: o.paymentMethod || "PayU Secure Online Payment",
         payment_status: o.paymentStatus || "unpaid",
         gift_wrapping_requested: o.giftWrappingRequested || false,
         gift_wrapping_type: o.giftWrappingType || null,
@@ -2412,6 +2420,9 @@ async function dispatchOtpEmail(email, code) {
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === "true",
     requireTLS: true,
+    connectionTimeout: 8e3,
+    greetingTimeout: 8e3,
+    socketTimeout: 1e4,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
@@ -2443,7 +2454,7 @@ async function dispatchOtpEmail(email, code) {
     text: `Your Meris verification code is ${code}. It is valid for 5 minutes. If you did not request this code, no action is needed.`
   });
 }
-app.post("/api/send-otp", rateLimiter(5, 15 * 60 * 1e3), async (req, res) => {
+app.post("/api/send-otp", rateLimiter(15, 15 * 60 * 1e3), async (req, res) => {
   try {
     const email = sanitizeEmail(req.body?.email);
     if (!email) {
@@ -2484,30 +2495,37 @@ app.post("/api/send-otp", rateLimiter(5, 15 * 60 * 1e3), async (req, res) => {
     if (emailEnabled) {
       try {
         await dispatchOtpEmail(email, code);
-        console.log(`[Email OTP] Verification code sent to ${email}.`);
-        return res.json({
-          success: true,
-          requiresOtp: true,
-          message: "OTP sent via email.",
-          emailMode: "live",
-          expiresInSec: OTP_EXPIRY_MS / 1e3
-        });
+        console.log(`[Email OTP] Verification passcode email dispatched to ${email}.`);
       } catch (emailError) {
         delete db[email];
         writeOtpDb(db);
-        console.error("[Email OTP] SMTP dispatch failed:", emailError);
-        const detail = emailError?.message || "SMTP server rejected the email request.";
-        return res.status(502).json({ error: `Failed to send email OTP: ${detail}` });
+        console.error("[Email OTP] Background SMTP dispatch failed:", emailError);
+        return res.status(502).json({
+          error: `Failed to send email OTP: ${emailError?.message || "SMTP server rejected the email request."}`
+        });
       }
+      return res.json({
+        success: true,
+        requiresOtp: true,
+        message: `Passcode sent to ${email}. Please check your inbox.`,
+        emailMode: "live",
+        expiresInSec: OTP_EXPIRY_MS / 1e3
+        // No mockOtp returned in live email mode — user must check their inbox!
+      });
+    }
+    if (process.env.NODE_ENV === "production") {
+      delete db[email];
+      writeOtpDb(db);
+      return res.status(503).json({
+        error: "Email OTP is not configured on this deployment. Set ENABLE_REAL_NOTIFICATIONS=true and SMTP credentials in Render."
+      });
     }
     console.log(`[Email OTP] Simulated OTP for ${email}: ${code}`);
     return res.json({
       success: true,
       requiresOtp: true,
-      message: "OTP generated (simulation mode - configure SMTP for real email).",
-      // Only expose the OTP code in the response body during local development.
-      // In production, the user MUST receive it via real email.
-      ...process.env.NODE_ENV !== "production" && { mockOtp: code },
+      message: "SMTP credentials missing in environment. Using simulation mode.",
+      mockOtp: code,
       emailMode: "simulated",
       expiresInSec: OTP_EXPIRY_MS / 1e3
     });
@@ -2558,7 +2576,8 @@ app.post("/api/verify-otp", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => 
     return res.status(500).json({ error: "Failed to verify OTP." });
   }
 });
-app.post("/api/login-customer", rateLimiter(5, 15 * 60 * 1e3), async (req, res) => {
+var inMemoryCustomers = [];
+app.post("/api/login-customer", rateLimiter(20, 15 * 60 * 1e3), async (req, res) => {
   try {
     const email = sanitizeEmail(req.body?.email);
     const password = typeof req.body?.password === "string" ? req.body.password.slice(0, 256) : "";
@@ -2567,10 +2586,20 @@ app.post("/api/login-customer", rateLimiter(5, 15 * 60 * 1e3), async (req, res) 
     }
     let customer = null;
     if (supabase) {
-      const { data, error } = await supabase.from("customers").select("id, email, name, password_hash").eq("email", email.toLowerCase()).single();
-      if (!error && data) {
-        customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
+      try {
+        const { data, error } = await supabase.from("customers").select("id, email, name, password_hash").eq("email", email.toLowerCase()).maybeSingle();
+        if (!error && data) {
+          customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
+          if (!inMemoryCustomers.some((c) => c.email.toLowerCase() === email.toLowerCase())) {
+            inMemoryCustomers.push(customer);
+          }
+        }
+      } catch (err) {
+        console.error("Supabase customer fetch error:", err);
       }
+    }
+    if (!customer) {
+      customer = inMemoryCustomers.find((c) => c.email.toLowerCase() === email.toLowerCase());
     }
     if (!customer) {
       const customersDbPath = import_path.default.join(process.cwd(), "customers_db.json");
@@ -2587,11 +2616,10 @@ app.post("/api/login-customer", rateLimiter(5, 15 * 60 * 1e3), async (req, res) 
       }
     }
     if (!customer) {
-      return res.status(401).json({ error: "Invalid credentials or account not found." });
+      return res.status(401).json({ error: 'No account found with this email. Please check spelling or click "Sign Up".' });
     }
-    const bcrypt2 = await import("bcryptjs");
-    if (!bcrypt2.compareSync(password, customer.passwordHash)) {
-      return res.status(401).json({ error: "Invalid credentials." });
+    if (!import_bcryptjs.default.compareSync(password, customer.passwordHash)) {
+      return res.status(401).json({ error: "Incorrect password. Please try again." });
     }
     res.json({
       success: true,
@@ -2621,8 +2649,16 @@ app.post("/api/register-customer", rateLimiter(5, 60 * 60 * 1e3), async (req, re
     }
     let emailAlreadyExists = false;
     if (supabase) {
-      const { data: existing } = await supabase.from("customers").select("id").eq("email", email.toLowerCase()).single();
-      if (existing) emailAlreadyExists = true;
+      try {
+        const { data: existing } = await supabase.from("customers").select("id").eq("email", email.toLowerCase()).maybeSingle();
+        if (existing) emailAlreadyExists = true;
+      } catch {
+      }
+    }
+    if (!emailAlreadyExists) {
+      if (inMemoryCustomers.some((c) => c.email.toLowerCase() === email.toLowerCase())) {
+        emailAlreadyExists = true;
+      }
     }
     if (!emailAlreadyExists) {
       const customersDbPath2 = import_path.default.join(process.cwd(), "customers_db.json");
@@ -2641,8 +2677,7 @@ app.post("/api/register-customer", rateLimiter(5, 60 * 60 * 1e3), async (req, re
     if (emailAlreadyExists) {
       return res.status(400).json({ error: "An account with this email already exists." });
     }
-    const bcrypt2 = await import("bcryptjs");
-    const passwordHash = bcrypt2.hashSync(password, 12);
+    const passwordHash = import_bcryptjs.default.hashSync(password, 10);
     const newCustomer = {
       id: `cust_${Date.now()}_${Math.floor(Math.random() * 1e3)}`,
       email: email.toLowerCase(),
@@ -2650,6 +2685,7 @@ app.post("/api/register-customer", rateLimiter(5, 60 * 60 * 1e3), async (req, re
       passwordHash,
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
     };
+    inMemoryCustomers.push(newCustomer);
     if (supabase) {
       const { error: insertError } = await supabase.from("customers").insert({
         id: newCustomer.id,
@@ -2659,8 +2695,7 @@ app.post("/api/register-customer", rateLimiter(5, 60 * 60 * 1e3), async (req, re
         created_at: newCustomer.createdAt
       });
       if (insertError) {
-        console.error("Supabase customer insert failed:", insertError);
-        return res.status(500).json({ error: "Failed to create account. Please try again." });
+        console.error("[Registration] Supabase customer insert failed (fallback to memory active):", insertError);
       }
     }
     const customersDbPath = import_path.default.join(process.cwd(), "customers_db.json");
@@ -2797,6 +2832,200 @@ app.get("/api/emails", verifyAdminToken, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch email logs" });
   }
 });
+function getPayUActionUrl() {
+  return process.env.PAYU_ENV === "production" ? "https://secure.payu.in/_payment" : "https://test.payu.in/_payment";
+}
+function getPublicAppUrl(req) {
+  if (isConfigured(process.env.APP_URL)) {
+    return process.env.APP_URL.replace(/\/$/, "");
+  }
+  return `${req.protocol}://${req.get("host")}`;
+}
+function buildPayURequestHashString(params, merchantKey, merchantSalt) {
+  const amount = Number(params.amount).toFixed(2);
+  return [
+    merchantKey.trim(),
+    String(params.txnid || "").trim(),
+    amount,
+    String(params.productinfo || "").trim(),
+    String(params.firstname || "").trim(),
+    String(params.email || "").trim(),
+    String(params.udf1 || ""),
+    String(params.udf2 || ""),
+    String(params.udf3 || ""),
+    String(params.udf4 || ""),
+    String(params.udf5 || ""),
+    "",
+    "",
+    "",
+    "",
+    "",
+    merchantSalt.trim()
+  ].join("|");
+}
+function buildPayUResponseHashString(payload, merchantSalt) {
+  const amount = Number(payload.amount || 0).toFixed(2);
+  return [
+    merchantSalt.trim(),
+    String(payload.status || "").trim(),
+    "",
+    "",
+    "",
+    "",
+    "",
+    String(payload.udf5 || "").trim(),
+    String(payload.udf4 || "").trim(),
+    String(payload.udf3 || "").trim(),
+    String(payload.udf2 || "").trim(),
+    String(payload.udf1 || "").trim(),
+    String(payload.email || "").trim(),
+    String(payload.firstname || "").trim(),
+    String(payload.productinfo || "").trim(),
+    amount,
+    String(payload.txnid || "").trim(),
+    String(payload.key || "").trim()
+  ].join("|");
+}
+function verifyPayUResponse(payload) {
+  const merchantSalt = process.env.PAYU_MERCHANT_SALT;
+  if (!isConfigured(merchantSalt)) {
+    return { verified: false, calculatedHash: "", error: "PayU salt is not configured." };
+  }
+  const calculatedHash = import_crypto.default.createHash("sha512").update(buildPayUResponseHashString(payload, merchantSalt)).digest("hex");
+  const receivedHash = String(payload.hash || "").toLowerCase();
+  return {
+    verified: Boolean(receivedHash) && calculatedHash.toLowerCase() === receivedHash,
+    calculatedHash
+  };
+}
+async function applyPayUResult(payload, fallbackStatus) {
+  const txnid = sanitizeString(payload.txnid || payload.udf1, 60);
+  if (!txnid) return null;
+  const dbOrders = readOrdersDb();
+  const index = dbOrders.findIndex(
+    (o) => String(o.orderNumber || "").toUpperCase() === txnid.toUpperCase() || String(o.payuTxnId || "").toUpperCase() === txnid.toUpperCase()
+  );
+  if (index < 0) return null;
+  const previousPaymentStatus = dbOrders[index].paymentStatus;
+  const gatewayStatus = String(payload.status || fallbackStatus).toLowerCase();
+  const paid = gatewayStatus === "success";
+  dbOrders[index] = {
+    ...dbOrders[index],
+    paymentMethod: "PayU Secure Online Payment",
+    paymentStatus: paid ? "paid" : "rejected",
+    status: paid ? "processing" : dbOrders[index].status,
+    payuTxnId: txnid,
+    payuPaymentId: payload.mihpayid || payload.payuMoneyId || payload.bank_ref_num || dbOrders[index].payuPaymentId,
+    payuHash: payload.hash || dbOrders[index].payuHash,
+    payuStatus: gatewayStatus
+  };
+  writeOrdersDb(dbOrders);
+  if (previousPaymentStatus === "pending" && paid) {
+    try {
+      await sendBookingEmail(dbOrders[index]);
+      await sendSMSAlert(dbOrders[index]);
+    } catch (notifyErr) {
+      console.error("Failed to dispatch PayU confirmation notifications:", notifyErr);
+    }
+  }
+  return dbOrders[index];
+}
+app.post("/api/payu/hash", rateLimiter(20, 15 * 60 * 1e3), (req, res) => {
+  try {
+    const merchantKey = process.env.PAYU_MERCHANT_KEY;
+    const merchantSalt = process.env.PAYU_MERCHANT_SALT;
+    if (!isConfigured(merchantKey) || !isConfigured(merchantSalt)) {
+      return res.status(503).json({
+        error: "PayU is not configured yet. Set PAYU_MERCHANT_KEY and PAYU_MERCHANT_SALT in local .env and in Render Environment before accepting online payments."
+      });
+    }
+    const txnid = sanitizeString(req.body?.txnid, 60);
+    const amount = Number(req.body?.amount);
+    const productinfo = sanitizeString(req.body?.productinfo, 120);
+    const firstname = sanitizeString(req.body?.firstname, 80);
+    const email = sanitizeEmail(req.body?.email);
+    if (!txnid || !Number.isFinite(amount) || amount <= 0 || !productinfo || !firstname || !email) {
+      return res.status(400).json({ error: "Missing required PayU parameters." });
+    }
+    const payload = {
+      txnid,
+      amount: amount.toFixed(2),
+      productinfo,
+      firstname,
+      email,
+      udf1: sanitizeString(req.body?.udf1 || txnid, 60),
+      udf2: sanitizeString(req.body?.udf2 || "", 60),
+      udf3: sanitizeString(req.body?.udf3 || "", 60),
+      udf4: sanitizeString(req.body?.udf4 || "", 60),
+      udf5: sanitizeString(req.body?.udf5 || "", 60)
+    };
+    const hash = import_crypto.default.createHash("sha512").update(buildPayURequestHashString(payload, merchantKey, merchantSalt)).digest("hex");
+    const appUrl = getPublicAppUrl(req);
+    res.json({
+      success: true,
+      key: merchantKey,
+      ...payload,
+      hash,
+      environment: process.env.PAYU_ENV === "production" ? "production" : "test",
+      actionUrl: getPayUActionUrl(),
+      surl: process.env.PAYU_SUCCESS_URL || `${appUrl}/api/payu/success`,
+      furl: process.env.PAYU_FAILURE_URL || `${appUrl}/api/payu/failure`
+    });
+  } catch (err) {
+    console.error("Failed to calculate PayU transaction hash:", err);
+    res.status(500).json({ error: "Failed to calculate PayU transaction hash." });
+  }
+});
+app.post("/api/payu/verify", rateLimiter(30, 15 * 60 * 1e3), async (req, res) => {
+  try {
+    const verification = verifyPayUResponse(req.body || {});
+    const order = verification.verified ? await applyPayUResult(req.body, req.body?.status === "success" ? "success" : "failure") : null;
+    res.json({
+      success: verification.verified,
+      verified: verification.verified,
+      status: req.body?.status,
+      txnid: req.body?.txnid,
+      payuMoneyId: req.body?.mihpayid,
+      order
+    });
+  } catch (err) {
+    console.error("PayU hash verification failed:", err);
+    res.status(500).json({ error: "PayU hash verification failed." });
+  }
+});
+app.all("/api/payu/success", rateLimiter(40, 15 * 60 * 1e3), async (req, res) => {
+  const payload = { ...req.query || {}, ...req.body || {} };
+  const verification = verifyPayUResponse(payload);
+  if (verification.verified) {
+    await applyPayUResult(payload, "success");
+  }
+  const appUrl = getPublicAppUrl(req);
+  const order = encodeURIComponent(String(payload.txnid || payload.udf1 || ""));
+  res.redirect(`${appUrl}/?payu=${verification.verified ? "success" : "verification_failed"}&order=${order}`);
+});
+app.all("/api/payu/failure", rateLimiter(40, 15 * 60 * 1e3), async (req, res) => {
+  const payload = { ...req.query || {}, ...req.body || {} };
+  const verification = verifyPayUResponse(payload);
+  if (verification.verified) {
+    await applyPayUResult(payload, "failure");
+  }
+  const appUrl = getPublicAppUrl(req);
+  const order = encodeURIComponent(String(payload.txnid || payload.udf1 || ""));
+  res.redirect(`${appUrl}/?payu=failure&order=${order}`);
+});
+app.post("/api/payu/webhook", rateLimiter(80, 15 * 60 * 1e3), async (req, res) => {
+  try {
+    const verification = verifyPayUResponse(req.body || {});
+    if (!verification.verified) {
+      return res.status(400).json({ success: false, error: "Invalid PayU hash." });
+    }
+    const order = await applyPayUResult(req.body, req.body?.status === "success" ? "success" : "failure");
+    res.json({ success: true, order });
+  } catch (err) {
+    console.error("PayU webhook handling failed:", err);
+    res.status(500).json({ error: "PayU webhook handling failed." });
+  }
+});
 app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
   try {
     const newOrder = req.body;
@@ -2818,6 +3047,12 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
     newOrder.accountEmail = accountEmail;
     newOrder.accountName = newOrder.account?.name || newOrder.accountName || newOrder.customerInfo?.name || "";
     delete newOrder.account;
+    const isCodOrder = newOrder.paymentMethod?.toLowerCase().includes("cash on delivery") || newOrder.paymentMethod?.toUpperCase() === "COD";
+    if (isCodOrder) {
+      newOrder.paymentMethod = "Cash on Delivery";
+      newOrder.paymentStatus = newOrder.paymentStatus || "unpaid";
+      newOrder.codStatus = newOrder.codStatus || "pending";
+    }
     const dbOrders = readOrdersDb();
     const existingIndex = dbOrders.findIndex(
       (o) => o.orderNumber.toUpperCase() === newOrder.orderNumber.toUpperCase()
@@ -2828,9 +3063,10 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
       dbOrders.unshift(newOrder);
     }
     writeOrdersDb(dbOrders);
-    console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber}`);
+    console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
     const isUpiOrder = newOrder.paymentMethod?.toLowerCase().includes("upi");
-    if (!isUpiOrder) {
+    const isPendingPayUOrder = newOrder.paymentMethod?.toLowerCase().includes("payu") && newOrder.paymentStatus === "pending";
+    if (!isUpiOrder && !isPendingPayUOrder) {
       try {
         await sendBookingEmail(newOrder);
       } catch (emailErr) {
@@ -2842,7 +3078,7 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
         console.error("Failed to dispatch order booking confirmation SMS:", smsErr);
       }
     } else {
-      console.log(`[Order Service] UPI Order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until administrative approval.`);
+      console.log(`[Order Service] Pending payment order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until payment approval.`);
     }
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {
@@ -2852,16 +3088,18 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
 app.post("/api/orders/:orderNumber/status", verifyAdminToken, async (req, res) => {
   try {
     const orderNum = req.params.orderNumber.trim().toUpperCase();
-    const { status } = req.body;
-    if (!status) {
-      return res.status(400).json({ error: "Status field is required." });
+    const { status, codStatus, paymentStatus } = req.body;
+    if (!status && !codStatus && !paymentStatus) {
+      return res.status(400).json({ error: "Status, COD status, or payment status is required." });
     }
     const dbOrders = readOrdersDb();
     const index = dbOrders.findIndex(
       (o) => o.orderNumber.toUpperCase() === orderNum || o.id.toUpperCase() === orderNum
     );
     if (index >= 0) {
-      dbOrders[index].status = status;
+      if (status) dbOrders[index].status = status;
+      if (codStatus) dbOrders[index].codStatus = codStatus;
+      if (paymentStatus) dbOrders[index].paymentStatus = paymentStatus;
       writeOrdersDb(dbOrders);
       res.json({ success: true, order: dbOrders[index] });
     } else {
