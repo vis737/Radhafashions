@@ -338,8 +338,9 @@ app.use((req, res, next) => {
 // Custom secure CORS Origin Handler
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin === ALLOWED_ORIGIN) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  // Allow if origin matches APP_URL, or if no origin (same-domain / server-to-server request)
+  if (!origin || origin === ALLOWED_ORIGIN) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -1983,19 +1984,36 @@ app.post('/api/login-customer', rateLimiter(5, 15 * 60 * 1000), async (req, res)
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    const customersDbPath = path.join(process.cwd(), 'customers_db.json');
-    if (!fs.existsSync(customersDbPath)) {
-      return res.status(401).json({ error: 'Invalid credentials or account not found.' });
+    let customer: any = null;
+
+    // Primary: Supabase customers table
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, email, name, password_hash')
+        .eq('email', email.toLowerCase())
+        .single();
+      if (!error && data) {
+        customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
+      }
     }
 
-    let customers = [];
-    try {
-      customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
-    } catch (err) {
-      return res.status(500).json({ error: 'Database error.' });
+    // Fallback: local JSON file (for local dev without Supabase)
+    if (!customer) {
+      const customersDbPath = path.join(process.cwd(), 'customers_db.json');
+      if (fs.existsSync(customersDbPath)) {
+        try {
+          const customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
+          const found = customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase());
+          if (found) {
+            customer = found;
+          }
+        } catch (err) {
+          console.error('Error reading local customers db:', err);
+        }
+      }
     }
 
-    const customer = customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase());
     if (!customer) {
       return res.status(401).json({ error: 'Invalid credentials or account not found.' });
     }
@@ -2036,19 +2054,35 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
       return res.status(400).json({ error: validation.errors[0] || 'Password does not meet security criteria.' });
     }
 
-    // Load or create customers database
-    const customersDbPath = path.join(process.cwd(), 'customers_db.json');
-    let customers = [];
-    if (fs.existsSync(customersDbPath)) {
-      try {
-        customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
-      } catch (err) {
-        console.error('Error reading customers db:', err);
+
+    // Check if email already registered (Supabase first, then local JSON)
+    let emailAlreadyExists = false;
+    if (supabase) {
+      const { data: existing } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
+      if (existing) emailAlreadyExists = true;
+    }
+
+    if (!emailAlreadyExists) {
+      // Fallback: local JSON file check
+      const customersDbPath = path.join(process.cwd(), 'customers_db.json');
+      let customers: any[] = [];
+      if (fs.existsSync(customersDbPath)) {
+        try {
+          customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
+        } catch (err) {
+          console.error('Error reading customers db:', err);
+        }
+      }
+      if (customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase())) {
+        emailAlreadyExists = true;
       }
     }
 
-    // Check if email already registered
-    if (customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase())) {
+    if (emailAlreadyExists) {
       return res.status(400).json({ error: 'An account with this email already exists.' });
     }
 
@@ -2064,8 +2098,36 @@ app.post('/api/register-customer', rateLimiter(5, 60 * 60 * 1000), async (req, r
       passwordHash,
       createdAt: new Date().toISOString()
     };
-    customers.push(newCustomer);
-    fs.writeFileSync(customersDbPath, JSON.stringify(customers, null, 2));
+
+    // Save to Supabase (primary) if available
+    if (supabase) {
+      const { error: insertError } = await supabase.from('customers').insert({
+        id: newCustomer.id,
+        email: newCustomer.email,
+        name: newCustomer.name,
+        password_hash: newCustomer.passwordHash,
+        created_at: newCustomer.createdAt
+      });
+      if (insertError) {
+        console.error('Supabase customer insert failed:', insertError);
+        return res.status(500).json({ error: 'Failed to create account. Please try again.' });
+      }
+    }
+
+    // Also save to local JSON fallback (for dev or if Supabase not configured)
+    const customersDbPath = path.join(process.cwd(), 'customers_db.json');
+    let localCustomers: any[] = [];
+    if (fs.existsSync(customersDbPath)) {
+      try {
+        localCustomers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
+      } catch { /* ignore */ }
+    }
+    localCustomers.push(newCustomer);
+    try {
+      fs.writeFileSync(customersDbPath, JSON.stringify(localCustomers, null, 2));
+    } catch (err) {
+      console.error('Local customers_db.json write failed (non-fatal on Render):', err);
+    }
 
 
     // Build the welcome email
@@ -2407,7 +2469,7 @@ app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), (req, res) => {
       res.cookie('admin_session', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 2 * 60 * 60 * 1000 // 2 hours
       });
 
@@ -2427,7 +2489,7 @@ app.post('/api/admin/logout', (req, res) => {
   res.clearCookie('admin_session', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    sameSite: 'lax'
   });
   res.json({ success: true, message: 'Admin session cleared.' });
 });
