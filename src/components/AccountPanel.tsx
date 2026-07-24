@@ -185,20 +185,10 @@ export default function AccountPanel({
     const now = Date.now();
     if (lockoutTime && now < lockoutTime) {
       const remaining = Math.round((lockoutTime - now) / 1000);
-      setRateLimitMessage(`Security Security lockout active. Too many attempts. Try again in ${remaining}s.`);
+      setRateLimitMessage(`Security lockout active. Too many attempts. Try again in ${remaining}s.`);
       return false;
     }
-    
-    setSubmitAttempts(prev => {
-      const next = prev + 1;
-      if (next >= 4) {
-        setLockoutTime(Date.now() + 25000); // 25s lockout
-        setRateLimitMessage("Security Security lockout active. Too many attempts. Try again in 25 seconds.");
-        return 0;
-      }
-      setRateLimitMessage('');
-      return next;
-    });
+    setRateLimitMessage('');
     return true;
   };
 
@@ -556,6 +546,12 @@ export default function AccountPanel({
 
             {authMethod === 'password' || isSignUp ? (
               <form onSubmit={handleLoginSubmit} className="space-y-4">
+                {otpError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl text-xs font-semibold leading-relaxed flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{otpError}</span>
+                  </div>
+                )}
                 {isSignUp && (
                   <div>
                     <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Your Name</label>
