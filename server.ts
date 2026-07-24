@@ -241,6 +241,7 @@ function parseProductWeightKg(product: any): number | undefined {
 }
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = Number(process.env.PORT || 3000);
 
 // Fail fast if JWT_SECRET is missing or uses the hardcoded fallback.
@@ -470,16 +471,24 @@ function sanitizeAiPrompt(value: unknown, maxLength = 300): string {
     .slice(0, maxLength);
 }
 
-// Memory Rate Limiter implementation
+// Memory Rate Limiter implementation with proper proxy IP resolution
 interface RateLimitInfo {
   count: number;
   resetTime: number;
 }
 const rateLimitDb: Record<string, RateLimitInfo> = {};
 
+function getClientIp(req: any): string {
+  const xff = req.headers['x-forwarded-for'];
+  if (typeof xff === 'string' && xff.length > 0) {
+    return xff.split(',')[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
 function rateLimiter(limit: number, windowMs: number) {
   return (req: any, res: any, next: any) => {
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const ip = getClientIp(req);
     const key = `${req.path}:${ip}`;
     const now = Date.now();
     
@@ -1795,6 +1804,9 @@ async function dispatchOtpEmail(email: string, code: string): Promise<void> {
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === 'true',
     requireTLS: true,
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -1828,7 +1840,7 @@ async function dispatchOtpEmail(email: string, code: string): Promise<void> {
   });
 }
 
-app.post('/api/send-otp', rateLimiter(5, 15 * 60 * 1000), async (req, res) => {
+app.post('/api/send-otp', rateLimiter(15, 15 * 60 * 1000), async (req, res) => {
   try {
     const email = sanitizeEmail(req.body?.email);
     if (!email) {
@@ -1962,7 +1974,7 @@ app.post('/api/verify-otp', rateLimiter(10, 15 * 60 * 1000), async (req, res) =>
   }
 });
 
-app.post('/api/login-customer', rateLimiter(5, 15 * 60 * 1000), async (req, res) => {
+app.post('/api/login-customer', rateLimiter(20, 15 * 60 * 1000), async (req, res) => {
   try {
     const email = sanitizeEmail(req.body?.email);
     const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 256) : '';

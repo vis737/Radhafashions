@@ -151,6 +151,9 @@ export default function AccountPanel({
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) {
+          if (res.status === 429 && data.retryAfterSec) {
+            setLockoutTime(Date.now() + data.retryAfterSec * 1000);
+          }
           throw new Error(data?.error || 'Failed to dispatch email OTP');
         }
         setAuthStep('otp');
