@@ -248,6 +248,7 @@ function parseProductWeightKg(product: any): number | undefined {
 
 const app = express();
 app.set('trust proxy', true);
+app.get('/health', (req, res) => res.status(200).send('OK'));
 const PORT = Number(process.env.PORT || 3000);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'a3f9d2c1e8b74605af319de27c64f8a1b952e0d47618c3f290ab5e86d41379fc';

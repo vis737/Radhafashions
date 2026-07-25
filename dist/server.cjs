@@ -1265,6 +1265,7 @@ function parseProductWeightKg(product) {
 }
 var app = (0, import_express.default)();
 app.set("trust proxy", true);
+app.get("/health", (req, res) => res.status(200).send("OK"));
 var PORT = Number(process.env.PORT || 3e3);
 var JWT_SECRET = process.env.JWT_SECRET || "a3f9d2c1e8b74605af319de27c64f8a1b952e0d47618c3f290ab5e86d41379fc";
 if (!process.env.JWT_SECRET) {
