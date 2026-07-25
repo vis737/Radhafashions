@@ -1,40 +1,41 @@
 -- =============================================================================
--- MERIS E-SHOP — Full Supabase Database Migration
--- Run this ONCE in your Supabase project SQL editor:
--- https://supabase.com/dashboard/project/<YOUR_PROJECT_ID>/sql/new
+-- MERIS E-SHOP — Complete & Safe Supabase Database Migration
+-- Paste and Run this in your Supabase SQL Editor:
+-- https://supabase.com/dashboard/project/zzwxnnzzwxsdvggpumze/sql/new
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
--- 1. PRODUCTS
+-- 1. PRODUCTS TABLE & COLUMNS
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE IF NOT EXISTS public.products (
   id TEXT PRIMARY KEY,
-  sku TEXT,
-  name TEXT NOT NULL,
-  category TEXT,
-  category_slug TEXT,
-  price NUMERIC,
-  discount_price NUMERIC,
-  stock INTEGER DEFAULT 0,
-  rating NUMERIC DEFAULT 0,
-  rating_count INTEGER DEFAULT 0,
-  images JSONB DEFAULT '[]',
-  short_description TEXT,
-  description TEXT,
-  specifications JSONB DEFAULT '{}',
-  reviews JSONB DEFAULT '[]',
-  is_new BOOLEAN DEFAULT false,
-  is_bestseller BOOLEAN DEFAULT false,
-  brand TEXT,
-  availability TEXT,
-  vendor_id TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  name TEXT NOT NULL
 );
 
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category_slug TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS price NUMERIC;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS discount_price NUMERIC;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS rating NUMERIC DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS short_description TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS specifications JSONB DEFAULT '{}';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS reviews JSONB DEFAULT '[]';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS is_new BOOLEAN DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS is_bestseller BOOLEAN DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS brand TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS availability TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS vendor_id TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+
 -- ---------------------------------------------------------------------------
--- 2. COUPONS
+-- 2. COUPONS TABLE & COLUMNS
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS coupons (
+CREATE TABLE IF NOT EXISTS public.coupons (
   code TEXT PRIMARY KEY,
   type TEXT,
   value NUMERIC,
@@ -47,9 +48,9 @@ CREATE TABLE IF NOT EXISTS coupons (
 );
 
 -- ---------------------------------------------------------------------------
--- 3. CAMPAIGNS
+-- 3. CAMPAIGNS TABLE & COLUMNS
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS campaigns (
+CREATE TABLE IF NOT EXISTS public.campaigns (
   id TEXT PRIMARY KEY,
   image_url TEXT,
   title TEXT,
@@ -60,25 +61,25 @@ CREATE TABLE IF NOT EXISTS campaigns (
 );
 
 -- ---------------------------------------------------------------------------
--- 4. CMS CONFIG
+-- 4. CMS CONFIG TABLE
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS cms_config (
+CREATE TABLE IF NOT EXISTS public.cms_config (
   key TEXT PRIMARY KEY,
   value JSONB
 );
 
 -- ---------------------------------------------------------------------------
--- 5. ADMIN CONFIG
+-- 5. ADMIN CONFIG TABLE
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS admin_config (
+CREATE TABLE IF NOT EXISTS public.admin_config (
   username TEXT PRIMARY KEY,
   password TEXT NOT NULL
 );
 
 -- ---------------------------------------------------------------------------
--- 6. ORDERS
+-- 6. ORDERS TABLE & INDEXES
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE IF NOT EXISTS public.orders (
   id TEXT PRIMARY KEY,
   order_number TEXT UNIQUE,
   customer_info JSONB DEFAULT '{}',
@@ -108,25 +109,25 @@ CREATE TABLE IF NOT EXISTS orders (
   account_name TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_orders_account_email ON orders(account_email);
-CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number);
+CREATE INDEX IF NOT EXISTS idx_orders_account_email ON public.orders(account_email);
+CREATE INDEX IF NOT EXISTS idx_orders_order_number ON public.orders(order_number);
 
 -- ---------------------------------------------------------------------------
--- 7. CUSTOMERS
+-- 7. CUSTOMERS TABLE & INDEXES
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS customers (
+CREATE TABLE IF NOT EXISTS public.customers (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+CREATE INDEX IF NOT EXISTS idx_customers_email ON public.customers(email);
 
 -- ---------------------------------------------------------------------------
--- 8. EMAIL LOGS
+-- 8. EMAIL LOGS TABLE
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS email_logs (
+CREATE TABLE IF NOT EXISTS public.email_logs (
   id TEXT PRIMARY KEY,
   recipient TEXT NOT NULL,
   subject TEXT,
@@ -137,57 +138,61 @@ CREATE TABLE IF NOT EXISTS email_logs (
   date_text TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_email_logs_recipient ON email_logs(recipient);
+CREATE INDEX IF NOT EXISTS idx_email_logs_recipient ON public.email_logs(recipient);
 
 -- ---------------------------------------------------------------------------
--- 9. NEWSLETTER SUBSCRIPTIONS
+-- 9. NEWSLETTER SUBSCRIPTIONS TABLE
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS newsletter (
+CREATE TABLE IF NOT EXISTS public.newsletter (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   subscribed_at TIMESTAMPTZ DEFAULT NOW(),
   status TEXT DEFAULT 'active',
   source TEXT DEFAULT 'footer_newsletter'
 );
-CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter(email);
+CREATE INDEX IF NOT EXISTS idx_newsletter_email ON public.newsletter(email);
 
 -- ---------------------------------------------------------------------------
--- Row Level Security (RLS)
+-- SAFE ROW LEVEL SECURITY (RLS) & PUBLIC READ POLICIES
 -- ---------------------------------------------------------------------------
--- Enable RLS on all tables. The service-role key bypasses RLS automatically.
--- This prevents the anon key from accessing sensitive data.
-
-ALTER TABLE products        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE coupons         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaigns       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cms_config      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admin_config    ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customers       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE email_logs      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE newsletter      ENABLE ROW LEVEL SECURITY;
-
--- Public read-only policies for catalog data (products, campaigns are public)
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Public read products'
-  ) THEN
-    CREATE POLICY "Public read products" ON products FOR SELECT USING (true);
+  -- 1. Enable RLS safely if tables exist
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'products') THEN
+    ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'coupons') THEN
+    ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'campaigns') THEN
+    ALTER TABLE public.campaigns ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'cms_config') THEN
+    ALTER TABLE public.cms_config ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'admin_config') THEN
+    ALTER TABLE public.admin_config ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'orders') THEN
+    ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'customers') THEN
+    ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'email_logs') THEN
+    ALTER TABLE public.email_logs ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'newsletter') THEN
+    ALTER TABLE public.newsletter ENABLE ROW LEVEL SECURITY;
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'campaigns' AND policyname = 'Public read campaigns'
-  ) THEN
-    CREATE POLICY "Public read campaigns" ON campaigns FOR SELECT USING (true);
+  -- 2. Create public policies if missing
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Public read products') THEN
+    CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'campaigns' AND policyname = 'Public read campaigns') THEN
+    CREATE POLICY "Public read campaigns" ON public.campaigns FOR SELECT USING (true);
   END IF;
 END
 $$;
-
--- Service role handles all write operations via the server (bypasses RLS automatically).
--- No additional policies needed for the service-role key.
-
-
--- =============================================================================
--- DONE. Run npm run build then deploy to Render.
--- =============================================================================
