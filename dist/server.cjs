@@ -114,7 +114,6 @@ module.exports = __toCommonJS(server_exports);
 var import_express = __toESM(require("express"), 1);
 var import_path = __toESM(require("path"), 1);
 var import_dns = __toESM(require("dns"), 1);
-var import_vite = require("vite");
 var import_genai = require("@google/genai");
 var import_dotenv = __toESM(require("dotenv"), 1);
 var import_fs = __toESM(require("fs"), 1);
@@ -1233,13 +1232,15 @@ var CMS_FILE_PATH = import_path.default.join(process.cwd(), "cms_db.json");
 function readLocalJsonDb(filePath, defaultData) {
   try {
     if (!import_fs.default.existsSync(filePath)) {
-      import_fs.default.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+      try {
+        import_fs.default.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+      } catch {
+      }
       return defaultData;
     }
     const data = import_fs.default.readFileSync(filePath, "utf-8");
     return JSON.parse(data || JSON.stringify(defaultData));
   } catch (error) {
-    console.error(`Error reading database from ${filePath}:`, error);
     return defaultData;
   }
 }
@@ -3478,7 +3479,8 @@ app.use((err, req, res, next) => {
 if (!process.env.VERCEL) {
   async function initializeServer() {
     if (process.env.NODE_ENV !== "production") {
-      const vite = await (0, import_vite.createServer)({
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa"
       });

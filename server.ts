@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import dns from 'dns';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -211,13 +210,14 @@ const CMS_FILE_PATH = path.join(process.cwd(), 'cms_db.json');
 function readLocalJsonDb(filePath: string, defaultData: any) {
   try {
     if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+      } catch { /* ignore read-only filesystem on serverless */ }
       return defaultData;
     }
     const data = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(data || JSON.stringify(defaultData));
   } catch (error) {
-    console.error(`Error reading database from ${filePath}:`, error);
     return defaultData;
   }
 }
@@ -3057,6 +3057,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 if (!process.env.VERCEL) {
   async function initializeServer() {
     if (process.env.NODE_ENV !== 'production') {
+      const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: 'spa',
