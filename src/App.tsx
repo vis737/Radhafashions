@@ -236,6 +236,8 @@ export default function App() {
     });
   }, [cartItems, wishlistIds, orders, recentlyViewedIds, currentUser]);
 
+  const isCatalogLoadedRef = useRef(false);
+
   // Fetch centralized catalog data (products, coupons, campaigns, cms config) from server database on mount
   useEffect(() => {
     const loadCatalogFromBackend = async () => {
@@ -250,15 +252,21 @@ export default function App() {
         
         if (prodsRes && prodsRes.ok) {
           const prods = await prodsRes.json();
-          setProducts(prods);
+          if (Array.isArray(prods) && prods.length > 0) {
+            setProducts(prods);
+          }
         }
         if (coupsRes && coupsRes.ok) {
           const coups = await coupsRes.json();
-          setCoupons(coups);
+          if (Array.isArray(coups) && coups.length > 0) {
+            setCoupons(coups);
+          }
         }
         if (campsRes && campsRes.ok) {
           const camps = await campsRes.json();
-          setCampaigns(camps);
+          if (Array.isArray(camps) && camps.length > 0) {
+            setCampaigns(camps);
+          }
         }
         if (cmsRes && cmsRes.ok) {
           const cmsData = await cmsRes.json();
@@ -272,6 +280,8 @@ export default function App() {
         }
       } catch (err) {
         console.error('Failed to fetch catalog from backend:', err);
+      } finally {
+        isCatalogLoadedRef.current = true;
       }
     };
     loadCatalogFromBackend();
@@ -281,27 +291,38 @@ export default function App() {
   useEffect(() => {
     saveStoredDb({ products, coupons, campaigns, cms });
     
+    if (!isCatalogLoadedRef.current) return;
+
     const syncCatalogToBackend = async () => {
       try {
+        const adminToken = localStorage.getItem('adminToken') || '';
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (adminToken) {
+          headers['Authorization'] = `Bearer ${adminToken}`;
+        }
         await Promise.all([
           fetch('/api/catalog/products', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
+            credentials: 'include',
             body: JSON.stringify(products)
           }),
           fetch('/api/catalog/coupons', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
+            credentials: 'include',
             body: JSON.stringify(coupons)
           }),
           fetch('/api/catalog/campaigns', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
+            credentials: 'include',
             body: JSON.stringify(campaigns)
           }),
           fetch('/api/catalog/cms', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
+            credentials: 'include',
             body: JSON.stringify(cms)
           })
         ]);
@@ -1398,11 +1419,39 @@ export default function App() {
                 cms={cms}
                 orders={orders}
                 logs={activityLogs}
-                onAddProduct={(added) => setProducts((prev) => [added, ...prev])}
-                onEditProduct={(edited) =>
-                  setProducts((prev) => prev.map((p) => (p.id === edited.id ? edited : p)))
-                }
-                onDeleteProduct={(delId) => setProducts((prev) => prev.filter((p) => p.id !== delId))}
+                onAddProduct={(added) => {
+                  setProducts((prev) => {
+                    const updated = [added, ...prev.filter(p => p.id !== added.id)];
+                    fetch('/api/catalog/products', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(updated)
+                    }).catch(err => console.error('Product add sync error:', err));
+                    return updated;
+                  });
+                }}
+                onEditProduct={(edited) => {
+                  setProducts((prev) => {
+                    const updated = prev.map((p) => (p.id === edited.id ? edited : p));
+                    fetch('/api/catalog/products', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(updated)
+                    }).catch(err => console.error('Product edit sync error:', err));
+                    return updated;
+                  });
+                }}
+                onDeleteProduct={(delId) => {
+                  setProducts((prev) => {
+                    const updated = prev.filter((p) => p.id !== delId);
+                    fetch('/api/catalog/products', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(updated)
+                    }).catch(err => console.error('Product delete sync error:', err));
+                    return updated;
+                  });
+                }}
                 onAddCoupon={(c) => setCoupons((prev) => [c, ...prev])}
                 onDeleteCoupon={async (codeStr) => {
                   setCoupons((prev) => prev.filter((c) => c.code !== codeStr));
