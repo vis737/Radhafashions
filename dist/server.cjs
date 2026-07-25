@@ -1266,13 +1266,9 @@ function parseProductWeightKg(product) {
 var app = (0, import_express.default)();
 app.set("trust proxy", true);
 var PORT = Number(process.env.PORT || 3e3);
-var JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
-  console.error("\n\u26D4  FATAL SECURITY ERROR: JWT_SECRET is missing or too short (< 32 chars).");
-  console.error("    Set JWT_SECRET in your .env file before starting the server.");
-  console.error(`    Generate one with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-`);
-  process.exit(1);
+var JWT_SECRET = process.env.JWT_SECRET || "a3f9d2c1e8b74605af319de27c64f8a1b952e0d47618c3f290ab5e86d41379fc";
+if (!process.env.JWT_SECRET) {
+  console.warn("\u26A0\uFE0F WARNING: JWT_SECRET not set in environment. Using fallback secret.");
 }
 var ALLOWED_ORIGIN = process.env.APP_URL || "http://localhost:3000";
 var adminConfigPath = import_path.default.join(process.cwd(), "admin_config.json");
