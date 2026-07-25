@@ -125,7 +125,8 @@ export default function AdminProductsTab({
   };
 
   const openAddModal = () => {
-    setEditingProduct({ ...INITIAL_PRODUCT_STATE, id: crypto.randomUUID() });
+    const safeId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+    setEditingProduct({ ...INITIAL_PRODUCT_STATE, id: safeId });
     setIsModalOpen(true);
   };
 
@@ -135,7 +136,8 @@ export default function AdminProductsTab({
   };
 
   const handleDuplicate = (product: Product) => {
-    const duplicated = { ...product, id: crypto.randomUUID(), name: `${product.name} (Copy)`, sku: `${product.sku}-COPY` };
+    const safeId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+    const duplicated = { ...product, id: safeId, name: `${product.name} (Copy)`, sku: `${product.sku}-COPY` };
     onAddProduct(duplicated as Product);
     onLogActivity('Duplicate Product', `Duplicated ${product.name}`);
     addToast('Product duplicated successfully', 'success');
@@ -513,17 +515,47 @@ export default function AdminProductsTab({
                 </button>
                 <button
                   onClick={() => {
-                    if (!editingProduct.name || !editingProduct.sku || editingProduct.price === undefined) {
+                    if (!editingProduct?.name || !editingProduct?.sku || editingProduct?.price === undefined) {
                       addToast('Please fill all required fields (Name, SKU, Price)', 'error');
                       return;
                     }
-                    if (products.find(p => p.id === editingProduct.id)) {
-                      onEditProduct(editingProduct as Product);
-                      onLogActivity('Edit Product', `Updated product ${editingProduct.name}`);
+                    const targetId = editingProduct.id || ('prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9));
+                    const targetCategorySlug = editingProduct.categorySlug || editingProduct.category?.toLowerCase().replace(/\s+/g, '-') || 'luxury-goods';
+                    const targetImages = Array.isArray(editingProduct.images) && editingProduct.images.length > 0
+                      ? editingProduct.images
+                      : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'];
+
+                    const fullProduct: Product = {
+                      id: String(targetId),
+                      sku: String(editingProduct.sku || `SKU-${Date.now()}`),
+                      name: String(editingProduct.name || 'New Product'),
+                      category: String(editingProduct.category || 'Luxury Goods'),
+                      categorySlug: String(targetCategorySlug),
+                      price: Number(editingProduct.price) || 0,
+                      discountPrice: editingProduct.discountPrice ? Number(editingProduct.discountPrice) : null,
+                      stock: Number(editingProduct.stock) || 0,
+                      rating: editingProduct.rating || 5,
+                      ratingCount: editingProduct.ratingCount || 1,
+                      images: targetImages,
+                      shortDescription: String(editingProduct.shortDescription || editingProduct.name || ''),
+                      description: String(editingProduct.description || editingProduct.name || ''),
+                      specifications: editingProduct.specifications || {},
+                      reviews: editingProduct.reviews || [],
+                      isNew: Boolean(editingProduct.isNew),
+                      isBestseller: Boolean(editingProduct.isBestseller),
+                      brand: String(editingProduct.brand || 'MERIS'),
+                      availability: editingProduct.availability || 'in-stock',
+                      weightKg: editingProduct.weightKg || 0.5
+                    };
+
+                    const exists = products.some(p => p.id === fullProduct.id);
+                    if (exists) {
+                      onEditProduct(fullProduct);
+                      onLogActivity('Edit Product', `Updated product ${fullProduct.name}`);
                       addToast('Product updated successfully', 'success');
                     } else {
-                      onAddProduct(editingProduct as Product);
-                      onLogActivity('Add Product', `Added product ${editingProduct.name}`);
+                      onAddProduct(fullProduct);
+                      onLogActivity('Add Product', `Added product ${fullProduct.name}`);
                       addToast('Product added successfully', 'success');
                     }
                     setIsModalOpen(false);
