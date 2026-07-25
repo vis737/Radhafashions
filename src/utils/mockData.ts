@@ -961,49 +961,67 @@ export const DEFAULT_CMS: CMSConfig = {
   termsConditions: 'All prices listed on MERIS E-SHOP are inclusive of standard 18% GST rules. Returns have a 7-day windows and of course must remain spotless inside initial package cases.'
 };
 
+export function sanitizeProduct(p: any): Product {
+  const safeImages = Array.isArray(p?.images) && p.images.length > 0 
+    ? p.images.filter((img: any) => typeof img === 'string' && img.trim().length > 0)
+    : typeof p?.images === 'string' && p.images.trim().length > 0 
+      ? [p.images.trim()] 
+      : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'];
+
+  const defaultImg = safeImages.length > 0 ? safeImages : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'];
+
+  return {
+    id: String(p?.id || `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`),
+    sku: String(p?.sku || `SKU-${Date.now()}`),
+    name: String(p?.name || 'Untitled Product'),
+    category: String(p?.category || 'Luxury Goods'),
+    categorySlug: String(p?.categorySlug || p?.category_slug || p?.category?.toLowerCase().replace(/\s+/g, '-') || 'luxury-goods'),
+    price: typeof p?.price === 'number' && !isNaN(p.price) ? p.price : Number(p?.price) || 999,
+    discountPrice: p?.discountPrice || p?.discount_price ? (typeof (p.discountPrice || p.discount_price) === 'number' ? (p.discountPrice || p.discount_price) : Number(p.discountPrice || p.discount_price) || null) : null,
+    stock: typeof p?.stock === 'number' && !isNaN(p.stock) ? p.stock : Number(p?.stock) || 10,
+    rating: typeof p?.rating === 'number' && !isNaN(p.rating) ? p.rating : Number(p?.rating) || 5,
+    ratingCount: typeof p?.ratingCount === 'number' && !isNaN(p.ratingCount) ? p.ratingCount : Number(p?.ratingCount) || 1,
+    images: defaultImg,
+    shortDescription: String(p?.shortDescription || p?.short_description || p?.name || ''),
+    description: String(p?.description || p?.name || ''),
+    specifications: typeof p?.specifications === 'object' && p?.specifications !== null ? p.specifications : {},
+    reviews: Array.isArray(p?.reviews) ? p.reviews : [],
+    isNew: Boolean(p?.isNew || p?.is_new),
+    isBestseller: Boolean(p?.isBestseller || p?.is_bestseller),
+    brand: String(p?.brand || 'MERIS'),
+    availability: p?.availability || 'in-stock'
+  };
+}
+
 // Database local storage management
 export const getStoredDb = () => {
-  if (typeof window === 'undefined') return { products: INITIAL_PRODUCTS, coupons: INITIAL_COUPONS, campaigns: INITIAL_CAMPAIGNS, cms: DEFAULT_CMS };
+  if (typeof window === 'undefined') return { products: INITIAL_PRODUCTS.map(sanitizeProduct), coupons: INITIAL_COUPONS, campaigns: INITIAL_CAMPAIGNS, cms: DEFAULT_CMS };
   try {
     const productsJson = localStorage.getItem('meris_products');
     const couponsJson = localStorage.getItem('meris_coupons');
     const campaignsJson = localStorage.getItem('meris_campaigns');
     const cmsJson = localStorage.getItem('meris_cms');
 
-    let mergedProducts = INITIAL_PRODUCTS;
+    let mergedProducts = INITIAL_PRODUCTS.map(sanitizeProduct);
     if (productsJson) {
       try {
-        const storedProducts: Product[] = JSON.parse(productsJson);
-        const storedMap = new Map(storedProducts.map(p => [p.id, p]));
-        
-        mergedProducts = INITIAL_PRODUCTS.map(initialProduct => {
-          const storedProduct = storedMap.get(initialProduct.id);
-          if (storedProduct) {
-            // Keep user-editable/dynamic states like stock, rating, and reviews, 
-            // but update high-quality images and description configurations to keep catalog highly professional.
-            return {
-              ...storedProduct,
-              name: initialProduct.name,
-              category: initialProduct.category,
-              categorySlug: initialProduct.categorySlug,
-              images: initialProduct.images,
-              price: initialProduct.price,
-              discountPrice: initialProduct.discountPrice,
-              shortDescription: initialProduct.shortDescription,
-              description: initialProduct.description,
-              specifications: initialProduct.specifications,
-              brand: initialProduct.brand,
-              isNew: initialProduct.isNew,
-              isBestseller: initialProduct.isBestseller,
-            };
-          }
-          return initialProduct;
-        });
+        const storedProducts: any[] = JSON.parse(productsJson);
+        if (Array.isArray(storedProducts) && storedProducts.length > 0) {
+          const storedMap = new Map(storedProducts.map(p => [String(p.id), p]));
+          
+          mergedProducts = INITIAL_PRODUCTS.map(initialProduct => {
+            const storedProduct = storedMap.get(String(initialProduct.id));
+            if (storedProduct) {
+              return sanitizeProduct({ ...initialProduct, ...storedProduct });
+            }
+            return sanitizeProduct(initialProduct);
+          });
 
-        // If there are custom products added via Admin Panel that are NOT in initial catalog, keep them too
-        const initialIds = new Set(INITIAL_PRODUCTS.map(p => p.id));
-        const customProducts = storedProducts.filter(p => !initialIds.has(p.id));
-        mergedProducts = [...mergedProducts, ...customProducts];
+          // Preserve custom products added via Admin Panel
+          const initialIds = new Set(INITIAL_PRODUCTS.map(p => String(p.id)));
+          const customProducts = storedProducts.filter(p => !initialIds.has(String(p.id))).map(sanitizeProduct);
+          mergedProducts = [...mergedProducts, ...customProducts];
+        }
       } catch (parseErr) {
         console.error('Error parsing stored products, falling back to INITIAL_PRODUCTS', parseErr);
       }
@@ -1017,19 +1035,26 @@ export const getStoredDb = () => {
     };
   } catch (e) {
     console.error('Error reading localStorage DB, fallback to defaults', e);
-    return { products: INITIAL_PRODUCTS, coupons: INITIAL_COUPONS, campaigns: INITIAL_CAMPAIGNS, cms: DEFAULT_CMS };
+    return { products: INITIAL_PRODUCTS.map(sanitizeProduct), coupons: INITIAL_COUPONS, campaigns: INITIAL_CAMPAIGNS, cms: DEFAULT_CMS };
   }
 };
 
 export const saveStoredDb = (db: { products?: Product[]; coupons?: Coupon[]; campaigns?: BannerCampaign[]; cms?: CMSConfig }) => {
   if (typeof window === 'undefined') return;
   try {
-    if (db.products) localStorage.setItem('meris_products', JSON.stringify(db.products));
+    if (db.products && Array.isArray(db.products)) {
+      // Clean up base64 images from localStorage to prevent quota overflow crash
+      const lightProducts = db.products.map(p => ({
+        ...p,
+        images: (p.images || []).map(img => typeof img === 'string' && img.length > 200000 ? img.slice(0, 100) + '...' : img)
+      }));
+      localStorage.setItem('meris_products', JSON.stringify(lightProducts));
+    }
     if (db.coupons) localStorage.setItem('meris_coupons', JSON.stringify(db.coupons));
     if (db.campaigns) localStorage.setItem('meris_campaigns', JSON.stringify(db.campaigns));
     if (db.cms) localStorage.setItem('meris_cms', JSON.stringify(db.cms));
   } catch (e) {
-    console.error('Failed writing storage DB', e);
+    console.error('Failed writing storage DB (quota exceeded), continuing safely', e);
   }
 };
 
