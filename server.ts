@@ -3151,21 +3151,37 @@ app.use((err: any, req: any, res: any, next: any) => {
 // Configure Vite or Static delivery depending on environment
 if (!process.env.VERCEL) {
   async function initializeServer() {
-    if (process.env.NODE_ENV !== 'production') {
-      const { createServer: createViteServer } = await import('vite');
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-      });
-      app.use(vite.middlewares);
-      console.log('Vite middleware mounted for local development.');
-    } else {
+    const distIndexHtml = path.join(process.cwd(), 'dist', 'index.html');
+    const isProductionBuild = fs.existsSync(distIndexHtml) || process.env.NODE_ENV === 'production';
+
+    if (isProductionBuild && fs.existsSync(distIndexHtml)) {
       const distPath = path.join(process.cwd(), 'dist');
       app.use(express.static(distPath));
       app.get('*', (req, res) => {
-        res.sendFile(path.join(distPath, 'index.html'));
+        res.sendFile(distIndexHtml);
       });
-      console.log('Serving production static build from dist/.');
+      console.log('◇ Serving production static build from dist/.');
+    } else {
+      try {
+        const { createServer: createViteServer } = await import('vite');
+        const vite = await createViteServer({
+          server: { middlewareMode: true },
+          appType: 'spa',
+        });
+        app.use(vite.middlewares);
+        console.log('◇ Vite middleware mounted for local development.');
+      } catch (err) {
+        const distPath = path.join(process.cwd(), 'dist');
+        app.use(express.static(distPath));
+        app.get('*', (req, res) => {
+          if (fs.existsSync(distIndexHtml)) {
+            res.sendFile(distIndexHtml);
+          } else {
+            res.status(500).send('Production build dist/index.html not found.');
+          }
+        });
+        console.log('◇ Vite dev module not found, serving static fallback from dist/.');
+      }
     }
 
     app.listen(PORT, '0.0.0.0', () => {

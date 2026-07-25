@@ -1219,11 +1219,77 @@ async function syncAdminConfigFromSupabase() {
   } catch (err) {
   }
 }
+var inMemoryCustomers = [];
+var CUSTOMERS_FILE_PATH = import_path.default.join(process.cwd(), "customers_db.json");
+async function syncCustomersFromSupabase() {
+  if (import_fs.default.existsSync(CUSTOMERS_FILE_PATH)) {
+    try {
+      const localData = JSON.parse(import_fs.default.readFileSync(CUSTOMERS_FILE_PATH, "utf-8") || "[]");
+      for (const c of localData) {
+        if (c.email && !inMemoryCustomers.some((m) => m.email.toLowerCase() === c.email.toLowerCase())) {
+          inMemoryCustomers.push({
+            id: c.id,
+            email: c.email.toLowerCase(),
+            name: c.name,
+            passwordHash: c.passwordHash || c.password_hash,
+            createdAt: c.createdAt || c.created_at || (/* @__PURE__ */ new Date()).toISOString()
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed reading local customers_db.json on startup:", err);
+    }
+  }
+  if (!supabase) {
+    console.log(`\u25C7 Loaded ${inMemoryCustomers.length} customer credentials from local cache.`);
+    return;
+  }
+  try {
+    const { data, error } = await supabase.from("customers").select("*");
+    if (!error && data) {
+      for (const row of data) {
+        const mapped = {
+          id: row.id,
+          email: row.email.toLowerCase(),
+          name: row.name,
+          passwordHash: row.password_hash,
+          createdAt: row.created_at
+        };
+        const existingIdx = inMemoryCustomers.findIndex((m) => m.email.toLowerCase() === mapped.email);
+        if (existingIdx >= 0) {
+          inMemoryCustomers[existingIdx] = mapped;
+        } else {
+          inMemoryCustomers.push(mapped);
+        }
+      }
+      console.log(`\u25C7 Synced ${data.length} customer credentials from Supabase database.`);
+    }
+    if (inMemoryCustomers.length > 0) {
+      const dbUpserts = inMemoryCustomers.map((c) => ({
+        id: c.id,
+        email: c.email.toLowerCase(),
+        name: c.name,
+        password_hash: c.passwordHash || null,
+        created_at: c.createdAt || (/* @__PURE__ */ new Date()).toISOString()
+      }));
+      const { error: upsertErr } = await supabase.from("customers").upsert(dbUpserts, { onConflict: "email" });
+      if (upsertErr) {
+        console.error("Supabase customer credentials upsert notice:", upsertErr);
+      }
+    }
+    import_fs.default.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to sync customers from Supabase on startup:", err);
+  }
+}
 if (supabase) {
   seedSupabaseDatabase().then(() => {
     syncOrdersFromSupabase();
     syncAdminConfigFromSupabase();
+    syncCustomersFromSupabase();
   });
+} else {
+  syncCustomersFromSupabase();
 }
 var PRODUCTS_FILE_PATH = import_path.default.join(process.cwd(), "products_db.json");
 var COUPONS_FILE_PATH = import_path.default.join(process.cwd(), "coupons_db.json");
@@ -1986,7 +2052,100 @@ function isConfigured(val) {
   return clean !== "" && !clean.includes("YOUR_") && !clean.includes("MY_");
 }
 function realNotificationsEnabled() {
-  return process.env.ENABLE_REAL_NOTIFICATIONS === "true";
+  if (process.env.ENABLE_REAL_NOTIFICATIONS === "false") return false;
+  return process.env.ENABLE_REAL_NOTIFICATIONS === "true" || isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS);
+}
+function createSmtpTransporter() {
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
+  const user = process.env.SMTP_USER || "meriseshop.2025@gmail.com";
+  const pass = process.env.SMTP_PASS || "lljl hfcn geye rdlt";
+  return import_nodemailer.default.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 15e3,
+    greetingTimeout: 15e3,
+    socketTimeout: 2e4
+  });
+}
+async function dispatchLiveEmail(to, subject, html) {
+  const recipient = sanitizeEmail(to);
+  if (!recipient) return false;
+  if (isConfigured(process.env.RESEND_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
+      const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "onboarding@resend.dev";
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: `${fromName} <${fromEmail}>`,
+          to: [recipient],
+          subject,
+          html
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id})`);
+        return true;
+      }
+      console.warn("[Resend API Warning]:", data);
+    } catch (err) {
+      console.error("[Resend API Exception]:", err);
+    }
+  }
+  if (isConfigured(process.env.BREVO_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
+      const fromEmail = process.env.SMTP_FROM_EMAIL || "meriseshop.2025@gmail.com";
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "content-type": "application/json",
+          "api-key": process.env.BREVO_API_KEY.trim()
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: recipient }],
+          subject,
+          htmlContent: html
+        })
+      });
+      const data = await res.json();
+      if (res.ok && (data.messageId || data.messageIds)) {
+        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
+        return true;
+      }
+      console.warn("[Brevo REST API Warning]:", data);
+    } catch (err) {
+      console.error("[Brevo REST API Exception]:", err);
+    }
+  }
+  try {
+    const transporter = createSmtpTransporter();
+    const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "meriseshop.2025@gmail.com";
+    await transporter.sendMail({
+      from: `"${fromName.replace(/"/g, "")}" <${fromEmail}>`,
+      to: recipient,
+      subject,
+      html
+    });
+    console.log(`[SMTP Mailer] Live email delivered to ${recipient} via SMTP.`);
+    return true;
+  } catch (smtpErr) {
+    console.error(`[SMTP Mailer Error] Failed sending to ${recipient}:`, smtpErr?.message || smtpErr);
+    return false;
+  }
 }
 function normalizePhone(value) {
   if (typeof value !== "string") return "";
@@ -2031,8 +2190,8 @@ app.get("/api/orders/:orderNumber", rateLimiter(20, 15 * 60 * 1e3), (req, res) =
   }
 });
 async function sendBookingEmail(order) {
-  const recipientEmail = order.customerInfo?.email || "guest@example.com";
-  const customerName = order.customerInfo?.name || "Valued Customer";
+  const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
+  const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || "Valued Customer", 100);
   const subject = `\u{1F6CD}\uFE0F Meris E-Shop: Booking Secured - Order #${order.orderNumber}`;
   let itemsHtml = "";
   if (order.items && Array.isArray(order.items)) {
@@ -2192,37 +2351,7 @@ async function sendBookingEmail(order) {
   } else {
     console.log(`[Email Service] Supabase not configured \u2014 email log skipped for ${recipientEmail}.`);
   }
-  if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
-    try {
-      const transporter = import_nodemailer.default.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        debug: process.env.NODE_ENV !== "production",
-        logger: process.env.NODE_ENV !== "production"
-      });
-      await transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || "Meris E-Shop"}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-        to: recipientEmail,
-        subject,
-        html: htmlContent
-      });
-      console.log(`[Email Service] Real SMTP email successfully dispatched to ${recipientEmail}.`);
-    } catch (smtpError) {
-      console.error("[Email Service] Failed sending via real SMTP:", smtpError);
-    }
-  } else {
-    console.log("\n======================================================");
-    console.log("\u{1F4EC} LUXURY EMAIL DISPATCHED (SIMULATED & CACHED IN DATABASE)");
-    console.log(`RECIPIENT: ${recipientEmail}`);
-    console.log(`SUBJECT: ${subject}`);
-    console.log(`TOTAL NET INVOICE: \u20B9${order.total}`);
-    console.log("======================================================\n");
-  }
+  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
   return newEmailRecord;
 }
 async function sendPaymentEmail(order, type, reason) {
@@ -2334,35 +2463,7 @@ async function sendPaymentEmail(order, type, reason) {
   } else {
     console.log(`[Email Service] Supabase not configured \u2014 payment email log skipped for ${recipientEmail}.`);
   }
-  if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
-    try {
-      const transporter = import_nodemailer.default.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-      await transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || "Meris E-Shop"}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-        to: recipientEmail,
-        subject,
-        html: htmlContent
-      });
-      console.log(`[Email Service] Real SMTP payment notification email successfully dispatched to ${recipientEmail}.`);
-    } catch (smtpError) {
-      console.error("[Email Service] Failed sending payment notification via real SMTP:", smtpError);
-    }
-  } else {
-    console.log("\n======================================================");
-    console.log("\u{1F4EC} LUXURY PAYMENT STATUS EMAIL DISPATCHED (SIMULATED & CACHED)");
-    console.log(`RECIPIENT: ${recipientEmail}`);
-    console.log(`SUBJECT: ${subject}`);
-    console.log(`STATUS: ${order.paymentStatus}`);
-    console.log("======================================================\n");
-  }
+  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
   return newEmailRecord;
 }
 async function sendSMSAlert(order) {
@@ -2422,51 +2523,19 @@ setInterval(() => {
   }
 }, 10 * 60 * 1e3);
 function smtpEmailConfigured() {
-  return realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS);
+  return true;
 }
 async function dispatchOtpEmail(email, code) {
-  const fromName = process.env.SMTP_FROM_NAME || "Meris";
-  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "";
-  const fromDomain = fromEmail.includes("@") ? fromEmail.split("@").pop() : "meris.local";
-  const transporter = import_nodemailer.default.createTransport({
-    host: process.env.SMTP_HOST || "",
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === "true",
-    requireTLS: true,
-    connectionTimeout: 3e3,
-    greetingTimeout: 3e3,
-    socketTimeout: 5e3,
-    family: 4,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
-  await transporter.sendMail({
-    from: `"${fromName.replace(/"/g, "")}" <${fromEmail}>`,
-    to: email,
-    replyTo: fromEmail,
-    envelope: {
-      from: fromEmail,
-      to: email
-    },
-    messageId: `<otp-${Date.now()}-${Math.random().toString(36).slice(2)}@${fromDomain}>`,
-    headers: {
-      "Auto-Submitted": "auto-generated",
-      "X-Auto-Response-Suppress": "All",
-      "X-Entity-Ref-ID": `meris-otp-${Date.now()}`
-    },
-    subject: "Your Meris verification code",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
-        <h2 style="margin: 0 0 12px; color: #0f172a;">Meris verification code</h2>
-        <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Meris account. It is valid for 5 minutes.</p>
-        <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
-        <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
-      </div>
-    `,
-    text: `Your Meris verification code is ${code}. It is valid for 5 minutes. If you did not request this code, no action is needed.`
-  });
+  const subject = "Your Meris verification code";
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
+      <h2 style="margin: 0 0 12px; color: #0f172a;">Meris verification code</h2>
+      <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Meris account. It is valid for 5 minutes.</p>
+      <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
+      <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
+    </div>
+  `;
+  await dispatchLiveEmail(email, subject, html);
 }
 app.post("/api/send-otp", rateLimiter(30, 15 * 60 * 1e3), async (req, res) => {
   try {
@@ -2594,7 +2663,6 @@ app.post("/api/verify-otp", rateLimiter(30, 15 * 60 * 1e3), async (req, res) => 
     return res.status(500).json({ error: "Failed to verify OTP." });
   }
 });
-var inMemoryCustomers = [];
 app.post("/api/login-customer", rateLimiter(60, 15 * 60 * 1e3), async (req, res) => {
   try {
     const email = sanitizeEmail(req.body?.email);
@@ -2602,18 +2670,26 @@ app.post("/api/login-customer", rateLimiter(60, 15 * 60 * 1e3), async (req, res)
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required." });
     }
+    const lowerEmail = email.toLowerCase();
     let customer = null;
-    if (supabase) {
+    customer = inMemoryCustomers.find((c) => c.email.toLowerCase() === lowerEmail);
+    if (!customer && supabase) {
       try {
-        const supabasePromise = supabase.from("customers").select("id, email, name, password_hash").eq("email", email.toLowerCase()).maybeSingle();
-        const timeoutPromise = new Promise(
-          (resolve) => setTimeout(() => resolve({ data: null, error: "Timeout" }), 2e3)
-        );
-        const { data, error } = await Promise.race([supabasePromise, timeoutPromise]);
+        const { data, error } = await supabase.from("customers").select("id, email, name, password_hash, created_at").eq("email", lowerEmail).maybeSingle();
         if (!error && data) {
-          customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
-          if (!inMemoryCustomers.some((c) => c.email.toLowerCase() === email.toLowerCase())) {
+          customer = {
+            id: data.id,
+            email: data.email.toLowerCase(),
+            name: data.name,
+            passwordHash: data.password_hash,
+            createdAt: data.created_at
+          };
+          if (!inMemoryCustomers.some((c) => c.email.toLowerCase() === lowerEmail)) {
             inMemoryCustomers.push(customer);
+          }
+          try {
+            import_fs.default.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
+          } catch {
           }
         }
       } catch (err) {
@@ -2621,16 +2697,21 @@ app.post("/api/login-customer", rateLimiter(60, 15 * 60 * 1e3), async (req, res)
       }
     }
     if (!customer) {
-      customer = inMemoryCustomers.find((c) => c.email.toLowerCase() === email.toLowerCase());
-    }
-    if (!customer) {
-      const customersDbPath = import_path.default.join(process.cwd(), "customers_db.json");
-      if (import_fs.default.existsSync(customersDbPath)) {
+      if (import_fs.default.existsSync(CUSTOMERS_FILE_PATH)) {
         try {
-          const customers = JSON.parse(import_fs.default.readFileSync(customersDbPath, "utf-8") || "[]");
-          const found = customers.find((c) => c.email.toLowerCase() === email.toLowerCase());
+          const localCustomers = JSON.parse(import_fs.default.readFileSync(CUSTOMERS_FILE_PATH, "utf-8") || "[]");
+          const found = localCustomers.find((c) => c.email.toLowerCase() === lowerEmail);
           if (found) {
-            customer = found;
+            customer = {
+              id: found.id,
+              email: found.email.toLowerCase(),
+              name: found.name,
+              passwordHash: found.passwordHash || found.password_hash,
+              createdAt: found.createdAt || found.created_at
+            };
+            if (!inMemoryCustomers.some((c) => c.email.toLowerCase() === lowerEmail)) {
+              inMemoryCustomers.push(customer);
+            }
           }
         } catch (err) {
           console.error("Error reading local customers db:", err);
@@ -2639,6 +2720,9 @@ app.post("/api/login-customer", rateLimiter(60, 15 * 60 * 1e3), async (req, res)
     }
     if (!customer) {
       return res.status(401).json({ error: 'No account found with this email. Please check spelling or click "Sign Up".' });
+    }
+    if (!customer.passwordHash) {
+      return res.status(401).json({ error: "This account was registered via OTP. Please sign in using OTP code." });
     }
     const isPasswordValid = await import_bcryptjs.default.compare(password, customer.passwordHash);
     if (!isPasswordValid) {
@@ -2669,31 +2753,13 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
     if (!validation.valid) {
       return res.status(400).json({ error: validation.errors[0] || "Password does not meet security criteria." });
     }
-    let emailAlreadyExists = false;
-    if (supabase) {
+    const lowerEmail = email.toLowerCase();
+    let emailAlreadyExists = inMemoryCustomers.some((c) => c.email.toLowerCase() === lowerEmail);
+    if (!emailAlreadyExists && supabase) {
       try {
-        const { data: existing } = await supabase.from("customers").select("id").eq("email", email.toLowerCase()).maybeSingle();
+        const { data: existing } = await supabase.from("customers").select("id").eq("email", lowerEmail).maybeSingle();
         if (existing) emailAlreadyExists = true;
       } catch {
-      }
-    }
-    if (!emailAlreadyExists) {
-      if (inMemoryCustomers.some((c) => c.email.toLowerCase() === email.toLowerCase())) {
-        emailAlreadyExists = true;
-      }
-    }
-    if (!emailAlreadyExists) {
-      const customersDbPath2 = import_path.default.join(process.cwd(), "customers_db.json");
-      let customers = [];
-      if (import_fs.default.existsSync(customersDbPath2)) {
-        try {
-          customers = JSON.parse(import_fs.default.readFileSync(customersDbPath2, "utf-8") || "[]");
-        } catch (err) {
-          console.error("Error reading customers db:", err);
-        }
-      }
-      if (customers.find((c) => c.email.toLowerCase() === email.toLowerCase())) {
-        emailAlreadyExists = true;
       }
     }
     if (emailAlreadyExists) {
@@ -2702,32 +2768,26 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
     const passwordHash = await import_bcryptjs.default.hash(password, 10);
     const newCustomer = {
       id: `cust_${Date.now()}_${Math.floor(Math.random() * 1e3)}`,
-      email: email.toLowerCase(),
+      email: lowerEmail,
       name,
       passwordHash,
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
     };
     inMemoryCustomers.push(newCustomer);
     if (supabase) {
-      Promise.resolve(supabase.from("customers").insert({
+      supabase.from("customers").upsert({
         id: newCustomer.id,
         email: newCustomer.email,
         name: newCustomer.name,
         password_hash: newCustomer.passwordHash,
         created_at: newCustomer.createdAt
-      })).catch((err) => console.error("[Registration] Supabase customer insert notice:", err));
+      }, { onConflict: "email" }).then(({ error }) => {
+        if (error) console.error("[Registration] Supabase customer upsert error:", error);
+        else console.log(`[Registration] Customer credentials synced to Supabase for ${lowerEmail}`);
+      });
     }
-    const customersDbPath = import_path.default.join(process.cwd(), "customers_db.json");
-    let localCustomers = [];
-    if (import_fs.default.existsSync(customersDbPath)) {
-      try {
-        localCustomers = JSON.parse(import_fs.default.readFileSync(customersDbPath, "utf-8") || "[]");
-      } catch {
-      }
-    }
-    localCustomers.push(newCustomer);
     try {
-      import_fs.default.writeFileSync(customersDbPath, JSON.stringify(localCustomers, null, 2));
+      import_fs.default.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
     } catch {
     }
     const subject = `Welcome to MERIS E-SHOP - Happy Shopping!`;
@@ -2789,34 +2849,7 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
         if (error) console.error("[Registration] Supabase email_logs insert failed:", error);
       });
     }
-    if (smtpEmailConfigured()) {
-      try {
-        const transporter = import_nodemailer.default.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT || 587),
-          secure: process.env.SMTP_SECURE === "true",
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-          }
-        });
-        await transporter.sendMail({
-          from: `"${process.env.SMTP_FROM_NAME || "Meris E-Shop"}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-          to: email,
-          subject,
-          html: htmlContent
-        });
-        console.log(`[Registration] Welcome confirmation email successfully sent to ${email}.`);
-      } catch (smtpError) {
-        console.error("[Registration] Welcome email SMTP dispatch failed:", smtpError);
-      }
-    } else {
-      console.log("\n======================================================");
-      console.log("\u{1F4EC} WELCOME EMAIL DISPATCHED (SIMULATED & CACHED)");
-      console.log(`RECIPIENT: ${email}`);
-      console.log(`SUBJECT: ${subject}`);
-      console.log("======================================================\n");
-    }
+    await dispatchLiveEmail(email, subject, htmlContent);
     res.json({ success: true, message: "Account registered successfully." });
   } catch (err) {
     console.error("Error during customer registration:", err);
@@ -3082,21 +3115,16 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
     }
     writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
-    const isUpiOrder = newOrder.paymentMethod?.toLowerCase().includes("upi");
-    const isPendingPayUOrder = newOrder.paymentMethod?.toLowerCase().includes("payu") && newOrder.paymentStatus === "pending";
-    if (!isUpiOrder && !isPendingPayUOrder) {
-      try {
-        await sendBookingEmail(newOrder);
-      } catch (emailErr) {
-        console.error("Failed to dispatch order booking confirmation email:", emailErr);
-      }
-      try {
-        await sendSMSAlert(newOrder);
-      } catch (smsErr) {
-        console.error("Failed to dispatch order booking confirmation SMS:", smsErr);
-      }
-    } else {
-      console.log(`[Order Service] Pending payment order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until payment approval.`);
+    try {
+      await sendBookingEmail(newOrder);
+      console.log(`[Order Service] Dispatched order confirmation email for #${newOrder.orderNumber}`);
+    } catch (emailErr) {
+      console.error("Failed to dispatch order booking confirmation email:", emailErr);
+    }
+    try {
+      await sendSMSAlert(newOrder);
+    } catch (smsErr) {
+      console.error("Failed to dispatch order booking confirmation SMS:", smsErr);
     }
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {
@@ -3287,6 +3315,56 @@ app.get("/api/admin/security-stats", verifyAdminToken, (req, res) => {
       { id: "3", timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString(), ip: "192.168.1.101", type: "Failed Login", details: "Wrong password attempt on administrative account.", severity: "high" }
     ]
   });
+});
+app.get("/api/admin/customers", verifyAdminToken, async (req, res) => {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.from("customers").select("id, email, name, created_at").order("created_at", { ascending: false });
+      if (!error && data) {
+        return res.json(data.map((c) => ({
+          id: c.id,
+          email: c.email,
+          name: c.name,
+          createdAt: c.created_at
+        })));
+      }
+      console.warn("Supabase customers list fetch failed, fallback to memory:", error);
+    }
+    res.json(inMemoryCustomers.map((c) => ({
+      id: c.id,
+      email: c.email,
+      name: c.name,
+      createdAt: c.createdAt
+    })));
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch customer credentials list" });
+  }
+});
+app.post("/api/admin/test-email", verifyAdminToken, async (req, res) => {
+  try {
+    const targetEmail = sanitizeEmail(req.body?.email || req.body?.to);
+    if (!targetEmail) {
+      return res.status(400).json({ error: "Valid target email address is required." });
+    }
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #0f172a; margin-top: 0;">Live Email Dispatch Successful!</h2>
+        <p style="color: #475569;">Your server at <strong>https://meris-eshop-production.up.railway.app</strong> successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
+        <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Dispatched at ${(/* @__PURE__ */ new Date()).toLocaleString()}</p>
+      </div>
+    `;
+    const sent = await dispatchLiveEmail(targetEmail, "\u{1F9EA} Meris E-Shop: Live Email Dispatch Test", html);
+    if (sent) {
+      res.json({ success: true, message: `Test email successfully delivered to ${targetEmail}!` });
+    } else {
+      res.status(500).json({ error: "Failed to dispatch test email. Check server logs in Railway." });
+    }
+  } catch (err) {
+    console.error("[Email Diagnostic Test Error]:", err);
+    res.status(500).json({
+      error: `Failed to dispatch test email: ${err?.message || err}`
+    });
+  }
 });
 app.get("/sitemap.xml", async (req, res) => {
   try {
@@ -3480,21 +3558,36 @@ app.use((err, req, res, next) => {
 });
 if (!process.env.VERCEL) {
   async function initializeServer() {
-    if (process.env.NODE_ENV !== "production") {
-      const { createServer: createViteServer } = await import("vite");
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: "spa"
-      });
-      app.use(vite.middlewares);
-      console.log("Vite middleware mounted for local development.");
-    } else {
+    const distIndexHtml = import_path.default.join(process.cwd(), "dist", "index.html");
+    const isProductionBuild = import_fs.default.existsSync(distIndexHtml) || process.env.NODE_ENV === "production";
+    if (isProductionBuild && import_fs.default.existsSync(distIndexHtml)) {
       const distPath = import_path.default.join(process.cwd(), "dist");
       app.use(import_express.default.static(distPath));
       app.get("*", (req, res) => {
-        res.sendFile(import_path.default.join(distPath, "index.html"));
+        res.sendFile(distIndexHtml);
       });
-      console.log("Serving production static build from dist/.");
+      console.log("\u25C7 Serving production static build from dist/.");
+    } else {
+      try {
+        const { createServer: createViteServer } = await import("vite");
+        const vite = await createViteServer({
+          server: { middlewareMode: true },
+          appType: "spa"
+        });
+        app.use(vite.middlewares);
+        console.log("\u25C7 Vite middleware mounted for local development.");
+      } catch (err) {
+        const distPath = import_path.default.join(process.cwd(), "dist");
+        app.use(import_express.default.static(distPath));
+        app.get("*", (req, res) => {
+          if (import_fs.default.existsSync(distIndexHtml)) {
+            res.sendFile(distIndexHtml);
+          } else {
+            res.status(500).send("Production build dist/index.html not found.");
+          }
+        });
+        console.log("\u25C7 Vite dev module not found, serving static fallback from dist/.");
+      }
     }
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`MERIS E-SHOP Full-Stack Server listening on http://localhost:${PORT}`);
