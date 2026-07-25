@@ -1,6 +1,6 @@
 [
   {
-    "code": "MERIS10';cat /etc/passwd;'",
+    "code": "MERIS10",
     "type": "percentage",
     "value": 10,
     "expiryDate": "2027-01-01",
@@ -10,12 +10,8 @@
     "description": "Enjoy 10% off on all luxury items across store",
     "active": true
   },
-  
-  
-  
-  
   {
-    "code": "FESTIVE20 / case when cast(pg_sleep(15.0) as varchar) > '' then 0 else 1 end ",
+    "code": "FESTIVE20",
     "type": "percentage",
     "value": 20,
     "expiryDate": "2026-12-25",
@@ -24,5 +20,5 @@
     "minimumCartValue": 1500,
     "description": "Special 20% discount on order carts above Rs.1500",
     "active": true
-  },
-  
+  }
+]
