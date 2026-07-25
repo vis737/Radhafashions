@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS public.newsletter (
 CREATE INDEX IF NOT EXISTS idx_newsletter_email ON public.newsletter(email);
 
 -- ---------------------------------------------------------------------------
--- SAFE ROW LEVEL SECURITY (RLS) & PUBLIC READ POLICIES
+-- ROW LEVEL SECURITY (RLS) & UNRESTRICTED ACCESS POLICIES
 -- ---------------------------------------------------------------------------
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
@@ -169,12 +169,49 @@ ALTER TABLE public.newsletter ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Public read products') THEN
-    CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
+  -- Products policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow all products') THEN
+    CREATE POLICY "Allow all products" ON public.products FOR ALL USING (true) WITH CHECK (true);
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'campaigns' AND policyname = 'Public read campaigns') THEN
-    CREATE POLICY "Public read campaigns" ON public.campaigns FOR SELECT USING (true);
+  -- Coupons policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'coupons' AND policyname = 'Allow all coupons') THEN
+    CREATE POLICY "Allow all coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- Campaigns policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'campaigns' AND policyname = 'Allow all campaigns') THEN
+    CREATE POLICY "Allow all campaigns" ON public.campaigns FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- CMS config policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'cms_config' AND policyname = 'Allow all cms') THEN
+    CREATE POLICY "Allow all cms" ON public.cms_config FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- Admin config policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_config' AND policyname = 'Allow all admin_config') THEN
+    CREATE POLICY "Allow all admin_config" ON public.admin_config FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- Orders policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'orders' AND policyname = 'Allow all orders') THEN
+    CREATE POLICY "Allow all orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- Customers policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'customers' AND policyname = 'Allow all customers') THEN
+    CREATE POLICY "Allow all customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- Email logs policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'email_logs' AND policyname = 'Allow all email_logs') THEN
+    CREATE POLICY "Allow all email_logs" ON public.email_logs FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- Newsletter policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'newsletter' AND policyname = 'Allow all newsletter') THEN
+    CREATE POLICY "Allow all newsletter" ON public.newsletter FOR ALL USING (true) WITH CHECK (true);
   END IF;
 END
 $$;
