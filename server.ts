@@ -1197,7 +1197,33 @@ function isConfigured(val: string | undefined): boolean {
 }
 
 function realNotificationsEnabled(): boolean {
-  return process.env.ENABLE_REAL_NOTIFICATIONS === 'true';
+  if (process.env.ENABLE_REAL_NOTIFICATIONS === 'false') return false;
+  return (
+    process.env.ENABLE_REAL_NOTIFICATIONS === 'true' ||
+    (isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS))
+  );
+}
+
+function createSmtpTransporter() {
+  const host = process.env.SMTP_HOST || '';
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
 }
 
 function normalizeEmail(value: unknown): string {
@@ -1441,17 +1467,7 @@ async function sendBookingEmail(order: any) {
   // Attempt real SMTP if environment variables are provided
   if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
     try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-        debug: process.env.NODE_ENV !== 'production',
-        logger: process.env.NODE_ENV !== 'production'
-      });
+      const transporter = createSmtpTransporter();
 
       await transporter.sendMail({
         from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
@@ -1594,15 +1610,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
 
   if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
     try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        }
-      });
+      const transporter = createSmtpTransporter();
 
       await transporter.sendMail({
         from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
@@ -1871,20 +1879,7 @@ async function dispatchOtpEmail(email: string, code: string): Promise<void> {
   const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || '';
   const fromDomain = fromEmail.includes('@') ? fromEmail.split('@').pop() : 'meris.local';
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || '',
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === 'true',
-    requireTLS: true,
-    connectionTimeout: 3000,
-    greetingTimeout: 3000,
-    socketTimeout: 5000,
-    family: 4,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    }
-  } as any);
+  const transporter = createSmtpTransporter();
 
   await transporter.sendMail({
     from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
@@ -2289,15 +2284,7 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     // Send real SMTP welcome email if configured
     if (smtpEmailConfigured()) {
       try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT || 587),
-          secure: process.env.SMTP_SECURE === 'true',
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          }
-        });
+        const transporter = createSmtpTransporter();
 
         await transporter.sendMail({
           from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
@@ -2911,6 +2898,48 @@ app.get('/api/admin/customers', verifyAdminToken, async (req, res) => {
     })));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch customer credentials list' });
+  }
+});
+
+app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
+  try {
+    const targetEmail = sanitizeEmail(req.body?.email || req.body?.to);
+    if (!targetEmail) {
+      return res.status(400).json({ error: 'Valid target email address is required.' });
+    }
+
+    if (!isConfigured(process.env.SMTP_HOST) || !isConfigured(process.env.SMTP_USER) || !isConfigured(process.env.SMTP_PASS)) {
+      return res.status(400).json({
+        error: 'SMTP credentials missing on server. Set SMTP_HOST, SMTP_USER, SMTP_PASS, and optionally SMTP_PORT in Railway Environment tab.'
+      });
+    }
+
+    const transporter = createSmtpTransporter();
+    await transporter.verify();
+
+    const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+
+    await transporter.sendMail({
+      from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
+      to: targetEmail,
+      subject: '🧪 Meris E-Shop: SMTP Connection Test',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <h2 style="color: #0f172a; margin-top: 0;">SMTP Connection Successful!</h2>
+          <p style="color: #475569;">Your server at <strong>https://meris-eshop-production.up.railway.app</strong> successfully connected to <strong>${process.env.SMTP_HOST}</strong> and dispatched this test email to <strong>${targetEmail}</strong>.</p>
+          <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Dispatched at ${new Date().toLocaleString()}</p>
+        </div>
+      `,
+    });
+
+    res.json({ success: true, message: `Test email successfully delivered to ${targetEmail} via ${process.env.SMTP_HOST}.` });
+  } catch (err: any) {
+    console.error('[Email Diagnostic Test Error]:', err);
+    res.status(500).json({
+      error: `Failed to dispatch test email via SMTP: ${err?.message || err}`,
+      details: err?.code || err?.command || 'SMTP Connection Error'
+    });
   }
 });
 
