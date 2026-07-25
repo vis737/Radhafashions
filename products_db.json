@@ -1,31 +1,147 @@
 [
   {
-    "id": "bag-1",
-    "sku": "BG-SADDLE-TAN",
-    "name": "Serena Minimalist Vegan Saddle Tote",
+    "id": "home-3",
+    "sku": "HM-CERAMIC-DIFF",
+    "name": "Hand-Cast Ceramic Oil Diffuser & Incense Chalice",
+    "category": "Home Gifts",
+    "categorySlug": "home",
+    "price": 999,
+    "discountPrice": 849,
+    "stock": 25,
+    "rating": 4.8,
+    "ratingCount": 33,
+    "images": [
+      "https://images.unsplash.com/photo-1540324155974-75226c3ad3a6?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Speckled stoneware clay diffuse burner styled with organic carved apertures and copper oil dish.",
+    "description": "Elevate your sensory experiences. Simply place a wax tea-candle in the lower chamber and add organic oils to the deep top copper basin. The custom speckled clay filters a warm amber glow, diffusing soothing botanical fragrances perfectly.",
+    "specifications": {
+      "Basin": "100% Spun Copper heating plate",
+      "Safety": "Heat-treated non-cracking glaze",
+      "Stoneware": "Speckled Oatmeal Studio Clay",
+      "Dimensions": "11 x 10 cm cylindric body"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Ceramics",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "bag-2",
+    "sku": "BG-EMB-CLUTCH",
+    "name": "Royal Heritage Golden-Zardozi Evening Clutch",
     "category": "Handbags",
     "categorySlug": "handbags",
-    "price": 3290,
-    "discountPrice": 2490,
-    "stock": 14,
-    "rating": 4.8,
-    "ratingCount": 150,
+    "price": 1999,
+    "discountPrice": 1699,
+    "stock": 0,
+    "rating": 4.9,
+    "ratingCount": 41,
     "images": [
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Structured top-tier synthetic leather handbag in tan finish, with gold-accent magnet buckles.",
-    "description": "Upgrade your morning commute with our best-selling saddle shoulder container. Crafted from durable weather-resistant vegan polyurethane leather with exquisite top stitching. The dual interior chamber is extremely spacious, easily housing your tablet, cosmetic bags, and everyday carry essentials.",
+    "shortDescription": "Velvety dark clutch bag with handwoven metallic bullion thread vine pattern and chain strap.",
+    "description": "An outstanding luxury clutch ideal for festive weddings and elegant dinners. Intricately embellished with golden beads and coiled wire work known as Zardozi. Emits a stellar glistening reflect under dim evening lights.",
     "specifications": {
-      "Strap Type": "Adjustable belt-style harness",
-      "Outer Cover": "Ultra-soft Eco-polyurethane leather",
-      "Inner Liners": "Recycled linen-sateen canvas",
-      "Metal Accents": "18k Gold plated premium electro-lacquered alloy"
+      "Closure": "Secure golden magnetic lock",
+      "Embroidery": "Artisan Handloom bullion metallic gold thread",
+      "Base Fabric": "Silk Blend Deep Navy Velvet",
+      "Chain Strap": "Removable vintage gold-link chain (110cm)"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Heritage",
+    "availability": "out-of-stock",
+    "vendorId": null
+  },
+  {
+    "id": "home-2",
+    "sku": "HM-MUG-CERAMIC",
+    "name": "Intelligence Book for Kids",
+    "category": "learning",
+    "categorySlug": "home",
+    "price": 349,
+    "discountPrice": 200,
+    "stock": 25,
+    "rating": 4.5,
+    "ratingCount": 142,
+    "images": [
+      "/uploads/prod_1784927252494_8799.jpeg",
+      "/uploads/prod_1784927265592_7925.jpeg",
+      "/uploads/prod_1784927274803_7340.jpeg"
+    ],
+    "shortDescription": "Stony clay ceramic Mug finished with a double-glazed speckled oatmeal and gold-rim effect.",
+    "description": "Interactive Learning Toy with audio / Alphabet, Numbers, Animals& Rhymes / Sounds book for Kids/ Educational Toy & Activity book for toddlers 2-5 years.",
+    "specifications": {
+      "Safety": "Dishwasher and Microwave certified safe",
+      "Weight": "0.45 kg",
+      "Production": "Hand-thrown studio stoneware clay",
+      "Glazing Coating": "Lead-free food-compliant silica glaze",
+      "Volume Capacity": "350 ml"
+    },
+    "weightKg": 0.45,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Ceramics",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "ent-2",
+    "sku": "EN-SL-BOARD",
+    "name": "Luxury Walnut Wood Solitaire Board with Glass Marbles",
+    "category": "Entertainment Products",
+    "categorySlug": "entertainment",
+    "price": 3800,
+    "discountPrice": 3299,
+    "stock": 6,
+    "rating": 4.7,
+    "ratingCount": 15,
+    "images": [
+      "https://images.unsplash.com/photo-1611195974226-a6a9be9dd763?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Hand-turned walnut wood circular solitaire board styled with 33 hand-swirled custom glass spheres.",
+    "description": "An object of outstanding intellectual engagement. This single-player strategic tabletop game is carved from dark American walnut and features a grooved perimeter track to secure captured glass marbles.",
+    "specifications": {
+      "Finish": "Polished silk-varnish coating",
+      "Marbles": "33 hand-crafted swirled decorative glass spheres",
+      "Diameter": "30 cm circular console",
+      "Platter Wood": "Natural high-grade American Walnut"
     },
     "reviews": [],
     "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Couture",
+    "isBestseller": false,
+    "brand": "Meris Heritage",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "prod_1784984908064_f9k9whi",
+    "sku": "awfwaf",
+    "name": "test",
+    "category": "Luxury Goods",
+    "categorySlug": "luxury-goods",
+    "price": 999,
+    "stock": 0,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "data:image/jpeg;base64,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"
+    ],
+    "shortDescription": "test",
+    "description": "dADdDdDd",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "afafafaff",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -85,294 +201,65 @@
     "vendorId": null
   },
   {
-    "id": "toy-6",
-    "sku": "TOY-WD-BALANCE",
-    "name": "Artisanal Curved Wooden Balance Wobble Board",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 3299,
-    "discountPrice": 2899,
-    "stock": 6,
-    "rating": 4.9,
-    "ratingCount": 30,
+    "id": "bag-1",
+    "sku": "BG-SADDLE-TAN",
+    "name": "Serena Minimalist Vegan Saddle Tote",
+    "category": "Handbags",
+    "categorySlug": "handbags",
+    "price": 3290,
+    "discountPrice": 2490,
+    "stock": 0,
+    "rating": 4.8,
+    "ratingCount": 150,
     "images": [
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&auto=format&fit=crop"
     ],
-    "shortDescription": "Premium curved beechwood wobble board supporting posture balance and creative play.",
-    "description": "Designed to support open-ended movement play. Children can balance on it, use it as a bridge, slide, or rocking cradle. Hand-pressed multilayered beechwood core.",
+    "shortDescription": "Structured top-tier synthetic leather handbag in tan finish, with gold-accent magnet buckles.",
+    "description": "Upgrade your morning commute with our best-selling saddle shoulder container. Crafted from durable weather-resistant vegan polyurethane leather with exquisite top stitching. The dual interior chamber is extremely spacious, easily housing your tablet, cosmetic bags, and everyday carry essentials.",
     "specifications": {
-      "Coating": "Natural oil protectant",
-      "Material": "Multilayered Pressed Beechwood",
-      "Weight Capacity": "120 kg"
+      "Strap Type": "Adjustable belt-style harness",
+      "Outer Cover": "Ultra-soft Eco-polyurethane leather",
+      "Inner Liners": "Recycled linen-sateen canvas",
+      "Metal Accents": "18k Gold plated premium electro-lacquered alloy"
     },
     "reviews": [],
     "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Active",
+    "isBestseller": true,
+    "brand": "Meris Couture",
     "availability": "in-stock",
     "vendorId": null
   },
   {
-    "id": "toy-7",
-    "sku": "TOY-WD-GEARS",
-    "name": "3D Mechanical Gear Assembly Constructor",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 2499,
-    "discountPrice": 2199,
-    "stock": 12,
-    "rating": 4.7,
+    "id": "stat-3",
+    "sku": "ST-CAL-SET",
+    "name": "Modern Wooden Kitchen Set for Kids",
+    "category": "wood-gifts",
+    "categorySlug": "stationeries",
+    "price": 360,
+    "discountPrice": 220,
+    "stock": 5,
+    "rating": 4.8,
     "ratingCount": 22,
     "images": [
-      "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=800&auto=format&fit=crop&q=80"
+      "/uploads/prod_1784928433002_7560.jpeg",
+      "/uploads/prod_1784928442283_5613.jpeg",
+      "/uploads/prod_1784928454384_9568.jpeg"
     ],
-    "shortDescription": "Interlocking wooden gear puzzle introducing kinetic energy transmission and physical mechanics.",
-    "description": "A STEM constructor puzzle set. Contains precision laser-cut plywood sheets. Kids can assemble standard gear configurations that move when hand-cranked.",
+    "shortDescription": "Stunning writing gift kit including a wood-nib stylus, 4 premium steel nib points, and an antique brass ink pot.",
+    "description": "Multicolour miniature Toys for Girls. Eco-friendly wooden toy kitchen set with Gas Stove and Cylinder. Gifts for 3+ years.",
     "specifications": {
-      "Material": "Laser-cut Birch Plywood",
-      "Skill level": "Intermediate",
-      "Time to build": "3-4 hours"
+      "Nibs": "4 high-flex spring steel calligraphy points",
+      "Stylus": "Hand-turned Rosewood stylus",
+      "Weight": "0.65 kg",
+      "Inkwell": "Solid machined Brass leakproof screw-cap vessel",
+      "Packaging": "Lined premium cardboard giftbox"
     },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Tech",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "toy-8",
-    "sku": "TOY-WD-CHESS",
-    "name": "Classic Handcrafted Deluxe Wooden Chess Set",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 2999,
-    "discountPrice": 2499,
-    "stock": 8,
-    "rating": 5,
-    "ratingCount": 14,
-    "images": [
-      "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Exquisite inlaid rosewood chess board with weighted hand-carved chess pieces.",
-    "description": "Premium chess set featuring storage slots for each individual piece. Finished in a semi-gloss natural lacquer, highlighting the rich grains of solid Indian rosewood.",
-    "specifications": {
-      "Wood Type": "Sheesham & Maple",
-      "King Height": "6.5 cm",
-      "Board Dimensions": "30 x 30 cm"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Games",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "toy-9",
-    "sku": "TOY-WD-ARCH",
-    "name": "3D Laser-Cut Taj Mahal Architectural Model",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 3899,
-    "discountPrice": 3499,
-    "stock": 5,
-    "rating": 4.9,
-    "ratingCount": 19,
-    "images": [
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Intricate 3D architectural craft kit compiling 250 micro-laser wood puzzle nodes.",
-    "description": "A beautiful historical replica model. Perfect for teens and hobbyists. Hand-sanded laser edges allow slotting connections without requiring glue.",
-    "specifications": {
-      "Material": "Sustainably sourced Basswood Plywood",
-      "Complexity": "Advanced (250+ parts)",
-      "Recommended Age": "13+ Years"
-    },
+    "weightKg": 0.65,
     "reviews": [],
     "isNew": true,
     "isBestseller": false,
-    "brand": "Meris Tech",
-    "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "toy-1",
-    "sku": "TOY-WD-STACK",
-    "name": "Handcrafted Wooden Stacking Ring Tower",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 899,
-    "discountPrice": 749,
-    "stock": 25,
-    "rating": 4.8,
-    "ratingCount": 124,
-    "images": [
-      "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Organic wooden rings coated in safe herbal-dyed colors, supporting early sensory development.",
-    "description": "This elegant Stacking Ring Tower is crafted from native beechwood and finished with food-grade seed oils and natural pigments. Non-toxic, fully hand-rounded, and exceptionally smooth for tender hands. It supports hand-eye coordination, size sorting, and visual acuity.",
-    "specifications": {
-      "Weight": "320g",
-      "Coating": "Natural plant-extract pigments",
-      "Material": "Sustainably sourced Beechwood",
-      "Dimensions": "18 x 9 x 9 cm",
-      "Age Recommendation": "12+ months"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Kids",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "learn-1",
-    "sku": "LN-ABACUS-PST",
-    "name": "Pastel Decimal Wooden Abacus Toy",
-    "category": "Learning Stuff",
-    "categorySlug": "learning",
-    "price": 1250,
-    "discountPrice": 999,
-    "stock": 13,
-    "rating": 4.7,
-    "ratingCount": 49,
-    "images": [
-      "https://images.unsplash.com/photo-1618842676088-c4d48a6a7c9d?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Classic math tutor abacus with 10 rows of colorful child-safe rounded timber sliders.",
-    "description": "An educational tool designed to introduce basic counting, addition, and division. Crafted beautifully from light-colored beech wood with smooth non-splinter dowels. Finished in lovely pastel tones, blending harmoniously into modern nurseries.",
-    "specifications": {
-      "Beads": "Rounded maple wood sliding units (100 total)",
-      "Base Frame": "Light Birch Solid Wood",
-      "Dimensions": "24 x 21 x 6 cm",
-      "Skill Focus": "Early math concept and motor precision"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Kids",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "toy-2",
-    "sku": "TOY-CR-BUNNY",
-    "name": "Meris Hand-Knit Crochet Cotton Bunny",
-    "category": "Kids Toys",
-    "categorySlug": "toys",
-    "price": 1199,
-    "discountPrice": 999,
-    "stock": 7,
-    "rating": 4.9,
-    "ratingCount": 62,
-    "images": [
-      "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton.",
-    "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
-    "specifications": {
-      "Height": "28 cm",
-      "Filling": "Hypoallergenic Recycled Plush Polyfill",
-      "Material": "100% Organic Indigo Yarn",
-      "Wash Care": "Gentle hand wash inside net pouch"
-    },
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Meris Handwoven",
-    "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "stat-1",
-    "sku": "ST-JRN-LINEN",
-    "name": "Gold-Foil Archival Linen-Bound Journal",
-    "category": "Stationeries",
-    "categorySlug": "stationeries",
-    "price": 999,
-    "discountPrice": 849,
-    "stock": 40,
-    "rating": 4,
-    "ratingCount": 2,
-    "images": [
-      "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper.",
-    "description": "Designed for thoughts that deserve to endure. Featuring heavy organic flax linen bookcloth and gilded leaf gold borders. The 120GSM acid-free leaves accommodate rollerball pens and heavy fountain pen calligraphy beautifully without bleed-through.",
-    "specifications": {
-      "Accents": "Luxury hot-stamped gold foil text cover",
-      "Binding": "Lie-flat stitched Smyth Sewn",
-      "Page Count": "160 ruled journal pages",
-      "Paper Type": "120 GSM Acid-Free Archival cream lines"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
     "brand": "Meris Script",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "ent-1",
-    "sku": "EN-CH-WOOD",
-    "name": "Mahogany & Maple Handcarved Chess Board",
-    "category": "Entertainment Products",
-    "categorySlug": "entertainment",
-    "price": 4999,
-    "discountPrice": 4299,
-    "stock": 3,
-    "rating": 4.9,
-    "ratingCount": 18,
-    "images": [
-      "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1580541832626-2a7131ee809f?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Stately 14-inch solid wood checkers and chess console with velvet interior slots for pieces.",
-    "description": "Crafted with absolute tournament precision. Each chessman is carved individually by hand, and weighted in velvet bases for solid tactile response. The dual-hinged body folds into a sturdy felt-divided storage chest.",
-    "specifications": {
-      "Dimensions": "36 x 36 cm fully open",
-      "King Height": "3.25 inches (7.6 cm)",
-      "Dark Wood Blocks": "Warm Indonesian Mahogany",
-      "Light Wood Blocks": "Natural Hard Sugar Maple"
-    },
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Meris Heritage",
-    "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "home-1",
-    "sku": "HM-CANDLE-SOY",
-    "name": "Symphony Organic Lavender Scented Soy Candle",
-    "category": "Home Gifts",
-    "categorySlug": "home",
-    "price": 699,
-    "discountPrice": 599,
-    "stock": 45,
-    "rating": 4.8,
-    "ratingCount": 210,
-    "images": [
-      "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Pure hand-poured soy wax core mixed with organic French lavender oils, inside a ceramic jar.",
-    "description": "Bring absolute serenity to your relaxation spaces. The Symphony Candle uses 100% natural hydrogenated soy bean wax, burning cleanly for over 45 hours without leaving any smoke residue. Formulated with premium plant extracts to induce calm sleep.",
-    "specifications": {
-      "Wax": "100% Eco-friendly Organic Soy Wax",
-      "Wick": "Crackling wooden wick plate",
-      "Container": "Terracotta ceramic reuseable tumled jar",
-      "Burn Lifetime": "45+ clean burning hours"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Botanics",
     "availability": "in-stock",
     "vendorId": null
   },
@@ -406,56 +293,94 @@
     "vendorId": null
   },
   {
-    "id": "stat-3",
-    "sku": "ST-CAL-SET",
-    "name": "Calligraphy Starter Set with Raw Brass Inkwell",
-    "category": "Stationeries",
+    "id": "stat-1",
+    "sku": "ST-JRN-LINEN",
+    "name": "Self-Adhesive Wall Mounted Storage Organizer ",
+    "category": "home",
     "categorySlug": "stationeries",
-    "price": 1850,
-    "discountPrice": 1599,
-    "stock": 7,
-    "rating": 4.8,
-    "ratingCount": 22,
+    "price": 235,
+    "discountPrice": 150,
+    "stock": 20,
+    "rating": 4,
+    "ratingCount": 2,
     "images": [
-      "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop&q=80"
+      "/uploads/prod_1784931287921_9387.jpeg",
+      "/uploads/prod_1784931297137_3997.jpeg",
+      "/uploads/prod_1784931308657_9053.jpeg",
+      "/uploads/prod_1784931316697_6897.jpeg"
     ],
-    "shortDescription": "Stunning writing gift kit including a wood-nib stylus, 4 premium steel nib points, and an antique brass ink pot.",
-    "description": "Rekindle the majestic art of hand-written letters. This curation features an ergonomic polished rosewood handle stylus, fine steel drawing nibs, and a heavy brass inkwell containing 30ml of rich pigment organic charcoal black ink.",
+    "shortDescription": "Exquisitely bound fabric notebook with 160 pages of ink-proof thick cream cartridge paper.",
+    "description": "Self-Adhesive Wall Mounted Storage Organizer for Washroom, Kitchen and Bedroom. No drilling necessary, easy installation, space saving rack for accessories. \n\nMake sure plain and neat surface. ",
     "specifications": {
-      "Nibs": "4 high-flex spring steel calligraphy points",
-      "Stylus": "Hand-turned Rosewood stylus",
-      "Inkwell": "Solid machined Brass leakproof screw-cap vessel",
-      "Packaging": "Lined premium cardboard giftbox"
+      "Accents": "Luxury hot-stamped gold foil text cover",
+      "Binding": "Lie-flat stitched Smyth Sewn",
+      "Page Count": "160 ruled journal pages",
+      "Paper Type": "120 GSM Acid-Free Archival cream lines"
     },
     "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
+    "isNew": false,
+    "isBestseller": true,
     "brand": "Meris Script",
     "availability": "in-stock",
     "vendorId": null
   },
   {
+    "id": "ent-1",
+    "sku": "EN-CH-WOOD",
+    "name": "Wooden 3 in 1 puzzle for Kids",
+    "category": "learning",
+    "categorySlug": "entertainment",
+    "price": 299,
+    "discountPrice": 150,
+    "stock": 5,
+    "rating": 4.9,
+    "ratingCount": 18,
+    "images": [
+      "/uploads/prod_1784929841491_2639.jpeg"
+    ],
+    "shortDescription": "Stately 14-inch solid wood checkers and chess console with velvet interior slots for pieces.",
+    "description": "Storio Toys 3 in 1 Wooden puzzle for Toddlers. Educational Board game Alphabets, numbers and shapes puzzles. Toddler learning puzzle toy for Kids 1-3 years old. Early Education gift for Kids.",
+    "specifications": {
+      "Weight": "0.2 kg",
+      "Dimensions": "36 x 36 cm fully open",
+      "King Height": "3.25 inches (7.6 cm)",
+      "Dark Wood Blocks": "Warm Indonesian Mahogany",
+      "Light Wood Blocks": "Natural Hard Sugar Maple"
+    },
+    "weightKg": 0.2,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Heritage",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
     "id": "kolam-1",
     "sku": "KL-ST-LOTUS",
-    "name": "Bespoke Golden Lotus Border Acrylic Kolam Stencil",
-    "category": "Kolam Stencils",
+    "name": "Traditional Wood Kitchen Set",
+    "category": "wood-gifts",
     "categorySlug": "kolam",
-    "price": 499,
-    "discountPrice": 399,
-    "stock": 22,
+    "price": 360,
+    "discountPrice": 225,
+    "stock": 5,
     "rating": 4.8,
     "ratingCount": 115,
     "images": [
-      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?w=600&auto=format&fit=crop"
+      "/uploads/prod_1784927834990_4888.jpeg",
+      "/uploads/prod_1784927846779_9162.jpeg",
+      "/uploads/prod_1784927860245_3441.jpeg"
     ],
     "shortDescription": "Premium 3mm acrylic grid design stencil panel for swift, clean floral floor rangoli trails.",
-    "description": "Bring divine luck to your front entrance door with this highly modular laser-etched Kolam stenciler. Simply set the platter on the floor, sprinkle white chalk powder, and lift to reveal highly detailed traditional geometric lotus lines. Highly reusable and easily washed.",
+    "description": "Wood eco-friendly Wooden Kids Toy kitchen set of 32 Pcs.",
     "specifications": {
+      "Weight": "0.65 kg",
       "Material": "Military-Grade Shatterproof Acrylic",
       "Thickness": "3.0 mm",
       "Dimensions": "30 x 30 cm circular plate",
       "Stencil Design": "Sacred Golden Mandala Lotus grid"
     },
+    "weightKg": 0.65,
     "reviews": [],
     "isNew": false,
     "isBestseller": true,
@@ -525,25 +450,29 @@
   {
     "id": "wood-2",
     "sku": "WD-SHELF-GEO",
-    "name": "Geometric Hexagonal Floating Timber Shelves",
-    "category": "Wood Crafted Gifts",
+    "name": "Wall Mount Mobile Holder",
+    "category": "home",
     "categorySlug": "wood-gifts",
-    "price": 2499,
-    "discountPrice": 1999,
-    "stock": 4,
+    "price": 50,
+    "discountPrice": 25,
+    "stock": 20,
     "rating": 4.6,
     "ratingCount": 35,
     "images": [
-      "https://images.unsplash.com/photo-1532372320978-9b4d8a3a0245?w=600&auto=format&fit=crop"
+      "/uploads/prod_1784930816444_4522.jpeg",
+      "/uploads/prod_1784930829376_8102.jpeg",
+      "/uploads/prod_1784930838251_4018.jpeg"
     ],
     "shortDescription": "Set of 3 interlocking luxury pine-wood bookshelves with natural oiled varnish finishes.",
-    "description": "Add depth to your home with these majestic modern honeycomb shelves. Precisely cut pine wood planks locked at precise angles. Lightweight yet durable enough to display small pots, candles, or souvenir clocks.",
+    "description": "Wall mount self-adhesive Wall storage mobile Holder. Mobile phone charging bracket. Multipurpose Organizer Wall mount holder for remotes, phone and keys. ",
     "specifications": {
       "Finish": "Satin matte heatproof sealant",
+      "Weight": "0.1 kg",
       "Wood Type": "Radiata White Pine",
       "Weight Capacity": "Up to 5 kg per bracket",
       "Mounting Hardware": "Concealed metal brackets included"
     },
+    "weightKg": 0.1,
     "reviews": [],
     "isNew": true,
     "isBestseller": false,
@@ -552,27 +481,370 @@
     "vendorId": null
   },
   {
+    "id": "toy-1",
+    "sku": "TOY-WD-STACK",
+    "name": "Handcrafted Wooden Stacking Ring Tower",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 899,
+    "discountPrice": 749,
+    "stock": 25,
+    "rating": 4.8,
+    "ratingCount": 124,
+    "images": [
+      "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Organic wooden rings coated in safe herbal-dyed colors, supporting early sensory development.",
+    "description": "This elegant Stacking Ring Tower is crafted from native beechwood and finished with food-grade seed oils and natural pigments. Non-toxic, fully hand-rounded, and exceptionally smooth for tender hands. It supports hand-eye coordination, size sorting, and visual acuity.",
+    "specifications": {
+      "Weight": "0.32 kg",
+      "Coating": "Natural plant-extract pigments",
+      "Material": "Sustainably sourced Beechwood",
+      "Dimensions": "18 x 9 x 9 cm",
+      "Age Recommendation": "12+ months"
+    },
+    "weightKg": 0.32,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "home-1",
+    "sku": "HM-CANDLE-SOY",
+    "name": "Symphony Organic Lavender Scented Soy Candle",
+    "category": "Home Gifts",
+    "categorySlug": "home",
+    "price": 699,
+    "discountPrice": 599,
+    "stock": 45,
+    "rating": 4.8,
+    "ratingCount": 210,
+    "images": [
+      "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Pure hand-poured soy wax core mixed with organic French lavender oils, inside a ceramic jar.",
+    "description": "Bring absolute serenity to your relaxation spaces. The Symphony Candle uses 100% natural hydrogenated soy bean wax, burning cleanly for over 45 hours without leaving any smoke residue. Formulated with premium plant extracts to induce calm sleep.",
+    "specifications": {
+      "Wax": "100% Eco-friendly Organic Soy Wax",
+      "Wick": "Crackling wooden wick plate",
+      "Container": "Terracotta ceramic reuseable tumled jar",
+      "Burn Lifetime": "45+ clean burning hours"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Botanics",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-2",
+    "sku": "TOY-CR-BUNNY",
+    "name": "Meris Hand-Knit Crochet Cotton Bunny",
+    "category": "Kids Toys",
+    "categorySlug": "toys",
+    "price": 1199,
+    "discountPrice": 999,
+    "stock": 7,
+    "rating": 4.9,
+    "ratingCount": 62,
+    "images": [
+      "https://images.unsplash.com/photo-1559251606-c623743a6d76?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Lovingly hand-knitted snuggle companion made with 100% hypoallergenic combed cotton.",
+    "description": "A masterpiece of local crochet craftsmanship. This soft snuggle bunny is knitted entirely by skilled rural artisans using organic cotton treads. Features secure safety eyes and hypoallergenic plush stuffing. Perfect as a baby shower return gift or bedtime companion.",
+    "specifications": {
+      "Height": "28 cm",
+      "Filling": "Hypoallergenic Recycled Plush Polyfill",
+      "Material": "100% Organic Indigo Yarn",
+      "Wash Care": "Gentle hand wash inside net pouch"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Handwoven",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-9",
+    "sku": "TOY-WD-ARCH",
+    "name": "Rechargeable Dancing Cactus",
+    "category": "toys",
+    "categorySlug": "toys",
+    "price": 359,
+    "discountPrice": 230,
+    "stock": 25,
+    "rating": 4.9,
+    "ratingCount": 19,
+    "images": [
+      "/uploads/prod_1784925442456_5902.jpg",
+      "/uploads/prod_1784925459751_4431.jpg",
+      "/uploads/prod_1784925474765_1795.jpg"
+    ],
+    "shortDescription": "Intricate 3D architectural craft kit compiling 250 micro-laser wood puzzle nodes.",
+    "description": "The rechargeable toys talking cactus toys for Kids. This dancing cactus toy can sing and wriggle repeat what you say. Fun for sure.",
+    "specifications": {
+      "Weight": "0.3 kg",
+      "Material": "Sustainably sourced Basswood Plywood",
+      "Complexity": "Advanced (250+ parts)",
+      "Recommended Age": "13+ Years"
+    },
+    "weightKg": 0.3,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Tech",
+    "availability": "low-stock",
+    "vendorId": null
+  },
+  {
+    "id": "learn-1",
+    "sku": "LN-ABACUS-PST",
+    "name": "Pastel Decimal Wooden Abacus Toy",
+    "category": "Learning Stuff",
+    "categorySlug": "learning",
+    "price": 1250,
+    "discountPrice": 999,
+    "stock": 13,
+    "rating": 4.7,
+    "ratingCount": 49,
+    "images": [
+      "https://images.unsplash.com/photo-1618842676088-c4d48a6a7c9d?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Classic math tutor abacus with 10 rows of colorful child-safe rounded timber sliders.",
+    "description": "An educational tool designed to introduce basic counting, addition, and division. Crafted beautifully from light-colored beech wood with smooth non-splinter dowels. Finished in lovely pastel tones, blending harmoniously into modern nurseries.",
+    "specifications": {
+      "Beads": "Rounded maple wood sliding units (100 total)",
+      "Base Frame": "Light Birch Solid Wood",
+      "Dimensions": "24 x 21 x 6 cm",
+      "Skill Focus": "Early math concept and motor precision"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Kids",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-6",
+    "sku": "TOY-WD-BALANCE",
+    "name": "Mini Projector Torch Toy",
+    "category": "toys",
+    "categorySlug": "toys",
+    "price": 170,
+    "discountPrice": 90,
+    "stock": 20,
+    "rating": 4.9,
+    "ratingCount": 30,
+    "images": [
+      "/uploads/prod_1784926865983_9842.jpeg",
+      "/uploads/prod_1784926876393_7926.jpeg",
+      "/uploads/prod_1784926885572_4394.jpeg"
+    ],
+    "shortDescription": "Premium curved beechwood wobble board supporting posture balance and creative play.",
+    "description": "Storio 3 slides 24 patterns Mini Projectors Torch Toy for Kids. Sleeping story toys for toddlers. Educational learning toys with specifications of space, animal and foods.",
+    "specifications": {
+      "Weight": "0.3 kg",
+      "Coating": "Natural oil protectant",
+      "Material": "Multilayered Pressed Beechwood",
+      "Weight Capacity": "120 kg"
+    },
+    "weightKg": 0.3,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Active",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-7",
+    "sku": "TOY-WD-GEARS",
+    "name": "Rechargeable Kids Educational Toy Phone ",
+    "category": "learning",
+    "categorySlug": "toys",
+    "price": 449,
+    "discountPrice": 250,
+    "stock": 25,
+    "rating": 4.7,
+    "ratingCount": 22,
+    "images": [
+      "/uploads/prod_1784925772864_9519.jpeg",
+      "/uploads/prod_1784925821315_7403.jpeg",
+      "/uploads/prod_1784925831656_867.jpeg"
+    ],
+    "shortDescription": "Interlocking wooden gear puzzle introducing kinetic energy transmission and physical mechanics.",
+    "description": "Educational toy mobile phone for boys & girls 3+ years with various sounds and music. In addition, it is rechargeable.",
+    "specifications": {
+      "Weight": "0.3 kg",
+      "Material": "Laser-cut Birch Plywood",
+      "Skill level": "Intermediate",
+      "Time to build": "3-4 hours"
+    },
+    "weightKg": 0.3,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Tech",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "toy-8",
+    "sku": "TOY-WD-CHESS",
+    "name": "Penguin Printed Glass Water Bottle",
+    "category": "bottles",
+    "categorySlug": "toys",
+    "price": 200,
+    "discountPrice": 120,
+    "stock": 5,
+    "rating": 5,
+    "ratingCount": 14,
+    "images": [
+      "/uploads/prod_1784928803035_3016.jpeg",
+      "/uploads/prod_1784928812433_2466.jpeg",
+      "/uploads/prod_1784928821192_8185.jpeg"
+    ],
+    "shortDescription": "Exquisite inlaid rosewood chess board with weighted hand-carved chess pieces.",
+    "description": "Penguin printed glass water bottles 380 ml. Double layer glass with Protective outer cover. Leak resistant screw Cap. Portable reusable bottle for kids, office and travel. Multicolor features.",
+    "specifications": {
+      "Weight": "0.35 kg",
+      "Wood Type": "Sheesham & Maple",
+      "King Height": "6.5 cm",
+      "Board Dimensions": "30 x 30 cm"
+    },
+    "weightKg": 0.35,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Games",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "btl-2",
+    "sku": "BT-FLASK-PASTEL",
+    "name": "Pastel Vacuum Insulated Double-Walled Flask",
+    "category": "Return Gift Bottles",
+    "categorySlug": "bottles",
+    "price": 1150,
+    "discountPrice": 950,
+    "stock": 35,
+    "rating": 4.8,
+    "ratingCount": 40,
+    "images": [
+      "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Stunning lavender-cream double-walled thermos keeping cold drinks frosty for 24 hours.",
+    "description": "Crafted with premium grade stainless steel, this double-walled thermal flask features a leakproof silicone-sealed cap with a hand-stitched vegan leather carry handle. Finished in sweatproof powder coated lavender-cream colors.",
+    "specifications": {
+      "Insulation": "TempShield double-wall vacuum seal",
+      "Steel Type": "18/8 Pro-Grade food safe Stainless Steel",
+      "Performance": "24 hrs cold, 12 hrs hot",
+      "Volume Capacity": "650 ml"
+    },
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Meris Wellness",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "wood-3",
+    "sku": "WD-DESK-ORG",
+    "name": "Colorful Flying Bird for Car & Bike Decoration",
+    "category": "entertainment",
+    "categorySlug": "wood-gifts",
+    "price": 150,
+    "discountPrice": 100,
+    "stock": 10,
+    "rating": 4.7,
+    "ratingCount": 29,
+    "images": [
+      "/uploads/prod_1784931938193_5162.jpeg",
+      "/uploads/prod_1784932042669_7467.jpeg",
+      "/uploads/prod_1784932054089_7702.jpeg",
+      "/uploads/prod_1784932062819_5293.jpeg"
+    ],
+    "shortDescription": "Exquisite hand-planed teakwood desktop tray featuring a slotted letter rack and brass pen grooves.",
+    "description": "Colorful Flying Bird for Car & Bike Mirror Decoration accessory for creative Wind-Powered Bird Ornament for car Side Mirror, Hood, Scooter & Motorcycle. Weatherproof vehicle decor and multi color.",
+    "specifications": {
+      "Polish": "Matte Linseed Oil hand-rubbed finish",
+      "Weight": "0.1 kg",
+      "Dimensions": "24 x 15 x 12 cm",
+      "Timber Type": "Premium seasoned Teakwood",
+      "Compartments": "3 vertical letter slots, 2 pen cradles"
+    },
+    "weightKg": 0.1,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": true,
+    "brand": "Meris Artisanal",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
+    "id": "btl-1",
+    "sku": "BT-COPPER-INF",
+    "name": "Sovereign Ayurvedic Pure Hammered Copper Bottle",
+    "category": "Return Gift Bottles",
+    "categorySlug": "bottles",
+    "price": 1399,
+    "discountPrice": 1199,
+    "stock": 20,
+    "rating": 4.7,
+    "ratingCount": 55,
+    "images": [
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80"
+    ],
+    "shortDescription": "Sleek 950ml leakproof copper canister styled with micro-hammered indent decorations.",
+    "description": "Encourage holistic hydration with this stunning copper water storage flask, designed to naturally detoxify and alkaline water. Hand-beaten detailing creates a premium golden sparkle and outstanding tactile grip. Wrapped in eco-friendly protective packaging.",
+    "specifications": {
+      "Cap": "Threaded air-tight brass cap with silicone gasket",
+      "Design": "Traditional hand-hammered finish",
+      "Volume": "950 ml",
+      "Material": "99.9% Pure Food-Grade Copper"
+    },
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "Meris Wellness",
+    "availability": "in-stock",
+    "vendorId": null
+  },
+  {
     "id": "bag-3",
     "sku": "BG-SLING-JUTE",
-    "name": "Eco-Jute & Vegan Leather Sling Bag",
-    "category": "Handbags",
+    "name": "3D Wooden Preschool Learning Educational Toy for Kids",
+    "category": "wood-gifts",
     "categorySlug": "handbags",
-    "price": 1750,
-    "discountPrice": 1450,
-    "stock": 18,
+    "price": 150,
+    "discountPrice": 100,
+    "stock": 5,
     "rating": 4.6,
     "ratingCount": 52,
     "images": [
-      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop&q=80"
+      "/uploads/prod_1784930321114_9203.jpeg"
     ],
     "shortDescription": "A casual yet elegant dual-textured sling bag made of golden handloom jute fibers with rich tan leatherette trims.",
-    "description": "Perfect for brunches or weekend strolls, this bag fuses organic woven golden jute fabrics with cruelty-free tan vegan leather accents. Features a secure zipper main compartment with custom brass pulls and adjustable strap hardware.",
+    "description": "ABCD block for Kids makes an interactive way to engage kids with educational concepts and actively participate in early learning process in Alphabets.",
     "specifications": {
       "Fabric": "Premium Golden Jute & Bio-Alloy Polyurethane",
       "Lining": "100% Recycled Cotton sailcloth",
+      "Weight": "0.2 kg",
       "Closure": "Heavy-duty brass YKK zippers",
       "Strap length": "Adjustable 115cm sling"
     },
+    "weightKg": 0.2,
     "reviews": [],
     "isNew": false,
     "isBestseller": false,
@@ -626,220 +898,17 @@
     "shortDescription": "Hefty, perfectly balanced writing companion machined from premium lead-free hexagonal brass rods.",
     "description": "An object of extreme luxury weight. This drafting and writing tool is milled from solid hexagonal brass. Develops a gorgeous antique patina over months of personal usage. Includes a premium smooth German-engineered ballpoint ink cartridge.",
     "specifications": {
-      "Weight": "42g (perfectly balanced offset)",
+      "Weight": "0.042 kg",
       "Mechanism": "Precision silent spring lock action",
       "Metal Core": "100% Solid Industrial Hex Brass",
       "Ink Cartridge": "Schmidt EasyFlow 9000 Black (inclusive)"
     },
+    "weightKg": 0.042,
     "reviews": [],
     "isNew": true,
     "isBestseller": false,
     "brand": "Meris Script",
     "availability": "low-stock",
-    "vendorId": null
-  },
-  {
-    "id": "bag-2",
-    "sku": "BG-EMB-CLUTCH",
-    "name": "Royal Heritage Golden-Zardozi Evening Clutch",
-    "category": "Handbags",
-    "categorySlug": "handbags",
-    "price": 1999,
-    "discountPrice": 1699,
-    "stock": 0,
-    "rating": 4.9,
-    "ratingCount": 41,
-    "images": [
-      "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Velvety dark clutch bag with handwoven metallic bullion thread vine pattern and chain strap.",
-    "description": "An outstanding luxury clutch ideal for festive weddings and elegant dinners. Intricately embellished with golden beads and coiled wire work known as Zardozi. Emits a stellar glistening reflect under dim evening lights.",
-    "specifications": {
-      "Closure": "Secure golden magnetic lock",
-      "Embroidery": "Artisan Handloom bullion metallic gold thread",
-      "Base Fabric": "Silk Blend Deep Navy Velvet",
-      "Chain Strap": "Removable vintage gold-link chain (110cm)"
-    },
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Meris Heritage",
-    "availability": "out-of-stock",
-    "vendorId": null
-  },
-  {
-    "id": "btl-2",
-    "sku": "BT-FLASK-PASTEL",
-    "name": "Pastel Vacuum Insulated Double-Walled Flask",
-    "category": "Return Gift Bottles",
-    "categorySlug": "bottles",
-    "price": 1150,
-    "discountPrice": 950,
-    "stock": 35,
-    "rating": 4.8,
-    "ratingCount": 40,
-    "images": [
-      "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Stunning lavender-cream double-walled thermos keeping cold drinks frosty for 24 hours.",
-    "description": "Crafted with premium grade stainless steel, this double-walled thermal flask features a leakproof silicone-sealed cap with a hand-stitched vegan leather carry handle. Finished in sweatproof powder coated lavender-cream colors.",
-    "specifications": {
-      "Insulation": "TempShield double-wall vacuum seal",
-      "Steel Type": "18/8 Pro-Grade food safe Stainless Steel",
-      "Performance": "24 hrs cold, 12 hrs hot",
-      "Volume Capacity": "650 ml"
-    },
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Meris Wellness",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "wood-3",
-    "sku": "WD-DESK-ORG",
-    "name": "Royal Teakwood Desk Organizer & Letter Rack",
-    "category": "Wood Crafted Gifts",
-    "categorySlug": "wood-gifts",
-    "price": 1650,
-    "discountPrice": 1399,
-    "stock": 10,
-    "rating": 4.7,
-    "ratingCount": 29,
-    "images": [
-      "https://images.unsplash.com/photo-1606166187734-a4cb74079027?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Exquisite hand-planed teakwood desktop tray featuring a slotted letter rack and brass pen grooves.",
-    "description": "Keep your desktop curated. This premium desk organizer is carved from seasoned solid teakwood and polished with direct oil sealants to highlight its stunning natural golden-brown grains. Complete with non-slip velvet protective padding.",
-    "specifications": {
-      "Polish": "Matte Linseed Oil hand-rubbed finish",
-      "Dimensions": "24 x 15 x 12 cm",
-      "Timber Type": "Premium seasoned Teakwood",
-      "Compartments": "3 vertical letter slots, 2 pen cradles"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": true,
-    "brand": "Meris Artisanal",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "btl-1",
-    "sku": "BT-COPPER-INF",
-    "name": "Sovereign Ayurvedic Pure Hammered Copper Bottle",
-    "category": "Return Gift Bottles",
-    "categorySlug": "bottles",
-    "price": 1399,
-    "discountPrice": 1199,
-    "stock": 20,
-    "rating": 4.7,
-    "ratingCount": 55,
-    "images": [
-      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Sleek 950ml leakproof copper canister styled with micro-hammered indent decorations.",
-    "description": "Encourage holistic hydration with this stunning copper water storage flask, designed to naturally detoxify and alkaline water. Hand-beaten detailing creates a premium golden sparkle and outstanding tactile grip. Wrapped in eco-friendly protective packaging.",
-    "specifications": {
-      "Cap": "Threaded air-tight brass cap with silicone gasket",
-      "Design": "Traditional hand-hammered finish",
-      "Volume": "950 ml",
-      "Material": "99.9% Pure Food-Grade Copper"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Wellness",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "home-3",
-    "sku": "HM-CERAMIC-DIFF",
-    "name": "Hand-Cast Ceramic Oil Diffuser & Incense Chalice",
-    "category": "Home Gifts",
-    "categorySlug": "home",
-    "price": 999,
-    "discountPrice": 849,
-    "stock": 25,
-    "rating": 4.8,
-    "ratingCount": 33,
-    "images": [
-      "https://images.unsplash.com/photo-1540324155974-75226c3ad3a6?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Speckled stoneware clay diffuse burner styled with organic carved apertures and copper oil dish.",
-    "description": "Elevate your sensory experiences. Simply place a wax tea-candle in the lower chamber and add organic oils to the deep top copper basin. The custom speckled clay filters a warm amber glow, diffusing soothing botanical fragrances perfectly.",
-    "specifications": {
-      "Basin": "100% Spun Copper heating plate",
-      "Safety": "Heat-treated non-cracking glaze",
-      "Stoneware": "Speckled Oatmeal Studio Clay",
-      "Dimensions": "11 x 10 cm cylindric body"
-    },
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Meris Ceramics",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "home-2",
-    "sku": "HM-MUG-CERAMIC",
-    "name": "Artisanal Studio Speckled Ripple Mug",
-    "category": "Home Gifts",
-    "categorySlug": "home",
-    "price": 549,
-    "discountPrice": 449,
-    "stock": 30,
-    "rating": 4.5,
-    "ratingCount": 142,
-    "images": [
-      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Stony clay ceramic Mug finished with a double-glazed speckled oatmeal and gold-rim effect.",
-    "description": "Each mug is single-thrown by hand on a potters wheel, rendering a completely unique swirling pattern and raw feel. Holds up to 350ml of your favorite fresh coffee filter brews. Double-fired to support heavy microwave use safely.",
-    "specifications": {
-      "Safety": "Dishwasher and Microwave certified safe",
-      "Production": "Hand-thrown studio stoneware clay",
-      "Glazing Coating": "Lead-free food-compliant silica glaze",
-      "Volume Capacity": "350 ml"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Ceramics",
-    "availability": "in-stock",
-    "vendorId": null
-  },
-  {
-    "id": "ent-2",
-    "sku": "EN-SL-BOARD",
-    "name": "Luxury Walnut Wood Solitaire Board with Glass Marbles",
-    "category": "Entertainment Products",
-    "categorySlug": "entertainment",
-    "price": 3800,
-    "discountPrice": 3299,
-    "stock": 6,
-    "rating": 4.7,
-    "ratingCount": 15,
-    "images": [
-      "https://images.unsplash.com/photo-1611195974226-a6a9be9dd763?w=800&auto=format&fit=crop&q=80"
-    ],
-    "shortDescription": "Hand-turned walnut wood circular solitaire board styled with 33 hand-swirled custom glass spheres.",
-    "description": "An object of outstanding intellectual engagement. This single-player strategic tabletop game is carved from dark American walnut and features a grooved perimeter track to secure captured glass marbles.",
-    "specifications": {
-      "Finish": "Polished silk-varnish coating",
-      "Marbles": "33 hand-crafted swirled decorative glass spheres",
-      "Diameter": "30 cm circular console",
-      "Platter Wood": "Natural high-grade American Walnut"
-    },
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "Meris Heritage",
-    "availability": "in-stock",
     "vendorId": null
   }
 ]
