@@ -1223,6 +1223,89 @@ function createSmtpTransporter() {
   });
 }
 
+async function dispatchLiveEmail(to: string, subject: string, html: string): Promise<boolean> {
+  const recipient = sanitizeEmail(to);
+  if (!recipient) return false;
+
+  // 1. Try Resend HTTP REST API (Primary for Cloud / Railway - Port 443)
+  if (isConfigured(process.env.RESEND_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
+      const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'onboarding@resend.dev';
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY!.trim()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: `${fromName} <${fromEmail}>`,
+          to: [recipient],
+          subject: subject,
+          html: html
+        })
+      });
+      const data: any = await res.json();
+      if (res.ok && data.id) {
+        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id})`);
+        return true;
+      }
+      console.warn('[Resend API Warning]:', data);
+    } catch (err) {
+      console.error('[Resend API Exception]:', err);
+    }
+  }
+
+  // 2. Try Brevo v3 HTTP REST API (No IP restrictions, Port 443)
+  if (isConfigured(process.env.BREVO_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
+      const fromEmail = process.env.SMTP_FROM_EMAIL || 'meriseshop.2025@gmail.com';
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY!.trim()
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: recipient }],
+          subject: subject,
+          htmlContent: html
+        })
+      });
+      const data: any = await res.json();
+      if (res.ok && (data.messageId || data.messageIds)) {
+        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
+        return true;
+      }
+      console.warn('[Brevo REST API Warning]:', data);
+    } catch (err) {
+      console.error('[Brevo REST API Exception]:', err);
+    }
+  }
+
+  // 3. Fallback: Nodemailer SMTP
+  try {
+    const transporter = createSmtpTransporter();
+    const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'meriseshop.2025@gmail.com';
+
+    await transporter.sendMail({
+      from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
+      to: recipient,
+      subject: subject,
+      html: html
+    });
+    console.log(`[SMTP Mailer] Live email delivered to ${recipient} via SMTP.`);
+    return true;
+  } catch (smtpErr: any) {
+    console.error(`[SMTP Mailer Error] Failed sending to ${recipient}:`, smtpErr?.message || smtpErr);
+    return false;
+  }
+}
+
 function normalizeEmail(value: unknown): string {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
@@ -1461,30 +1544,8 @@ async function sendBookingEmail(order: any) {
     console.log(`[Email Service] Supabase not configured — email log skipped for ${recipientEmail}.`);
   }
 
-  // Attempt real SMTP if environment variables are provided
-  if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
-    try {
-      const transporter = createSmtpTransporter();
-
-      await transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-        to: recipientEmail,
-        subject: subject,
-        html: htmlContent
-      });
-      console.log(`[Email Service] Real SMTP email successfully dispatched to ${recipientEmail}.`);
-    } catch (smtpError) {
-      console.error('[Email Service] Failed sending via real SMTP:', smtpError);
-    }
-  } else {
-    // Beautiful ASCII logging for local dev tracking
-    console.log('\n======================================================');
-    console.log('📬 LUXURY EMAIL DISPATCHED (SIMULATED & CACHED IN DATABASE)');
-    console.log(`RECIPIENT: ${recipientEmail}`);
-    console.log(`SUBJECT: ${subject}`);
-    console.log(`TOTAL NET INVOICE: ₹${order.total}`);
-    console.log('======================================================\n');
-  }
+  // Dispatch live email via REST API (Resend / Brevo) or SMTP
+  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
 
   return newEmailRecord;
 }
@@ -1605,28 +1666,8 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
     console.log(`[Email Service] Supabase not configured — payment email log skipped for ${recipientEmail}.`);
   }
 
-  if (realNotificationsEnabled() && isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS)) {
-    try {
-      const transporter = createSmtpTransporter();
-
-      await transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-        to: recipientEmail,
-        subject: subject,
-        html: htmlContent
-      });
-      console.log(`[Email Service] Real SMTP payment notification email successfully dispatched to ${recipientEmail}.`);
-    } catch (smtpError) {
-      console.error('[Email Service] Failed sending payment notification via real SMTP:', smtpError);
-    }
-  } else {
-    console.log('\n======================================================');
-    console.log('📬 LUXURY PAYMENT STATUS EMAIL DISPATCHED (SIMULATED & CACHED)');
-    console.log(`RECIPIENT: ${recipientEmail}`);
-    console.log(`SUBJECT: ${subject}`);
-    console.log(`STATUS: ${order.paymentStatus}`);
-    console.log('======================================================\n');
-  }
+  // Dispatch live email via REST API (Resend / Brevo) or SMTP
+  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
 
   return newEmailRecord;
 }
@@ -1867,37 +1908,16 @@ function smtpEmailConfigured(): boolean {
 }
 
 async function dispatchOtpEmail(email: string, code: string): Promise<void> {
-  const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-  const fromEmail = process.env.SMTP_FROM_EMAIL || 'meriseshop.2025@gmail.com';
-  const fromDomain = fromEmail.includes('@') ? fromEmail.split('@').pop() : 'meriseshop.com';
-
-  const transporter = createSmtpTransporter();
-
-  await transporter.sendMail({
-    from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
-    to: email,
-    replyTo: fromEmail,
-    envelope: {
-      from: fromEmail,
-      to: email,
-    },
-    messageId: `<otp-${Date.now()}-${Math.random().toString(36).slice(2)}@${fromDomain}>`,
-    headers: {
-      'Auto-Submitted': 'auto-generated',
-      'X-Auto-Response-Suppress': 'All',
-      'X-Entity-Ref-ID': `meris-otp-${Date.now()}`,
-    },
-    subject: 'Your Meris verification code',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
-        <h2 style="margin: 0 0 12px; color: #0f172a;">Meris verification code</h2>
-        <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Meris account. It is valid for 5 minutes.</p>
-        <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
-        <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
-      </div>
-    `,
-    text: `Your Meris verification code is ${code}. It is valid for 5 minutes. If you did not request this code, no action is needed.`,
-  });
+  const subject = 'Your Meris verification code';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
+      <h2 style="margin: 0 0 12px; color: #0f172a;">Meris verification code</h2>
+      <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Meris account. It is valid for 5 minutes.</p>
+      <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
+      <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
+    </div>
+  `;
+  await dispatchLiveEmail(email, subject, html);
 }
 
 app.post('/api/send-otp', rateLimiter(30, 15 * 60 * 1000), async (req, res) => {
@@ -2273,28 +2293,8 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
       });
     }
 
-    // Send real SMTP welcome email if configured
-    if (smtpEmailConfigured()) {
-      try {
-        const transporter = createSmtpTransporter();
-
-        await transporter.sendMail({
-          from: `"${process.env.SMTP_FROM_NAME || 'Meris E-Shop'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-          to: email,
-          subject: subject,
-          html: htmlContent
-        });
-        console.log(`[Registration] Welcome confirmation email successfully sent to ${email}.`);
-      } catch (smtpError) {
-        console.error('[Registration] Welcome email SMTP dispatch failed:', smtpError);
-      }
-    } else {
-      console.log('\n======================================================');
-      console.log('📬 WELCOME EMAIL DISPATCHED (SIMULATED & CACHED)');
-      console.log(`RECIPIENT: ${email}`);
-      console.log(`SUBJECT: ${subject}`);
-      console.log('======================================================\n');
-    }
+    // Send welcome email via REST API (Resend / Brevo) or SMTP
+    await dispatchLiveEmail(email, subject, htmlContent);
 
     res.json({ success: true, message: 'Account registered successfully.' });
   } catch (err) {
@@ -2895,37 +2895,24 @@ app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
       return res.status(400).json({ error: 'Valid target email address is required.' });
     }
 
-    if (!isConfigured(process.env.SMTP_HOST) || !isConfigured(process.env.SMTP_USER) || !isConfigured(process.env.SMTP_PASS)) {
-      return res.status(400).json({
-        error: 'SMTP credentials missing on server. Set SMTP_HOST, SMTP_USER, SMTP_PASS, and optionally SMTP_PORT in Railway Environment tab.'
-      });
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #0f172a; margin-top: 0;">Live Email Dispatch Successful!</h2>
+        <p style="color: #475569;">Your server at <strong>https://meris-eshop-production.up.railway.app</strong> successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
+        <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Dispatched at ${new Date().toLocaleString()}</p>
+      </div>
+    `;
+
+    const sent = await dispatchLiveEmail(targetEmail, '🧪 Meris E-Shop: Live Email Dispatch Test', html);
+    if (sent) {
+      res.json({ success: true, message: `Test email successfully delivered to ${targetEmail}!` });
+    } else {
+      res.status(500).json({ error: 'Failed to dispatch test email. Check server logs in Railway.' });
     }
-
-    const transporter = createSmtpTransporter();
-    await transporter.verify();
-
-    const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-
-    await transporter.sendMail({
-      from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
-      to: targetEmail,
-      subject: '🧪 Meris E-Shop: SMTP Connection Test',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-          <h2 style="color: #0f172a; margin-top: 0;">SMTP Connection Successful!</h2>
-          <p style="color: #475569;">Your server at <strong>https://meris-eshop-production.up.railway.app</strong> successfully connected to <strong>${process.env.SMTP_HOST}</strong> and dispatched this test email to <strong>${targetEmail}</strong>.</p>
-          <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Dispatched at ${new Date().toLocaleString()}</p>
-        </div>
-      `,
-    });
-
-    res.json({ success: true, message: `Test email successfully delivered to ${targetEmail} via ${process.env.SMTP_HOST}.` });
   } catch (err: any) {
     console.error('[Email Diagnostic Test Error]:', err);
     res.status(500).json({
-      error: `Failed to dispatch test email via SMTP: ${err?.message || err}`,
-      details: err?.code || err?.command || 'SMTP Connection Error'
+      error: `Failed to dispatch test email: ${err?.message || err}`
     });
   }
 });
