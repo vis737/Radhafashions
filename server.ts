@@ -1205,11 +1205,11 @@ function realNotificationsEnabled(): boolean {
 }
 
 function createSmtpTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp-relay.brevo.com';
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.SMTP_USER || '';
-  const pass = process.env.SMTP_PASS || '';
+  const user = process.env.SMTP_USER || 'meriseshop.2025@gmail.com';
+  const pass = process.env.SMTP_PASS || 'lljl hfcn geye rdlt';
 
   return nodemailer.createTransport({
     host,
@@ -1217,9 +1217,9 @@ function createSmtpTransporter() {
     secure,
     auth: { user, pass },
     tls: { rejectUnauthorized: false },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
   });
 }
 
