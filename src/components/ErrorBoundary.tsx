@@ -38,7 +38,8 @@ export default class ErrorBoundary extends Component<Props, State> {
           <button
             onClick={() => {
               try {
-                localStorage.removeItem('meris_products');
+                localStorage.clear();
+                sessionStorage.clear();
               } catch (e) {}
               window.location.href = '/';
             }}

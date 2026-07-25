@@ -1083,11 +1083,33 @@ export const loadInitialState = () => {
     const recentlyViewedJson = localStorage.getItem('meris_recently_viewed');
     const userJson = localStorage.getItem('meris_current_user');
 
+    const parsedCart = cartJson ? JSON.parse(cartJson) : [];
+    const safeCart = Array.isArray(parsedCart)
+      ? parsedCart
+          .map((item: any) => {
+            if (!item || !item.product) return null;
+            return {
+              ...item,
+              product: sanitizeProduct(item.product)
+            };
+          })
+          .filter(Boolean)
+      : [];
+
+    const parsedWishlist = wishlistJson ? JSON.parse(wishlistJson) : [];
+    const safeWishlist = Array.isArray(parsedWishlist) ? parsedWishlist.filter((id: any) => typeof id === 'string' && id.trim().length > 0) : [];
+
+    const parsedOrders = ordersJson ? JSON.parse(ordersJson) : [];
+    const safeOrders = Array.isArray(parsedOrders) ? parsedOrders : [];
+
+    const parsedRecentlyViewed = recentlyViewedJson ? JSON.parse(recentlyViewedJson) : [];
+    const safeRecentlyViewed = Array.isArray(parsedRecentlyViewed) ? parsedRecentlyViewed.filter((id: any) => typeof id === 'string' && id.trim().length > 0) : [];
+
     return {
-      cart: cartJson ? JSON.parse(cartJson) : [],
-      wishlist: wishlistJson ? JSON.parse(wishlistJson) : [],
-      orders: ordersJson ? JSON.parse(ordersJson) : [],
-      recentlyViewed: recentlyViewedJson ? JSON.parse(recentlyViewedJson) : [],
+      cart: safeCart,
+      wishlist: safeWishlist,
+      orders: safeOrders,
+      recentlyViewed: safeRecentlyViewed,
       currentUser: userJson ? JSON.parse(userJson) : null
     };
   } catch (err) {
