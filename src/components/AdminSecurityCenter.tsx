@@ -184,17 +184,88 @@ export default function AdminSecurityCenter() {
                 <Clock className="w-3.5 h-3.5" /> 15 mins
               </span>
             </div>
-            <div className="flex justify-between items-center border-t pt-4 font-semibold">
+            <div className="flex justify-between items-center border-t border-gray-100 dark:border-navy-800 pt-4 font-semibold">
               <span className="text-gray-400 font-normal">CORS Mapping config</span>
               <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1">
                 <Globe className="w-3.5 h-3.5 text-[#C5A021]" /> Restrictive
               </span>
             </div>
           </div>
+
+          {/* Live SMTP Diagnostic Test Tool */}
+          <SmtpTesterBlock />
         </div>
 
       </div>
 
+    </div>
+  );
+}
+
+function SmtpTesterBlock() {
+  const [targetEmail, setTargetEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleTestEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetEmail.trim()) return;
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const res = await fetch('/api/admin/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail.trim() })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResult({ success: true, message: data.message || 'Test email delivered!' });
+      } else {
+        setResult({ success: false, message: data.error || data.details || 'SMTP test failed.' });
+      }
+    } catch (err: any) {
+      setResult({ success: false, message: err.message || 'Connection error testing SMTP.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-navy-800 space-y-3 text-left">
+      <h5 className="font-display font-bold text-[11px] uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1">
+        ✉️ Test Railway SMTP Credentials
+      </h5>
+      <p className="text-[10px] text-gray-500">
+        Input an email address to test live delivery via your Railway SMTP settings.
+      </p>
+      <form onSubmit={handleTestEmail} className="flex gap-2">
+        <input
+          type="email"
+          placeholder="your-email@gmail.com"
+          value={targetEmail}
+          onChange={(e) => setTargetEmail(e.target.value)}
+          className="flex-1 px-3 py-1.5 bg-gray-50 dark:bg-navy-950 border border-gray-200 dark:border-navy-800 rounded-xl text-xs text-navy-900 dark:text-navy-50 focus:outline-none focus:border-gold-500"
+          required
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-3 py-1.5 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+        >
+          {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Send Test'}
+        </button>
+      </form>
+      {result && (
+        <div className={`p-2.5 rounded-xl text-xs border ${
+          result.success
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800'
+            : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800'
+        }`}>
+          {result.message}
+        </div>
+      )}
     </div>
   );
 }
