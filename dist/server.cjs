@@ -27,6 +27,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/utils/passwordValidator.ts
 var passwordValidator_exports = {};
@@ -105,6 +106,11 @@ var init_passwordValidator = __esm({
 });
 
 // server.ts
+var server_exports = {};
+__export(server_exports, {
+  default: () => server_default
+});
+module.exports = __toCommonJS(server_exports);
 var import_express = __toESM(require("express"), 1);
 var import_path = __toESM(require("path"), 1);
 var import_dns = __toESM(require("dns"), 1);
@@ -3469,25 +3475,28 @@ app.use((err, req, res, next) => {
     ...process.env.NODE_ENV !== "production" && { stack: err.stack }
   });
 });
-async function initializeServer() {
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await (0, import_vite.createServer)({
-      server: { middlewareMode: true },
-      appType: "spa"
+if (!process.env.VERCEL) {
+  async function initializeServer() {
+    if (process.env.NODE_ENV !== "production") {
+      const vite = await (0, import_vite.createServer)({
+        server: { middlewareMode: true },
+        appType: "spa"
+      });
+      app.use(vite.middlewares);
+      console.log("Vite middleware mounted for local development.");
+    } else {
+      const distPath = import_path.default.join(process.cwd(), "dist");
+      app.use(import_express.default.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(import_path.default.join(distPath, "index.html"));
+      });
+      console.log("Serving production static build from dist/.");
+    }
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`MERIS E-SHOP Full-Stack Server listening on http://localhost:${PORT}`);
     });
-    app.use(vite.middlewares);
-    console.log("Vite middleware mounted for local development.");
-  } else {
-    const distPath = import_path.default.join(process.cwd(), "dist");
-    app.use(import_express.default.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(import_path.default.join(distPath, "index.html"));
-    });
-    console.log("Serving production static build from dist/.");
   }
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`MERIS E-SHOP Full-Stack Server listening on http://localhost:${PORT}`);
-  });
+  initializeServer();
 }
-initializeServer();
+var server_default = app;
 //# sourceMappingURL=server.cjs.map

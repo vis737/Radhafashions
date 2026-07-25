@@ -3054,26 +3054,30 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 // Configure Vite or Static delivery depending on environment
-async function initializeServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
+if (!process.env.VERCEL) {
+  async function initializeServer() {
+    if (process.env.NODE_ENV !== 'production') {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+      console.log('Vite middleware mounted for local development.');
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+      console.log('Serving production static build from dist/.');
+    }
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`MERIS E-SHOP Full-Stack Server listening on http://localhost:${PORT}`);
     });
-    app.use(vite.middlewares);
-    console.log('Vite middleware mounted for local development.');
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-    console.log('Serving production static build from dist/.');
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`MERIS E-SHOP Full-Stack Server listening on http://localhost:${PORT}`);
-  });
+  initializeServer();
 }
 
-initializeServer();
+export default app;
