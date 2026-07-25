@@ -1,6 +1,5 @@
 -- =============================================================================
 -- MERIS E-SHOP — Complete & Safe Supabase Database Migration
--- Paste and Run this in your Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/zzwxnnzzwxsdvggpumze/sql/new
 -- =============================================================================
 
@@ -12,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   name TEXT NOT NULL
 );
 
+ALTER TABLE public.products ALTER COLUMN id TYPE TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category_slug TEXT;
@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS public.campaigns (
   link_category TEXT,
   active BOOLEAN DEFAULT true
 );
+ALTER TABLE public.campaigns ALTER COLUMN id TYPE TEXT;
 
 -- ---------------------------------------------------------------------------
 -- 4. CMS CONFIG TABLE
@@ -109,6 +110,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
   account_name TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.orders ALTER COLUMN id TYPE TEXT;
 CREATE INDEX IF NOT EXISTS idx_orders_account_email ON public.orders(account_email);
 CREATE INDEX IF NOT EXISTS idx_orders_order_number ON public.orders(order_number);
 
@@ -122,6 +124,7 @@ CREATE TABLE IF NOT EXISTS public.customers (
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.customers ALTER COLUMN id TYPE TEXT;
 CREATE INDEX IF NOT EXISTS idx_customers_email ON public.customers(email);
 
 -- ---------------------------------------------------------------------------
@@ -138,6 +141,7 @@ CREATE TABLE IF NOT EXISTS public.email_logs (
   date_text TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.email_logs ALTER COLUMN id TYPE TEXT;
 CREATE INDEX IF NOT EXISTS idx_email_logs_recipient ON public.email_logs(recipient);
 
 -- ---------------------------------------------------------------------------
@@ -150,6 +154,7 @@ CREATE TABLE IF NOT EXISTS public.newsletter (
   status TEXT DEFAULT 'active',
   source TEXT DEFAULT 'footer_newsletter'
 );
+ALTER TABLE public.newsletter ALTER COLUMN id TYPE TEXT;
 CREATE INDEX IF NOT EXISTS idx_newsletter_email ON public.newsletter(email);
 
 -- ---------------------------------------------------------------------------
@@ -157,7 +162,6 @@ CREATE INDEX IF NOT EXISTS idx_newsletter_email ON public.newsletter(email);
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
-  -- 1. Enable RLS safely if tables exist
   IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'products') THEN
     ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
   END IF;
@@ -186,7 +190,6 @@ BEGIN
     ALTER TABLE public.newsletter ENABLE ROW LEVEL SECURITY;
   END IF;
 
-  -- 2. Create public policies if missing
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Public read products') THEN
     CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
   END IF;
