@@ -1795,7 +1795,7 @@ async function dispatchOtpEmail(email: string, code: string): Promise<void> {
   const fromDomain = fromEmail.includes('@') ? fromEmail.split('@').pop() : 'meris.local';
 
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST || '',
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === 'true',
     requireTLS: true,
@@ -1807,7 +1807,7 @@ async function dispatchOtpEmail(email: string, code: string): Promise<void> {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     }
-  });
+  } as any);
 
   await transporter.sendMail({
     from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
@@ -1965,11 +1965,11 @@ app.post('/api/verify-otp', rateLimiter(30, 15 * 60 * 1000), async (req, res) =>
       inMemoryCustomers.push(customerObj);
     }
     if (supabase) {
-      supabase.from('customers').upsert({
+      Promise.resolve(supabase.from('customers').upsert({
         id: customerObj.id,
         email: customerObj.email,
         name: customerObj.name,
-      }).catch(() => {});
+      })).catch(() => {});
     }
 
     return res.json({
@@ -2138,13 +2138,13 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     inMemoryCustomers.push(newCustomer);
 
     if (supabase) {
-      supabase.from('customers').insert({
+      Promise.resolve(supabase.from('customers').insert({
         id: newCustomer.id,
         email: newCustomer.email,
         name: newCustomer.name,
         password_hash: newCustomer.passwordHash,
         created_at: newCustomer.createdAt
-      }).catch(err => console.error('[Registration] Supabase customer insert notice:', err));
+      })).catch(err => console.error('[Registration] Supabase customer insert notice:', err));
     }
 
     const customersDbPath = path.join(process.cwd(), 'customers_db.json');

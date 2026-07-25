@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ArrowRight, Truck, ShieldCheck, Heart, Award, ArrowUp, Star, Trash2, Eye, Mail, Info, Send, ChevronRight, ChevronLeft, Smartphone, RefreshCw, Layers, X, Key } from 'lucide-react';
 
