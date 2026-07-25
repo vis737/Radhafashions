@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.customers (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_customers_email ON public.customers(email);

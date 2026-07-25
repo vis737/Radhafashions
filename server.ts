@@ -192,11 +192,88 @@ async function syncAdminConfigFromSupabase() {
   }
 }
 
+// Global in-memory customer store for sub-millisecond authentication
+const inMemoryCustomers: any[] = [];
+const CUSTOMERS_FILE_PATH = path.join(process.cwd(), 'customers_db.json');
+
+async function syncCustomersFromSupabase() {
+  // 1. Preload local JSON accounts into memory cache
+  if (fs.existsSync(CUSTOMERS_FILE_PATH)) {
+    try {
+      const localData: any[] = JSON.parse(fs.readFileSync(CUSTOMERS_FILE_PATH, 'utf-8') || '[]');
+      for (const c of localData) {
+        if (c.email && !inMemoryCustomers.some(m => m.email.toLowerCase() === c.email.toLowerCase())) {
+          inMemoryCustomers.push({
+            id: c.id,
+            email: c.email.toLowerCase(),
+            name: c.name,
+            passwordHash: c.passwordHash || c.password_hash,
+            createdAt: c.createdAt || c.created_at || new Date().toISOString()
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed reading local customers_db.json on startup:', err);
+    }
+  }
+
+  if (!supabase) {
+    console.log(`◇ Loaded ${inMemoryCustomers.length} customer credentials from local cache.`);
+    return;
+  }
+
+  try {
+    // 2. Fetch all customer credentials from Supabase
+    const { data, error } = await supabase.from('customers').select('*');
+    if (!error && data) {
+      for (const row of data) {
+        const mapped = {
+          id: row.id,
+          email: row.email.toLowerCase(),
+          name: row.name,
+          passwordHash: row.password_hash,
+          createdAt: row.created_at
+        };
+        const existingIdx = inMemoryCustomers.findIndex(m => m.email.toLowerCase() === mapped.email);
+        if (existingIdx >= 0) {
+          inMemoryCustomers[existingIdx] = mapped;
+        } else {
+          inMemoryCustomers.push(mapped);
+        }
+      }
+      console.log(`◇ Synced ${data.length} customer credentials from Supabase database.`);
+    }
+
+    // 3. Upsert any local customer accounts into Supabase that are missing
+    if (inMemoryCustomers.length > 0) {
+      const dbUpserts = inMemoryCustomers.map(c => ({
+        id: c.id,
+        email: c.email.toLowerCase(),
+        name: c.name,
+        password_hash: c.passwordHash || null,
+        created_at: c.createdAt || new Date().toISOString()
+      }));
+      const { error: upsertErr } = await supabase.from('customers').upsert(dbUpserts, { onConflict: 'email' });
+      if (upsertErr) {
+        console.error('Supabase customer credentials upsert notice:', upsertErr);
+      }
+    }
+
+    // 4. Save synced memory dataset back to local JSON file for offline resilience
+    fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Failed to sync customers from Supabase on startup:', err);
+  }
+}
+
 if (supabase) {
   seedSupabaseDatabase().then(() => {
     syncOrdersFromSupabase();
     syncAdminConfigFromSupabase();
+    syncCustomersFromSupabase();
   });
+} else {
+  syncCustomersFromSupabase();
 }
 
 // Local JSON File Database helper utilities
@@ -1985,9 +2062,6 @@ app.post('/api/verify-otp', rateLimiter(30, 15 * 60 * 1000), async (req, res) =>
   }
 });
 
-// Fallback in-memory customer store (ensures login/registration works 100% even if Supabase table isn't created)
-const inMemoryCustomers: any[] = [];
-
 app.post('/api/login-customer', rateLimiter(60, 15 * 60 * 1000), async (req, res) => {
   try {
     const email = sanitizeEmail(req.body?.email);
@@ -1997,47 +2071,58 @@ app.post('/api/login-customer', rateLimiter(60, 15 * 60 * 1000), async (req, res
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
+    const lowerEmail = email.toLowerCase();
     let customer: any = null;
 
-    // Primary: Supabase customers table with 2s timeout
-    if (supabase) {
+    // Tier 1: Instant O(1) in-memory cache lookup (< 5ms response)
+    customer = inMemoryCustomers.find(c => c.email.toLowerCase() === lowerEmail);
+
+    // Tier 2: Supabase database query if missing from memory cache
+    if (!customer && supabase) {
       try {
-        const supabasePromise = supabase
+        const { data, error } = await supabase
           .from('customers')
-          .select('id, email, name, password_hash')
-          .eq('email', email.toLowerCase())
+          .select('id, email, name, password_hash, created_at')
+          .eq('email', lowerEmail)
           .maybeSingle();
         
-        const timeoutPromise = new Promise<{ data: any; error: any }>(resolve => 
-          setTimeout(() => resolve({ data: null, error: 'Timeout' }), 2000)
-        );
-
-        const { data, error } = await Promise.race([supabasePromise, timeoutPromise]);
         if (!error && data) {
-          customer = { id: data.id, email: data.email, name: data.name, passwordHash: data.password_hash };
-          if (!inMemoryCustomers.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+          customer = {
+            id: data.id,
+            email: data.email.toLowerCase(),
+            name: data.name,
+            passwordHash: data.password_hash,
+            createdAt: data.created_at
+          };
+          if (!inMemoryCustomers.some(c => c.email.toLowerCase() === lowerEmail)) {
             inMemoryCustomers.push(customer);
           }
+          try {
+            fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
+          } catch { /* ignore */ }
         }
       } catch (err) {
         console.error('Supabase customer fetch error:', err);
       }
     }
 
-    // Secondary fallback: in-memory store
+    // Tier 3: Local JSON file fallback
     if (!customer) {
-      customer = inMemoryCustomers.find(c => c.email.toLowerCase() === email.toLowerCase());
-    }
-
-    // Tertiary fallback: local JSON file
-    if (!customer) {
-      const customersDbPath = path.join(process.cwd(), 'customers_db.json');
-      if (fs.existsSync(customersDbPath)) {
+      if (fs.existsSync(CUSTOMERS_FILE_PATH)) {
         try {
-          const customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
-          const found = customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase());
+          const localCustomers = JSON.parse(fs.readFileSync(CUSTOMERS_FILE_PATH, 'utf-8') || '[]');
+          const found = localCustomers.find((c: any) => c.email.toLowerCase() === lowerEmail);
           if (found) {
-            customer = found;
+            customer = {
+              id: found.id,
+              email: found.email.toLowerCase(),
+              name: found.name,
+              passwordHash: found.passwordHash || found.password_hash,
+              createdAt: found.createdAt || found.created_at
+            };
+            if (!inMemoryCustomers.some(c => c.email.toLowerCase() === lowerEmail)) {
+              inMemoryCustomers.push(customer);
+            }
           }
         } catch (err) {
           console.error('Error reading local customers db:', err);
@@ -2047,6 +2132,10 @@ app.post('/api/login-customer', rateLimiter(60, 15 * 60 * 1000), async (req, res
 
     if (!customer) {
       return res.status(401).json({ error: 'No account found with this email. Please check spelling or click "Sign Up".' });
+    }
+
+    if (!customer.passwordHash) {
+      return res.status(401).json({ error: 'This account was registered via OTP. Please sign in using OTP code.' });
     }
 
     // Non-blocking async password compare
@@ -2079,44 +2168,23 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
       return res.status(400).json({ error: 'Name, email, and password are required.' });
     }
 
-    // Top-level static password validator call
     const validation = validatePassword(password);
     if (!validation.valid) {
       return res.status(400).json({ error: validation.errors[0] || 'Password does not meet security criteria.' });
     }
 
-    // Check if email already registered
-    let emailAlreadyExists = false;
-    if (supabase) {
+    const lowerEmail = email.toLowerCase();
+    let emailAlreadyExists = inMemoryCustomers.some(c => c.email.toLowerCase() === lowerEmail);
+
+    if (!emailAlreadyExists && supabase) {
       try {
         const { data: existing } = await supabase
           .from('customers')
           .select('id')
-          .eq('email', email.toLowerCase())
+          .eq('email', lowerEmail)
           .maybeSingle();
         if (existing) emailAlreadyExists = true;
-      } catch { /* ignore Supabase lookup error */ }
-    }
-
-    if (!emailAlreadyExists) {
-      if (inMemoryCustomers.some(c => c.email.toLowerCase() === email.toLowerCase())) {
-        emailAlreadyExists = true;
-      }
-    }
-
-    if (!emailAlreadyExists) {
-      const customersDbPath = path.join(process.cwd(), 'customers_db.json');
-      let customers: any[] = [];
-      if (fs.existsSync(customersDbPath)) {
-        try {
-          customers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
-        } catch (err) {
-          console.error('Error reading customers db:', err);
-        }
-      }
-      if (customers.find((c: any) => c.email.toLowerCase() === email.toLowerCase())) {
-        emailAlreadyExists = true;
-      }
+      } catch { /* ignore */ }
     }
 
     if (emailAlreadyExists) {
@@ -2126,10 +2194,9 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     // Non-blocking async password hash
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Save user object
     const newCustomer = {
       id: `cust_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-      email: email.toLowerCase(),
+      email: lowerEmail,
       name,
       passwordHash,
       createdAt: new Date().toISOString()
@@ -2138,25 +2205,20 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     inMemoryCustomers.push(newCustomer);
 
     if (supabase) {
-      Promise.resolve(supabase.from('customers').insert({
+      supabase.from('customers').upsert({
         id: newCustomer.id,
         email: newCustomer.email,
         name: newCustomer.name,
         password_hash: newCustomer.passwordHash,
         created_at: newCustomer.createdAt
-      })).catch(err => console.error('[Registration] Supabase customer insert notice:', err));
+      }, { onConflict: 'email' }).then(({ error }) => {
+        if (error) console.error('[Registration] Supabase customer upsert error:', error);
+        else console.log(`[Registration] Customer credentials synced to Supabase for ${lowerEmail}`);
+      });
     }
 
-    const customersDbPath = path.join(process.cwd(), 'customers_db.json');
-    let localCustomers: any[] = [];
-    if (fs.existsSync(customersDbPath)) {
-      try {
-        localCustomers = JSON.parse(fs.readFileSync(customersDbPath, 'utf-8') || '[]');
-      } catch { /* ignore */ }
-    }
-    localCustomers.push(newCustomer);
     try {
-      fs.writeFileSync(customersDbPath, JSON.stringify(localCustomers, null, 2));
+      fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
     } catch { /* ignore */ }
 
 
@@ -2821,6 +2883,35 @@ app.get('/api/admin/security-stats', verifyAdminToken, (req, res) => {
       { id: '3', timestamp: new Date().toLocaleTimeString(), ip: '192.168.1.101', type: 'Failed Login', details: 'Wrong password attempt on administrative account.', severity: 'high' }
     ]
   });
+});
+
+app.get('/api/admin/customers', verifyAdminToken, async (req, res) => {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, email, name, created_at')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        return res.json(data.map((c: any) => ({
+          id: c.id,
+          email: c.email,
+          name: c.name,
+          createdAt: c.created_at
+        })));
+      }
+      console.warn('Supabase customers list fetch failed, fallback to memory:', error);
+    }
+    res.json(inMemoryCustomers.map((c: any) => ({
+      id: c.id,
+      email: c.email,
+      name: c.name,
+      createdAt: c.createdAt
+    })));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch customer credentials list' });
+  }
 });
 
 app.get('/sitemap.xml', async (req, res) => {
