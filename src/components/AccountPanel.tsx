@@ -16,6 +16,7 @@ import SecurityTab from './dashboard/SecurityTab';
 
 import DOMPurify from 'dompurify';
 import { generateInvoicePDF } from '../lib/invoiceGenerator';
+import { evaluatePasswordStrength } from '../utils/passwordValidator';
 
 interface AccountPanelProps {
   wishlistProducts: Product[];
@@ -213,7 +214,6 @@ export default function AccountPanel({
 
       if (isSignUp) {
         // Enforce strong password validation
-        const { evaluatePasswordStrength } = await import('../utils/passwordValidator');
         const validation = evaluatePasswordStrength(password);
         if (!validation.valid) {
           setPasswordErrors(validation.errors);

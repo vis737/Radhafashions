@@ -575,27 +575,46 @@ function ProductForm({ product, categories, onChange, addToast }: {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      const res = await fetch('/api/upload-image', { 
-        method: 'POST', 
-        body: formData, 
-        credentials: 'include' 
-      });
-      
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-      
-      if (data.url) {
-        updateField('images', [...(product.images || []), data.url]);
-        addToast('Image uploaded successfully', 'success');
-      }
+      // 1. Convert to Base64 Data URL so image persists 100% across Render server restarts
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Url = reader.result as string;
+
+        // 2. Try server upload endpoint
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          
+          const res = await fetch('/api/upload-image', { 
+            method: 'POST', 
+            body: formData, 
+            credentials: 'include' 
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            if (data.url && !data.url.startsWith('/uploads/')) {
+              updateField('images', [...(product.images || []), data.url]);
+              addToast('Image uploaded successfully', 'success');
+              setIsUploading(false);
+              return;
+            }
+          }
+        } catch {
+          // Ignore server upload failure and use robust base64Url
+        }
+
+        // Use base64 Data URL if server returns ephemeral path or fails
+        updateField('images', [...(product.images || []), base64Url]);
+        addToast('Image processed and added successfully', 'success');
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Upload error:', error);
       addToast('Failed to upload image', 'error');
-    } finally {
       setIsUploading(false);
+    } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };

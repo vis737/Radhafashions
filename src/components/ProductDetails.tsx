@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Star, Heart, ShoppingCart, Share2, Sparkles, Check, Send, AlertCircle, Award } from 'lucide-react';
 import { Product, Review } from '../types';
+import { handleImageError } from '../utils/imageUtils';
 import ImageMagnifier from './ImageMagnifier';
 
 interface ProductDetailsProps {
@@ -119,7 +120,7 @@ export default function ProductDetails({
                 onClick={() => setActiveImageIndex(idx)}
                 className={`w-16 h-16 rounded-xl overflow-hidden bg-gray-50 border shrink-0 transition-all ${idx === activeImageIndex ? 'border-gold-400 ring-2 ring-gold-400/20 scale-105' : 'border-gray-100 hover:border-gray-300'}`}
               >
-                <img src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                <img src={img} alt="" referrerPolicy="no-referrer" onError={(e) => handleImageError(e, product.category)} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -474,9 +475,10 @@ export default function ProductDetails({
                 className="bg-white hover:bg-gold-50/20 border border-gray-100 rounded-2xl p-3 shadow-sm hover:shadow-md cursor-pointer transition flex gap-3 h-28 items-center"
               >
                 <img
-                  src={relProduct.images[0]}
+                  src={relProduct.images && relProduct.images[0] ? relProduct.images[0] : ''}
                   alt={relProduct.name}
                   referrerPolicy="no-referrer"
+                  onError={(e) => handleImageError(e, relProduct.category)}
                   className="w-20 h-20 rounded-xl object-cover shrink-0"
                 />
                 <div className="text-left space-y-1">

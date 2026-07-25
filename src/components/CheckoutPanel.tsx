@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles, Copy, Check, Upload, Image, FileText, QrCode, AlertCircle, Hash, User, Link, ChevronRight, Edit3 } from 'lucide-react';
 import { CartItem, CustomerInfo, Coupon, Order } from '../types';
+import { handleImageError } from '../utils/imageUtils';
 import { calculateCartTotals } from '../utils/premiumData';
 import { preparePayUPaymentPayload } from '../utils/payu';
 
@@ -676,7 +677,7 @@ export default function CheckoutPanel({
                           <div key={item.product.id} className="flex gap-4 items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-navy-950/50 border border-gray-100 dark:border-navy-800">
                             <div className="flex items-center gap-4">
                               <div className="w-16 h-16 rounded-xl bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-700 overflow-hidden shrink-0 shadow-sm">
-                                <img src={item.product.images[0]} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                                <img src={item.product.images && item.product.images[0] ? item.product.images[0] : ''} alt="" referrerPolicy="no-referrer" onError={(e) => handleImageError(e, item.product.category)} className="w-full h-full object-cover" />
                               </div>
                               <div className="text-left font-sans">
                                 <h5 className="text-sm font-bold text-navy-900 dark:text-white">{item.product.name}</h5>

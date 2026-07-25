@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Heart, Star, ShoppingCart, Eye, Sparkles } from 'lucide-react';
 import { Product } from '../types';
+import { handleImageError } from '../utils/imageUtils';
 
 interface ProductCardProps {
   product: Product;
@@ -90,9 +91,10 @@ export default function ProductCard({
         className="relative pt-[100%] overflow-hidden bg-gray-50 cursor-pointer"
       >
         <img
-          src={product.images[0]}
+          src={product.images && product.images[0] ? product.images[0] : ''}
           alt={product.name}
           referrerPolicy="no-referrer"
+          onError={(e) => handleImageError(e, product.category)}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
 

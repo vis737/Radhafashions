@@ -1,7 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Trash2, Plus, Minus, Tag, Check, ArrowRight, ShoppingCart, Sparkles } from 'lucide-react';
 import { CartItem, Coupon } from '../types';
+import { handleImageError } from '../utils/imageUtils';
 import { INITIAL_COUPONS } from '../utils/mockData';
 import { calculateCartTotals } from '../utils/premiumData';
 
@@ -137,9 +138,10 @@ export default function CartDrawer({
                 return (
                   <div key={item.product.id} className="flex gap-4 p-3 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-gold-200 transition">
                     <img
-                      src={item.product.images[0]}
+                      src={item.product.images && item.product.images[0] ? item.product.images[0] : ''}
                       alt={item.product.name}
                       referrerPolicy="no-referrer"
+                      onError={(e) => handleImageError(e, item.product.category)}
                       className="w-16 h-16 rounded-xl object-cover bg-gray-50"
                     />
                     <div className="flex-1 text-left flex flex-col justify-between">

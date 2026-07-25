@@ -1,7 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Timer, ShoppingBag, Zap } from 'lucide-react';
 import { Product } from '../types';
+import { handleImageError } from '../utils/imageUtils';
 
 interface FlashSaleSectionProps {
   products: Product[];
@@ -131,7 +132,7 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
             >
               {/* Image with badge */}
               <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-950 shrink-0 border border-slate-800">
-                <img src={product.images[0]} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                <img src={product.images && product.images[0] ? product.images[0] : ''} alt="" referrerPolicy="no-referrer" onError={(e) => handleImageError(e, product.category)} className="w-full h-full object-cover" />
                 <span className="absolute top-1 left-1 bg-rose-600 text-white text-[8px] font-bold px-1 rounded uppercase tracking-[0.5px]">
                   -{percentSavings}%
                 </span>
