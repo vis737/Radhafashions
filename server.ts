@@ -1294,8 +1294,8 @@ app.get('/api/orders/:orderNumber', rateLimiter(20, 15 * 60 * 1000), (req, res) 
 
 // Beautiful booking email template generator and sender helper
 async function sendBookingEmail(order: any) {
-  const recipientEmail = order.customerInfo?.email || 'guest@example.com';
-  const customerName = order.customerInfo?.name || 'Valued Customer';
+  const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
+  const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || 'Valued Customer', 100);
   const subject = `🛍️ Meris E-Shop: Booking Secured - Order #${order.orderNumber}`;
 
   // Generate beautiful line items HTML
@@ -2625,24 +2625,19 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
     
-    const isUpiOrder = newOrder.paymentMethod?.toLowerCase().includes('upi');
-    const isPendingPayUOrder = newOrder.paymentMethod?.toLowerCase().includes('payu') && newOrder.paymentStatus === 'pending';
-    if (!isUpiOrder && !isPendingPayUOrder) {
-      // Dispatch asynchronous booking confirmation email
-      try {
-        await sendBookingEmail(newOrder);
-      } catch (emailErr) {
-        console.error('Failed to dispatch order booking confirmation email:', emailErr);
-      }
+    // Dispatch booking confirmation email for all new orders
+    try {
+      await sendBookingEmail(newOrder);
+      console.log(`[Order Service] Dispatched order confirmation email for #${newOrder.orderNumber}`);
+    } catch (emailErr) {
+      console.error('Failed to dispatch order booking confirmation email:', emailErr);
+    }
 
-      // Dispatch asynchronous booking confirmation SMS
-      try {
-        await sendSMSAlert(newOrder);
-      } catch (smsErr) {
-        console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
-      }
-    } else {
-      console.log(`[Order Service] Pending payment order #${newOrder.orderNumber} placed. Suppressing checkout confirmation email/SMS until payment approval.`);
+    // Dispatch booking confirmation SMS if configured
+    try {
+      await sendSMSAlert(newOrder);
+    } catch (smsErr) {
+      console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
     }
 
     res.status(201).json({ success: true, order: newOrder });
