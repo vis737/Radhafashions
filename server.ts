@@ -266,8 +266,45 @@ async function syncCustomersFromSupabase() {
   }
 }
 
+async function syncProductsFromSupabase() {
+  if (!supabase) return;
+  try {
+    const { data, error } = await supabase.from('products').select('*');
+    if (!error && data && data.length > 0) {
+      const mapped = data.map(p => ({
+        id: p.id,
+        sku: p.sku,
+        name: p.name,
+        category: p.category || 'Handbags',
+        categorySlug: p.category_slug || 'handbags',
+        price: Number(p.price || 999),
+        discountPrice: p.discount_price ? Number(p.discount_price) : undefined,
+        stock: p.stock !== undefined ? Number(p.stock) : 10,
+        rating: p.rating ? Number(p.rating) : 4.8,
+        ratingCount: p.rating_count ? Number(p.rating_count) : 50,
+        images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'],
+        shortDescription: p.short_description || '',
+        description: p.description || '',
+        specifications: p.specifications || {},
+        weightKg: parseProductWeightKg(p),
+        reviews: Array.isArray(p.reviews) ? p.reviews : [],
+        isNew: Boolean(p.is_new),
+        isBestseller: Boolean(p.is_bestseller),
+        brand: p.brand || 'Meris Couture',
+        availability: p.availability || 'in-stock',
+        vendorId: p.vendor_id || null
+      }));
+      writeLocalJsonDb(PRODUCTS_FILE_PATH, mapped);
+      console.log(`◇ Synced ${mapped.length} products from Supabase database to local catalog.`);
+    }
+  } catch (err) {
+    console.error('Failed to sync products from Supabase on startup:', err);
+  }
+}
+
 if (supabase) {
   seedSupabaseDatabase().then(() => {
+    syncProductsFromSupabase();
     syncOrdersFromSupabase();
     syncAdminConfigFromSupabase();
     syncCustomersFromSupabase();
@@ -1200,6 +1237,8 @@ function realNotificationsEnabled(): boolean {
   if (process.env.ENABLE_REAL_NOTIFICATIONS === 'false') return false;
   return (
     process.env.ENABLE_REAL_NOTIFICATIONS === 'true' ||
+    isConfigured(process.env.BREVO_API_KEY) ||
+    isConfigured(process.env.RESEND_API_KEY) ||
     (isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS))
   );
 }
@@ -1227,7 +1266,37 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   const recipient = sanitizeEmail(to);
   if (!recipient) return false;
 
-  // 1. Try Resend HTTP REST API (Primary for Cloud / Railway - Port 443)
+  // 1. Try Brevo v3 HTTP REST API (Primary if BREVO_API_KEY configured - Fast, Reliable Port 443)
+  if (isConfigured(process.env.BREVO_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
+      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'meriseshop.2025@gmail.com').trim();
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY!.trim()
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: recipient }],
+          subject: subject,
+          htmlContent: html
+        })
+      });
+      const data: any = await res.json();
+      if (res.ok && (data.messageId || data.messageIds)) {
+        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
+        return true;
+      }
+      console.warn(`[Brevo REST API Warning] Failed sending to ${recipient}:`, data);
+    } catch (err) {
+      console.error('[Brevo REST API Exception]:', err);
+    }
+  }
+
+  // 2. Try Resend HTTP REST API (Secondary for Cloud / Railway - Port 443)
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
@@ -1257,36 +1326,6 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
       console.warn(`[Resend API Warning] Failed sending to ${recipient}:`, data);
     } catch (err) {
       console.error('[Resend API Exception]:', err);
-    }
-  }
-
-  // 2. Try Brevo v3 HTTP REST API (No IP restrictions, Port 443)
-  if (isConfigured(process.env.BREVO_API_KEY)) {
-    try {
-      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-      const fromEmail = process.env.SMTP_FROM_EMAIL || 'meriseshop.2025@gmail.com';
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'content-type': 'application/json',
-          'api-key': process.env.BREVO_API_KEY!.trim()
-        },
-        body: JSON.stringify({
-          sender: { name: fromName, email: fromEmail },
-          to: [{ email: recipient }],
-          subject: subject,
-          htmlContent: html
-        })
-      });
-      const data: any = await res.json();
-      if (res.ok && (data.messageId || data.messageIds)) {
-        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
-        return true;
-      }
-      console.warn('[Brevo REST API Warning]:', data);
-    } catch (err) {
-      console.error('[Brevo REST API Exception]:', err);
     }
   }
 
@@ -2621,20 +2660,17 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
     
-    // Dispatch booking confirmation email for all new orders
-    try {
-      await sendBookingEmail(newOrder);
+    // Dispatch booking confirmation email asynchronously in background (fast response)
+    sendBookingEmail(newOrder).then(() => {
       console.log(`[Order Service] Dispatched order confirmation email for #${newOrder.orderNumber}`);
-    } catch (emailErr) {
+    }).catch(emailErr => {
       console.error('Failed to dispatch order booking confirmation email:', emailErr);
-    }
+    });
 
-    // Dispatch booking confirmation SMS if configured
-    try {
-      await sendSMSAlert(newOrder);
-    } catch (smsErr) {
+    // Dispatch booking confirmation SMS asynchronously in background
+    sendSMSAlert(newOrder).catch(smsErr => {
       console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
-    }
+    });
 
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {

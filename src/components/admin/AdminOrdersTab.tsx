@@ -633,6 +633,18 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                         <span className="text-slate-500">Payment Method:</span>
                         <span className="font-medium text-slate-800 uppercase">{selectedOrder.paymentMethod}</span>
                       </div>
+                      {selectedOrder.upiTxnId && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500">UPI Ref / Txn ID:</span>
+                          <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs select-all">{selectedOrder.upiTxnId}</span>
+                        </div>
+                      )}
+                      {selectedOrder.upiSenderName && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500">Payment App / Sender:</span>
+                          <span className="font-medium text-slate-800">{selectedOrder.upiSenderName}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

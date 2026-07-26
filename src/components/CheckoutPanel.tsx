@@ -75,6 +75,22 @@ export default function CheckoutPanel({
   const [upiTxnId, setUpiTxnId] = useState('');
   const [upiSenderName, setUpiSenderName] = useState('');
   const [upiScreenshot, setUpiScreenshot] = useState('');
+  const [paymentApp, setPaymentApp] = useState('Google Pay');
+
+  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 8 * 1024 * 1024) {
+        alert("Image size too large. Please select a screenshot under 8MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUpiScreenshot(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Gift wrapping and messages options
   const [giftWrapped, setGiftWrapped] = useState(false);
@@ -221,7 +237,7 @@ export default function CheckoutPanel({
           giftSender,
           giftHidePrice,
           upiTxnId,
-          upiSenderName,
+          upiSenderName ? `${upiSenderName} (${paymentApp})` : paymentApp,
           upiScreenshot,
           upiNotes
         );
@@ -605,10 +621,35 @@ export default function CheckoutPanel({
                           
                           {showConfirmationForm ? (
                             <div className="text-left space-y-4 mt-6 pt-6 border-t border-white/10">
-                              <h4 className="text-white font-display uppercase tracking-wider text-sm flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /> Enter Transaction Details</h4>
+                              <h4 className="text-white font-display uppercase tracking-wider text-sm flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Enter Transaction Details
+                              </h4>
+
+                              {/* UPI Payment App Dropdown Selection */}
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono">
-                                  UPI Transaction ID / Ref No. <span className="text-red-500">*</span>
+                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
+                                  <Wallet className="w-3.5 h-3.5 text-gold-400" /> Select Payment App Used <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                  value={paymentApp}
+                                  onChange={(e) => setPaymentApp(e.target.value)}
+                                  className="w-full px-4 py-3 text-sm bg-navy-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all font-sans cursor-pointer"
+                                >
+                                  <option value="Google Pay">Google Pay (GPay)</option>
+                                  <option value="PhonePe">PhonePe</option>
+                                  <option value="Paytm">Paytm</option>
+                                  <option value="BHIM UPI">BHIM UPI</option>
+                                  <option value="CRED">CRED</option>
+                                  <option value="Amazon Pay">Amazon Pay</option>
+                                  <option value="Net Banking / Bank App">Net Banking / Bank App</option>
+                                  <option value="Other App">Other Payment App</option>
+                                </select>
+                              </div>
+
+                              {/* UPI Transaction Ref ID */}
+                              <div>
+                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
+                                  <Hash className="w-3.5 h-3.5 text-gold-400" /> UPI Transaction ID / Ref No. <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -618,6 +659,47 @@ export default function CheckoutPanel({
                                   placeholder="12-digit transaction index / ref number"
                                   className="w-full px-4 py-3 text-sm bg-navy-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all shadow-inner font-mono placeholder-gray-500"
                                 />
+                              </div>
+
+                              {/* Payment Receipt Screenshot Upload Dropdown / File Selector */}
+                              <div>
+                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
+                                  <Upload className="w-3.5 h-3.5 text-gold-400" /> Upload Payment Receipt Screenshot (Optional)
+                                </label>
+                                {upiScreenshot ? (
+                                  <div className="relative p-3 bg-navy-900 border border-emerald-500/40 rounded-2xl flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <img src={upiScreenshot} alt="Receipt Preview" className="w-12 h-12 object-cover rounded-xl border border-white/20" />
+                                      <div>
+                                        <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                          <Check className="w-3.5 h-3.5" /> Screenshot Uploaded
+                                        </span>
+                                        <span className="text-[10px] text-gray-400 block">Ready for admin verification</span>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setUpiScreenshot('')}
+                                      className="px-3 py-1.5 text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-xl border border-rose-500/40 transition cursor-pointer"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <label className="flex flex-col items-center justify-center p-4 bg-navy-900/80 hover:bg-navy-900 border-2 border-dashed border-white/20 hover:border-gold-400/60 rounded-2xl cursor-pointer transition-all group">
+                                    <div className="flex items-center gap-2 text-xs text-gray-300 group-hover:text-gold-300">
+                                      <Image className="w-4 h-4 text-gold-400" />
+                                      <span>Click to upload payment screenshot / receipt image</span>
+                                    </div>
+                                    <span className="text-[10px] text-gray-500 mt-1">PNG, JPG, WEBP up to 8MB</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleReceiptUpload}
+                                      className="hidden"
+                                    />
+                                  </label>
+                                )}
                               </div>
                             </div>
                           ) : (

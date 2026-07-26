@@ -18,6 +18,16 @@ export function getFallbackImage(category?: string): string {
   return DEFAULT_FALLBACK_IMAGES.default;
 }
 
+export function getProductPrimaryImage(product?: { images?: string[]; category?: string }): string {
+  if (product?.images && Array.isArray(product.images) && product.images.length > 0) {
+    const first = product.images[0];
+    if (typeof first === 'string' && first.trim().length > 0) {
+      return first.trim();
+    }
+  }
+  return getFallbackImage(product?.category);
+}
+
 export function handleImageError(
   e: React.SyntheticEvent<HTMLImageElement, Event>,
   category?: string
