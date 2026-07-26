@@ -2078,7 +2078,8 @@ async function dispatchLiveEmail(to, subject, html) {
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
-      const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "onboarding@resend.dev";
+      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "onboarding@resend.dev").trim();
+      const fromFormatted = rawFrom.includes("onboarding@resend.dev") ? "onboarding@resend.dev" : `${fromName} <${rawFrom}>`;
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -2086,7 +2087,7 @@ async function dispatchLiveEmail(to, subject, html) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          from: `${fromName} <${fromEmail}>`,
+          from: fromFormatted,
           to: [recipient],
           subject,
           html
@@ -2097,7 +2098,7 @@ async function dispatchLiveEmail(to, subject, html) {
         console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id})`);
         return true;
       }
-      console.warn("[Resend API Warning]:", data);
+      console.warn(`[Resend API Warning] Failed sending to ${recipient}:`, data);
     } catch (err) {
       console.error("[Resend API Exception]:", err);
     }
