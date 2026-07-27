@@ -1283,37 +1283,7 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   const recipient = sanitizeEmail(to);
   if (!recipient) return false;
 
-  // 1. Try Brevo v3 HTTP REST API (Primary if BREVO_API_KEY configured - Fast, Reliable Port 443)
-  if (isConfigured(process.env.BREVO_API_KEY)) {
-    try {
-      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'meriseshop.2025@gmail.com').trim();
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'content-type': 'application/json',
-          'api-key': process.env.BREVO_API_KEY!.trim()
-        },
-        body: JSON.stringify({
-          sender: { name: fromName, email: fromEmail },
-          to: [{ email: recipient }],
-          subject: subject,
-          htmlContent: html
-        })
-      });
-      const data: any = await res.json();
-      if (res.ok && (data.messageId || data.messageIds)) {
-        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
-        return true;
-      }
-      console.warn(`[Brevo REST API Warning] Failed sending to ${recipient}:`, data);
-    } catch (err) {
-      console.error('[Brevo REST API Exception]:', err);
-    }
-  }
-
-  // 2. Try Resend HTTP REST API (Secondary for Cloud / Railway - Port 443)
+  // 1. Try Resend HTTP REST API (Primary for Cloud / Custom Domain orders@orders.meriseshop.com - Port 443)
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
@@ -1340,7 +1310,7 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
       });
       const data: any = await res.json();
       if (res.ok && data.id) {
-        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id})`);
+        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id}) from ${fromFormatted}`);
         return true;
       }
       console.warn(`[Resend API Warning] Failed sending to ${recipient}:`, data);
@@ -1349,11 +1319,41 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
     }
   }
 
+  // 2. Try Brevo v3 HTTP REST API (Secondary if BREVO_API_KEY configured - Fast, Reliable Port 443)
+  if (isConfigured(process.env.BREVO_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
+      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'orders@orders.meriseshop.com').trim();
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY!.trim()
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: recipient }],
+          subject: subject,
+          htmlContent: html
+        })
+      });
+      const data: any = await res.json();
+      if (res.ok && (data.messageId || data.messageIds)) {
+        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
+        return true;
+      }
+      console.warn(`[Brevo REST API Warning] Failed sending to ${recipient}:`, data);
+    } catch (err) {
+      console.error('[Brevo REST API Exception]:', err);
+    }
+  }
+
   // 3. Fallback: Nodemailer SMTP
   try {
     const transporter = createSmtpTransporter();
     const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'meriseshop.2025@gmail.com';
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'orders@orders.meriseshop.com';
 
     await transporter.sendMail({
       from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
