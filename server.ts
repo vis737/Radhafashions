@@ -1437,38 +1437,53 @@ app.get('/api/orders/:orderNumber', rateLimiter(20, 15 * 60 * 1000), (req, res) 
 
 // Beautiful booking email template generator and sender helper
 async function sendBookingEmail(order: any) {
-  const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
-  const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || 'Valued Customer', 100);
-  const subject = `🛍️ Meris E-Shop: Booking Secured - Order #${order.orderNumber}`;
+  try {
+    const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
+    if (!recipientEmail) {
+      console.warn('[Email Service] No valid customer recipient email found for order:', order?.orderNumber);
+      return null;
+    }
+    const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || 'Valued Customer', 100);
+    const orderNum = order.orderNumber || order.id || 'ORDER';
+    const subject = `Order Confirmation - Meris E-Shop (#${orderNum})`;
 
-  // Generate beautiful line items HTML
-  let itemsHtml = '';
-  if (order.items && Array.isArray(order.items)) {
-    order.items.forEach((item: any) => {
-      const productName = item.product?.name || 'Handcrafted Gift';
-      const qty = item.quantity || 1;
-      const price = item.product?.discountPrice || item.product?.price || 0;
-      const imageUrl = item.product?.images?.[0] || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=150&auto=format&fit=crop&q=80';
-      
-      itemsHtml += `
-        <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 12px 8px; width: 60px;">
-            <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" referrerPolicy="no-referrer" />
-          </td>
-          <td style="padding: 12px 8px; font-size: 13px; color: #0f172a; font-weight: 500;">
-            ${productName}
-            <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Qty: ${qty} × ₹${price}</div>
-          </td>
-          <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
-            ₹${price * qty}
-          </td>
-        </tr>
-      `;
-    });
-  }
+    // Generate beautiful line items HTML
+    let itemsHtml = '';
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item: any) => {
+        const productObj = item.product || item;
+        const productName = productObj.name || 'Handcrafted Gift';
+        const qty = item.quantity || 1;
+        const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
+        const imageUrl = (Array.isArray(productObj.images) && productObj.images[0])
+          ? productObj.images[0]
+          : 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=150&auto=format&fit=crop&q=80';
+        
+        itemsHtml += `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 12px 8px; width: 60px;">
+              <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" />
+            </td>
+            <td style="padding: 12px 8px; font-size: 13px; color: #0f172a; font-weight: 500;">
+              ${productName}
+              <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Qty: ${qty} × ₹${price}</div>
+            </td>
+            <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
+              ₹${price * qty}
+            </td>
+          </tr>
+        `;
+      });
+    }
 
-  // Create highly polished responsive luxury layout HTML
-  const htmlContent = `
+    const subtotal = Number(order.subtotal || 0);
+    const discount = Number(order.discount || 0);
+    const shippingCost = Number(order.shippingCost || 0);
+    const tax = Number(order.tax || 0);
+    const total = Number(order.total || 0);
+
+    // Create highly polished responsive luxury layout HTML
+    const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -1499,7 +1514,7 @@ async function sendBookingEmail(order: any) {
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace;">
           <tr>
             <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${order.orderNumber}</td>
+            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${orderNum}</td>
           </tr>
           <tr>
             <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">BOOKING DATE:</td>
@@ -1539,25 +1554,25 @@ async function sendBookingEmail(order: any) {
       <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #475569;">
         <tr>
           <td style="padding: 6px 0; color: #64748b;">Subtotal:</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${order.subtotal}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${subtotal}</td>
         </tr>
-        ${order.discount > 0 ? `
+        ${discount > 0 ? `
         <tr>
           <td style="padding: 6px 0; color: #10b981; font-weight: 500;">Campaign Promo Discount (${order.couponCode || 'PROMO'}):</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #10b981; font-weight: bold;">-₹${order.discount}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #10b981; font-weight: bold;">-₹${discount}</td>
         </tr>
         ` : ''}
         <tr>
           <td style="padding: 6px 0; color: #64748b;">Shipping Handlers Fee:</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${order.shippingCost}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${shippingCost}</td>
         </tr>
         <tr>
           <td style="padding: 6px 0; color: #64748b;">Tax (Inclusive Goods & Services Tax):</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${order.tax}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${tax}</td>
         </tr>
         <tr style="border-top: 1px solid #e2e8f0;">
           <td style="padding: 16px 0 0 0; font-size: 15px; font-weight: bold; color: #0f172a;">Total Invoice Paid:</td>
-          <td style="padding: 16px 0 0 0; text-align: right; font-size: 16px; font-weight: bold; color: #d97706; font-family: monospace;">₹${order.total}</td>
+          <td style="padding: 16px 0 0 0; text-align: right; font-size: 16px; font-weight: bold; color: #d97706; font-family: monospace;">₹${total}</td>
         </tr>
       </table>
     </div>
@@ -1577,40 +1592,175 @@ async function sendBookingEmail(order: any) {
 </html>
   `;
 
-  // Log email to Supabase email_logs table (primary) for persistence across Render restarts
-  const newEmailRecord = {
-    id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-    recipient: recipientEmail,
-    subject: subject,
-    bodyHtml: htmlContent,
-    sentAt: new Date().toLocaleString(),
-    orderNumber: order.orderNumber,
-    status: 'Delivered',
-    dateText: new Date().toLocaleString()
-  };
+    // Log email to Supabase email_logs table (primary) for persistence across Render restarts
+    const newEmailRecord = {
+      id: `email_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      recipient: recipientEmail,
+      subject: subject,
+      bodyHtml: htmlContent,
+      sentAt: new Date().toLocaleString(),
+      orderNumber: orderNum,
+      status: 'Delivered',
+      dateText: new Date().toLocaleString()
+    };
 
-  if (supabase) {
-    supabase.from('email_logs').insert({
-      id: newEmailRecord.id,
-      recipient: newEmailRecord.recipient,
-      subject: newEmailRecord.subject,
-      body_html: newEmailRecord.bodyHtml,
-      sent_at: newEmailRecord.sentAt,
-      order_number: newEmailRecord.orderNumber,
-      status: newEmailRecord.status,
-      date_text: newEmailRecord.dateText
-    }).then(({ error }) => {
-      if (error) console.error('[Email Service] Supabase email_logs insert failed:', error);
-      else console.log(`[Email Service] Logged booking email to Supabase for ${recipientEmail}.`);
-    });
-  } else {
-    console.log(`[Email Service] Supabase not configured — email log skipped for ${recipientEmail}.`);
+    if (supabase) {
+      try {
+        await supabase.from('email_logs').insert({
+          id: newEmailRecord.id,
+          recipient: newEmailRecord.recipient,
+          subject: newEmailRecord.subject,
+          body_html: newEmailRecord.bodyHtml,
+          sent_at: newEmailRecord.sentAt,
+          order_number: newEmailRecord.orderNumber,
+          status: newEmailRecord.status,
+          date_text: newEmailRecord.dateText
+        });
+        console.log(`[Email Service] Logged booking email to Supabase for ${recipientEmail}.`);
+      } catch (dbErr) {
+        console.error('[Email Service] Supabase email_logs insert error:', dbErr);
+      }
+    } else {
+      console.log(`[Email Service] Supabase not configured — email log skipped for ${recipientEmail}.`);
+    }
+
+    // Dispatch live email via REST API (Resend / Brevo) or SMTP
+    const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+    if (sent) {
+      console.log(`[Order Service] Order confirmation email delivered to ${recipientEmail} for #${orderNum}`);
+    } else {
+      console.warn(`[Order Service] Failed to send order confirmation email to ${recipientEmail} for #${orderNum}`);
+    }
+
+    return newEmailRecord;
+  } catch (err) {
+    console.error('[Order Service] Exception in sendBookingEmail:', err);
+    return null;
   }
+}
 
-  // Dispatch live email via REST API (Resend / Brevo) or SMTP
-  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+async function sendAdminVendorNotificationEmail(order: any) {
+  try {
+    const orderNum = order.orderNumber || order.id || 'ORDER';
+    const customerName = sanitizeString(order.customerInfo?.name || order.accountName || 'Customer', 100);
+    const customerEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || '');
+    const customerPhone = sanitizeString(order.customerInfo?.phone || '', 30);
+    const customerAddress = sanitizeString(order.customerInfo?.address || '', 300);
+    const customerPincode = sanitizeString(order.customerInfo?.pincode || '', 10);
 
-  return newEmailRecord;
+    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || 'meriseshop.2025@gmail.com');
+    const subject = `New Order Received - Meris E-Shop (#${orderNum})`;
+
+    let itemsHtml = '';
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item: any) => {
+        const productObj = item.product || item;
+        const productName = productObj.name || 'Handcrafted Product';
+        const qty = item.quantity || 1;
+        const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
+        const vendorId = productObj.vendorId || item.vendorId || 'Store Direct';
+
+        itemsHtml += `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px; font-size: 13px; color: #0f172a; font-weight: 500;">
+              ${productName}
+              <div style="font-size: 11px; color: #64748b;">Listing / Vendor: ${vendorId} | Qty: ${qty} × ₹${price}</div>
+            </td>
+            <td style="padding: 10px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
+              ₹${price * qty}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    const total = Number(order.total || 0);
+    const paymentMethod = order.paymentMethod || 'Online Payment';
+    const paymentStatus = (order.paymentStatus || 'unpaid').toUpperCase();
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+    
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 24px; text-align: center; border-bottom: 4px solid #10b981;">
+      <h1 style="color: #10b981; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px;">NEW ORDER ALERT</h1>
+      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Meris E-Shop Store & Listing Notification</p>
+    </div>
+
+    <div style="padding: 24px;">
+      <h2 style="font-size: 16px; color: #0f172a; margin-top: 0;">Order #${orderNum} has been placed!</h2>
+      <p style="font-size: 13px; color: #475569; margin: 0 0 16px 0;">A customer has purchased items from your catalog listings. Please review order details below for fulfillment.</p>
+      
+      <!-- Customer Information -->
+      <div style="background-color: #f1f5f9; border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 12px; color: #334155;">
+        <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #0f172a; text-transform: uppercase;">Customer Details</h3>
+        <div><strong>Name:</strong> ${customerName}</div>
+        <div><strong>Email:</strong> ${customerEmail}</div>
+        <div><strong>Phone:</strong> ${customerPhone || 'N/A'}</div>
+        <div><strong>Shipping Address:</strong> ${customerAddress} (Pincode: ${customerPincode})</div>
+        <div><strong>Payment Method:</strong> ${paymentMethod} (${paymentStatus})</div>
+      </div>
+
+      <!-- Item breakdown -->
+      <h3 style="font-size: 13px; color: #0f172a; text-transform: uppercase; margin-bottom: 8px;">Order Items</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e2e8f0; text-align: left; font-size: 11px; color: #64748b;">
+            <th style="padding: 6px 10px;">Item / Listing</th>
+            <th style="padding: 6px 10px; text-align: right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+
+      <div style="text-align: right; font-size: 15px; font-weight: bold; color: #0f172a; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+        Grand Total: <span style="color: #d97706; font-family: monospace;">₹${total}</span>
+      </div>
+    </div>
+
+    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
+      Meris Artisanal Studio Co. Automated Merchant Dispatch Notification
+    </div>
+
+  </div>
+</body>
+</html>
+    `;
+
+    // Send to Store Admin
+    if (adminEmail) {
+      await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      console.log(`[Order Service] Dispatched store order alert notification to admin ${adminEmail} for #${orderNum}`);
+    }
+
+    // If order contains vendor listings, check for vendor recipient emails
+    const vendorEmails = new Set<string>();
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item: any) => {
+        const vEmail = item.product?.vendorEmail || item.vendorEmail;
+        if (vEmail && sanitizeEmail(vEmail)) {
+          vendorEmails.add(sanitizeEmail(vEmail));
+        }
+      });
+    }
+
+    for (const vEmail of vendorEmails) {
+      if (vEmail !== adminEmail) {
+        await dispatchLiveEmail(vEmail, `Listing Order Alert - Meris E-Shop (#${orderNum})`, htmlContent);
+        console.log(`[Order Service] Dispatched listing order alert to vendor ${vEmail} for #${orderNum}`);
+      }
+    }
+  } catch (err) {
+    console.error('[Order Service] Exception in sendAdminVendorNotificationEmail:', err);
+  }
 }
 
 async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reason?: string) {
@@ -2509,6 +2659,7 @@ async function applyPayUResult(payload: Record<string, any>, fallbackStatus: 'su
   if (previousPaymentStatus === 'pending' && paid) {
     try {
       await sendBookingEmail(dbOrders[index]);
+      await sendAdminVendorNotificationEmail(dbOrders[index]);
       await sendSMSAlert(dbOrders[index]);
     } catch (notifyErr) {
       console.error('Failed to dispatch PayU confirmation notifications:', notifyErr);
@@ -2685,6 +2836,12 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       console.error('Failed to dispatch order booking confirmation email:', emailErr);
     });
 
+    sendAdminVendorNotificationEmail(newOrder).then(() => {
+      console.log(`[Order Service] Dispatched admin/vendor order notification email for #${newOrder.orderNumber}`);
+    }).catch(vendorErr => {
+      console.error('Failed to dispatch admin/vendor order notification email:', vendorErr);
+    });
+
     // Dispatch booking confirmation SMS asynchronously in background
     sendSMSAlert(newOrder).catch(smsErr => {
       console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
@@ -2788,6 +2945,7 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
       if (oldPaymentStatus === 'pending' && newPaymentStatus === 'paid') {
         try {
           await sendBookingEmail(dbOrders[index]);
+          await sendAdminVendorNotificationEmail(dbOrders[index]);
           await sendSMSAlert(dbOrders[index]);
         } catch (emailErr) {
           console.error('Failed to send booking confirmation email:', emailErr);
