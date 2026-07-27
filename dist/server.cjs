@@ -2142,8 +2142,13 @@ async function dispatchLiveEmail(to, subject, html) {
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
-      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "onboarding@resend.dev").trim();
-      const fromFormatted = rawFrom.includes("onboarding@resend.dev") ? "onboarding@resend.dev" : `${fromName} <${rawFrom}>`;
+      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "orders@orders.meriseshop.com").trim();
+      let fromFormatted = rawFrom;
+      if (rawFrom.includes("onboarding@resend.dev")) {
+        fromFormatted = "onboarding@resend.dev";
+      } else if (!rawFrom.includes("<")) {
+        fromFormatted = `${fromName} <${rawFrom}>`;
+      }
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
