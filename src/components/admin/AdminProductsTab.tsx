@@ -373,7 +373,7 @@ export default function AdminProductsTab({
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded bg-slate-900 border border-slate-700 flex-shrink-0 overflow-hidden flex items-center justify-center">
                           {product.images?.[0] ? (
-                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                            <img src={product.images[0]} alt={product.name} onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=120&auto=format&fit=crop&q=60'; }} className="w-full h-full object-cover" />
                           ) : (
                             <Package className="w-5 h-5 text-slate-600" />
                           )}

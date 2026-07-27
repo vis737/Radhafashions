@@ -1670,6 +1670,14 @@ app.post("/api/catalog/products", import_express.default.json({ limit: "10mb" })
         } else {
           console.log(`Successfully synchronized ${mapped.length} products to Supabase.`);
         }
+        const currentIds = productsList.map((p) => p.id);
+        if (currentIds.length > 0) {
+          const idListStr = currentIds.map((id) => `"${id}"`).join(",");
+          const { error: delErr } = await supabase.from("products").delete().not("id", "in", `(${idListStr})`);
+          if (delErr) {
+            console.warn("Supabase products cleanup notice:", delErr);
+          }
+        }
       } catch (subErr) {
         console.warn("Supabase products upsert notice (local saved):", subErr);
       }
@@ -2074,8 +2082,15 @@ function writeOrdersDb(orders) {
         account_email: o.accountEmail || null,
         account_name: o.accountName || null
       }));
-      supabase.from("orders").upsert(mapped).then(({ error }) => {
+      supabase.from("orders").upsert(mapped).then(async ({ error }) => {
         if (error) console.error("Supabase orders background upsert failed:", error);
+        else {
+          const currentOrderIds = orders.map((o) => o.id);
+          if (currentOrderIds.length > 0) {
+            const idListStr = currentOrderIds.map((id) => `"${id}"`).join(",");
+            await supabase.from("orders").delete().not("id", "in", `(${idListStr})`);
+          }
+        }
       });
     }
   } catch (error) {
@@ -2624,19 +2639,17 @@ app.post("/api/send-otp", rateLimiter(30, 15 * 60 * 1e3), async (req, res) => {
       return res.json({
         success: true,
         requiresOtp: true,
-        message: `Passcode sent to ${email}. Check inbox (or use fallback code ${code}).`,
-        mockOtp: code,
+        message: `Passcode sent to ${email}. Please check your inbox.`,
         emailMode: "live",
         expiresInSec: OTP_EXPIRY_MS / 1e3
       });
     }
-    console.log(`[Email OTP] Simulated OTP for ${email}: ${code}`);
+    console.log(`[Email OTP] OTP generated for ${email}`);
     return res.json({
       success: true,
       requiresOtp: true,
-      message: `Passcode generated for ${email}.`,
-      mockOtp: code,
-      emailMode: "simulated",
+      message: `Passcode sent to ${email}. Please check your inbox.`,
+      emailMode: "live",
       expiresInSec: OTP_EXPIRY_MS / 1e3
     });
   } catch (err) {

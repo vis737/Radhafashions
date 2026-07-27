@@ -61,7 +61,7 @@ export default function CheckoutPanel({
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [screenshotSourceType, setScreenshotSourceType] = useState<'upload' | 'url'>('upload');
   
-  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod' | 'upi_qr'>('payu');
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod' | 'upi_qr'>('upi_qr');
 
   useEffect(() => {
     if (!upiEnabled && paymentMethod === 'upi_qr') {
@@ -228,6 +228,16 @@ export default function CheckoutPanel({
           giftHidePrice
         );
       } else if (paymentMethod === 'upi_qr') {
+        if (!upiTxnId.trim()) {
+          setPaymentError('Please enter your 12-digit UPI Transaction ID / Ref No.');
+          setIsProcessing(false);
+          return;
+        }
+        if (!upiScreenshot || !upiScreenshot.trim()) {
+          setPaymentError('Payment receipt screenshot upload is MANDATORY for UPI QR payment. Please upload screenshot to proceed.');
+          setIsProcessing(false);
+          return;
+        }
         onPlaceOrder(
           { name, email, phone, address, pincode },
           'UPI QR Payment',
@@ -501,54 +511,53 @@ export default function CheckoutPanel({
                 >
                   <div className="pt-6 space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* PayU Option - Coming Soon */}
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setPaymentMethod('payu')}
-                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'payu' ? 'bg-gold-50 dark:bg-gold-500/10 text-navy-950 dark:text-gold-300 border-gold-400 dark:border-gold-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
+                          onClick={() => setPaymentError('PayU Gateway is Coming Soon. Please use Instant UPI QR Payment below.')}
+                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-navy-950/40 border-gray-200 dark:border-navy-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-navy-800/60"
                         >
-                          <ShieldCheck className="w-6 h-6 text-gold-500" />
+                          <ShieldCheck className="w-6 h-6 text-gray-400" />
                           <span className="uppercase tracking-wider font-bold">PayU Secure Online</span>
-                          <span className="text-[10px] text-gray-500 font-normal">Cards, NetBanking, UPI, Wallets</span>
+                          <span className="text-[10px] text-gray-400 font-normal">Cards, NetBanking, UPI</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-gold-500 text-navy-950 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Recommended
+                        <div className="absolute -top-2.5 -right-2 bg-slate-800 text-gold-400 border border-gold-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
+                          Coming Soon
                         </div>
                       </div>
 
-                      {codEnabled && (
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('cod')}
-                            className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'cod' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-400 dark:border-amber-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
-                          >
-                            <Truck className="w-6 h-6 text-amber-500" />
-                            <span className="uppercase tracking-wider font-bold">Cash on Delivery</span>
-                            <span className="text-[10px] text-gray-500 font-normal">Pay cash at doorstep</span>
-                          </button>
-                          <div className="absolute -top-2.5 -right-2 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Available
-                          </div>
+                      {/* Cash on Delivery - Coming Soon */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentError('Cash on Delivery is Coming Soon. Please use Instant UPI QR Payment below.')}
+                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-navy-950/40 border-gray-200 dark:border-navy-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-navy-800/60"
+                        >
+                          <Truck className="w-6 h-6 text-gray-400" />
+                          <span className="uppercase tracking-wider font-bold">Cash on Delivery</span>
+                          <span className="text-[10px] text-gray-400 font-normal">Pay cash at doorstep</span>
+                        </button>
+                        <div className="absolute -top-2.5 -right-2 bg-slate-800 text-amber-400 border border-amber-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
+                          Coming Soon
                         </div>
-                      )}
+                      </div>
 
-                      {upiEnabled && (
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('upi_qr')}
-                            className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
-                          >
-                            <QrCode className="w-6 h-6 text-emerald-500" />
-                            <span className="uppercase tracking-wider font-bold">Instant UPI QR</span>
-                            <span className="text-[10px] text-gray-500 font-normal">Manual bank verification</span>
-                          </button>
-                          <div className="absolute -top-2.5 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Backup
-                          </div>
+                      {/* Instant UPI QR - Active */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => { setPaymentMethod('upi_qr'); setPaymentError(''); }}
+                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
+                        >
+                          <QrCode className="w-6 h-6 text-emerald-500" />
+                          <span className="uppercase tracking-wider font-bold">Instant UPI QR</span>
+                          <span className="text-[10px] text-gray-500 font-normal">Instant QR Scan Payment</span>
+                        </button>
+                        <div className="absolute -top-2.5 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Active & Required
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-xs text-emerald-900 dark:text-emerald-300 flex items-start gap-3">
@@ -664,7 +673,7 @@ export default function CheckoutPanel({
                               {/* Payment Receipt Screenshot Upload Dropdown / File Selector */}
                               <div>
                                 <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Upload className="w-3.5 h-3.5 text-gold-400" /> Upload Payment Receipt Screenshot (Optional)
+                                  <Upload className="w-3.5 h-3.5 text-gold-400" /> Upload Payment Receipt Screenshot (Mandatory) <span className="text-red-500">*</span>
                                 </label>
                                 {upiScreenshot ? (
                                   <div className="relative p-3 bg-navy-900 border border-emerald-500/40 rounded-2xl flex items-center justify-between">

@@ -306,6 +306,7 @@ export default function OrdersTab({ orders, setTrackingInput, setSearchedOrder, 
                           src={it.product.images?.[0] || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=120&auto=format&fit=crop&q=60'}
                           alt={it.product.name}
                           referrerPolicy="no-referrer"
+                          onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=120&auto=format&fit=crop&q=60'; }}
                           className="w-10 h-10 object-cover rounded-lg border border-gray-100 shrink-0 bg-slate-50"
                         />
                         <div>

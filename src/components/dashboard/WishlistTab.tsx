@@ -135,7 +135,7 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
             {wishlistProducts.map((prod: any) => (
               <div key={prod.id} className="p-3.5 rounded-2xl border border-gray-100 dark:border-navy-800 bg-white dark:bg-navy-900 shadow-sm flex items-center gap-3 justify-between">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectProduct(prod.id)}>
-                  <img src={prod.images[0]} alt="" referrerPolicy="no-referrer" className="w-14 h-14 rounded-xl object-cover bg-gray-50 shrink-0" />
+                  <img src={prod.images[0]} alt="" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=120&auto=format&fit=crop&q=60'; }} className="w-14 h-14 rounded-xl object-cover bg-gray-50 shrink-0" />
                   <div className="text-left font-sans space-y-0.5">
                     <h5 className="text-xs font-semibold text-navy-900 dark:text-navy-50 line-clamp-1">{prod.name}</h5>
                     <span className="text-[10px] text-gray-400 font-mono block">{prod.category}</span>

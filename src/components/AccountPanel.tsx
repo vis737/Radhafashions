@@ -697,15 +697,10 @@ export default function AccountPanel({
                 ) : (
                   <div className="space-y-3">
                     <div className="p-3 bg-amber-50 dark:bg-navy-950 border border-amber-200 dark:border-navy-800 rounded-xl text-[11.5px] text-amber-700 dark:text-gold-300 font-sans leading-relaxed text-left">
-                      Secure passcode dispatched to <strong className="font-mono text-xs">{otpEmail}</strong>.
+                      Secure passcode dispatched to <strong className="font-mono text-xs">{otpEmail}</strong>. Please check your inbox.
                       <span className="text-emerald-500">
                         {otpSuccessMessage}
                       </span>
-                      {mockOtp && (
-                        <span className="block mt-2 font-mono text-[10px] text-slate-500 dark:text-slate-400">
-                          Testing OTP: {mockOtp}
-                        </span>
-                      )}
                     </div>
                     <div>
                       <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Enter 4-Digit OTP Code</label>
