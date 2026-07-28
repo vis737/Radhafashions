@@ -585,6 +585,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
   const [imageMode, setImageMode] = useState<'upload' | 'url'>('upload');
   const [urlInput, setUrlInput] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isDraggingImages, setIsDraggingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateField = (field: keyof Product, value: any) => {
@@ -601,64 +602,82 @@ function ProductForm({ product, categories, onChange, addToast }: {
     });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error || new Error('Unable to read image file.'));
+    reader.readAsDataURL(file);
+  });
+
+  const uploadImageFiles = async (files: File[]) => {
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      addToast('Please drop or select image files only.', 'error');
+      return;
+    }
 
     setIsUploading(true);
     try {
-      // 1. Prepare a local fallback only for development/offline upload failures.
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64Url = reader.result as string;
+      const uploadedUrls: string[] = [];
 
-        let serverUploadError = '';
-
-        // 2. Try server upload endpoint
+      for (const file of imageFiles) {
+        let res: Response;
         try {
           const formData = new FormData();
           formData.append('image', file);
           
-          const res = await fetch('/api/upload-image', { 
+          res = await fetch('/api/upload-image', { 
             method: 'POST', 
             body: formData, 
             credentials: 'include' 
           });
-          
-          if (res.ok) {
-            const data = await res.json();
-            if (data.url) {
-              updateField('images', [...(product.images || []), data.url]);
-              addToast('Image uploaded successfully', 'success');
-              setIsUploading(false);
-              return;
-            }
-          }
-          const data = await res.json().catch(() => ({}));
-          serverUploadError = data.error || 'Image upload failed on the server.';
         } catch {
-          // Ignore server upload failure and use robust base64Url
+          const base64Url = await fileToDataUrl(file);
+          uploadedUrls.push(base64Url);
+          continue;
         }
 
-        if (serverUploadError) {
-          addToast(serverUploadError, 'error');
-          setIsUploading(false);
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            uploadedUrls.push(data.url);
+            continue;
+          }
         }
 
-        // Use base64 Data URL only when the upload request could not reach the server.
-        updateField('images', [...(product.images || []), base64Url]);
-        addToast('Image processed and added successfully', 'success');
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Image upload failed on the server.');
+      }
+
+      if (uploadedUrls.length > 0) {
+        updateField('images', [...(product.images || []), ...uploadedUrls]);
+        addToast(`${uploadedUrls.length} image${uploadedUrls.length > 1 ? 's' : ''} uploaded successfully`, 'success');
+      }
     } catch (error) {
       console.error('Upload error:', error);
-      addToast('Failed to upload image', 'error');
+      addToast(error instanceof Error ? error.message : 'Failed to upload image', 'error');
+    } finally {
       setIsUploading(false);
+      setIsDraggingImages(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      await uploadImageFiles(files);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const handleImageDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingImages(false);
+    if (isUploading) return;
+    uploadImageFiles(Array.from(e.dataTransfer.files || []));
   };
 
   const handleAddUrl = () => {
