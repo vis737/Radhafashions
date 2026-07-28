@@ -243,21 +243,17 @@ export default function App() {
     const loadCatalogFromBackend = async () => {
       try {
         const [prodsRes, coupsRes, campsRes, cmsRes, sessionRes] = await Promise.all([
-          fetch('/api/catalog/products'),
-          fetch('/api/catalog/coupons'),
-          fetch('/api/catalog/campaigns'),
-          fetch('/api/catalog/cms'),
-          fetch('/api/admin/session').catch(() => null)
+          fetch('/api/catalog/products', { cache: 'no-store' }),
+          fetch('/api/catalog/coupons', { cache: 'no-store' }),
+          fetch('/api/catalog/campaigns', { cache: 'no-store' }),
+          fetch('/api/catalog/cms', { cache: 'no-store' }),
+          fetch('/api/admin/session', { cache: 'no-store', credentials: 'include' }).catch(() => null)
         ]);
         
         if (prodsRes && prodsRes.ok) {
           const prods = await prodsRes.json();
           if (Array.isArray(prods) && prods.length > 0) {
-            setProducts((prev) => {
-              const backendIds = new Set(prods.map((p: Product) => p.id));
-              const localOnly = prev.filter((p) => !backendIds.has(p.id));
-              return [...prods, ...localOnly];
-            });
+            setProducts(prods);
           }
         }
         if (coupsRes && coupsRes.ok) {
@@ -295,7 +291,7 @@ export default function App() {
   useEffect(() => {
     saveStoredDb({ products, coupons, campaigns, cms });
     
-    if (!isCatalogLoadedRef.current) return;
+    if (!isCatalogLoadedRef.current || !adminBypassed) return;
 
     const syncCatalogToBackend = async () => {
       try {
@@ -336,7 +332,7 @@ export default function App() {
     };
 
     syncCatalogToBackend();
-  }, [products, coupons, campaigns, cms]);
+  }, [products, coupons, campaigns, cms, adminBypassed]);
 
   // Autoplay of scheduled campaigns hero banner
   useEffect(() => {

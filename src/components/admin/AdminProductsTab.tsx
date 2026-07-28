@@ -607,10 +607,12 @@ function ProductForm({ product, categories, onChange, addToast }: {
 
     setIsUploading(true);
     try {
-      // 1. Convert to Base64 Data URL so image persists 100% across Render server restarts
+      // 1. Prepare a local fallback only for development/offline upload failures.
       const reader = new FileReader();
       reader.onload = async () => {
         const base64Url = reader.result as string;
+
+        let serverUploadError = '';
 
         // 2. Try server upload endpoint
         try {
@@ -632,11 +634,19 @@ function ProductForm({ product, categories, onChange, addToast }: {
               return;
             }
           }
+          const data = await res.json().catch(() => ({}));
+          serverUploadError = data.error || 'Image upload failed on the server.';
         } catch {
           // Ignore server upload failure and use robust base64Url
         }
 
-        // Use base64 Data URL if server returns ephemeral path or fails
+        if (serverUploadError) {
+          addToast(serverUploadError, 'error');
+          setIsUploading(false);
+          return;
+        }
+
+        // Use base64 Data URL only when the upload request could not reach the server.
         updateField('images', [...(product.images || []), base64Url]);
         addToast('Image processed and added successfully', 'success');
         setIsUploading(false);

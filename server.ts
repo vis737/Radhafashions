@@ -346,11 +346,21 @@ if (supabase) {
   syncCustomersFromSupabase();
 }
 
-// Local JSON File Database helper utilities
-const PRODUCTS_FILE_PATH = path.join(process.cwd(), 'products_db.json');
-const COUPONS_FILE_PATH = path.join(process.cwd(), 'coupons_db.json');
-const CAMPAIGNS_FILE_PATH = path.join(process.cwd(), 'campaigns_db.json');
-const CMS_FILE_PATH = path.join(process.cwd(), 'cms_db.json');
+// Local JSON File Database helper utilities. Production should use Supabase;
+// DATA_DIR/RAILWAY_VOLUME_MOUNT_PATH only helps when a persistent volume exists.
+const LOCAL_DATA_DIR = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
+const HAS_PERSISTENT_LOCAL_DATA = Boolean(process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH);
+try {
+  if (!fs.existsSync(LOCAL_DATA_DIR)) {
+    fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn('[Storage] Could not create local data directory:', err);
+}
+const PRODUCTS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'products_db.json');
+const COUPONS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'coupons_db.json');
+const CAMPAIGNS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'campaigns_db.json');
+const CMS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'cms_db.json');
 // Note: activity_logs.json is intentionally removed — Render has an ephemeral filesystem.
 // All persistent data is stored in Supabase.
 
@@ -577,10 +587,17 @@ app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
 
-  if (req.path.startsWith('/api/admin') || req.path.startsWith('/api/orders') || req.path.startsWith('/api/verify-otp')) {
+  if (
+    req.path.startsWith('/api/admin') ||
+    req.path.startsWith('/api/orders') ||
+    req.path.startsWith('/api/catalog') ||
+    req.path.startsWith('/api/upload-image') ||
+    req.path.startsWith('/api/verify-otp')
+  ) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
   } else {
     res.setHeader('Cache-Control', 'public, max-age=3600');
   }
@@ -663,30 +680,21 @@ function rateLimiter(limit: number, windowMs: number) {
   };
 }
 
-// Serve uploaded product images as static files
-// NOTE: On Render's free tier the filesystem is ephemeral — uploaded images are
-// lost on every deploy or restart. For persistent uploads, integrate Supabase Storage.
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
+// Serve uploaded product images as static files for local/offline fallback.
+// Production uploads use Supabase Storage when Supabase is configured.
+const PRODUCT_IMAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || process.env.SUPABASE_PRODUCT_IMAGE_BUCKET || 'product-images';
+const UPLOADS_DIR = path.join(LOCAL_DATA_DIR, 'public', 'uploads');
 try {
   if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
 } catch (err) {
-  console.warn('[Uploads] Could not create uploads directory (ephemeral FS on Render):', err);
+  console.warn('[Uploads] Could not create uploads directory:', err);
 }
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Multer storage: save to public/uploads with original extension
-const uploadStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    const uniqueName = `prod_${Date.now()}_${Math.floor(Math.random() * 10000)}${ext}`;
-    cb(null, uniqueName);
-  },
-});
 const upload = multer({
-  storage: uploadStorage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -697,14 +705,123 @@ const upload = multer({
   },
 });
 
+let productImageBucketReady = false;
+
+function getImageExtension(file: Express.Multer.File): string {
+  const originalExt = path.extname(file.originalname || '').toLowerCase();
+  if (/^\.(jpe?g|png|webp|gif|avif)$/.test(originalExt)) return originalExt;
+
+  const mimeExt: Record<string, string> = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+    'image/gif': '.gif',
+    'image/avif': '.avif',
+  };
+  return mimeExt[file.mimetype] || '.jpg';
+}
+
+async function ensureProductImageBucket() {
+  if (!supabase || productImageBucketReady) return;
+
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) {
+    throw listError;
+  }
+
+  const bucketExists = buckets?.some(bucket => bucket.name === PRODUCT_IMAGE_BUCKET);
+  if (!bucketExists) {
+    const { error: createError } = await supabase.storage.createBucket(PRODUCT_IMAGE_BUCKET, {
+      public: true,
+      fileSizeLimit: 10 * 1024 * 1024,
+      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'],
+    });
+    if (createError) {
+      throw createError;
+    }
+    console.log(`[Image Upload] Created Supabase Storage bucket: ${PRODUCT_IMAGE_BUCKET}`);
+  }
+
+  productImageBucketReady = true;
+}
+
+async function uploadProductImageToSupabase(file: Express.Multer.File) {
+  if (!supabase) return null;
+
+  await ensureProductImageBucket();
+  const ext = getImageExtension(file);
+  const objectPath = `products/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}${ext}`;
+  const { error } = await supabase.storage
+    .from(PRODUCT_IMAGE_BUCKET)
+    .upload(objectPath, file.buffer, {
+      contentType: file.mimetype,
+      cacheControl: '31536000',
+      upsert: false,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  const { data } = supabase.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(objectPath);
+  return {
+    url: data.publicUrl,
+    filename: path.basename(objectPath),
+    storagePath: objectPath,
+    storageBucket: PRODUCT_IMAGE_BUCKET,
+  };
+}
+
+function saveProductImageLocally(file: Express.Multer.File) {
+  const ext = getImageExtension(file);
+  const filename = `prod_${Date.now()}_${Math.floor(Math.random() * 10000)}${ext}`;
+  const targetPath = path.join(UPLOADS_DIR, filename);
+  fs.writeFileSync(targetPath, file.buffer);
+  return {
+    url: `/uploads/${filename}`,
+    filename,
+  };
+}
+
 // Image upload endpoint – returns { url } accessible from the browser
-app.post('/api/upload-image', verifyAdminToken, upload.single('image'), (req: any, res: any) => {
+app.post('/api/upload-image', verifyAdminToken, upload.single('image'), async (req: any, res: any) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file received.' });
   }
-  const url = `/uploads/${req.file.filename}`;
-  console.log(`[Image Upload] Saved product image: ${req.file.filename}`);
-  res.json({ url, filename: req.file.filename });
+
+  try {
+    const supabaseUpload = await uploadProductImageToSupabase(req.file);
+    if (supabaseUpload) {
+      console.log(`[Image Upload] Saved product image to Supabase Storage: ${supabaseUpload.storagePath}`);
+      return res.json(supabaseUpload);
+    }
+
+    if (!HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({
+        error: 'Supabase Storage is required for persistent product images on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR.',
+      });
+    }
+
+    const localUpload = saveProductImageLocally(req.file);
+    console.warn('[Image Upload] Supabase is not configured; saved image to local filesystem fallback.');
+    return res.json(localUpload);
+  } catch (err: any) {
+    console.error('[Image Upload] Failed to upload product image:', err);
+
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const localUpload = saveProductImageLocally(req.file);
+        console.warn('[Image Upload] Supabase upload failed; saved to local development fallback.');
+        return res.json(localUpload);
+      } catch (localErr) {
+        console.error('[Image Upload] Local fallback also failed:', localErr);
+      }
+    }
+
+    return res.status(500).json({
+      error: 'Product image upload failed. Check Supabase Storage bucket permissions and service role key.',
+    });
+  }
 });
 
 // --- PRODUCTS ENDPOINTS ---
@@ -752,7 +869,7 @@ app.get('/api/catalog/products', async (req, res) => {
   }
 });
 
-app.post('/api/catalog/products', express.json({ limit: '10mb' }), async (req, res) => {
+app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb' }), async (req, res) => {
   try {
     const productsList = req.body;
     if (!Array.isArray(productsList)) {
@@ -760,6 +877,12 @@ app.post('/api/catalog/products', express.json({ limit: '10mb' }), async (req, r
     }
     if (productsList.length > 500) {
       return res.status(400).json({ error: 'Too many products in a single request (max 500).' });
+    }
+
+    if (!supabase && !HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({
+        error: 'Supabase is required for persistent product catalog saves on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR.',
+      });
     }
 
     writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
@@ -792,6 +915,7 @@ app.post('/api/catalog/products', express.json({ limit: '10mb' }), async (req, r
         const { error: subErr } = await supabase.from('products').upsert(mapped);
         if (subErr) {
           console.error('Supabase products upsert notice:', subErr);
+          return res.status(500).json({ error: 'Supabase products upsert failed. Product catalog was not durably saved.' });
         } else {
           console.log(`Successfully synchronized ${mapped.length} products to Supabase.`);
         }
@@ -807,6 +931,7 @@ app.post('/api/catalog/products', express.json({ limit: '10mb' }), async (req, r
         }
       } catch (subErr) {
         console.warn('Supabase products upsert notice (local saved):', subErr);
+        return res.status(500).json({ error: 'Supabase products sync failed. Product catalog was not durably saved.' });
       }
     }
     res.json({ success: true, message: 'Products catalog synchronized successfully.' });

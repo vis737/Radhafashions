@@ -1285,6 +1285,7 @@ async function syncCustomersFromSupabase() {
 async function syncProductsFromSupabase() {
   if (!supabase) return;
   try {
+    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     const { data, error } = await supabase.from("products").select("*");
     if (!error && data && data.length > 0) {
       const mapped = data.map((p) => ({
@@ -1310,8 +1311,36 @@ async function syncProductsFromSupabase() {
         availability: p.availability || "in-stock",
         vendorId: p.vendor_id || null
       }));
-      writeLocalJsonDb(PRODUCTS_FILE_PATH, mapped);
-      console.log(`\u25C7 Synced ${mapped.length} products from Supabase database to local catalog.`);
+      const supabaseIds = new Set(mapped.map((m) => m.id));
+      const localOnly = localProds.filter((lp) => lp && lp.id && !supabaseIds.has(lp.id));
+      const merged = [...mapped, ...localOnly];
+      if (localOnly.length > 0) {
+        const localMapped = localOnly.map((p) => ({
+          id: p.id,
+          sku: p.sku || `SKU-${p.id}`,
+          name: p.name || "Handcrafted Product",
+          category: p.category || "Handbags",
+          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, "-") || "handbags",
+          price: p.price,
+          discount_price: p.discountPrice || null,
+          stock: p.stock !== void 0 ? p.stock : 10,
+          rating: p.rating || 5,
+          rating_count: p.ratingCount || 1,
+          images: p.images || [],
+          short_description: p.shortDescription || p.name || "",
+          description: p.description || p.name || "",
+          specifications: p.specifications || {},
+          reviews: p.reviews || [],
+          is_new: p.isNew || false,
+          is_bestseller: p.isBestseller || false,
+          brand: p.brand || "MERIS",
+          availability: p.availability || "in-stock",
+          vendor_id: p.vendorId || null
+        }));
+        await supabase.from("products").upsert(localMapped);
+      }
+      writeLocalJsonDb(PRODUCTS_FILE_PATH, merged);
+      console.log(`\u25C7 Synced ${merged.length} products (Supabase + local) to catalog.`);
     }
   } catch (err) {
     console.error("Failed to sync products from Supabase on startup:", err);
@@ -1327,10 +1356,19 @@ if (supabase) {
 } else {
   syncCustomersFromSupabase();
 }
-var PRODUCTS_FILE_PATH = import_path.default.join(process.cwd(), "products_db.json");
-var COUPONS_FILE_PATH = import_path.default.join(process.cwd(), "coupons_db.json");
-var CAMPAIGNS_FILE_PATH = import_path.default.join(process.cwd(), "campaigns_db.json");
-var CMS_FILE_PATH = import_path.default.join(process.cwd(), "cms_db.json");
+var LOCAL_DATA_DIR = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
+var HAS_PERSISTENT_LOCAL_DATA = Boolean(process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH);
+try {
+  if (!import_fs.default.existsSync(LOCAL_DATA_DIR)) {
+    import_fs.default.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn("[Storage] Could not create local data directory:", err);
+}
+var PRODUCTS_FILE_PATH = import_path.default.join(LOCAL_DATA_DIR, "products_db.json");
+var COUPONS_FILE_PATH = import_path.default.join(LOCAL_DATA_DIR, "coupons_db.json");
+var CAMPAIGNS_FILE_PATH = import_path.default.join(LOCAL_DATA_DIR, "campaigns_db.json");
+var CMS_FILE_PATH = import_path.default.join(LOCAL_DATA_DIR, "cms_db.json");
 function readLocalJsonDb(filePath, defaultData) {
   try {
     if (!import_fs.default.existsSync(filePath)) {
@@ -1504,10 +1542,11 @@ app.use((req, res, next) => {
   res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), interest-cohort=()");
   res.setHeader("Cross-Origin-Resource-Policy", "same-site");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/orders") || req.path.startsWith("/api/verify-otp")) {
+  if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/orders") || req.path.startsWith("/api/catalog") || req.path.startsWith("/api/upload-image") || req.path.startsWith("/api/verify-otp")) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
+    res.setHeader("Surrogate-Control", "no-store");
   } else {
     res.setHeader("Cache-Control", "public, max-age=3600");
   }
@@ -1557,25 +1596,18 @@ function rateLimiter(limit, windowMs) {
     next();
   };
 }
-var UPLOADS_DIR = import_path.default.join(process.cwd(), "public", "uploads");
+var PRODUCT_IMAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || process.env.SUPABASE_PRODUCT_IMAGE_BUCKET || "product-images";
+var UPLOADS_DIR = import_path.default.join(LOCAL_DATA_DIR, "public", "uploads");
 try {
   if (!import_fs.default.existsSync(UPLOADS_DIR)) {
     import_fs.default.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
 } catch (err) {
-  console.warn("[Uploads] Could not create uploads directory (ephemeral FS on Render):", err);
+  console.warn("[Uploads] Could not create uploads directory:", err);
 }
 app.use("/uploads", import_express.default.static(UPLOADS_DIR));
-var uploadStorage = import_multer.default.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    const ext = import_path.default.extname(file.originalname) || ".jpg";
-    const uniqueName = `prod_${Date.now()}_${Math.floor(Math.random() * 1e4)}${ext}`;
-    cb(null, uniqueName);
-  }
-});
 var upload = (0, import_multer.default)({
-  storage: uploadStorage,
+  storage: import_multer.default.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   // 10 MB max
   fileFilter: (_req, file, cb) => {
@@ -1586,16 +1618,107 @@ var upload = (0, import_multer.default)({
     }
   }
 });
-app.post("/api/upload-image", verifyAdminToken, upload.single("image"), (req, res) => {
+var productImageBucketReady = false;
+function getImageExtension(file) {
+  const originalExt = import_path.default.extname(file.originalname || "").toLowerCase();
+  if (/^\.(jpe?g|png|webp|gif|avif)$/.test(originalExt)) return originalExt;
+  const mimeExt = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+    "image/avif": ".avif"
+  };
+  return mimeExt[file.mimetype] || ".jpg";
+}
+async function ensureProductImageBucket() {
+  if (!supabase || productImageBucketReady) return;
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) {
+    throw listError;
+  }
+  const bucketExists = buckets?.some((bucket) => bucket.name === PRODUCT_IMAGE_BUCKET);
+  if (!bucketExists) {
+    const { error: createError } = await supabase.storage.createBucket(PRODUCT_IMAGE_BUCKET, {
+      public: true,
+      fileSizeLimit: 10 * 1024 * 1024,
+      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]
+    });
+    if (createError) {
+      throw createError;
+    }
+    console.log(`[Image Upload] Created Supabase Storage bucket: ${PRODUCT_IMAGE_BUCKET}`);
+  }
+  productImageBucketReady = true;
+}
+async function uploadProductImageToSupabase(file) {
+  if (!supabase) return null;
+  await ensureProductImageBucket();
+  const ext = getImageExtension(file);
+  const objectPath = `products/${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}/${import_crypto.default.randomUUID()}${ext}`;
+  const { error } = await supabase.storage.from(PRODUCT_IMAGE_BUCKET).upload(objectPath, file.buffer, {
+    contentType: file.mimetype,
+    cacheControl: "31536000",
+    upsert: false
+  });
+  if (error) {
+    throw error;
+  }
+  const { data } = supabase.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(objectPath);
+  return {
+    url: data.publicUrl,
+    filename: import_path.default.basename(objectPath),
+    storagePath: objectPath,
+    storageBucket: PRODUCT_IMAGE_BUCKET
+  };
+}
+function saveProductImageLocally(file) {
+  const ext = getImageExtension(file);
+  const filename = `prod_${Date.now()}_${Math.floor(Math.random() * 1e4)}${ext}`;
+  const targetPath = import_path.default.join(UPLOADS_DIR, filename);
+  import_fs.default.writeFileSync(targetPath, file.buffer);
+  return {
+    url: `/uploads/${filename}`,
+    filename
+  };
+}
+app.post("/api/upload-image", verifyAdminToken, upload.single("image"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No image file received." });
   }
-  const url = `/uploads/${req.file.filename}`;
-  console.log(`[Image Upload] Saved product image: ${req.file.filename}`);
-  res.json({ url, filename: req.file.filename });
+  try {
+    const supabaseUpload = await uploadProductImageToSupabase(req.file);
+    if (supabaseUpload) {
+      console.log(`[Image Upload] Saved product image to Supabase Storage: ${supabaseUpload.storagePath}`);
+      return res.json(supabaseUpload);
+    }
+    if (!HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === "production") {
+      return res.status(503).json({
+        error: "Supabase Storage is required for persistent product images on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR."
+      });
+    }
+    const localUpload = saveProductImageLocally(req.file);
+    console.warn("[Image Upload] Supabase is not configured; saved image to local filesystem fallback.");
+    return res.json(localUpload);
+  } catch (err) {
+    console.error("[Image Upload] Failed to upload product image:", err);
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        const localUpload = saveProductImageLocally(req.file);
+        console.warn("[Image Upload] Supabase upload failed; saved to local development fallback.");
+        return res.json(localUpload);
+      } catch (localErr) {
+        console.error("[Image Upload] Local fallback also failed:", localErr);
+      }
+    }
+    return res.status(500).json({
+      error: "Product image upload failed. Check Supabase Storage bucket permissions and service role key."
+    });
+  }
 });
 app.get("/api/catalog/products", async (req, res) => {
   try {
+    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     if (supabase) {
       const { data, error } = await supabase.from("products").select("*");
       if (!error && data && data.length > 0) {
@@ -1622,17 +1745,19 @@ app.get("/api/catalog/products", async (req, res) => {
           availability: p.availability || "in-stock",
           vendorId: p.vendor_id || null
         }));
-        return res.json(mapped);
+        const supabaseIds = new Set(mapped.map((m) => m.id));
+        const localOnly = Array.isArray(localProds) ? localProds.filter((lp) => lp && lp.id && !supabaseIds.has(lp.id)) : [];
+        const merged = [...mapped, ...localOnly];
+        return res.json(merged);
       }
       console.warn("Supabase products empty or error, serving full local products catalog:", error);
     }
-    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     res.json(localProds);
   } catch (err) {
     res.json(readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS));
   }
 });
-app.post("/api/catalog/products", import_express.default.json({ limit: "10mb" }), async (req, res) => {
+app.post("/api/catalog/products", verifyAdminToken, import_express.default.json({ limit: "10mb" }), async (req, res) => {
   try {
     const productsList = req.body;
     if (!Array.isArray(productsList)) {
@@ -1641,38 +1766,46 @@ app.post("/api/catalog/products", import_express.default.json({ limit: "10mb" })
     if (productsList.length > 500) {
       return res.status(400).json({ error: "Too many products in a single request (max 500)." });
     }
+    if (!supabase && !HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === "production") {
+      return res.status(503).json({
+        error: "Supabase is required for persistent product catalog saves on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR."
+      });
+    }
     writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
     if (supabase) {
       try {
         const mapped = productsList.map((p) => ({
           id: p.id,
-          sku: p.sku,
-          name: p.name,
-          category: p.category,
-          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, "-"),
+          sku: p.sku || `SKU-${p.id}`,
+          name: p.name || "Handcrafted Product",
+          category: p.category || "Handbags",
+          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, "-") || "handbags",
           price: p.price,
           discount_price: p.discountPrice || null,
-          stock: p.stock,
+          stock: p.stock !== void 0 ? p.stock : 10,
           rating: p.rating || 5,
           rating_count: p.ratingCount || 1,
           images: p.images || [],
-          short_description: p.shortDescription || p.name,
-          description: p.description || p.name,
+          short_description: p.shortDescription || p.name || "",
+          description: p.description || p.name || "",
           specifications: { ...p.specifications || {}, Weight: parseProductWeightKg(p) ? `${parseProductWeightKg(p)} kg` : p.specifications?.Weight },
           reviews: p.reviews || [],
           is_new: p.isNew || false,
           is_bestseller: p.isBestseller || false,
-          brand: p.brand || "MERIS"
+          brand: p.brand || "MERIS",
+          availability: p.availability || "in-stock",
+          vendor_id: p.vendorId || null
         }));
         const { error: subErr } = await supabase.from("products").upsert(mapped);
         if (subErr) {
           console.error("Supabase products upsert notice:", subErr);
+          return res.status(500).json({ error: "Supabase products upsert failed. Product catalog was not durably saved." });
         } else {
           console.log(`Successfully synchronized ${mapped.length} products to Supabase.`);
         }
-        const currentIds = productsList.map((p) => p.id);
+        const currentIds = productsList.map((p) => p.id).filter(Boolean);
         if (currentIds.length > 0) {
-          const idListStr = currentIds.map((id) => `"${id}"`).join(",");
+          const idListStr = currentIds.join(",");
           const { error: delErr } = await supabase.from("products").delete().not("id", "in", `(${idListStr})`);
           if (delErr) {
             console.warn("Supabase products cleanup notice:", delErr);
@@ -1680,6 +1813,7 @@ app.post("/api/catalog/products", import_express.default.json({ limit: "10mb" })
         }
       } catch (subErr) {
         console.warn("Supabase products upsert notice (local saved):", subErr);
+        return res.status(500).json({ error: "Supabase products sync failed. Product catalog was not durably saved." });
       }
     }
     res.json({ success: true, message: "Products catalog synchronized successfully." });
@@ -2126,34 +2260,6 @@ function createSmtpTransporter() {
 async function dispatchLiveEmail(to, subject, html) {
   const recipient = sanitizeEmail(to);
   if (!recipient) return false;
-  if (isConfigured(process.env.BREVO_API_KEY)) {
-    try {
-      const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
-      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "meriseshop.2025@gmail.com").trim();
-      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "content-type": "application/json",
-          "api-key": process.env.BREVO_API_KEY.trim()
-        },
-        body: JSON.stringify({
-          sender: { name: fromName, email: fromEmail },
-          to: [{ email: recipient }],
-          subject,
-          htmlContent: html
-        })
-      });
-      const data = await res.json();
-      if (res.ok && (data.messageId || data.messageIds)) {
-        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
-        return true;
-      }
-      console.warn(`[Brevo REST API Warning] Failed sending to ${recipient}:`, data);
-    } catch (err) {
-      console.error("[Brevo REST API Exception]:", err);
-    }
-  }
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
@@ -2179,7 +2285,7 @@ async function dispatchLiveEmail(to, subject, html) {
       });
       const data = await res.json();
       if (res.ok && data.id) {
-        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id})`);
+        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id}) from ${fromFormatted}`);
         return true;
       }
       console.warn(`[Resend API Warning] Failed sending to ${recipient}:`, data);
@@ -2187,10 +2293,38 @@ async function dispatchLiveEmail(to, subject, html) {
       console.error("[Resend API Exception]:", err);
     }
   }
+  if (isConfigured(process.env.BREVO_API_KEY)) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
+      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || "orders@orders.meriseshop.com").trim();
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "content-type": "application/json",
+          "api-key": process.env.BREVO_API_KEY.trim()
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: recipient }],
+          subject,
+          htmlContent: html
+        })
+      });
+      const data = await res.json();
+      if (res.ok && (data.messageId || data.messageIds)) {
+        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
+        return true;
+      }
+      console.warn(`[Brevo REST API Warning] Failed sending to ${recipient}:`, data);
+    } catch (err) {
+      console.error("[Brevo REST API Exception]:", err);
+    }
+  }
   try {
     const transporter = createSmtpTransporter();
     const fromName = process.env.SMTP_FROM_NAME || "Meris E-Shop";
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "meriseshop.2025@gmail.com";
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || "orders@orders.meriseshop.com";
     await transporter.sendMail({
       from: `"${fromName.replace(/"/g, "")}" <${fromEmail}>`,
       to: recipient,
@@ -2247,33 +2381,45 @@ app.get("/api/orders/:orderNumber", rateLimiter(20, 15 * 60 * 1e3), (req, res) =
   }
 });
 async function sendBookingEmail(order) {
-  const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
-  const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || "Valued Customer", 100);
-  const subject = `\u{1F6CD}\uFE0F Meris E-Shop: Booking Secured - Order #${order.orderNumber}`;
-  let itemsHtml = "";
-  if (order.items && Array.isArray(order.items)) {
-    order.items.forEach((item) => {
-      const productName = item.product?.name || "Handcrafted Gift";
-      const qty = item.quantity || 1;
-      const price = item.product?.discountPrice || item.product?.price || 0;
-      const imageUrl = item.product?.images?.[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=150&auto=format&fit=crop&q=80";
-      itemsHtml += `
-        <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 12px 8px; width: 60px;">
-            <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" referrerPolicy="no-referrer" />
-          </td>
-          <td style="padding: 12px 8px; font-size: 13px; color: #0f172a; font-weight: 500;">
-            ${productName}
-            <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Qty: ${qty} \xD7 \u20B9${price}</div>
-          </td>
-          <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
-            \u20B9${price * qty}
-          </td>
-        </tr>
-      `;
-    });
-  }
-  const htmlContent = `
+  try {
+    const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
+    if (!recipientEmail) {
+      console.warn("[Email Service] No valid customer recipient email found for order:", order?.orderNumber);
+      return null;
+    }
+    const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || "Valued Customer", 100);
+    const orderNum = order.orderNumber || order.id || "ORDER";
+    const subject = `Order Confirmation - Meris E-Shop (#${orderNum})`;
+    let itemsHtml = "";
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item) => {
+        const productObj = item.product || item;
+        const productName = productObj.name || "Handcrafted Gift";
+        const qty = item.quantity || 1;
+        const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
+        const imageUrl = Array.isArray(productObj.images) && productObj.images[0] ? productObj.images[0] : "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=150&auto=format&fit=crop&q=80";
+        itemsHtml += `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 12px 8px; width: 60px;">
+              <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" />
+            </td>
+            <td style="padding: 12px 8px; font-size: 13px; color: #0f172a; font-weight: 500;">
+              ${productName}
+              <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Qty: ${qty} \xD7 \u20B9${price}</div>
+            </td>
+            <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
+              \u20B9${price * qty}
+            </td>
+          </tr>
+        `;
+      });
+    }
+    const subtotal = Number(order.subtotal || 0);
+    const discount = Number(order.discount || 0);
+    const shippingCost = Number(order.shippingCost || 0);
+    const tax = Number(order.tax || 0);
+    const total = Number(order.total || 0);
+    const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -2304,7 +2450,7 @@ async function sendBookingEmail(order) {
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace;">
           <tr>
             <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${order.orderNumber}</td>
+            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${orderNum}</td>
           </tr>
           <tr>
             <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">BOOKING DATE:</td>
@@ -2344,25 +2490,25 @@ async function sendBookingEmail(order) {
       <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #475569;">
         <tr>
           <td style="padding: 6px 0; color: #64748b;">Subtotal:</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">\u20B9${order.subtotal}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">\u20B9${subtotal}</td>
         </tr>
-        ${order.discount > 0 ? `
+        ${discount > 0 ? `
         <tr>
           <td style="padding: 6px 0; color: #10b981; font-weight: 500;">Campaign Promo Discount (${order.couponCode || "PROMO"}):</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #10b981; font-weight: bold;">-\u20B9${order.discount}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #10b981; font-weight: bold;">-\u20B9${discount}</td>
         </tr>
         ` : ""}
         <tr>
           <td style="padding: 6px 0; color: #64748b;">Shipping Handlers Fee:</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">\u20B9${order.shippingCost}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">\u20B9${shippingCost}</td>
         </tr>
         <tr>
           <td style="padding: 6px 0; color: #64748b;">Tax (Inclusive Goods & Services Tax):</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">\u20B9${order.tax}</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">\u20B9${tax}</td>
         </tr>
         <tr style="border-top: 1px solid #e2e8f0;">
           <td style="padding: 16px 0 0 0; font-size: 15px; font-weight: bold; color: #0f172a;">Total Invoice Paid:</td>
-          <td style="padding: 16px 0 0 0; text-align: right; font-size: 16px; font-weight: bold; color: #d97706; font-family: monospace;">\u20B9${order.total}</td>
+          <td style="padding: 16px 0 0 0; text-align: right; font-size: 16px; font-weight: bold; color: #d97706; font-family: monospace;">\u20B9${total}</td>
         </tr>
       </table>
     </div>
@@ -2381,35 +2527,159 @@ async function sendBookingEmail(order) {
 </body>
 </html>
   `;
-  const newEmailRecord = {
-    id: `email_${Date.now()}_${Math.floor(Math.random() * 1e3)}`,
-    recipient: recipientEmail,
-    subject,
-    bodyHtml: htmlContent,
-    sentAt: (/* @__PURE__ */ new Date()).toLocaleString(),
-    orderNumber: order.orderNumber,
-    status: "Delivered",
-    dateText: (/* @__PURE__ */ new Date()).toLocaleString()
-  };
-  if (supabase) {
-    supabase.from("email_logs").insert({
-      id: newEmailRecord.id,
-      recipient: newEmailRecord.recipient,
-      subject: newEmailRecord.subject,
-      body_html: newEmailRecord.bodyHtml,
-      sent_at: newEmailRecord.sentAt,
-      order_number: newEmailRecord.orderNumber,
-      status: newEmailRecord.status,
-      date_text: newEmailRecord.dateText
-    }).then(({ error }) => {
-      if (error) console.error("[Email Service] Supabase email_logs insert failed:", error);
-      else console.log(`[Email Service] Logged booking email to Supabase for ${recipientEmail}.`);
-    });
-  } else {
-    console.log(`[Email Service] Supabase not configured \u2014 email log skipped for ${recipientEmail}.`);
+    const newEmailRecord = {
+      id: `email_${Date.now()}_${Math.floor(Math.random() * 1e3)}`,
+      recipient: recipientEmail,
+      subject,
+      bodyHtml: htmlContent,
+      sentAt: (/* @__PURE__ */ new Date()).toLocaleString(),
+      orderNumber: orderNum,
+      status: "Delivered",
+      dateText: (/* @__PURE__ */ new Date()).toLocaleString()
+    };
+    if (supabase) {
+      try {
+        await supabase.from("email_logs").insert({
+          id: newEmailRecord.id,
+          recipient: newEmailRecord.recipient,
+          subject: newEmailRecord.subject,
+          body_html: newEmailRecord.bodyHtml,
+          sent_at: newEmailRecord.sentAt,
+          order_number: newEmailRecord.orderNumber,
+          status: newEmailRecord.status,
+          date_text: newEmailRecord.dateText
+        });
+        console.log(`[Email Service] Logged booking email to Supabase for ${recipientEmail}.`);
+      } catch (dbErr) {
+        console.error("[Email Service] Supabase email_logs insert error:", dbErr);
+      }
+    } else {
+      console.log(`[Email Service] Supabase not configured \u2014 email log skipped for ${recipientEmail}.`);
+    }
+    const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+    if (sent) {
+      console.log(`[Order Service] Order confirmation email delivered to ${recipientEmail} for #${orderNum}`);
+    } else {
+      console.warn(`[Order Service] Failed to send order confirmation email to ${recipientEmail} for #${orderNum}`);
+    }
+    return newEmailRecord;
+  } catch (err) {
+    console.error("[Order Service] Exception in sendBookingEmail:", err);
+    return null;
   }
-  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
-  return newEmailRecord;
+}
+async function sendAdminVendorNotificationEmail(order) {
+  try {
+    const orderNum = order.orderNumber || order.id || "ORDER";
+    const customerName = sanitizeString(order.customerInfo?.name || order.accountName || "Customer", 100);
+    const customerEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || "");
+    const customerPhone = sanitizeString(order.customerInfo?.phone || "", 30);
+    const customerAddress = sanitizeString(order.customerInfo?.address || "", 300);
+    const customerPincode = sanitizeString(order.customerInfo?.pincode || "", 10);
+    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || "meriseshop.2025@gmail.com");
+    const subject = `New Order Received - Meris E-Shop (#${orderNum})`;
+    let itemsHtml = "";
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item) => {
+        const productObj = item.product || item;
+        const productName = productObj.name || "Handcrafted Product";
+        const qty = item.quantity || 1;
+        const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
+        const vendorId = productObj.vendorId || item.vendorId || "Store Direct";
+        itemsHtml += `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px; font-size: 13px; color: #0f172a; font-weight: 500;">
+              ${productName}
+              <div style="font-size: 11px; color: #64748b;">Listing / Vendor: ${vendorId} | Qty: ${qty} \xD7 \u20B9${price}</div>
+            </td>
+            <td style="padding: 10px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
+              \u20B9${price * qty}
+            </td>
+          </tr>
+        `;
+      });
+    }
+    const total = Number(order.total || 0);
+    const paymentMethod = order.paymentMethod || "Online Payment";
+    const paymentStatus = (order.paymentStatus || "unpaid").toUpperCase();
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+    
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 24px; text-align: center; border-bottom: 4px solid #10b981;">
+      <h1 style="color: #10b981; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px;">NEW ORDER ALERT</h1>
+      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Meris E-Shop Store & Listing Notification</p>
+    </div>
+
+    <div style="padding: 24px;">
+      <h2 style="font-size: 16px; color: #0f172a; margin-top: 0;">Order #${orderNum} has been placed!</h2>
+      <p style="font-size: 13px; color: #475569; margin: 0 0 16px 0;">A customer has purchased items from your catalog listings. Please review order details below for fulfillment.</p>
+      
+      <!-- Customer Information -->
+      <div style="background-color: #f1f5f9; border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 12px; color: #334155;">
+        <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #0f172a; text-transform: uppercase;">Customer Details</h3>
+        <div><strong>Name:</strong> ${customerName}</div>
+        <div><strong>Email:</strong> ${customerEmail}</div>
+        <div><strong>Phone:</strong> ${customerPhone || "N/A"}</div>
+        <div><strong>Shipping Address:</strong> ${customerAddress} (Pincode: ${customerPincode})</div>
+        <div><strong>Payment Method:</strong> ${paymentMethod} (${paymentStatus})</div>
+      </div>
+
+      <!-- Item breakdown -->
+      <h3 style="font-size: 13px; color: #0f172a; text-transform: uppercase; margin-bottom: 8px;">Order Items</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e2e8f0; text-align: left; font-size: 11px; color: #64748b;">
+            <th style="padding: 6px 10px;">Item / Listing</th>
+            <th style="padding: 6px 10px; text-align: right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+
+      <div style="text-align: right; font-size: 15px; font-weight: bold; color: #0f172a; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+        Grand Total: <span style="color: #d97706; font-family: monospace;">\u20B9${total}</span>
+      </div>
+    </div>
+
+    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
+      Meris Artisanal Studio Co. Automated Merchant Dispatch Notification
+    </div>
+
+  </div>
+</body>
+</html>
+    `;
+    if (adminEmail) {
+      await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      console.log(`[Order Service] Dispatched store order alert notification to admin ${adminEmail} for #${orderNum}`);
+    }
+    const vendorEmails = /* @__PURE__ */ new Set();
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item) => {
+        const vEmail = item.product?.vendorEmail || item.vendorEmail;
+        if (vEmail && sanitizeEmail(vEmail)) {
+          vendorEmails.add(sanitizeEmail(vEmail));
+        }
+      });
+    }
+    for (const vEmail of vendorEmails) {
+      if (vEmail !== adminEmail) {
+        await dispatchLiveEmail(vEmail, `Listing Order Alert - Meris E-Shop (#${orderNum})`, htmlContent);
+        console.log(`[Order Service] Dispatched listing order alert to vendor ${vEmail} for #${orderNum}`);
+      }
+    }
+  } catch (err) {
+    console.error("[Order Service] Exception in sendAdminVendorNotificationEmail:", err);
+  }
 }
 async function sendPaymentEmail(order, type, reason) {
   const recipientEmail = order.customerInfo?.email || "guest@example.com";
@@ -3029,6 +3299,7 @@ async function applyPayUResult(payload, fallbackStatus) {
   if (previousPaymentStatus === "pending" && paid) {
     try {
       await sendBookingEmail(dbOrders[index]);
+      await sendAdminVendorNotificationEmail(dbOrders[index]);
       await sendSMSAlert(dbOrders[index]);
     } catch (notifyErr) {
       console.error("Failed to dispatch PayU confirmation notifications:", notifyErr);
@@ -3175,6 +3446,11 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
     }).catch((emailErr) => {
       console.error("Failed to dispatch order booking confirmation email:", emailErr);
     });
+    sendAdminVendorNotificationEmail(newOrder).then(() => {
+      console.log(`[Order Service] Dispatched admin/vendor order notification email for #${newOrder.orderNumber}`);
+    }).catch((vendorErr) => {
+      console.error("Failed to dispatch admin/vendor order notification email:", vendorErr);
+    });
     sendSMSAlert(newOrder).catch((smsErr) => {
       console.error("Failed to dispatch order booking confirmation SMS:", smsErr);
     });
@@ -3254,6 +3530,7 @@ app.put("/api/orders/:orderNumber", verifyAdminToken, async (req, res) => {
       if (oldPaymentStatus === "pending" && newPaymentStatus === "paid") {
         try {
           await sendBookingEmail(dbOrders[index]);
+          await sendAdminVendorNotificationEmail(dbOrders[index]);
           await sendSMSAlert(dbOrders[index]);
         } catch (emailErr) {
           console.error("Failed to send booking confirmation email:", emailErr);

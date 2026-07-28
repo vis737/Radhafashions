@@ -1,7 +1,7 @@
-# 🚀 Deploy Meris E-Shop to Render — Step-by-Step Guide
+# 🚀 Deploy Meris E-Shop to Railway/Render — Step-by-Step Guide
 
 ## Prerequisites
-- A [Render](https://render.com) account
+- A [Railway](https://railway.app) or [Render](https://render.com) account
 - A [Supabase](https://supabase.com) project
 - A Gmail account with an [App Password](https://myaccount.google.com/apppasswords)
 - This repo pushed to GitHub / GitLab
@@ -17,7 +17,7 @@ This creates all 9 required tables:
 
 ---
 
-## Step 2 — Create a New Render Web Service
+## Step 2 — Create a New Railway/Render Web Service
 
 1. Go to [render.com/dashboard](https://dashboard.render.com)
 2. Click **New → Web Service**
@@ -33,7 +33,7 @@ This creates all 9 required tables:
 
 ---
 
-## Step 3 — Set Environment Variables in Render Dashboard
+## Step 3 — Set Environment Variables in Railway/Render Dashboard
 
 Go to your service → **Environment** tab → Add the following:
 
@@ -41,12 +41,13 @@ Go to your service → **Environment** tab → Add the following:
 |---|---|---|
 | `NODE_ENV` | `production` | Required |
 | `PORT` | `10000` | Render assigns this automatically |
-| `APP_URL` | `https://your-app.onrender.com` | ⚠️ **Set to your actual Render URL after first deploy** |
+| `APP_URL` | `https://your-app.up.railway.app` | ⚠️ **Set to your actual public app URL after first deploy** |
 | `JWT_SECRET` | (random 64-char hex string) | Generate: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
 | `ADMIN_USERNAME` | `admin` | Admin panel username |
 | `ADMIN_PASSWORD` | (strong password) | Admin panel password |
 | `SUPABASE_URL` | `https://xxxx.supabase.co` | From Supabase → Project Settings → API |
 | `SUPABASE_KEY` | (service role key) | From Supabase → Project Settings → API → service_role |
+| `SUPABASE_STORAGE_BUCKET` | `product-images` | Product upload bucket; the app auto-creates it when using the service role key |
 | `SMTP_HOST` | `smtp.gmail.com` | |
 | `SMTP_PORT` | `587` | |
 | `SMTP_SECURE` | `false` | |
@@ -62,6 +63,7 @@ Go to your service → **Environment** tab → Add the following:
 ### Optional Variables
 | Variable | Value | Notes |
 |---|---|---|
+| `DATA_DIR` | `/data` | Only if using a Railway persistent volume as a local fallback |
 | `GEMINI_API_KEY` | (your key) | For AI product recommendations |
 | `PAYU_SUCCESS_URL` | `https://your-app.onrender.com/api/payu/success` | Optional; defaults from `APP_URL` |
 | `PAYU_FAILURE_URL` | `https://your-app.onrender.com/api/payu/failure` | Optional; defaults from `APP_URL` |
@@ -74,7 +76,7 @@ Go to your service → **Environment** tab → Add the following:
 Click **Deploy** on Render. The build takes ~2-3 minutes.
 
 After the first deploy:
-1. Copy your Render URL (e.g. `https://meris-eshop.onrender.com`)
+1. Copy your public app URL (e.g. `https://your-app.up.railway.app`)
 2. Go back to **Environment** and update `APP_URL` to your actual URL
 3. Click **Manual Deploy → Deploy latest commit**
 
@@ -115,7 +117,10 @@ The in-memory rate limiter triggered too many login attempts. **Redeploy** to re
 3. Check that the `customers` table exists in Supabase (run migration SQL)
 
 ### Uploaded images disappear
-Render's free tier has an **ephemeral filesystem** — uploaded product images are deleted on each deploy/restart. To fix permanently, integrate [Supabase Storage](https://supabase.com/docs/guides/storage).
+Railway and Render app filesystems are **ephemeral** unless you attach a persistent volume. Product images are now uploaded to Supabase Storage when `SUPABASE_URL`, `SUPABASE_KEY`, and `SUPABASE_STORAGE_BUCKET` are set. Use the Supabase **service role** key so the server can create/write the `product-images` bucket.
+
+### Added products disappear after some time
+Make sure `SUPABASE_URL` and `SUPABASE_KEY` are set in Railway. In production, catalog saves now fail with a clear API error instead of pretending to save only to temporary disk. As a fallback, attach a Railway volume and set `DATA_DIR=/data`.
 
 ---
 
