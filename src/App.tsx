@@ -862,66 +862,62 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
-              {/* Premium Rotating Hero Banner — displaying random products with full images & 30-min reshuffle */}
-              <div className="relative min-h-[34rem] sm:min-h-[38rem] bg-slate-950 overflow-hidden text-white font-sans select-none flex items-center">
-                {/* Ambient Background Blur of Active Product */}
+              {/* Premium Rotating Hero Banner — Full enlarged product background image banner with 30-min reshuffle */}
+              <div className="relative min-h-[32rem] sm:min-h-[38rem] lg:min-h-[42rem] bg-slate-950 overflow-hidden text-white font-sans select-none flex items-center">
                 <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`bg-${activeHeroIndex}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.25 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute inset-0 z-0 pointer-events-none"
-                  >
-                    <img
-                      src={getProductHeroImage(heroProducts[activeHeroIndex])}
-                      alt=""
-                      className="w-full h-full object-cover blur-2xl scale-110"
-                    />
-                  </motion.div>
-                </AnimatePresence>
+                  {heroProducts[activeHeroIndex] && (
+                    <motion.div
+                      key={heroProducts[activeHeroIndex].id || activeHeroIndex}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8 }}
+                      className="absolute inset-0"
+                    >
+                      {/* Full enlarged background image with smooth zoom animation */}
+                      <motion.img
+                        initial={{ scale: 1.12 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 6, ease: "linear" }}
+                        src={getProductHeroImage(heroProducts[activeHeroIndex])}
+                        alt={heroProducts[activeHeroIndex].name}
+                        className="absolute inset-0 w-full h-full object-cover saturate-110"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://images.unsplash.com/photo-1515488042361-404e9250afef?w=1600&auto=format&fit=crop&q=80';
+                        }}
+                      />
 
-                {/* Overlay Gradient for readability */}
-                <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_75%_30%,rgba(15,23,42,0.6),rgba(2,6,23,0.95))]" />
+                      {/* Multi-layered cinematic gradient overlays for 100% text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/40" />
 
-                {/* Hero Content */}
-                <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full py-10">
-                  <AnimatePresence mode="wait">
-                    {heroProducts[activeHeroIndex] && (
-                      <motion.div
-                        key={heroProducts[activeHeroIndex].id || activeHeroIndex}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{ duration: 0.6 }}
-                        className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
-                      >
-                        {/* Left Text Block */}
-                        <div className="lg:col-span-7 space-y-6 text-left">
+                      {/* Content Container */}
+                      <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full h-full flex items-center py-12">
+                        <div className="max-w-2xl space-y-6 text-left">
                           <div className="flex flex-wrap items-center gap-3">
-                            <span className="px-3.5 py-1 bg-emerald-400/10 border border-emerald-400/30 text-emerald-300 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-flex items-center gap-1.5">
+                            <span className="px-3.5 py-1 bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-flex items-center gap-1.5 shadow-lg backdrop-blur-md">
                               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
                               {heroProducts[activeHeroIndex].category || 'Artisan Featured'}
                             </span>
                             {heroProducts[activeHeroIndex].rating > 0 && (
-                              <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono rounded-full inline-flex items-center gap-1">
+                              <span className="px-3 py-1 bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-mono rounded-full inline-flex items-center gap-1 backdrop-blur-md">
                                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                 {heroProducts[activeHeroIndex].rating} ({heroProducts[activeHeroIndex].ratingCount || 12} reviews)
                               </span>
                             )}
                           </div>
 
-                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-2xl drop-shadow-md">
+                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-2xl drop-shadow-xl">
                             {heroProducts[activeHeroIndex].name}
                           </h2>
 
-                          <p className="text-sm sm:text-base text-slate-300 max-w-xl leading-relaxed">
-                            {heroProducts[activeHeroIndex].shortDescription || heroProducts[activeHeroIndex].description?.slice(0, 140) + '...'}
+                          <p className="text-sm sm:text-base text-slate-200 max-w-xl leading-relaxed drop-shadow-md">
+                            {heroProducts[activeHeroIndex].shortDescription || heroProducts[activeHeroIndex].description?.slice(0, 150) + '...'}
                           </p>
 
                           <div className="flex flex-wrap items-center gap-4 pt-2">
-                            <div className="flex items-baseline gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
+                            <div className="flex items-baseline gap-2 bg-slate-950/80 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/10 shadow-xl">
                               <span className="text-2xl sm:text-3xl font-mono font-bold text-emerald-400">
                                 ₹{heroProducts[activeHeroIndex].discountPrice || heroProducts[activeHeroIndex].price}
                               </span>
@@ -947,42 +943,17 @@ export default function App() {
                               </button>
                               <button
                                 onClick={() => handleSelectCategoryGroup(heroProducts[activeHeroIndex].categorySlug || '')}
-                                className="py-3 px-6 rounded-xl border border-white/20 hover:border-emerald-400/50 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                                className="py-3 px-6 rounded-xl border border-white/30 hover:border-emerald-400/60 hover:bg-white/15 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95 backdrop-blur-md"
                               >
                                 Explore Category
                               </button>
                             </div>
                           </div>
                         </div>
-
-                        {/* Right Product Image Showcase */}
-                        <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                          <div className="relative group max-w-md w-full">
-                            {/* Decorative background glow frame */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition duration-500" />
-
-                            <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl aspect-square flex items-center justify-center p-3">
-                              <img
-                                src={getProductHeroImage(heroProducts[activeHeroIndex])}
-                                alt={heroProducts[activeHeroIndex].name}
-                                className="w-full h-full object-cover rounded-xl transition duration-700 group-hover:scale-105"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = 'https://images.unsplash.com/photo-1515488042361-404e9250afef?w=800&auto=format&fit=crop&q=80';
-                                }}
-                              />
-
-                              {/* Floating pill badge */}
-                              <div className="absolute top-6 left-6 px-3 py-1.5 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full text-xs font-mono font-medium text-emerald-300 shadow-lg">
-                                ✨ Handcrafted Special
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Dot Controls */}
                 <div className="absolute bottom-6 right-6 z-20 flex gap-2">
@@ -991,7 +962,7 @@ export default function App() {
                       key={i}
                       onClick={() => setActiveHeroIndex(i)}
                       className={`w-3 h-3 rounded-full cursor-pointer transition-all ${
-                        i === activeHeroIndex ? 'bg-emerald-400 scale-125 shadow-lg shadow-emerald-400/50' : 'bg-white/30 hover:bg-white/50'
+                        i === activeHeroIndex ? 'bg-emerald-400 scale-125 shadow-lg shadow-emerald-400/50' : 'bg-white/40 hover:bg-white/70'
                       }`}
                     />
                   ))}
