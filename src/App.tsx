@@ -113,19 +113,28 @@ export default function App() {
   // Active home carousel index
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
-  // Hero slides — CSS gradient backgrounds, no external images needed
-  const HERO_SLIDES = [
-    { id: 'toys', name: 'Kids Toys', description: 'Cute rotating pandas, dancing cacti, wind-up octopuses, projection flashlights & toys.', gradient: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', accent: '#34d399', icon: '🧸' },
-    { id: 'wood-gifts', name: 'Wood Crafted Gifts', description: 'Traditional handcrafted wooden miniature instruments and art pieces for every occasion.', gradient: 'linear-gradient(135deg,#1a0a00,#3d1f00,#6b3a1f)', accent: '#fbbf24', icon: '🪵' },
-    { id: 'handbags', name: 'Handbags & Clutches', description: 'Handwoven jute bags, wire basket bags & embroidered peacock clutches.', gradient: 'linear-gradient(135deg,#0d0221,#1a0533,#2d1b69)', accent: '#a78bfa', icon: '👜' },
-    { id: 'kolam', name: 'Kolam Stencils', description: 'Round red felt stencils for tracing traditional white geometric & mandala patterns.', gradient: 'linear-gradient(135deg,#1a0010,#3d0024,#6b0042)', accent: '#f472b6', icon: '🌸' },
-    { id: 'stationeries', name: 'Novelty Stationeries', description: 'Camera pencil sharpeners, spiro scales, cartoon erasers & ice cream highlighters.', gradient: 'linear-gradient(135deg,#001a1a,#003d3d,#006b6b)', accent: '#2dd4bf', icon: '✏️' },
-    { id: 'learning', name: 'Learning Stuff', description: 'Wooden alphabet block puzzles, shape sorting trays & Montessori learning boards.', gradient: 'linear-gradient(135deg,#0a1628,#1e3a5f,#2563eb22)', accent: '#60a5fa', icon: '📚' },
-    { id: 'bottles', name: 'Return Gift Bottles', description: 'Pastel rabbit vacuum flasks, penguin bottles & stainless steel jar tumblers.', gradient: 'linear-gradient(135deg,#001208,#013d1e,#065f46)', accent: '#34d399', icon: '🧴' },
-    { id: 'entertainment', name: 'Entertainment & Novelties', description: 'Laser key rings, novelty stethoscope toys, shock chewing gums & car bird decor.', gradient: 'linear-gradient(135deg,#1a1000,#3d2600,#6b4200)', accent: '#fb923c', icon: '🎉' },
-  ];
-  const shuffleHero = () => [...HERO_SLIDES].sort(() => Math.random() - 0.5).slice(0, 5);
-  const [heroSlides, setHeroSlides] = useState(shuffleHero);
+  // Helper to safely resolve a product image with fallbacks
+  const getProductHeroImage = (p?: Product) => {
+    if (!p) return 'https://images.unsplash.com/photo-1515488042361-404e9250afef?w=800&auto=format&fit=crop&q=80';
+    if (p.images && p.images.length > 0 && p.images[0] && p.images[0].trim() !== '' && !p.images[0].includes('placeholder')) {
+      return p.images[0];
+    }
+    const initP = INITIAL_PRODUCTS.find(ip => ip.id === p.id);
+    if (initP && initP.images && initP.images[0]) {
+      return initP.images[0];
+    }
+    const cat = CATEGORIES.find(c => c.id === p.categorySlug || c.name?.toLowerCase() === p.category?.toLowerCase());
+    if (cat && cat.imageUrl) return cat.imageUrl;
+    return 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&auto=format&fit=crop&q=80';
+  };
+
+  const pickHeroProducts = (prodList: Product[]) => {
+    const pool = prodList && prodList.length > 0 ? prodList : INITIAL_PRODUCTS;
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 5);
+  };
+
+  const [heroProducts, setHeroProducts] = useState<Product[]>(() => pickHeroProducts(INITIAL_PRODUCTS));
 
   // Newsletter states
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -348,20 +357,29 @@ export default function App() {
     syncCatalogToBackend();
   }, [products, coupons, campaigns, cms, adminBypassed]);
 
-  // Slide every 6s; reshuffle every 30 min
+  // Pick hero products whenever catalog finishes loading or updating
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setHeroProducts(pickHeroProducts(products));
+    }
+  }, [products]);
+
+  // Slide every 6 seconds; reshuffle 5 random products every 30 minutes
   useEffect(() => {
     const slideTimer = setInterval(() => {
-      setActiveHeroIndex(prev => (prev + 1) % heroSlides.length);
+      setActiveHeroIndex((prev) => (prev + 1) % (heroProducts.length || 1));
     }, 6000);
+
     const reshuffleTimer = setInterval(() => {
-      setHeroSlides(shuffleHero());
+      setHeroProducts(pickHeroProducts(products));
       setActiveHeroIndex(0);
     }, 30 * 60 * 1000);
+
     return () => {
       clearInterval(slideTimer);
       clearInterval(reshuffleTimer);
     };
-  }, [heroSlides]);
+  }, [heroProducts, products]);
 
 
 
@@ -844,76 +862,137 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
-              {/* Premium Rotating Hero Banner — CSS gradients, no external images, reshuffles every 30 min */}
-              <div className="relative min-h-[31rem] sm:min-h-[36rem] overflow-hidden text-white font-sans select-none">
-
+              {/* Premium Rotating Hero Banner — displaying random products with full images & 30-min reshuffle */}
+              <div className="relative min-h-[34rem] sm:min-h-[38rem] bg-slate-950 overflow-hidden text-white font-sans select-none flex items-center">
+                {/* Ambient Background Blur of Active Product */}
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={activeHeroIndex}
+                    key={`bg-${activeHeroIndex}`}
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    animate={{ opacity: 0.25 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.7 }}
-                    className="absolute inset-0"
-                    style={{ background: heroSlides[activeHeroIndex]?.gradient }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute inset-0 z-0 pointer-events-none"
                   >
-                    {/* Decorative noise/glow layer */}
-                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 80% 10%, rgba(255,255,255,0.07) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(255,255,255,0.04) 0%, transparent 50%)' }} />
-
-                    {/* Large decorative icon */}
-                    <div className="absolute right-8 sm:right-20 top-1/2 -translate-y-1/2 text-[10rem] sm:text-[14rem] opacity-10 pointer-events-none select-none" aria-hidden>
-                      {heroSlides[activeHeroIndex]?.icon}
-                    </div>
-
-                    {/* Accent glow blob */}
-                    <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
-                      style={{ background: heroSlides[activeHeroIndex]?.accent }} />
-
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full text-left">
-                        <div className="max-w-2xl space-y-5">
-                          <span className="px-3 py-1 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-block border"
-                            style={{ color: heroSlides[activeHeroIndex]?.accent, borderColor: heroSlides[activeHeroIndex]?.accent + '60', background: heroSlides[activeHeroIndex]?.accent + '18' }}>
-                            Curated Artisan Marketplace
-                          </span>
-
-                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-3xl drop-shadow-lg">
-                            {heroSlides[activeHeroIndex]?.name}
-                          </h2>
-
-                          <p className="text-sm sm:text-base text-slate-200 max-w-xl leading-relaxed">
-                            {heroSlides[activeHeroIndex]?.description}
-                          </p>
-
-                          <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                            <button
-                              onClick={() => handleSelectCategoryGroup(heroSlides[activeHeroIndex]?.id || '')}
-                              className="py-3 px-6 rounded-lg text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg"
-                              style={{ background: heroSlides[activeHeroIndex]?.accent }}
-                            >
-                              Shop {heroSlides[activeHeroIndex]?.name}
-                            </button>
-                            <button
-                              onClick={() => handleSelectCategoryGroup('kolam')}
-                              className="py-3 px-6 rounded-lg border border-white/25 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
-                            >
-                              Explore Kolam Stencils
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <img
+                      src={getProductHeroImage(heroProducts[activeHeroIndex])}
+                      alt=""
+                      className="w-full h-full object-cover blur-2xl scale-110"
+                    />
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Dot navigation */}
-                <div className="absolute bottom-6 right-6 z-10 flex gap-2">
-                  {heroSlides.map((_, i) => (
+                {/* Overlay Gradient for readability */}
+                <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_75%_30%,rgba(15,23,42,0.6),rgba(2,6,23,0.95))]" />
+
+                {/* Hero Content */}
+                <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full py-10">
+                  <AnimatePresence mode="wait">
+                    {heroProducts[activeHeroIndex] && (
+                      <motion.div
+                        key={heroProducts[activeHeroIndex].id || activeHeroIndex}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.6 }}
+                        className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+                      >
+                        {/* Left Text Block */}
+                        <div className="lg:col-span-7 space-y-6 text-left">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-3.5 py-1 bg-emerald-400/10 border border-emerald-400/30 text-emerald-300 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                              {heroProducts[activeHeroIndex].category || 'Artisan Featured'}
+                            </span>
+                            {heroProducts[activeHeroIndex].rating > 0 && (
+                              <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono rounded-full inline-flex items-center gap-1">
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                {heroProducts[activeHeroIndex].rating} ({heroProducts[activeHeroIndex].ratingCount || 12} reviews)
+                              </span>
+                            )}
+                          </div>
+
+                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-2xl drop-shadow-md">
+                            {heroProducts[activeHeroIndex].name}
+                          </h2>
+
+                          <p className="text-sm sm:text-base text-slate-300 max-w-xl leading-relaxed">
+                            {heroProducts[activeHeroIndex].shortDescription || heroProducts[activeHeroIndex].description?.slice(0, 140) + '...'}
+                          </p>
+
+                          <div className="flex flex-wrap items-center gap-4 pt-2">
+                            <div className="flex items-baseline gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
+                              <span className="text-2xl sm:text-3xl font-mono font-bold text-emerald-400">
+                                ₹{heroProducts[activeHeroIndex].discountPrice || heroProducts[activeHeroIndex].price}
+                              </span>
+                              {heroProducts[activeHeroIndex].discountPrice && heroProducts[activeHeroIndex].discountPrice < heroProducts[activeHeroIndex].price && (
+                                <span className="text-sm font-mono text-slate-400 line-through">
+                                  ₹{heroProducts[activeHeroIndex].price}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex flex-wrap gap-3">
+                              <button
+                                onClick={() => {
+                                  const p = heroProducts[activeHeroIndex];
+                                  if (p) {
+                                    setCurrentProductId(p.id);
+                                    setActiveView('product');
+                                  }
+                                }}
+                                className="py-3 px-6 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                              >
+                                Shop Now <ArrowRight className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleSelectCategoryGroup(heroProducts[activeHeroIndex].categorySlug || '')}
+                                className="py-3 px-6 rounded-xl border border-white/20 hover:border-emerald-400/50 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                              >
+                                Explore Category
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Product Image Showcase */}
+                        <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                          <div className="relative group max-w-md w-full">
+                            {/* Decorative background glow frame */}
+                            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition duration-500" />
+
+                            <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl aspect-square flex items-center justify-center p-3">
+                              <img
+                                src={getProductHeroImage(heroProducts[activeHeroIndex])}
+                                alt={heroProducts[activeHeroIndex].name}
+                                className="w-full h-full object-cover rounded-xl transition duration-700 group-hover:scale-105"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = 'https://images.unsplash.com/photo-1515488042361-404e9250afef?w=800&auto=format&fit=crop&q=80';
+                                }}
+                              />
+
+                              {/* Floating pill badge */}
+                              <div className="absolute top-6 left-6 px-3 py-1.5 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full text-xs font-mono font-medium text-emerald-300 shadow-lg">
+                                ✨ Handcrafted Special
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Dot Controls */}
+                <div className="absolute bottom-6 right-6 z-20 flex gap-2">
+                  {heroProducts.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setActiveHeroIndex(i)}
-                      className="w-3 h-3 rounded-full cursor-pointer transition-all"
-                      style={{ background: i === activeHeroIndex ? heroSlides[i]?.accent : 'rgba(255,255,255,0.3)', transform: i === activeHeroIndex ? 'scale(1.3)' : 'scale(1)' }}
+                      className={`w-3 h-3 rounded-full cursor-pointer transition-all ${
+                        i === activeHeroIndex ? 'bg-emerald-400 scale-125 shadow-lg shadow-emerald-400/50' : 'bg-white/30 hover:bg-white/50'
+                      }`}
                     />
                   ))}
                 </div>
