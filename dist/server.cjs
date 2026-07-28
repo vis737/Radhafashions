@@ -1540,7 +1540,7 @@ app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), interest-cohort=()");
-  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/orders") || req.path.startsWith("/api/catalog") || req.path.startsWith("/api/upload-image") || req.path.startsWith("/api/verify-otp")) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -1692,11 +1692,6 @@ app.post("/api/upload-image", verifyAdminToken, upload.single("image"), async (r
       console.log(`[Image Upload] Saved product image to Supabase Storage: ${supabaseUpload.storagePath}`);
       return res.json(supabaseUpload);
     }
-    if (!HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === "production") {
-      return res.status(503).json({
-        error: "Supabase Storage is required for persistent product images on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR."
-      });
-    }
     const localUpload = saveProductImageLocally(req.file);
     console.warn("[Image Upload] Supabase is not configured; saved image to local filesystem fallback.");
     return res.json(localUpload);
@@ -1719,32 +1714,42 @@ app.post("/api/upload-image", verifyAdminToken, upload.single("image"), async (r
 app.get("/api/catalog/products", async (req, res) => {
   try {
     const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const localProdsMap = {};
+    if (Array.isArray(localProds)) {
+      localProds.forEach((lp) => {
+        if (lp && lp.id) localProdsMap[lp.id] = lp;
+      });
+    }
     if (supabase) {
       const { data, error } = await supabase.from("products").select("*");
       if (!error && data && data.length > 0) {
-        const mapped = data.map((p) => ({
-          id: p.id,
-          sku: p.sku || `SKU-${p.id}`,
-          name: p.name || "Handcrafted Product",
-          category: p.category || "Handbags",
-          categorySlug: p.category_slug || "handbags",
-          price: Number(p.price || 999),
-          discountPrice: p.discount_price ? Number(p.discount_price) : void 0,
-          stock: p.stock !== void 0 ? Number(p.stock) : 10,
-          rating: p.rating ? Number(p.rating) : 4.8,
-          ratingCount: p.rating_count ? Number(p.rating_count) : 50,
-          images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"],
-          shortDescription: p.short_description || "",
-          description: p.description || "",
-          specifications: p.specifications || {},
-          weightKg: parseProductWeightKg(p),
-          reviews: Array.isArray(p.reviews) ? p.reviews : [],
-          isNew: Boolean(p.is_new),
-          isBestseller: Boolean(p.is_bestseller),
-          brand: p.brand || "Meris Couture",
-          availability: p.availability || "in-stock",
-          vendorId: p.vendor_id || null
-        }));
+        const mapped = data.map((p) => {
+          const localMatch = localProdsMap[p.id];
+          const images = Array.isArray(p.images) && p.images.length > 0 ? p.images : localMatch && Array.isArray(localMatch.images) && localMatch.images.length > 0 ? localMatch.images : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"];
+          return {
+            id: p.id,
+            sku: p.sku || `SKU-${p.id}`,
+            name: p.name || "Handcrafted Product",
+            category: p.category || "Handbags",
+            categorySlug: p.category_slug || "handbags",
+            price: Number(p.price || 999),
+            discountPrice: p.discount_price ? Number(p.discount_price) : void 0,
+            stock: p.stock !== void 0 ? Number(p.stock) : 10,
+            rating: p.rating ? Number(p.rating) : 4.8,
+            ratingCount: p.rating_count ? Number(p.rating_count) : 50,
+            images,
+            shortDescription: p.short_description || "",
+            description: p.description || "",
+            specifications: p.specifications || {},
+            weightKg: parseProductWeightKg(p),
+            reviews: Array.isArray(p.reviews) ? p.reviews : [],
+            isNew: Boolean(p.is_new),
+            isBestseller: Boolean(p.is_bestseller),
+            brand: p.brand || "Meris Couture",
+            availability: p.availability || "in-stock",
+            vendorId: p.vendor_id || null
+          };
+        });
         const supabaseIds = new Set(mapped.map((m) => m.id));
         const localOnly = Array.isArray(localProds) ? localProds.filter((lp) => lp && lp.id && !supabaseIds.has(lp.id)) : [];
         const merged = [...mapped, ...localOnly];
@@ -1765,11 +1770,6 @@ app.post("/api/catalog/products", verifyAdminToken, import_express.default.json(
     }
     if (productsList.length > 500) {
       return res.status(400).json({ error: "Too many products in a single request (max 500)." });
-    }
-    if (!supabase && !HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === "production") {
-      return res.status(503).json({
-        error: "Supabase is required for persistent product catalog saves on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR."
-      });
     }
     writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
     if (supabase) {
@@ -1914,22 +1914,31 @@ app.delete("/api/catalog/coupons", verifyAdminToken, async (req, res) => {
 });
 app.get("/api/catalog/campaigns", async (req, res) => {
   try {
+    const localCampaigns = readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS);
     if (supabase) {
       const { data, error } = await supabase.from("campaigns").select("*");
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
+        const localMap = {};
+        if (Array.isArray(localCampaigns)) {
+          localCampaigns.forEach((lc) => {
+            if (lc && lc.id) localMap[lc.id] = lc;
+          });
+        }
         const mapped = data.map((c) => ({
           id: c.id,
-          imageUrl: c.image_url,
+          imageUrl: c.image_url || localMap[c.id] && localMap[c.id].imageUrl || "",
           title: c.title,
           description: c.description,
           ctaText: c.cta_text,
           linkCategory: c.link_category,
           active: c.active
         }));
-        return res.json(mapped);
+        if (mapped.some((c) => c.imageUrl)) {
+          return res.json(mapped);
+        }
       }
     }
-    res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
+    res.json(localCampaigns);
   } catch (err) {
     res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
   }
@@ -3891,8 +3900,19 @@ if (!process.env.VERCEL) {
     const isProductionBuild = import_fs.default.existsSync(distIndexHtml) || process.env.NODE_ENV === "production";
     if (isProductionBuild && import_fs.default.existsSync(distIndexHtml)) {
       const distPath = import_path.default.join(process.cwd(), "dist");
-      app.use(import_express.default.static(distPath));
+      app.use(import_express.default.static(distPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith("index.html")) {
+            res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            res.setHeader("Pragma", "no-cache");
+            res.setHeader("Expires", "0");
+          }
+        }
+      }));
       app.get("*", (req, res) => {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
         res.sendFile(distIndexHtml);
       });
       console.log("\u25C7 Serving production static build from dist/.");
