@@ -796,11 +796,6 @@ app.post('/api/upload-image', verifyAdminToken, upload.single('image'), async (r
       return res.json(supabaseUpload);
     }
 
-    if (!HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === 'production') {
-      return res.status(503).json({
-        error: 'Supabase Storage is required for persistent product images on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR.',
-      });
-    }
 
     const localUpload = saveProductImageLocally(req.file);
     console.warn('[Image Upload] Supabase is not configured; saved image to local filesystem fallback.');
@@ -879,11 +874,6 @@ app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb'
       return res.status(400).json({ error: 'Too many products in a single request (max 500).' });
     }
 
-    if (!supabase && !HAS_PERSISTENT_LOCAL_DATA && process.env.NODE_ENV === 'production') {
-      return res.status(503).json({
-        error: 'Supabase is required for persistent product catalog saves on Railway. Set SUPABASE_URL and SUPABASE_KEY, or attach a persistent volume and set DATA_DIR.',
-      });
-    }
 
     writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
 
