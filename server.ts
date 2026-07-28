@@ -3550,8 +3550,20 @@ if (!process.env.VERCEL) {
 
     if (isProductionBuild && fs.existsSync(distIndexHtml)) {
       const distPath = path.join(process.cwd(), 'dist');
-      app.use(express.static(distPath));
+      // Cache hashed assets (JS/CSS) for 1 year, but never cache index.html itself
+      app.use(express.static(distPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('index.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+          }
+        }
+      }));
       app.get('*', (req, res) => {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.sendFile(distIndexHtml);
       });
       console.log('◇ Serving production static build from dist/.');
