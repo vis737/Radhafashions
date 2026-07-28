@@ -113,6 +113,15 @@ export default function App() {
   // Active home carousel index
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
+  // Hero banner: 5 random products with images, reshuffled every 30 min
+  const pickHeroProducts = (prods: Product[]) => {
+    const withImages = prods.filter(p => p.images && p.images.length > 0 && p.images[0] && !p.images[0].includes('placeholder'));
+    const pool = withImages.length >= 5 ? withImages : prods.filter(p => p.images && p.images.length > 0);
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 5);
+  };
+  const [heroProducts, setHeroProducts] = useState<Product[]>([]);
+
   // Newsletter states
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
@@ -334,13 +343,29 @@ export default function App() {
     syncCatalogToBackend();
   }, [products, coupons, campaigns, cms, adminBypassed]);
 
-  // Autoplay of scheduled campaigns hero banner
+  // Pick hero products whenever products list loads/changes
   useEffect(() => {
+    if (products.length > 0) {
+      setHeroProducts(pickHeroProducts(products));
+      setActiveHeroIndex(0);
+    }
+  }, [products]);
+
+  // Slide every 6 seconds; reshuffle every 30 minutes
+  useEffect(() => {
+    if (heroProducts.length === 0) return;
     const slideTimer = setInterval(() => {
-      setActiveHeroIndex((prev) => (prev + 1) % campaigns.length);
+      setActiveHeroIndex((prev) => (prev + 1) % heroProducts.length);
     }, 6000);
-    return () => clearInterval(slideTimer);
-  }, [campaigns]);
+    const reshuffleTimer = setInterval(() => {
+      setHeroProducts(pickHeroProducts(products));
+      setActiveHeroIndex(0);
+    }, 30 * 60 * 1000);
+    return () => {
+      clearInterval(slideTimer);
+      clearInterval(reshuffleTimer);
+    };
+  }, [heroProducts, products]);
 
 
 
@@ -823,71 +848,92 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
-              {/* Premium Rotating Offer Hero Banner */}
+              {/* Premium Rotating Hero Banner — random products, reshuffles every 30 min */}
               <div className="relative min-h-[31rem] sm:min-h-[36rem] bg-slate-950 overflow-hidden text-white font-sans select-none">
                 <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_78%_20%,rgba(20,184,166,0.28),transparent_28%),linear-gradient(110deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.88)_42%,rgba(15,23,42,0.20)_100%)]" />
-                
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeHeroIndex}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute inset-0"
-                  >
-                    <img
-                      src={campaigns[activeHeroIndex].imageUrl}
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      className="absolute inset-0 w-full h-full object-cover opacity-60 saturate-90"
-                    />
-                    
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full text-left">
-                        <div className="max-w-2xl space-y-5">
-                        <span className="px-3 py-1 bg-emerald-300 text-slate-950 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-block">
-                          Curated artisan marketplace
-                        </span>
-                        
-                        <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-3xl">
-                          {campaigns[activeHeroIndex].title}
-                        </h2>
-                        
-                        <p className="text-sm sm:text-base text-slate-200 max-w-xl leading-relaxed">
-                          {campaigns[activeHeroIndex].description}
-                        </p>
 
-                        <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                          <button
-                            onClick={() => handleSelectCategoryGroup(campaigns[activeHeroIndex].linkCategory)}
-                            className="py-3 px-6 rounded-lg bg-emerald-300 hover:bg-emerald-200 text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg shadow-emerald-500/20"
-                          >
-                            {campaigns[activeHeroIndex].ctaText}
-                          </button>
-                          <button
-                            onClick={() => handleSelectCategoryGroup('kolam')}
-                            className="py-3 px-6 rounded-lg border border-white/25 hover:border-amber-300 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
-                          >
-                            Explore Kolam Stencils
-                          </button>
+                {heroProducts.length > 0 ? (
+                  <>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeHeroIndex}
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="absolute inset-0"
+                      >
+                        <img
+                          src={heroProducts[activeHeroIndex]?.images?.[0] || ''}
+                          alt={heroProducts[activeHeroIndex]?.name || ''}
+                          referrerPolicy="no-referrer"
+                          className="absolute inset-0 w-full h-full object-cover opacity-60 saturate-90"
+                        />
+
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full text-left">
+                            <div className="max-w-2xl space-y-5">
+                              <span className="px-3 py-1 bg-emerald-300 text-slate-950 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-block">
+                                {heroProducts[activeHeroIndex]?.category || 'Curated Artisan Marketplace'}
+                              </span>
+
+                              <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-3xl">
+                                {heroProducts[activeHeroIndex]?.name}
+                              </h2>
+
+                              <p className="text-sm sm:text-base text-slate-200 max-w-xl leading-relaxed">
+                                {heroProducts[activeHeroIndex]?.shortDescription || heroProducts[activeHeroIndex]?.description?.slice(0, 120)}
+                              </p>
+
+                              <div className="flex flex-col sm:flex-row gap-3 pt-3 items-center">
+                                <button
+                                  onClick={() => {
+                                    const p = heroProducts[activeHeroIndex];
+                                    if (p) { setCurrentProductId(p.id); setActiveView('product'); }
+                                  }}
+                                  className="py-3 px-6 rounded-lg bg-emerald-300 hover:bg-emerald-200 text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg shadow-emerald-500/20"
+                                >
+                                  Shop Now
+                                </button>
+                                <button
+                                  onClick={() => handleSelectCategoryGroup(heroProducts[activeHeroIndex]?.categorySlug || '')}
+                                  className="py-3 px-6 rounded-lg border border-white/25 hover:border-amber-300 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                                >
+                                  View Collection
+                                </button>
+                                {heroProducts[activeHeroIndex]?.discountPrice && (
+                                  <span className="ml-1 px-3 py-1 bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-mono rounded-full">
+                                    ₹{heroProducts[activeHeroIndex]?.discountPrice} &nbsp;<s className="opacity-50">₹{heroProducts[activeHeroIndex]?.price}</s>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        </div>
-                      </div>
+                      </motion.div>
+                    </AnimatePresence>
+
+                    {/* Dot navigation */}
+                    <div className="absolute bottom-6 right-6 z-10 flex gap-2">
+                      {heroProducts.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveHeroIndex(i)}
+                          className={`w-3 h-3 rounded-full cursor-pointer transition-all ${i === activeHeroIndex ? 'bg-emerald-300 scale-125' : 'bg-white/35'}`}
+                        />
+                      ))}
                     </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Hero indices controls dots */}
-                <div className="absolute bottom-6 right-6 z-10 flex gap-2">
-                  {campaigns.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveHeroIndex(i)}
-                      className={`w-3 h-3 rounded-full cursor-pointer transition-all ${i === activeHeroIndex ? 'bg-emerald-300 scale-125' : 'bg-white/35'}`}
-                    />
-                  ))}
-                </div>
+                  </>
+                ) : (
+                  /* Skeleton while products load */
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center space-y-3 opacity-40">
+                      <div className="w-16 h-16 rounded-full bg-emerald-400/20 animate-pulse mx-auto" />
+                      <div className="h-3 w-48 bg-white/20 rounded animate-pulse mx-auto" />
+                      <div className="h-2 w-32 bg-white/10 rounded animate-pulse mx-auto" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {searchResultsList.length > 0 && (
