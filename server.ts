@@ -269,6 +269,7 @@ async function syncCustomersFromSupabase() {
 async function syncProductsFromSupabase() {
   if (!supabase) return;
   try {
+    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     const { data, error } = await supabase.from('products').select('*');
     if (!error && data && data.length > 0) {
       const mapped = data.map(p => ({
@@ -294,8 +295,40 @@ async function syncProductsFromSupabase() {
         availability: p.availability || 'in-stock',
         vendorId: p.vendor_id || null
       }));
-      writeLocalJsonDb(PRODUCTS_FILE_PATH, mapped);
-      console.log(`◇ Synced ${mapped.length} products from Supabase database to local catalog.`);
+
+      // Merge local products so newly listed local items aren't deleted on startup
+      const supabaseIds = new Set(mapped.map(m => m.id));
+      const localOnly = localProds.filter((lp: any) => lp && lp.id && !supabaseIds.has(lp.id));
+      const merged = [...mapped, ...localOnly];
+
+      if (localOnly.length > 0) {
+        const localMapped = localOnly.map((p: any) => ({
+          id: p.id,
+          sku: p.sku || `SKU-${p.id}`,
+          name: p.name || 'Handcrafted Product',
+          category: p.category || 'Handbags',
+          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, '-') || 'handbags',
+          price: p.price,
+          discount_price: p.discountPrice || null,
+          stock: p.stock !== undefined ? p.stock : 10,
+          rating: p.rating || 5,
+          rating_count: p.ratingCount || 1,
+          images: p.images || [],
+          short_description: p.shortDescription || p.name || '',
+          description: p.description || p.name || '',
+          specifications: p.specifications || {},
+          reviews: p.reviews || [],
+          is_new: p.isNew || false,
+          is_bestseller: p.isBestseller || false,
+          brand: p.brand || 'MERIS',
+          availability: p.availability || 'in-stock',
+          vendor_id: p.vendorId || null
+        }));
+        await supabase.from('products').upsert(localMapped);
+      }
+
+      writeLocalJsonDb(PRODUCTS_FILE_PATH, merged);
+      console.log(`◇ Synced ${merged.length} products (Supabase + local) to catalog.`);
     }
   } catch (err) {
     console.error('Failed to sync products from Supabase on startup:', err);
@@ -677,6 +710,7 @@ app.post('/api/upload-image', verifyAdminToken, upload.single('image'), (req: an
 // --- PRODUCTS ENDPOINTS ---
 app.get('/api/catalog/products', async (req, res) => {
   try {
+    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     if (supabase) {
       const { data, error } = await supabase.from('products').select('*');
       if (!error && data && data.length > 0) {
@@ -703,11 +737,15 @@ app.get('/api/catalog/products', async (req, res) => {
           availability: p.availability || 'in-stock',
           vendorId: p.vendor_id || null
         }));
-        return res.json(mapped);
+
+        // Merge any local products from localProds that aren't yet in Supabase
+        const supabaseIds = new Set(mapped.map(m => m.id));
+        const localOnly = Array.isArray(localProds) ? localProds.filter((lp: any) => lp && lp.id && !supabaseIds.has(lp.id)) : [];
+        const merged = [...mapped, ...localOnly];
+        return res.json(merged);
       }
       console.warn('Supabase products empty or error, serving full local products catalog:', error);
     }
-    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     res.json(localProds);
   } catch (err) {
     res.json(readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS));
@@ -730,23 +768,25 @@ app.post('/api/catalog/products', express.json({ limit: '10mb' }), async (req, r
       try {
         const mapped = productsList.map(p => ({
           id: p.id,
-          sku: p.sku,
-          name: p.name,
-          category: p.category,
-          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, '-'),
+          sku: p.sku || `SKU-${p.id}`,
+          name: p.name || 'Handcrafted Product',
+          category: p.category || 'Handbags',
+          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, '-') || 'handbags',
           price: p.price,
           discount_price: p.discountPrice || null,
-          stock: p.stock,
+          stock: p.stock !== undefined ? p.stock : 10,
           rating: p.rating || 5,
           rating_count: p.ratingCount || 1,
           images: p.images || [],
-          short_description: p.shortDescription || p.name,
-          description: p.description || p.name,
+          short_description: p.shortDescription || p.name || '',
+          description: p.description || p.name || '',
           specifications: { ...(p.specifications || {}), Weight: parseProductWeightKg(p) ? `${parseProductWeightKg(p)} kg` : p.specifications?.Weight },
           reviews: p.reviews || [],
           is_new: p.isNew || false,
           is_bestseller: p.isBestseller || false,
-          brand: p.brand || 'MERIS'
+          brand: p.brand || 'MERIS',
+          availability: p.availability || 'in-stock',
+          vendor_id: p.vendorId || null
         }));
         
         const { error: subErr } = await supabase.from('products').upsert(mapped);
@@ -757,9 +797,9 @@ app.post('/api/catalog/products', express.json({ limit: '10mb' }), async (req, r
         }
 
         // Clean up any deleted products in Supabase so deleted items don't reappear
-        const currentIds = productsList.map(p => p.id);
+        const currentIds = productsList.map(p => p.id).filter(Boolean);
         if (currentIds.length > 0) {
-          const idListStr = currentIds.map(id => `"${id}"`).join(',');
+          const idListStr = currentIds.join(',');
           const { error: delErr } = await supabase.from('products').delete().not('id', 'in', `(${idListStr})`);
           if (delErr) {
             console.warn('Supabase products cleanup notice:', delErr);

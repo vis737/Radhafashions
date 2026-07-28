@@ -1043,12 +1043,17 @@ export const saveStoredDb = (db: { products?: Product[]; coupons?: Coupon[]; cam
   if (typeof window === 'undefined') return;
   try {
     if (db.products && Array.isArray(db.products)) {
-      // Clean up base64 images from localStorage to prevent quota overflow crash
-      const lightProducts = db.products.map(p => ({
+      // Preserve product images safely without corrupting string data
+      const safeProducts = db.products.map(p => ({
         ...p,
-        images: (p.images || []).map(img => typeof img === 'string' && img.length > 200000 ? img.slice(0, 100) + '...' : img)
+        images: (p.images || []).map(img => {
+          if (typeof img === 'string' && img.length > 500000 && img.startsWith('data:')) {
+            return 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop';
+          }
+          return img;
+        })
       }));
-      localStorage.setItem('meris_products', JSON.stringify(lightProducts));
+      localStorage.setItem('meris_products', JSON.stringify(safeProducts));
     }
     if (db.coupons) localStorage.setItem('meris_coupons', JSON.stringify(db.coupons));
     if (db.campaigns) localStorage.setItem('meris_campaigns', JSON.stringify(db.campaigns));

@@ -625,7 +625,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
           
           if (res.ok) {
             const data = await res.json();
-            if (data.url && !data.url.startsWith('/uploads/')) {
+            if (data.url) {
               updateField('images', [...(product.images || []), data.url]);
               addToast('Image uploaded successfully', 'success');
               setIsUploading(false);

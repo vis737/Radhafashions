@@ -253,7 +253,11 @@ export default function App() {
         if (prodsRes && prodsRes.ok) {
           const prods = await prodsRes.json();
           if (Array.isArray(prods) && prods.length > 0) {
-            setProducts(prods);
+            setProducts((prev) => {
+              const backendIds = new Set(prods.map((p: Product) => p.id));
+              const localOnly = prev.filter((p) => !backendIds.has(p.id));
+              return [...prods, ...localOnly];
+            });
           }
         }
         if (coupsRes && coupsRes.ok) {
