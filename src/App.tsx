@@ -113,9 +113,19 @@ export default function App() {
   // Active home carousel index
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
-  // Hero slides: shuffle categories every 30 min
-  const shuffleCategories = () => [...CATEGORIES].sort(() => Math.random() - 0.5).slice(0, 5);
-  const [heroSlides, setHeroSlides] = useState(shuffleCategories);
+  // Hero slides — CSS gradient backgrounds, no external images needed
+  const HERO_SLIDES = [
+    { id: 'toys', name: 'Kids Toys', description: 'Cute rotating pandas, dancing cacti, wind-up octopuses, projection flashlights & toys.', gradient: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', accent: '#34d399', icon: '🧸' },
+    { id: 'wood-gifts', name: 'Wood Crafted Gifts', description: 'Traditional handcrafted wooden miniature instruments and art pieces for every occasion.', gradient: 'linear-gradient(135deg,#1a0a00,#3d1f00,#6b3a1f)', accent: '#fbbf24', icon: '🪵' },
+    { id: 'handbags', name: 'Handbags & Clutches', description: 'Handwoven jute bags, wire basket bags & embroidered peacock clutches.', gradient: 'linear-gradient(135deg,#0d0221,#1a0533,#2d1b69)', accent: '#a78bfa', icon: '👜' },
+    { id: 'kolam', name: 'Kolam Stencils', description: 'Round red felt stencils for tracing traditional white geometric & mandala patterns.', gradient: 'linear-gradient(135deg,#1a0010,#3d0024,#6b0042)', accent: '#f472b6', icon: '🌸' },
+    { id: 'stationeries', name: 'Novelty Stationeries', description: 'Camera pencil sharpeners, spiro scales, cartoon erasers & ice cream highlighters.', gradient: 'linear-gradient(135deg,#001a1a,#003d3d,#006b6b)', accent: '#2dd4bf', icon: '✏️' },
+    { id: 'learning', name: 'Learning Stuff', description: 'Wooden alphabet block puzzles, shape sorting trays & Montessori learning boards.', gradient: 'linear-gradient(135deg,#0a1628,#1e3a5f,#2563eb22)', accent: '#60a5fa', icon: '📚' },
+    { id: 'bottles', name: 'Return Gift Bottles', description: 'Pastel rabbit vacuum flasks, penguin bottles & stainless steel jar tumblers.', gradient: 'linear-gradient(135deg,#001208,#013d1e,#065f46)', accent: '#34d399', icon: '🧴' },
+    { id: 'entertainment', name: 'Entertainment & Novelties', description: 'Laser key rings, novelty stethoscope toys, shock chewing gums & car bird decor.', gradient: 'linear-gradient(135deg,#1a1000,#3d2600,#6b4200)', accent: '#fb923c', icon: '🎉' },
+  ];
+  const shuffleHero = () => [...HERO_SLIDES].sort(() => Math.random() - 0.5).slice(0, 5);
+  const [heroSlides, setHeroSlides] = useState(shuffleHero);
 
   // Newsletter states
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -338,13 +348,13 @@ export default function App() {
     syncCatalogToBackend();
   }, [products, coupons, campaigns, cms, adminBypassed]);
 
-  // Slide every 6s; reshuffle categories every 30 min
+  // Slide every 6s; reshuffle every 30 min
   useEffect(() => {
     const slideTimer = setInterval(() => {
       setActiveHeroIndex(prev => (prev + 1) % heroSlides.length);
     }, 6000);
     const reshuffleTimer = setInterval(() => {
-      setHeroSlides(shuffleCategories());
+      setHeroSlides(shuffleHero());
       setActiveHeroIndex(0);
     }, 30 * 60 * 1000);
     return () => {
@@ -834,34 +844,40 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
-              {/* Premium Rotating Hero Banner — category slides, reshuffles every 30 min */}
-              <div className="relative min-h-[31rem] sm:min-h-[36rem] bg-slate-950 overflow-hidden text-white font-sans select-none">
-                <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_78%_20%,rgba(20,184,166,0.28),transparent_28%),linear-gradient(110deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.88)_42%,rgba(15,23,42,0.20)_100%)]" />
+              {/* Premium Rotating Hero Banner — CSS gradients, no external images, reshuffles every 30 min */}
+              <div className="relative min-h-[31rem] sm:min-h-[36rem] overflow-hidden text-white font-sans select-none">
 
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeHeroIndex}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: 0.7 }}
                     className="absolute inset-0"
+                    style={{ background: heroSlides[activeHeroIndex]?.gradient }}
                   >
-                    <img
-                      src={heroSlides[activeHeroIndex]?.imageUrl}
-                      alt={heroSlides[activeHeroIndex]?.name || ''}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      className="absolute inset-0 w-full h-full object-cover opacity-60 saturate-90"
-                    />
+                    {/* Decorative noise/glow layer */}
+                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 80% 10%, rgba(255,255,255,0.07) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(255,255,255,0.04) 0%, transparent 50%)' }} />
+
+                    {/* Large decorative icon */}
+                    <div className="absolute right-8 sm:right-20 top-1/2 -translate-y-1/2 text-[10rem] sm:text-[14rem] opacity-10 pointer-events-none select-none" aria-hidden>
+                      {heroSlides[activeHeroIndex]?.icon}
+                    </div>
+
+                    {/* Accent glow blob */}
+                    <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
+                      style={{ background: heroSlides[activeHeroIndex]?.accent }} />
 
                     <div className="absolute inset-0 flex items-center">
                       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full text-left">
                         <div className="max-w-2xl space-y-5">
-                          <span className="px-3 py-1 bg-emerald-300 text-slate-950 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-block">
+                          <span className="px-3 py-1 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-block border"
+                            style={{ color: heroSlides[activeHeroIndex]?.accent, borderColor: heroSlides[activeHeroIndex]?.accent + '60', background: heroSlides[activeHeroIndex]?.accent + '18' }}>
                             Curated Artisan Marketplace
                           </span>
 
-                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-3xl">
+                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-3xl drop-shadow-lg">
                             {heroSlides[activeHeroIndex]?.name}
                           </h2>
 
@@ -872,13 +888,14 @@ export default function App() {
                           <div className="flex flex-col sm:flex-row gap-3 pt-3">
                             <button
                               onClick={() => handleSelectCategoryGroup(heroSlides[activeHeroIndex]?.id || '')}
-                              className="py-3 px-6 rounded-lg bg-emerald-300 hover:bg-emerald-200 text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg shadow-emerald-500/20"
+                              className="py-3 px-6 rounded-lg text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg"
+                              style={{ background: heroSlides[activeHeroIndex]?.accent }}
                             >
                               Shop {heroSlides[activeHeroIndex]?.name}
                             </button>
                             <button
                               onClick={() => handleSelectCategoryGroup('kolam')}
-                              className="py-3 px-6 rounded-lg border border-white/25 hover:border-amber-300 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                              className="py-3 px-6 rounded-lg border border-white/25 hover:bg-white/10 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
                             >
                               Explore Kolam Stencils
                             </button>
@@ -895,7 +912,8 @@ export default function App() {
                     <button
                       key={i}
                       onClick={() => setActiveHeroIndex(i)}
-                      className={`w-3 h-3 rounded-full cursor-pointer transition-all ${i === activeHeroIndex ? 'bg-emerald-300 scale-125' : 'bg-white/35'}`}
+                      className="w-3 h-3 rounded-full cursor-pointer transition-all"
+                      style={{ background: i === activeHeroIndex ? heroSlides[i]?.accent : 'rgba(255,255,255,0.3)', transform: i === activeHeroIndex ? 'scale(1.3)' : 'scale(1)' }}
                     />
                   ))}
                 </div>
