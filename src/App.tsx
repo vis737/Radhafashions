@@ -850,7 +850,7 @@ export default function App() {
                     <img
                       src={heroSlides[activeHeroIndex]?.imageUrl}
                       alt={heroSlides[activeHeroIndex]?.name || ''}
-                      referrerPolicy="no-referrer"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       className="absolute inset-0 w-full h-full object-cover opacity-60 saturate-90"
                     />
 
