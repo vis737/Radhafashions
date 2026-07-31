@@ -1,5 +1,16 @@
 [
   {
+    "code": "NEWUSER15",
+    "type": "flat",
+    "value": 150,
+    "expiryDate": "2027-04-12",
+    "usageLimit": 500,
+    "usageCount": 120,
+    "minimumCartValue": 1000,
+    "description": "Flat Rs.150 discount for first time purchasers above Rs.1000",
+    "active": true
+  },
+  {
     "code": "MERIS10",
     "type": "percentage",
     "value": 10,

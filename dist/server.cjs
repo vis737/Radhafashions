@@ -1533,7 +1533,7 @@ app.use((req, res, next) => {
   const supabaseHttps = supabaseHost ? `https://${supabaseHost}` : "";
   res.setHeader(
     "Content-Security-Policy",
-    `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com ${supabaseHttps}; connect-src 'self' ${supabaseHttps} ${supabaseWs}; frame-src 'self'; form-action 'self' https://test.payu.in https://secure.payu.in; object-src 'none'; base-uri 'self';`
+    `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com https://img.clerk.com ${supabaseHttps}; connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com; worker-src 'self' blob:; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com; form-action 'self' https://test.payu.in https://secure.payu.in; object-src 'none'; base-uri 'self';`
   );
   res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   res.setHeader("X-Frame-Options", "DENY");
@@ -3117,7 +3117,6 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
         created_at: newCustomer.createdAt
       }, { onConflict: "email" }).then(({ error }) => {
         if (error) console.error("[Registration] Supabase customer upsert error:", error);
-        else console.log(`[Registration] Customer credentials synced to Supabase for ${lowerEmail}`);
       });
     }
     try {
@@ -3188,6 +3187,136 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
   } catch (err) {
     console.error("Error during customer registration:", err);
     res.status(500).json({ error: "Failed to complete registration." });
+  }
+});
+app.post("/api/auth/clerk-sync", import_express.default.json(), async (req, res) => {
+  try {
+    const { clerkId, email, name, phone, imageUrl, authProvider } = req.body || {};
+    const sanitizedEmail = sanitizeEmail(email);
+    if (!sanitizedEmail) {
+      return res.status(400).json({ error: "Valid email is required for Clerk user sync." });
+    }
+    const customerObj = {
+      id: clerkId ? `clerk_${clerkId}` : `cust_${Date.now()}`,
+      clerk_id: clerkId || null,
+      email: sanitizedEmail.toLowerCase(),
+      name: sanitizeString(name || sanitizedEmail.split("@")[0], 100),
+      phone: sanitizeString(phone || "", 30),
+      image_url: typeof imageUrl === "string" ? imageUrl : "",
+      auth_provider: authProvider || "clerk",
+      last_sign_in_at: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const existingIndex = inMemoryCustomers.findIndex((c) => c.email.toLowerCase() === customerObj.email);
+    if (existingIndex >= 0) {
+      inMemoryCustomers[existingIndex] = {
+        ...inMemoryCustomers[existingIndex],
+        ...customerObj,
+        createdAt: inMemoryCustomers[existingIndex].createdAt || (/* @__PURE__ */ new Date()).toISOString()
+      };
+    } else {
+      inMemoryCustomers.push({
+        ...customerObj,
+        createdAt: (/* @__PURE__ */ new Date()).toISOString()
+      });
+    }
+    try {
+      import_fs.default.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
+    } catch (e) {
+      console.warn("Error saving local customer db:", e);
+    }
+    if (supabase) {
+      const { error } = await supabase.from("customers").upsert({
+        id: customerObj.id,
+        clerk_id: customerObj.clerk_id,
+        email: customerObj.email,
+        name: customerObj.name,
+        phone: customerObj.phone,
+        image_url: customerObj.image_url,
+        auth_provider: customerObj.auth_provider,
+        last_sign_in_at: customerObj.last_sign_in_at
+      }, { onConflict: "email" });
+      if (error) {
+        console.error("[Clerk Sync] Supabase customer upsert error:", error);
+      } else {
+        console.log(`[Clerk Sync] Successfully synced Clerk user ${customerObj.email} to Supabase.`);
+      }
+    }
+    return res.json({ success: true, customer: customerObj });
+  } catch (err) {
+    console.error("Error syncing Clerk user:", err);
+    return res.status(500).json({ error: "Failed to sync Clerk user." });
+  }
+});
+app.get("/api/customers", async (req, res) => {
+  try {
+    let customerList = [];
+    let ordersList = [];
+    if (supabase) {
+      const { data: dbOrders } = await supabase.from("orders").select("*");
+      if (dbOrders) ordersList = dbOrders;
+    }
+    if (ordersList.length === 0) {
+      ordersList = readOrdersDb();
+    }
+    if (supabase) {
+      const { data, error } = await supabase.from("customers").select("*").order("created_at", { ascending: false });
+      if (!error && data) {
+        customerList = data.map((c) => ({
+          id: c.id,
+          clerkId: c.clerk_id || null,
+          email: c.email,
+          name: c.name,
+          phone: c.phone || "",
+          imageUrl: c.image_url || "",
+          authProvider: c.auth_provider || "email",
+          createdAt: c.created_at,
+          lastSignInAt: c.last_sign_in_at || c.created_at
+        }));
+      }
+    }
+    if (customerList.length === 0) {
+      customerList = inMemoryCustomers.map((c) => ({
+        id: c.id,
+        clerkId: c.clerk_id || c.clerkId || null,
+        email: c.email,
+        name: c.name,
+        phone: c.phone || "",
+        imageUrl: c.image_url || c.imageUrl || "",
+        authProvider: c.auth_provider || c.authProvider || "email",
+        createdAt: c.createdAt || c.created_at || (/* @__PURE__ */ new Date()).toISOString(),
+        lastSignInAt: c.last_sign_in_at || c.lastSignInAt || (/* @__PURE__ */ new Date()).toISOString()
+      }));
+    }
+    const emailToOrdersMap = /* @__PURE__ */ new Map();
+    ordersList.forEach((order) => {
+      const email = (order.account_email || order.accountEmail || order.customer_info?.email || order.customerInfo?.email || "").toLowerCase().trim();
+      if (!email) return;
+      if (!emailToOrdersMap.has(email)) emailToOrdersMap.set(email, []);
+      emailToOrdersMap.get(email).push(order);
+    });
+    const enrichedCustomers = customerList.map((c) => {
+      const userEmail = c.email.toLowerCase();
+      const userOrders = emailToOrdersMap.get(userEmail) || [];
+      const ordersCount = userOrders.length;
+      const totalSpent = userOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      const sortedDates = userOrders.map((o) => o.date || o.created_at).filter(Boolean).sort().reverse();
+      const lastOrderDate = sortedDates[0] || null;
+      let tier = "Bronze";
+      if (ordersCount >= 8 || totalSpent >= 1e4) tier = "Platinum";
+      else if (ordersCount >= 4 || totalSpent >= 4e3) tier = "Gold";
+      else if (ordersCount >= 1) tier = "Silver";
+      return {
+        ...c,
+        ordersCount,
+        totalSpent,
+        lastOrderDate,
+        tier
+      };
+    });
+    return res.json(enrichedCustomers);
+  } catch (err) {
+    console.error("Error fetching customers:", err);
+    return res.status(500).json({ error: "Failed to fetch customer list" });
   }
 });
 app.get("/api/emails", verifyAdminToken, async (req, res) => {

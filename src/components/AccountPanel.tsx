@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useUser, useClerk, SignIn } from '@clerk/clerk-react';
+import { dark } from '@clerk/themes';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, EyeOff, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle, Plus, Trash2 } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
@@ -49,6 +51,38 @@ export default function AccountPanel({
   products,
   rewardsEnabled = true
 }: AccountPanelProps) {
+  // Clerk authentication state & hooks
+  const { user: clerkUser, isSignedIn: isClerkSignedIn } = useUser();
+  const { openSignIn } = useClerk();
+
+  useEffect(() => {
+    if (isClerkSignedIn && clerkUser) {
+      const clerkEmail = clerkUser.primaryEmailAddress?.emailAddress || '';
+      const clerkName = clerkUser.fullName || clerkUser.firstName || clerkEmail.split('@')[0];
+      const clerkPhone = clerkUser.phoneNumbers?.[0]?.phoneNumber || '';
+      const imageUrl = clerkUser.imageUrl || '';
+      const authProvider = clerkUser.externalAccounts?.[0]?.provider || 'clerk';
+
+      // Sync user profile to Supabase & local backend DB
+      fetch('/api/auth/clerk-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clerkId: clerkUser.id,
+          email: clerkEmail,
+          name: clerkName,
+          phone: clerkPhone,
+          imageUrl,
+          authProvider
+        })
+      }).catch(err => console.error('Clerk sync error:', err));
+
+      if (!currentUser || currentUser.email !== clerkEmail) {
+        onLogin(clerkEmail, clerkName);
+      }
+    }
+  }, [isClerkSignedIn, clerkUser]);
+
   // Login/Signup Inputs
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -87,7 +121,7 @@ export default function AccountPanel({
   const [otpSuccessMessage, setOtpSuccessMessage] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Authentication configuration: standard, email OTP, or Google SSO
+  // Authentication configuration: Clerk Password/SSO or email OTP
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
   const [otpEmail, setOtpEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -549,7 +583,46 @@ export default function AccountPanel({
               </div>
             )}
 
-            {authMethod === 'password' || isSignUp ? (
+            {authMethod === 'password' && !isSignUp ? (
+              <div className="flex justify-center w-full py-1">
+                <SignIn
+                  routing="virtual"
+                  appearance={{
+                    baseTheme: dark,
+                    variables: {
+                      colorPrimary: '#C5A021',
+                      colorBackground: 'transparent',
+                      colorText: '#FFFFFF',
+                      colorTextSecondary: '#94A3B8',
+                      colorInputBackground: '#020617',
+                      colorInputText: '#FFFFFF',
+                      colorBorder: '#1E293B',
+                      borderRadius: '0.75rem',
+                    },
+                    elements: {
+                      rootBox: "w-full flex justify-center",
+                      cardBox: "!shadow-none w-full !border-0 !bg-transparent",
+                      card: "!bg-transparent !shadow-none !border-0 p-0 !text-slate-100 w-full",
+                      headerTitle: "!text-white font-display text-sm uppercase tracking-widest text-center",
+                      headerSubtitle: "!text-slate-400 text-xs text-center",
+                      socialButtonsBlockButton: "!bg-slate-900/90 !border-slate-700 !text-white hover:!bg-slate-800 transition rounded-xl text-xs py-2.5 shadow-sm",
+                      socialButtonsBlockButtonText: "!text-white font-semibold text-xs tracking-wide",
+                      socialButtonsBlockButtonArrow: "!text-white",
+                      dividerLine: "!bg-slate-800",
+                      dividerText: "!text-slate-400 text-[10px] uppercase font-mono tracking-wider",
+                      formFieldLabel: "!text-slate-300 text-[10px] uppercase font-mono tracking-wider mb-1",
+                      formFieldInput: "!bg-slate-950 !border-slate-800 !text-white rounded-xl text-xs py-2.5 px-3 focus:!border-[#C5A021] focus:!ring-1 focus:!ring-[#C5A021]",
+                      formButtonPrimary: "!bg-gradient-to-tr !from-[#C5A021] !to-[#E6C35C] hover:!from-[#B59011] hover:!to-[#D5B24B] !text-slate-950 font-display font-bold rounded-xl py-3 text-xs uppercase tracking-widest shadow-md transition active:scale-95 border-0",
+                      footer: "!bg-transparent border-t border-slate-800/50 pt-3 !text-slate-400 text-xs",
+                      footerActionText: "!text-slate-400 text-xs",
+                      footerActionLink: "!text-[#C5A021] hover:!text-[#E6C35C] font-semibold text-xs",
+                      identityPreviewText: "!text-slate-200 text-xs font-semibold",
+                      identityPreviewEditButton: "!text-[#C5A021] hover:!text-[#E6C35C] text-xs"
+                    }
+                  }}
+                />
+              </div>
+            ) : isSignUp ? (
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 {otpError && (
                   <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl text-xs font-semibold leading-relaxed flex items-center gap-2">

@@ -891,16 +891,113 @@ function ProductForm({ product, categories, onChange, addToast }: {
           )}
         </div>
 
-        {/* Description */}
+        {/* Short & Detailed Description */}
         <div className="space-y-4 md:col-span-2">
-          <h4 className="text-lg font-semibold text-slate-100 border-b border-slate-800 pb-2">Description *</h4>
+          <h4 className="text-lg font-semibold text-slate-100 border-b border-slate-800 pb-2">Short Description</h4>
+          <input
+            type="text"
+            value={product.shortDescription || ''}
+            onChange={e => updateField('shortDescription', e.target.value)}
+            placeholder="Brief tagline for product cards (e.g., Handcrafted solid teak wood jewelry box)"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:border-yellow-500"
+          />
+
+          <h4 className="text-lg font-semibold text-slate-100 border-b border-slate-800 pb-2 pt-2">Full Description *</h4>
           <textarea
             value={product.description || ''}
             onChange={e => updateField('description', e.target.value)}
             rows={4}
+            placeholder="Detailed description of materials, artisan history, usage, and dimensions..."
             className="w-full bg-slate-950 border border-slate-700 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:border-yellow-500 custom-scrollbar"
             required
           ></textarea>
+        </div>
+
+        {/* Dynamic Product Specifications */}
+        <div className="space-y-4 md:col-span-2 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+            <h4 className="text-lg font-semibold text-slate-100">Product Specifications</h4>
+            <span className="text-xs text-slate-400">Custom key-value parameters</span>
+          </div>
+
+          {/* Quick Presets */}
+          <div>
+            <span className="text-xs font-medium text-slate-400 block mb-2">Quick Add Preset Keys:</span>
+            <div className="flex flex-wrap gap-2">
+              {['Material', 'Dimensions', 'Weight', 'Age Group', 'Warranty', 'Battery Required', 'Country of Origin', 'Care Instructions'].map(preset => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => {
+                    const current = { ...(product.specifications || {}) };
+                    if (!current[preset]) {
+                      current[preset] = '';
+                      updateField('specifications', current);
+                    }
+                  }}
+                  className="text-xs px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-yellow-400 border border-slate-700 transition"
+                >
+                  + {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Specification Key-Value Rows */}
+          <div className="space-y-3">
+            {Object.entries(product.specifications || {}).map(([key, val], idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <input
+                  type="text"
+                  value={key}
+                  onChange={e => {
+                    const newKey = e.target.value;
+                    const current = { ...(product.specifications || {}) };
+                    delete current[key];
+                    if (newKey.trim()) current[newKey] = val;
+                    updateField('specifications', current);
+                  }}
+                  placeholder="Specification Key (e.g. Material)"
+                  className="w-1/3 bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-sm text-slate-200 focus:border-yellow-500"
+                />
+                <input
+                  type="text"
+                  value={val}
+                  onChange={e => {
+                    const current = { ...(product.specifications || {}) };
+                    current[key] = e.target.value;
+                    updateField('specifications', current);
+                  }}
+                  placeholder="Specification Value (e.g. Solid Teak Wood)"
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-sm text-slate-200 focus:border-yellow-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = { ...(product.specifications || {}) };
+                    delete current[key];
+                    updateField('specifications', current);
+                  }}
+                  className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/30 rounded-lg border border-red-900/40 transition"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                const current = { ...(product.specifications || {}) };
+                const newKeyName = `Spec ${Object.keys(current).length + 1}`;
+                current[newKeyName] = '';
+                updateField('specifications', current);
+              }}
+              className="mt-2 text-xs font-semibold text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 py-2 px-4 rounded-lg flex items-center gap-1.5 transition"
+            >
+              <Plus className="w-4 h-4" /> Add Custom Specification
+            </button>
+          </div>
         </div>
 
         {/* Flags */}

@@ -138,6 +138,9 @@ export default function ProductDetails({
               {product.name}
             </h1>
             <p className="text-xs text-gray-400 font-mono">SKU: <span className="text-navy-900">{product.sku}</span> | Brand: <span className="text-navy-900">{product.brand}</span></p>
+            {product.shortDescription && (
+              <p className="text-xs text-gray-600 font-sans italic pt-0.5">{product.shortDescription}</p>
+            )}
             
             {/* Rating Stars summary */}
             <div className="flex items-center gap-4 pt-1">
@@ -338,16 +341,22 @@ export default function ProductDetails({
                 className="max-w-2xl"
               >
                 <div className="rounded-2xl border border-gray-100 overflow-hidden">
-                  <table className="w-full text-xs">
-                    <tbody>
-                      {Object.entries(product.specifications).map(([key, val], idx) => (
-                        <tr key={key} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                          <td className="px-4 py-3 font-medium text-navy-900 w-1/3 border-b border-gray-100 font-display uppercase tracking-wider">{key}</td>
-                          <td className="px-4 py-3 text-gray-600 border-b border-gray-100">{val}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {product.specifications && Object.keys(product.specifications).length > 0 ? (
+                    <table className="w-full text-xs">
+                      <tbody>
+                        {Object.entries(product.specifications).map(([key, val], idx) => (
+                          <tr key={key} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                            <td className="px-4 py-3 font-medium text-navy-900 w-1/3 border-b border-gray-100 font-display uppercase tracking-wider">{key}</td>
+                            <td className="px-4 py-3 text-gray-600 border-b border-gray-100">{val}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="p-6 text-center text-xs text-gray-400 font-mono">
+                      No custom specifications specified for this item.
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}

@@ -11,10 +11,15 @@ interface AdminCustomersTabProps {
 
 interface Customer {
   id: string;
+  clerkId?: string | null;
   name: string;
   email: string;
   phone: string;
   address: string;
+  imageUrl?: string;
+  authProvider?: string;
+  createdAt?: string | null;
+  lastSignInAt?: string | null;
   ordersCount: number;
   totalSpent: number;
   lastOrderDate: string | null;
@@ -33,39 +38,70 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
   const [tierFilter, setTierFilter] = useState<string>('All');
   const [sortOption, setSortOption] = useState<string>('Spent desc');
   
+  const [dbCustomers, setDbCustomers] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    fetch('/api/customers')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) setDbCustomers(data);
+      })
+      .catch(() => {});
+  }, []);
 
   // Compute customers portfolio
   const customers = useMemo(() => {
     const customerMap = new Map<string, Customer>();
 
-    // Initialize with seed customers
-    SEED_CUSTOMERS.forEach(seed => {
-      customerMap.set(seed.email.toLowerCase(), {
-        id: seed.email,
-        ...seed,
-        ordersCount: 0,
-        totalSpent: 0,
-        lastOrderDate: null,
-        tier: 'Bronze',
+    // 1. Load Supabase / Clerk synced customers first
+    dbCustomers.forEach(dbc => {
+      const emailKey = (dbc.email || '').toLowerCase();
+      if (!emailKey) return;
+      customerMap.set(emailKey, {
+        id: dbc.id || emailKey,
+        clerkId: dbc.clerkId || dbc.clerk_id || null,
+        name: dbc.name || emailKey.split('@')[0],
+        email: emailKey,
+        phone: dbc.phone || 'N/A',
+        address: 'Registered User Account',
+        imageUrl: dbc.imageUrl || dbc.image_url || '',
+        authProvider: dbc.authProvider || dbc.auth_provider || 'clerk',
+        createdAt: dbc.createdAt || dbc.created_at || null,
+        lastSignInAt: dbc.lastSignInAt || dbc.last_sign_in_at || null,
+        ordersCount: dbc.ordersCount || 0,
+        totalSpent: dbc.totalSpent || 0,
+        lastOrderDate: dbc.lastOrderDate || null,
+        tier: dbc.tier || 'Bronze',
         customerOrders: []
       });
     });
 
-    // Merge with orders
+    // 2. Initialize with seed customers if not already present
+    SEED_CUSTOMERS.forEach(seed => {
+      const emailKey = seed.email.toLowerCase();
+      if (!customerMap.has(emailKey)) {
+        customerMap.set(emailKey, {
+          id: seed.email,
+          ...seed,
+          ordersCount: 0,
+          totalSpent: 0,
+          lastOrderDate: null,
+          tier: 'Bronze',
+          customerOrders: []
+        });
+      }
+    });
+
+    // 3. Merge with placed orders
     orders.forEach(order => {
-      // Assuming order has accountEmail or customerInfo.email
-      // @ts-ignore - Handle possible different order structures based on prompt
-      const email = (order.accountEmail || order.customerInfo?.email || order.email || '').toLowerCase();
+      const email = (order.accountEmail || order.customerInfo?.email || (order as any).email || '').toLowerCase();
       if (!email) return;
 
-      // @ts-ignore
-      const name = order.customerInfo?.name || order.customerName || 'Unknown Customer';
-      // @ts-ignore
-      const phone = order.customerInfo?.phone || order.phone || 'N/A';
-      // @ts-ignore
-      const address = order.shippingAddress ? `${order.shippingAddress.addressLine1 || ''} ${order.shippingAddress.city || ''}` : 'N/A';
+      const name = order.customerInfo?.name || (order as any).customerName || 'Unknown Customer';
+      const phone = order.customerInfo?.phone || (order as any).phone || 'N/A';
+      const address = (order as any).shippingAddress ? `${(order as any).shippingAddress.addressLine1 || ''} ${(order as any).shippingAddress.city || ''}` : (order.customerInfo?.address || 'N/A');
       
       const total = typeof order.total === 'number' ? order.total : 0;
       const dateStr = order.date || new Date().toISOString();
@@ -86,19 +122,22 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
       }
 
       const cust = customerMap.get(email)!;
-      cust.ordersCount += 1;
-      cust.totalSpent += total;
-      cust.customerOrders.push(order);
+      // Only count order if not already in customerOrders
+      if (!cust.customerOrders.some(o => o.orderNumber === order.orderNumber || o.id === order.id)) {
+        cust.customerOrders.push(order);
+        cust.ordersCount = Math.max(cust.ordersCount, cust.customerOrders.length);
+        cust.totalSpent = cust.customerOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+      }
       
-      if (new Date(dateStr) > new Date(cust.lastOrderDate!)) {
+      if (!cust.lastOrderDate || new Date(dateStr) > new Date(cust.lastOrderDate)) {
         cust.lastOrderDate = dateStr;
       }
     });
 
     // Determine tiers
     return Array.from(customerMap.values()).map(cust => {
-      if (cust.ordersCount >= 8) cust.tier = 'Platinum';
-      else if (cust.ordersCount >= 4) cust.tier = 'Gold';
+      if (cust.ordersCount >= 8 || cust.totalSpent >= 10000) cust.tier = 'Platinum';
+      else if (cust.ordersCount >= 4 || cust.totalSpent >= 4000) cust.tier = 'Gold';
       else if (cust.ordersCount >= 1) cust.tier = 'Silver';
       else cust.tier = 'Bronze';
       
@@ -111,7 +150,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
 
       return cust;
     });
-  }, [orders]);
+  }, [orders, dbCustomers]);
 
   // Statistics
   const totalCustomers = customers.length;
@@ -304,11 +343,19 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#0B1B3D]/5 to-[#C5A021]/5 rounded-bl-full -z-0" />
                 
                 <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#C5A021]/10 text-[#C5A021] rounded-full flex items-center justify-center font-bold text-lg shrink-0">
-                        {customer.name.charAt(0).toUpperCase()}
-                      </div>
+                      {customer.imageUrl ? (
+                        <img
+                          src={customer.imageUrl}
+                          alt={customer.name}
+                          className="w-10 h-10 rounded-full object-cover border border-[#C5A021]/30 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-[#C5A021]/10 text-[#C5A021] rounded-full flex items-center justify-center font-bold text-lg shrink-0">
+                          {customer.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       <div>
                         <h4 className="font-bold text-[#0B1B3D] leading-tight truncate max-w-[140px] sm:max-w-[180px]">
                           {customer.name}
@@ -318,10 +365,29 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                         </p>
                       </div>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${getTierClasses(customer.tier)}`}>
-                      {customer.tier}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-medium ${getTierClasses(customer.tier)}`}>
+                        {customer.tier}
+                      </span>
+                      {customer.authProvider && (
+                        <span className={`text-[9px] px-2 py-0.5 rounded-md font-mono uppercase font-bold tracking-wider ${
+                          customer.authProvider.toLowerCase().includes('google')
+                            ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                            : customer.authProvider.toLowerCase().includes('apple')
+                              ? 'bg-slate-900 text-white'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          {customer.authProvider.toLowerCase().includes('google') ? 'Google ID' : customer.authProvider.toLowerCase().includes('apple') ? 'Apple ID' : 'Clerk Auth'}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  {customer.clerkId && (
+                    <div className="mb-3 px-2.5 py-1 bg-slate-50 rounded-lg text-[10px] text-slate-500 font-mono flex items-center gap-1 border border-slate-200/60">
+                      <span className="font-bold text-slate-700">Clerk ID:</span>
+                      <span className="truncate">{customer.clerkId}</span>
+                    </div>
+                  )}
 
                   <div className="space-y-1.5 mb-5">
                     <div className="flex items-start gap-2 text-[10px] text-gray-500">
