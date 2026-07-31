@@ -12,10 +12,16 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Package
+  Package,
+  MapPin,
+  CreditCard,
+  Gift,
+  Truck,
+  Printer
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { Order } from '../../types';
+import { generateInvoicePDF } from '../../lib/invoiceGenerator';
 
 interface AdminOrdersTabProps {
   orders: Order[];
@@ -392,20 +398,21 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                         </select>
                       </td>
                       <td className="p-4">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex justify-end items-center gap-2">
                           <button 
                             onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}
-                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="View Details"
+                            className="px-3 py-1.5 bg-[#C5A021]/10 hover:bg-[#C5A021]/20 text-[#C5A021] border border-[#C5A021]/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                            title="View full customer address, payment details, and order items"
                           >
-                            <Eye size={18} />
+                            <Eye size={14} />
+                            <span>More Details</span>
                           </button>
                           <button 
                             onClick={() => handleDelete(order.id, order.orderNumber)}
-                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                             title="Delete Order"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -564,146 +571,362 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
       {/* Order Detail Modal */}
       <AnimatePresence>
         {isModalOpen && selectedOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-left"
             >
-              <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-800 text-white">
+              {/* Header Bar */}
+              <div className="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-900 text-white">
                 <div>
-                  <h3 className="text-xl font-bold">Order Details</h3>
-                  <p className="text-slate-300 text-sm">{selectedOrder.orderNumber}</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-white">Order Details</h3>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${getStatusColor(selectedOrder.status)}`}>
+                      {selectedOrder.status}
+                    </span>
+                  </div>
+                  <p className="text-slate-400 text-xs font-mono mt-0.5">Order ID: {selectedOrder.orderNumber} • Placed on {formatDate(selectedOrder.date)}</p>
                 </div>
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 hover:bg-slate-700 rounded-full transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      generateInvoicePDF(selectedOrder);
+                      addToast('Downloading official Order Invoice PDF...', 'info');
+                    }}
+                    className="px-3 py-1.5 bg-[#C5A021] hover:bg-[#B5952F] text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                    title="Download PDF Invoice"
+                  >
+                    <Download size={14} />
+                    <span>Download Invoice</span>
+                  </button>
+                  <button 
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
 
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {/* Customer Info */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">1</span>
-                      Customer Details
+              {/* Scrollable Modal Content Body */}
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-50 space-y-6">
+                
+                {/* Top Section: Address & Payment Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* Card 1: Customer Details & Shipping Address */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                    <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
+                      <MapPin className="w-4 h-4 text-[#C5A021]" />
+                      <span>Customer & Delivery Address</span>
                     </h4>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="text-slate-500 w-20 inline-block">Name:</span> <span className="font-medium text-slate-800">{selectedOrder.customerInfo.name}</span></p>
-                      <p><span className="text-slate-500 w-20 inline-block">Email:</span> <span className="font-medium text-slate-800">{selectedOrder.customerInfo.email}</span></p>
-                      <p><span className="text-slate-500 w-20 inline-block">Phone:</span> <span className="font-medium text-slate-800">{selectedOrder.customerInfo.phone}</span></p>
-                      <div className="pt-2 mt-2 border-t border-slate-100">
-                        <p className="text-slate-500 mb-1">Shipping Address:</p>
-                        <p className="text-slate-800">
-                          {selectedOrder.customerInfo.address}<br/>
-                          PIN Code: {selectedOrder.customerInfo.pincode}
-                        </p>
+                    
+                    <div className="space-y-2 text-xs">
+                      <div className="grid grid-cols-3">
+                        <span className="text-slate-400 font-mono">Full Name:</span>
+                        <span className="col-span-2 font-bold text-slate-800">{selectedOrder.customerInfo.name}</span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="text-slate-400 font-mono">Email Address:</span>
+                        <span className="col-span-2 font-medium text-blue-600 select-all">{selectedOrder.customerInfo.email}</span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="text-slate-400 font-mono">Phone Number:</span>
+                        <span className="col-span-2 font-mono font-semibold text-slate-800">{selectedOrder.customerInfo.phone || 'Not provided'}</span>
+                      </div>
+                      {selectedOrder.accountEmail && selectedOrder.accountEmail !== selectedOrder.customerInfo.email && (
+                        <div className="grid grid-cols-3">
+                          <span className="text-slate-400 font-mono">Account Email:</span>
+                          <span className="col-span-2 font-mono text-slate-600">{selectedOrder.accountEmail}</span>
+                        </div>
+                      )}
+                      
+                      <div className="pt-3 mt-2 border-t border-slate-100 space-y-1">
+                        <span className="text-slate-400 font-mono block text-[10px] uppercase">Shipping Address:</span>
+                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl font-sans text-slate-800 font-medium leading-relaxed">
+                          <p>{selectedOrder.customerInfo.address}</p>
+                          <p className="font-bold text-slate-900 mt-1 font-mono">PINCODE: {selectedOrder.customerInfo.pincode}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Order Info */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">2</span>
-                      Order Status
+                  {/* Card 2: Payment Audit & Gateway Details */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                    <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
+                      <CreditCard className="w-4 h-4 text-[#C5A021]" />
+                      <span>Payment Audit & Gateway Info</span>
                     </h4>
-                    <div className="space-y-3 text-sm">
+
+                    <div className="space-y-2.5 text-xs">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Date Placed:</span>
-                        <span className="font-medium text-slate-800">{formatDate(selectedOrder.date)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Order Status:</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedOrder.status)}`}>
-                          {selectedOrder.status.toUpperCase()}
+                        <span className="text-slate-400 font-mono">Payment Method:</span>
+                        <span className="font-bold text-slate-900 uppercase bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                          {selectedOrder.paymentMethod}
                         </span>
                       </div>
+
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Payment Status:</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>
+                        <span className="text-slate-400 font-mono">Payment Status:</span>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>
                           {selectedOrder.paymentStatus.toUpperCase()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Payment Method:</span>
-                        <span className="font-medium text-slate-800 uppercase">{selectedOrder.paymentMethod}</span>
-                      </div>
-                      {selectedOrder.upiTxnId && (
+
+                      {selectedOrder.codStatus && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-500">UPI Ref / Txn ID:</span>
-                          <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs select-all">{selectedOrder.upiTxnId}</span>
+                          <span className="text-slate-400 font-mono">COD Handover Status:</span>
+                          <span className="font-mono text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            {selectedOrder.codStatus.toUpperCase()}
+                          </span>
                         </div>
                       )}
+
+                      {selectedOrder.upiTxnId && (
+                        <div className="flex justify-between items-center pt-1 border-t border-slate-100">
+                          <span className="text-slate-400 font-mono">UPI Ref / UTR ID:</span>
+                          <span className="font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-xs select-all">
+                            {selectedOrder.upiTxnId}
+                          </span>
+                        </div>
+                      )}
+
+                      {selectedOrder.payuTxnId && (
+                        <div className="flex justify-between items-center pt-1 border-t border-slate-100">
+                          <span className="text-slate-400 font-mono">PayU Txn ID:</span>
+                          <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs select-all">
+                            {selectedOrder.payuTxnId}
+                          </span>
+                        </div>
+                      )}
+
+                      {selectedOrder.payuPaymentId && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400 font-mono">PayU Payment ID:</span>
+                          <span className="font-mono font-medium text-slate-700 select-all">{selectedOrder.payuPaymentId}</span>
+                        </div>
+                      )}
+
+                      {selectedOrder.payuStatus && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400 font-mono">Gateway Response:</span>
+                          <span className="font-mono text-xs font-semibold text-slate-700">{selectedOrder.payuStatus}</span>
+                        </div>
+                      )}
+
                       {selectedOrder.upiSenderName && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-500">Payment App / Sender:</span>
+                          <span className="text-slate-400 font-mono">Payer / App:</span>
                           <span className="font-medium text-slate-800">{selectedOrder.upiSenderName}</span>
+                        </div>
+                      )}
+
+                      {selectedOrder.upiNotes && (
+                        <div className="pt-1">
+                          <span className="text-slate-400 font-mono block text-[10px] uppercase">Customer Payment Notes:</span>
+                          <p className="text-slate-700 italic bg-slate-50 p-2 rounded-lg border border-slate-200 mt-1">{selectedOrder.upiNotes}</p>
+                        </div>
+                      )}
+
+                      {selectedOrder.upiRejectionReason && (
+                        <div className="pt-1">
+                          <span className="text-red-500 font-mono block text-[10px] uppercase font-bold">Rejection Reason:</span>
+                          <p className="text-red-700 bg-red-50 p-2 rounded-lg border border-red-200 mt-1">{selectedOrder.upiRejectionReason}</p>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Items */}
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6">
-                  <div className="p-4 bg-slate-800 border-b border-slate-100">
-                    <h4 className="font-bold text-white">Order Items</h4>
+                {/* Section: Logistics & Gift Wrapping */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Logistics */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
+                      <Truck className="w-4 h-4 text-[#C5A021]" />
+                      <span>Logistics & Courier Details</span>
+                    </h4>
+                    
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-mono">Shipping Method:</span>
+                        <span className="font-bold text-slate-800 uppercase">{selectedOrder.shippingMethod || 'standard'} Delivery</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-mono">Estimated Parcel Weight:</span>
+                        <span className="font-mono text-slate-800 font-medium">{selectedOrder.shippingWeightKg || 0.5} kg</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-mono">Shipping Zone:</span>
+                        <span className="font-medium text-slate-800">{selectedOrder.shippingZone || 'Domestic Direct'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-mono">Freight Charge:</span>
+                        <span className="font-mono font-bold text-slate-900">{formatCurrency(selectedOrder.shippingCost)}</span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Gift Requests */}
+                  {selectedOrder.giftWrappingRequested ? (
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200 shadow-xs space-y-3">
+                      <h4 className="font-bold text-amber-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-amber-200/60 pb-2">
+                        <Gift className="w-4 h-4 text-amber-600" />
+                        <span>Gift Packaging Request</span>
+                      </h4>
+
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-amber-700 font-mono">Wrap Theme:</span>
+                          <span className="font-bold text-amber-900 uppercase bg-white/80 px-2 py-0.5 rounded border border-amber-300">
+                            {selectedOrder.giftWrappingType || 'Royal Gold'}
+                          </span>
+                        </div>
+                        {selectedOrder.giftSenderName && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-amber-700 font-mono">Sender Name:</span>
+                            <span className="font-bold text-amber-900">{selectedOrder.giftSenderName}</span>
+                          </div>
+                        )}
+                        {selectedOrder.giftMessage && (
+                          <div>
+                            <span className="text-amber-700 font-mono block text-[10px] uppercase">Gift Card Note:</span>
+                            <p className="text-amber-900 italic bg-white/80 p-2.5 rounded-xl border border-amber-200 mt-1 font-serif">
+                              "{selectedOrder.giftMessage}"
+                            </p>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-amber-700 font-mono">Hide Price Tag:</span>
+                          <span className="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-[10px]">
+                            {selectedOrder.giftHidePrice ? 'YES (Do not show price)' : 'NO'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-center items-center text-center">
+                      <Gift className="w-8 h-8 text-slate-300 mb-2" />
+                      <p className="text-xs font-bold text-slate-700">Standard Packaging</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">No custom gift wrapping or greeting note requested.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section: Itemized Purchased Products */}
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
+                    <h4 className="font-bold text-sm uppercase tracking-wider">Itemized Products ({selectedOrder.items.length})</h4>
+                    <span className="text-xs font-mono text-slate-400">SKU Ledger</span>
+                  </div>
+                  
                   <div className="divide-y divide-slate-100">
                     {selectedOrder.items.map((item, idx) => {
                       const itemPrice = item.product.discountPrice || item.product.price;
                       return (
-                        <div key={idx} className="p-4 flex gap-4 items-center">
-                          <img src={item.product.images[0]} alt={item.product.name} className="w-16 h-16 object-cover rounded-xl border border-slate-200" />
-                          <div className="flex-1">
-                            <h5 className="font-medium text-slate-800">{item.product.name}</h5>
-                            <p className="text-sm text-slate-500">Qty: {item.quantity} × {formatCurrency(itemPrice)}</p>
+                        <div key={idx} className="p-4 flex gap-4 items-center hover:bg-slate-50 transition-colors">
+                          <img src={item.product.images[0]} alt={item.product.name} className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0" />
+                          <div className="flex-1 text-left">
+                            <h5 className="font-bold text-slate-900 text-sm">{item.product.name}</h5>
+                            <p className="text-xs text-slate-500 font-mono">SKU: {item.product.sku || item.product.id} • Category: {item.product.category}</p>
+                            <p className="text-xs text-slate-600 mt-0.5">Quantity: <strong className="text-slate-900">{item.quantity}</strong> × {formatCurrency(itemPrice)}</p>
                           </div>
-                          <div className="text-right font-medium text-slate-800">
+                          <div className="text-right font-bold text-slate-900 font-mono text-sm">
                             {formatCurrency(itemPrice * item.quantity)}
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="p-4 bg-slate-50 border-t border-slate-100 space-y-2 text-sm">
+
+                  {/* Financial Breakdown Table */}
+                  <div className="p-5 bg-slate-50 border-t border-slate-200 space-y-2 text-xs">
                     <div className="flex justify-between text-slate-600">
-                      <span>Subtotal</span>
-                      <span>{formatCurrency(selectedOrder.subtotal)}</span>
+                      <span>Items Subtotal:</span>
+                      <span className="font-mono">{formatCurrency(selectedOrder.subtotal)}</span>
                     </div>
+                    {selectedOrder.discount > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-medium">
+                        <span>Coupon / Bundle Discount:</span>
+                        <span className="font-mono">-{formatCurrency(selectedOrder.discount)}</span>
+                      </div>
+                    )}
                     {selectedOrder.tax > 0 && (
                       <div className="flex justify-between text-slate-600">
-                        <span>Tax</span>
-                        <span>{formatCurrency(selectedOrder.tax)}</span>
+                        <span>GST / Tax:</span>
+                        <span className="font-mono">{formatCurrency(selectedOrder.tax)}</span>
                       </div>
                     )}
-                    {selectedOrder.shippingCost > 0 && (
-                      <div className="flex justify-between text-slate-600">
-                        <span>Shipping</span>
-                        <span>{formatCurrency(selectedOrder.shippingCost)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-lg font-bold text-slate-800 pt-2 mt-2 border-t border-slate-200">
-                      <span>Total</span>
-                      <span>{formatCurrency(selectedOrder.total)}</span>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Shipping Fee:</span>
+                      <span className="font-mono">{formatCurrency(selectedOrder.shippingCost)}</span>
+                    </div>
+                    <div className="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-300">
+                      <span>Grand Total Paid:</span>
+                      <span className="font-mono text-lg text-[#C5A021]">{formatCurrency(selectedOrder.total)}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* UPI Screenshot if available */}
+                {/* Section: UPI Screenshot Lightbox preview */}
                 {selectedOrder.upiScreenshot && (
-                  <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 className="font-bold text-slate-800 mb-4">UPI Payment Screenshot</h4>
-                    <a href={selectedOrder.upiScreenshot} target="_blank" rel="noreferrer" className="block max-w-sm rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                      <img src={selectedOrder.upiScreenshot} alt="UPI Payment" className="w-full h-auto" />
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider">UPI Payment Proof Screenshot</h4>
+                      <a href={selectedOrder.upiScreenshot} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-bold font-mono flex items-center gap-1">
+                        <span>Open Original Image</span>
+                      </a>
+                    </div>
+                    <a href={selectedOrder.upiScreenshot} target="_blank" rel="noreferrer" className="block max-w-xs rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+                      <img src={selectedOrder.upiScreenshot} alt="UPI Payment Screenshot" className="w-full h-auto object-cover group-hover:scale-105 transition duration-300" />
                     </a>
                   </div>
                 )}
+              </div>
+
+              {/* Modal Footer Controls */}
+              <div className="px-6 py-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <span className="text-xs text-slate-500 font-mono uppercase">Change Status:</span>
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => {
+                      const nextSt = e.target.value as Order['status'];
+                      onUpdateOrderStatus(selectedOrder.id, nextSt);
+                      setSelectedOrder({ ...selectedOrder, status: nextSt });
+                      addToast(`Order status updated to ${nextSt.toUpperCase()}`, 'success');
+                    }}
+                    className={`text-xs font-bold rounded-xl px-3 py-2 outline-none border cursor-pointer ${getStatusColor(selectedOrder.status)}`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      generateInvoicePDF(selectedOrder);
+                      addToast('Generating PDF Invoice...', 'success');
+                    }}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Download size={14} />
+                    <span>Download Invoice</span>
+                  </button>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
