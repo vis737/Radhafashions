@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ShoppingCart, Heart, User, Key, Sparkles, LogIn, Menu, X, HelpCircle, ChevronDown } from 'lucide-react';
+import { useUser, useClerk } from '@clerk/clerk-react';
+import { Search, ShoppingCart, Heart, User, Key, Sparkles, LogIn, Menu, X, HelpCircle, ChevronDown, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CartItem, Product } from '../types';
 import { CATEGORIES } from '../utils/mockData';
@@ -182,6 +183,20 @@ export default function Navbar({
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   
   const searchRef = useRef<HTMLDivElement>(null);
+
+  const { isSignedIn: isClerkSignedIn } = useUser();
+  const { signOut: clerkSignOut } = useClerk();
+
+  const handleLogoutClick = async () => {
+    try {
+      if (isClerkSignedIn && clerkSignOut) {
+        await clerkSignOut();
+      }
+    } catch (err) {
+      console.error('Navbar Clerk logout error:', err);
+    }
+    onLogout();
+  };
 
   // Total items in cart
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -415,18 +430,28 @@ export default function Navbar({
 
             {/* Profile trigger / Login status indicator */}
             {currentUser ? (
-              <button
-                onClick={() => onNavigate('account')}
-                className="flex items-center gap-2 p-1 bg-[#C5A021]/15 hover:bg-[#C5A021]/25 border border-[#C5A021]/30 rounded-xl transition cursor-pointer max-w-[124px] sm:max-w-none text-left"
-              >
-                <div className="w-7 h-7 bg-[#C5A021] rounded-lg text-white font-bold text-xs flex items-center justify-center">
-                  {currentUser.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="hidden lg:block pr-1.5">
-                  <p className="text-[10px] font-bold text-white truncate leading-none">{currentUser.name}</p>
-                  <p className="text-[8px] text-[#C5A021] font-mono tracking-wider">MEMBER</p>
-                </div>
-              </button>
+              <div className="flex items-center gap-1 bg-[#C5A021]/15 border border-[#C5A021]/30 rounded-xl p-1">
+                <button
+                  onClick={() => onNavigate('account')}
+                  className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer pr-1"
+                  title="View Account Profile"
+                >
+                  <div className="w-7 h-7 bg-[#C5A021] rounded-lg text-white font-bold text-xs flex items-center justify-center">
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="hidden lg:block text-left">
+                    <p className="text-[10px] font-bold text-white truncate leading-none">{currentUser.name}</p>
+                    <p className="text-[8px] text-[#C5A021] font-mono tracking-wider">MEMBER</p>
+                  </div>
+                </button>
+                <button
+                  onClick={handleLogoutClick}
+                  className="p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+                  title="Log Out Profile"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => onNavigate('account')}

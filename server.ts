@@ -945,6 +945,52 @@ app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb'
   }
 });
 
+// Public review submission endpoint
+app.post('/api/products/:productId/reviews', express.json(), async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const newReview = req.body;
+    if (!newReview || !newReview.author || !newReview.comment) {
+      return res.status(400).json({ error: 'Review author and comment are required.' });
+    }
+
+    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    let updatedProduct: any = null;
+
+    const nextProds = localProds.map((p: any) => {
+      if (p.id === productId) {
+        const revs = [newReview, ...(p.reviews || [])];
+        const approvedCount = revs.length;
+        const totalRating = revs.reduce((acc: number, r: any) => acc + (Number(r.rating) || 5), 0);
+        const newRating = approvedCount > 0 ? Number((totalRating / approvedCount).toFixed(1)) : 5;
+        updatedProduct = {
+          ...p,
+          reviews: revs,
+          rating: newRating,
+          ratingCount: approvedCount
+        };
+        return updatedProduct;
+      }
+      return p;
+    });
+
+    writeLocalJsonDb(PRODUCTS_FILE_PATH, nextProds);
+
+    if (supabase && updatedProduct) {
+      await supabase.from('products').update({
+        reviews: updatedProduct.reviews,
+        rating: updatedProduct.rating,
+        rating_count: updatedProduct.ratingCount
+      }).eq('id', productId);
+    }
+
+    res.json({ success: true, message: 'Review recorded successfully.', product: updatedProduct });
+  } catch (err) {
+    console.error('Error submitting review:', err);
+    res.status(500).json({ error: 'Failed to record review.' });
+  }
+});
+
 // --- COUPONS ENDPOINTS ---
 app.get('/api/catalog/coupons', async (req, res) => {
   try {

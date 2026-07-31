@@ -739,6 +739,36 @@ export default function App() {
     handleLogActivity('Review Created', `Submitted client review rating [${review.rating} Stars] for Product ID: ${productId}`);
   };
 
+  // Edit existing review dynamically
+  const handleEditReviewContent = (productId: string, reviewId: string, updated: Partial<Review>) => {
+    setProducts((prev) => {
+      const next = prev.map((p) => {
+        if (p.id === productId) {
+          const updatedRevs = (p.reviews || []).map((r) =>
+            r.id === reviewId ? { ...r, ...updated } : r
+          );
+          const approvedRevs = updatedRevs.filter(r => r.approved !== false);
+          const approvedCount = approvedRevs.length;
+          const totalRating = approvedRevs.reduce((acc, r) => acc + r.rating, 0);
+          return {
+            ...p,
+            reviews: updatedRevs,
+            rating: approvedCount > 0 ? Number((totalRating / approvedCount).toFixed(1)) : p.rating,
+            ratingCount: approvedCount > 0 ? approvedCount : p.ratingCount
+          };
+        }
+        return p;
+      });
+      fetch('/api/catalog/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next)
+      }).catch(err => console.error('Failed to sync edited review:', err));
+      return next;
+    });
+    handleLogActivity('Review Edited', `Updated review ID: ${reviewId} for Product ID: ${productId}`);
+  };
+
   // --- DERIVED RENDER PARAMS ---
   const activeProductModel = products.find((p) => p.id === currentProductId) || products[0];
 
@@ -1462,7 +1492,14 @@ export default function App() {
                   setCurrentUser(null);
                   setCartItems([]);
                   setWishlistIds([]);
+                  try {
+                    localStorage.removeItem('meris_user');
+                    localStorage.removeItem('meris_cart');
+                    localStorage.removeItem('meris_wishlist');
+                    sessionStorage.clear();
+                  } catch {}
                   handleLogActivity('Session Closed', 'Shopper terminated session.');
+                  handleSwapView('home');
                 }}
                 onMoveToCart={(prod) => {
                   handleAddProductToCart(prod);
@@ -1608,16 +1645,22 @@ export default function App() {
                  onApproveReview={handleApproveReviewContent}
                  onDeleteReview={handleDeleteReviewContent}
                  onAddReview={handleAddNewUserReview}
+                 onEditReview={handleEditReviewContent}
                  onUpdateCampaigns={(camp) => setCampaigns(camp)}
                  onUpdateCMS={(cM) => setCms(cM)}
                 onLogActivity={handleLogActivity}
                 autoAuthenticated={adminBypassed}
                 onLogoutAdmin={async () => {
                   try {
-                    await fetch('/api/admin/logout', { method: 'POST' });
+                    await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
                   } catch (err) {
                     console.error('Logout sync failed:', err);
                   }
+                  try {
+                    localStorage.removeItem('adminToken');
+                    localStorage.removeItem('adminAuthenticated');
+                    sessionStorage.clear();
+                  } catch {}
                   setAdminBypassed(false);
                   handleSwapView('home');
                 }}

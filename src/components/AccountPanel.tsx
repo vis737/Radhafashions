@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser, useClerk, SignIn } from '@clerk/clerk-react';
 import { dark } from '@clerk/themes';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, EyeOff, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, EyeOff, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle, Plus, Trash2, LogOut } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
 import { jsPDF } from 'jspdf';
 import { getQrCodeUrl } from '../utils/qrCodeGenerator';
@@ -53,7 +53,18 @@ export default function AccountPanel({
 }: AccountPanelProps) {
   // Clerk authentication state & hooks
   const { user: clerkUser, isSignedIn: isClerkSignedIn } = useUser();
-  const { openSignIn } = useClerk();
+  const { openSignIn, signOut: clerkSignOut } = useClerk();
+
+  const handleUserLogout = async () => {
+    try {
+      if (isClerkSignedIn && clerkSignOut) {
+        await clerkSignOut();
+      }
+    } catch (err) {
+      console.error('Clerk logout error:', err);
+    }
+    onLogout();
+  };
 
   useEffect(() => {
     if (isClerkSignedIn && clerkUser) {
@@ -889,10 +900,11 @@ export default function AccountPanel({
           </div>
 
           <button
-            onClick={onLogout}
-            className="w-full py-2.5 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 font-display font-medium text-xs uppercase tracking-widest transition cursor-pointer text-center"
+            onClick={handleUserLogout}
+            className="w-full py-2.5 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 font-display font-medium text-xs uppercase tracking-widest transition cursor-pointer text-center flex items-center justify-center gap-2"
           >
-            Logout Profile
+            <LogOut className="w-4 h-4" />
+            <span>Logout Profile</span>
           </button>
         </div>
 

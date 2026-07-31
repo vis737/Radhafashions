@@ -50,6 +50,7 @@ interface AdminDashboardProps {
   onApproveReview: (productId: string, reviewId: string, approve: boolean) => void;
   onDeleteReview?: (productId: string, reviewId: string) => void;
   onAddReview?: (productId: string, review: Omit<Review, 'id'>) => void;
+  onEditReview?: (productId: string, reviewId: string, updated: Partial<Review>) => void;
   onLogActivity: (action: string, details: string) => void;
   autoAuthenticated?: boolean;
   onLogoutAdmin?: () => void;
@@ -78,6 +79,7 @@ export default function AdminDashboard({
   onApproveReview,
   onDeleteReview,
   onAddReview,
+  onEditReview,
   onLogActivity,
   autoAuthenticated = false,
   onLogoutAdmin
@@ -517,6 +519,7 @@ export default function AdminDashboard({
                 onApproveReview={onApproveReview}
                 onDeleteReview={onDeleteReview}
                 onAddReview={onAddReview}
+                onEditReview={onEditReview}
                 onLogActivity={onLogActivity}
                 addToast={addToast}
               />

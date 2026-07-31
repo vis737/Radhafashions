@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, Search, Check, X, Trash2, Plus, MessageSquare, Filter, AlertCircle } from 'lucide-react';
+import { Star, Search, Check, X, Trash2, Plus, MessageSquare, Filter, AlertCircle, Pencil } from 'lucide-react';
 import { Product, Review } from '../../types';
 
 interface AdminReviewsTabProps {
@@ -8,6 +8,7 @@ interface AdminReviewsTabProps {
   onApproveReview: (productId: string, reviewId: string, approve: boolean) => void;
   onDeleteReview?: (productId: string, reviewId: string) => void;
   onAddReview?: (productId: string, review: Omit<Review, 'id'>) => void;
+  onEditReview?: (productId: string, reviewId: string, updated: Partial<Review>) => void;
   onLogActivity: (action: string, details: string) => void;
   addToast: (text: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
@@ -17,6 +18,7 @@ export default function AdminReviewsTab({
   onApproveReview,
   onDeleteReview,
   onAddReview,
+  onEditReview,
   onLogActivity,
   addToast
 }: AdminReviewsTabProps) {
@@ -33,6 +35,7 @@ export default function AdminReviewsTab({
     comment: ''
   });
 
+  const [editingReview, setEditingReview] = useState<{ productId: string; reviewId: string; author: string; rating: number; comment: string; approved: boolean } | null>(null);
   const [reviewToDelete, setReviewToDelete] = useState<{ productId: string, reviewId: string } | null>(null);
 
   // Flatten and sort reviews
@@ -287,7 +290,7 @@ export default function AdminReviewsTab({
                 <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-700/50">
                   <button
                     onClick={() => handleApproveToggle(review.productId, review.id, !!review.approved)}
-                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2
+                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer
                       ${review.approved 
                         ? 'bg-slate-700 hover:bg-slate-600 text-white' 
                         : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30'}`}
@@ -295,10 +298,26 @@ export default function AdminReviewsTab({
                     {review.approved ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                     {review.approved ? 'Unapprove' : 'Approve'}
                   </button>
+
+                  <button
+                    onClick={() => setEditingReview({
+                      productId: review.productId,
+                      reviewId: review.id,
+                      author: review.author,
+                      rating: review.rating,
+                      comment: review.comment,
+                      approved: !!review.approved
+                    })}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-medium transition-colors border border-slate-600 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Pencil className="w-4 h-4 text-gold-400" />
+                    <span>Edit</span>
+                  </button>
+
                   {onDeleteReview && (
                     <button
                       onClick={() => setReviewToDelete({ productId: review.productId, reviewId: review.id })}
-                      className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-colors border border-red-500/20 flex items-center justify-center gap-2"
+                      className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-colors border border-red-500/20 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                       <span className="hidden sm:inline">Delete</span>
@@ -408,6 +427,98 @@ export default function AdminReviewsTab({
                     className="px-6 py-2.5 rounded-xl font-bold bg-[#D4AF37] hover:bg-[#B5952F] text-slate-900 transition-colors"
                   >
                     Add Review
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Review Modal */}
+      <AnimatePresence>
+        {editingReview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm text-left"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-slate-800 border border-slate-700/50 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+            >
+              <div className="p-6 border-b border-slate-700/50 flex justify-between items-center">
+                <h3 className="text-xl font-bold text-white">Edit Customer Review</h3>
+                <button
+                  onClick={() => setEditingReview(null)}
+                  className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-slate-700 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (onEditReview && editingReview) {
+                    onEditReview(editingReview.productId, editingReview.reviewId, {
+                      author: editingReview.author,
+                      rating: editingReview.rating,
+                      comment: editingReview.comment,
+                      approved: editingReview.approved
+                    });
+                    onLogActivity('Edited Review', `Updated review ID: ${editingReview.reviewId}`);
+                    addToast('Review updated successfully', 'success');
+                    setEditingReview(null);
+                  }
+                }}
+                className="p-6 space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Reviewer Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingReview.author}
+                    onChange={(e) => setEditingReview({ ...editingReview, author: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Rating</label>
+                  <div className="pt-2">
+                    {renderStars(editingReview.rating, true, (r) => setEditingReview({ ...editingReview, rating: r }))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Comment Text</label>
+                  <textarea
+                    required
+                    value={editingReview.comment}
+                    onChange={(e) => setEditingReview({ ...editingReview, comment: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all resize-none"
+                  />
+                </div>
+
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingReview(null)}
+                    className="px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl font-bold bg-[#D4AF37] hover:bg-[#B5952F] text-slate-900 transition-colors"
+                  >
+                    Save Changes
                   </button>
                 </div>
               </form>
