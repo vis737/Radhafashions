@@ -126,60 +126,63 @@ export default function CartDrawer({
           <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
             {cartItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-3">
-                <div className="w-16 h-16 bg-gold-50 text-gold-500 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-gold-50 dark:bg-gold-950/40 text-gold-500 rounded-full flex items-center justify-center">
                   <ShoppingCart className="w-8 h-8" />
                 </div>
-                <h4 className="font-display font-semibold text-xs text-navy-950 uppercase tracking-widest">Your Bag is Empty</h4>
-                <p className="text-xs text-gray-400 font-light max-w-xs">Return back to catalog and select handcrafted items for your cart.</p>
+                <h4 className="font-display font-semibold text-xs text-navy-950 dark:text-white uppercase tracking-widest">Your Bag is Empty</h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-light max-w-xs">Return back to catalog and select handcrafted items for your cart.</p>
               </div>
             ) : (
               cartItems.map((item) => {
                 const itemPrice = item.product.discountPrice || item.product.price;
                 return (
-                  <div key={item.product.id} className="flex gap-4 p-3 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-gold-200 transition">
+                  <div key={item.product.id} className="flex gap-4 p-3.5 rounded-2xl border-2 border-gray-200 dark:border-navy-800 bg-white dark:bg-navy-900 shadow-sm hover:border-gold-400 transition">
                     <img
                       src={item.product.images && item.product.images[0] ? item.product.images[0] : ''}
                       alt={item.product.name}
                       referrerPolicy="no-referrer"
                       onError={(e) => handleImageError(e, item.product.category)}
-                      className="w-16 h-16 rounded-xl object-cover bg-gray-50"
+                      className="w-16 h-16 rounded-xl object-cover bg-gray-50 border border-gray-200 dark:border-navy-700 shrink-0"
                     />
                     <div className="flex-1 text-left flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start">
-                          <h5 className="font-display font-medium text-xs text-navy-900 line-clamp-1 pr-2">{item.product.name}</h5>
+                          <h5 className="font-display font-semibold text-xs text-navy-950 dark:text-white line-clamp-1 pr-2">{item.product.name}</h5>
                           <button
                             onClick={() => onRemoveItem(item.product.id)}
-                            className="text-gray-400 hover:text-red-500 transition p-1 rounded-md"
+                            className="text-slate-400 hover:text-red-500 transition p-1 rounded-md cursor-pointer"
+                            title="Remove item"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-[10px] text-gray-400 font-mono italic">{item.product.category}</p>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide mt-0.5">{item.product.category}</p>
                       </div>
 
-                      <div className="flex items-center justify-between pt-1">
-                        {/* Quantity inputs */}
-                        <div className="flex items-center gap-2 border border-gray-100 rounded-lg p-1 bg-gray-50 scale-90 -ml-1">
+                      <div className="flex items-center justify-between pt-2">
+                        {/* High-Contrast Quantity Selector */}
+                        <div className="flex items-center gap-1 border-2 border-slate-300 dark:border-navy-700 rounded-xl p-1 bg-slate-100 dark:bg-navy-950 shadow-inner">
                           <button
                             onClick={() => onUpdateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
-                            className="p-1 hover:text-navy-950 text-gray-400 rounded-md bg-white hover:bg-gray-100 transition cursor-pointer"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-navy-800 text-navy-950 dark:text-white border border-slate-300 dark:border-navy-700 shadow-xs hover:bg-gold-50 dark:hover:bg-gold-950/50 hover:border-gold-400 active:scale-95 transition cursor-pointer font-bold"
+                            aria-label="Decrease quantity"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
-                          <span className="text-xs font-semibold px-1 min-w-4 text-center font-mono">{item.quantity}</span>
+                          <span className="text-sm font-extrabold px-2 min-w-[28px] text-center font-mono text-navy-950 dark:text-white">{item.quantity}</span>
                           <button
                             onClick={() => {
                               if (item.quantity < item.product.stock) {
                                 onUpdateQuantity(item.product.id, item.quantity + 1);
                               }
                             }}
-                            className="p-1 hover:text-navy-950 text-gray-400 rounded-md bg-white hover:bg-gray-100 transition cursor-pointer"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-navy-800 text-navy-950 dark:text-white border border-slate-300 dark:border-navy-700 shadow-xs hover:bg-gold-50 dark:hover:bg-gold-950/50 hover:border-gold-400 active:scale-95 transition cursor-pointer font-bold"
+                            aria-label="Increase quantity"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                         </div>
-                        <span className="text-xs font-bold text-navy-900 font-sans">Rs.{itemPrice * item.quantity}</span>
+                        <span className="text-sm font-extrabold text-navy-950 dark:text-gold-400 font-sans">Rs.{itemPrice * item.quantity}</span>
                       </div>
                     </div>
                   </div>
@@ -190,7 +193,7 @@ export default function CartDrawer({
 
           {/* Pricing breakdowns overlay */}
           {cartItems.length > 0 && (
-            <div className="border-t border-gray-100 p-6 bg-gray-50 space-y-4 relative">
+            <div className="border-t-2 border-gray-200 dark:border-navy-800 p-6 bg-slate-50 dark:bg-navy-900/90 space-y-4 relative">
               {/* Floating Confetti Particle Burst Layer */}
               <div className="absolute inset-x-0 bottom-full h-0 pointer-events-none overflow-visible flex items-center justify-center">
                 {particles.map((p) => (
@@ -225,112 +228,114 @@ export default function CartDrawer({
               {!activeCoupon ? (
                 <form onSubmit={handleApplyCouponCode} className="flex gap-2">
                   <div className="relative flex-1">
-                    <Tag className="absolute left-3 top-3 w-3.5 h-3.5 text-gray-400" />
+                    <Tag className="absolute left-3 top-3 w-4 h-4 text-slate-500 dark:text-slate-400" />
                     <input
                       type="text"
                       placeholder="Enter code (MERIS10, FESTIVE20)"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 focus:border-gold-300 rounded-xl text-xs focus:ring-1 focus:ring-gold-400 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-navy-950 border-2 border-gray-300 dark:border-navy-700 focus:border-gold-500 rounded-xl text-xs text-navy-950 dark:text-white font-semibold placeholder:text-gray-400 focus:ring-2 focus:ring-gold-400/20 focus:outline-none"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-navy-900 hover:bg-gold-500 hover:text-navy-950 text-white font-display font-medium text-xs rounded-xl transition cursor-pointer font-semibold uppercase"
+                    className="px-4 py-2 bg-navy-950 dark:bg-gold-500 hover:bg-gold-500 hover:text-navy-950 dark:hover:bg-gold-400 text-white dark:text-navy-950 font-display font-bold text-xs rounded-xl transition cursor-pointer uppercase tracking-wider border border-navy-900 dark:border-gold-400"
                   >
                     Apply
                   </button>
                 </form>
               ) : (
-                <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 font-sans font-medium">
-                    <Check className="w-4 h-4 bg-emerald-500 text-white rounded-full p-0.5" />
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-300 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-sans font-semibold">
+                    <Check className="w-4 h-4 bg-emerald-600 text-white rounded-full p-0.5" />
                     <span>Coupon <span className="font-bold">{activeCoupon.code}</span> Applied!</span>
                   </div>
-                  <button onClick={handleRemoveCoupon} className="text-gray-400 hover:text-red-500 font-mono text-xs border border-gray-200 rounded px-1.5 hover:bg-white transition cursor-pointer">
+                  <button onClick={handleRemoveCoupon} className="text-slate-500 hover:text-red-500 font-mono text-xs border border-gray-300 dark:border-navy-700 rounded px-1.5 hover:bg-white dark:hover:bg-navy-800 transition cursor-pointer font-bold">
                     Remove
                   </button>
                 </div>
               )}
 
-              {couponError && <p className="text-[10px] text-red-500 font-sans text-left mt-0.5">{couponError}</p>}
-              {couponSuccess && <p className="text-[10px] text-emerald-500 font-sans text-left mt-0.5">{couponSuccess}</p>}
+              {couponError && <p className="text-xs font-semibold text-red-600 font-sans text-left mt-0.5">{couponError}</p>}
+              {couponSuccess && <p className="text-xs font-semibold text-emerald-600 font-sans text-left mt-0.5">{couponSuccess}</p>}
 
               {/* Delivery rate Selector option */}
-              <div className="space-y-1.5 text-left border-b border-gray-200/50 pb-2">
-                <span className="text-[9px] font-mono tracking-wider uppercase text-gray-400 font-medium">Delivery Speed</span>
+              <div className="space-y-2 text-left border-b-2 border-gray-200 dark:border-navy-800 pb-3">
+                <span className="text-xs font-display font-bold tracking-wider uppercase text-navy-950 dark:text-slate-200">Delivery Speed</span>
                 <div className="flex gap-3">
-                  <label className="flex-1 p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gold-300 flex items-center justify-between cursor-pointer">
-                    <span className="text-xs text-gray-700 flex items-center gap-1.5 font-medium">
+                  <label className={`flex-1 p-2.5 rounded-xl border-2 transition flex items-center justify-between cursor-pointer ${shippingMethod === 'standard' ? 'border-gold-500 bg-gold-50/60 dark:bg-gold-950/30' : 'border-gray-300 dark:border-navy-700 bg-white dark:bg-navy-950 hover:border-gray-400'}`}>
+                    <span className="text-xs text-navy-950 dark:text-white flex items-center gap-2 font-bold">
                       <input
                         type="radio"
                         checked={shippingMethod === 'standard'}
                         onChange={() => onUpdateShipping('standard')}
                         name="shippingOption"
-                        className="text-gold-500 focus:ring-gold-400 font-sans"
+                        className="w-4 h-4 text-gold-500 accent-gold-500 focus:ring-gold-400 cursor-pointer"
                       />
                       Standard
                     </span>
-                    <span className="text-[10px] font-bold font-mono text-gray-500">{shippingMethod === 'standard' && shippingCharges === 0 ? 'FREE' : 'By pincode'}</span>
+                    <span className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">{shippingMethod === 'standard' && shippingCharges === 0 ? 'FREE' : 'By pincode'}</span>
                   </label>
-                  <label className="flex-1 p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gold-300 flex items-center justify-between cursor-pointer">
-                    <span className="text-xs text-gray-700 flex items-center gap-1.5 font-medium">
+                  <label className={`flex-1 p-2.5 rounded-xl border-2 transition flex items-center justify-between cursor-pointer ${shippingMethod === 'express' ? 'border-gold-500 bg-gold-50/60 dark:bg-gold-950/30' : 'border-gray-300 dark:border-navy-700 bg-white dark:bg-navy-950 hover:border-gray-400'}`}>
+                    <span className="text-xs text-navy-950 dark:text-white flex items-center gap-2 font-bold">
                       <input
                         type="radio"
                         checked={shippingMethod === 'express'}
                         onChange={() => onUpdateShipping('express')}
                         name="shippingOption"
-                        className="text-gold-500 focus:ring-gold-400 font-sans"
+                        className="w-4 h-4 text-gold-500 accent-gold-500 focus:ring-gold-400 cursor-pointer"
                       />
                       Express
                     </span>
-                    <span className="text-[10px] font-bold font-mono text-gray-500">By pincode</span>
+                    <span className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">By pincode</span>
                   </label>
                 </div>
               </div>
 
-              {/* Recalculate billing values */}
-              <div className="space-y-1 pt-1 text-xs">
-                <div className="flex justify-between text-gray-500">
-                  <span>Bag Subtotal</span>
-                  <span className="font-mono">Rs.{subtotal}</span>
+              {/* High-Contrast Recalculate billing values */}
+              <div className="space-y-2 pt-1 text-xs">
+                <div className="flex justify-between items-center text-navy-950 dark:text-slate-100 font-semibold">
+                  <span className="text-slate-800 dark:text-slate-200 font-bold">Bag Subtotal</span>
+                  <span className="font-mono text-sm font-extrabold text-navy-950 dark:text-white">Rs.{subtotal}</span>
                 </div>
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-600 font-medium">
+                  <div className="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-bold">
                     <span>Coupon Discount Code</span>
-                    <span className="font-mono">-Rs.{couponDiscount}</span>
+                    <span className="font-mono text-sm font-extrabold">-Rs.{couponDiscount}</span>
                   </div>
                 )}
                 {bundleDiscount > 0 && (
-                  <div className="flex justify-between text-amber-600 font-medium">
+                  <div className="flex justify-between items-center text-amber-700 dark:text-amber-400 font-bold">
                     <span className="flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-gold-500 animate-pulse" />
+                      <Sparkles className="w-3.5 h-3.5 text-gold-500 animate-pulse" />
                       Automatic Bundle Offer Off
                     </span>
-                    <span className="font-mono">-Rs.{bundleDiscount}</span>
+                    <span className="font-mono text-sm font-extrabold">-Rs.{bundleDiscount}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-500">
-                  <span>GST / Tax (18% inclusive rule)</span>
-                  <span className="font-mono">Rs.{gstTax}</span>
+                <div className="flex justify-between items-center text-navy-950 dark:text-slate-100 font-semibold">
+                  <span className="text-slate-800 dark:text-slate-200 font-bold">GST / Tax (18% inclusive rule)</span>
+                  <span className="font-mono text-sm font-extrabold text-navy-950 dark:text-white">Rs.{gstTax}</span>
                 </div>
-                <div className="flex justify-between text-gray-500 pb-2">
-                  <span>Delivery Charges <span className="text-[10px]">(final by pincode, {billableWeightKg.toFixed(2)} kg)</span></span>
-                  <span className="font-mono">{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
+                <div className="flex justify-between items-center text-navy-950 dark:text-slate-100 font-semibold pb-2 border-b-2 border-gray-200 dark:border-navy-800">
+                  <span className="text-slate-800 dark:text-slate-200 font-bold">
+                    Delivery Charges <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">(final by pincode, {billableWeightKg.toFixed(2)} kg)</span>
+                  </span>
+                  <span className="font-mono text-sm font-extrabold text-navy-950 dark:text-white">{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-navy-950 border-t border-gray-200 pt-2.5">
-                  <span className="font-display uppercase tracking-wider">Total Cart Payable</span>
-                  <span className="font-mono text-base">Rs.{finalTotal}</span>
+                <div className="flex justify-between items-center text-sm font-bold text-navy-950 dark:text-white pt-2">
+                  <span className="font-display uppercase tracking-wider text-sm font-extrabold">Total Cart Payable</span>
+                  <span className="font-mono text-lg font-black text-navy-950 dark:text-gold-400">Rs.{finalTotal}</span>
                 </div>
               </div>
 
               {/* Final Proceed Checkout button */}
               <button
                 onClick={() => { onClose(); onProceedToCheckout(); }}
-                className="w-full py-3 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-semibold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow-lg shadow-gold-500/10"
+                className="w-full py-3.5 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-bold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-gold-500/10"
               >
                 <span>Proceed To Secure Checkout</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
           )}
