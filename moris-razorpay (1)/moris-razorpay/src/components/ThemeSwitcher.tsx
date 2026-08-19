@@ -7,7 +7,7 @@ export default function ThemeSwitcher() {
 
   useEffect(() => {
     // Read persisted theme
-    const saved = localStorage.getItem('meris_theme');
+    const saved = localStorage.getItem('radha_theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     if (saved === 'dark' || (!saved && systemPrefersDark)) {
@@ -23,11 +23,11 @@ export default function ThemeSwitcher() {
     if (theme === 'light') {
       setTheme('dark');
       document.documentElement.classList.add('dark');
-      localStorage.setItem('meris_theme', 'dark');
+      localStorage.setItem('radha_theme', 'dark');
     } else {
       setTheme('light');
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('meris_theme', 'light');
+      localStorage.setItem('radha_theme', 'light');
     }
   };
 

@@ -66,12 +66,37 @@ export interface Product {
   };
   seoTitle?: string;
   seoDescription?: string;
+  /** One customer-selectable option configured by the administrator. */
+  variation?: ProductVariation;
+}
+
+export type VariationType = 'color' | 'size';
+
+export interface ProductVariation {
+  type: VariationType;
+  values: string[];
+}
+
+export interface SelectedVariation {
+  type: VariationType;
+  value: string;
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  /** Saved with the cart and order so each variant stays distinct. */
+  selectedVariation?: SelectedVariation;
 }
+
+export const getCartItemKey = (item: Pick<CartItem, 'product' | 'selectedVariation'>) =>
+  `${item.product.id}::${item.selectedVariation?.type || ''}::${item.selectedVariation?.value || ''}`;
+
+export const formatSelectedVariation = (item: Pick<CartItem, 'selectedVariation'>) => {
+  if (!item.selectedVariation?.value) return '';
+  const label = item.selectedVariation.type === 'color' ? 'Color' : 'Size';
+  return `(${label}: ${item.selectedVariation.value})`;
+};
 
 export interface CustomerInfo {
   name: string;

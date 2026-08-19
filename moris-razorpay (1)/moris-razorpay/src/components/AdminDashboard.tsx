@@ -143,7 +143,7 @@ export default function AdminDashboard({
     });
 
     orders.forEach(o => {
-      const email = (o.accountEmail || o.customerInfo.email || 'guest@meris.com').toLowerCase();
+      const email = (o.accountEmail || o.customerInfo.email || 'guest@radhafashions.com').toLowerCase();
       const name = o.accountName || o.customerInfo.name || 'Guest Shopper';
       const address = `${o.customerInfo.address || ''}, ${o.customerInfo.pincode || ''}`;
       const phone = o.customerInfo.phone || '';
@@ -164,7 +164,7 @@ export default function AdminDashboard({
 
     // Recompute ordersCount and spent from orders array for accurate matching
     orders.forEach(o => {
-      const email = (o.accountEmail || o.customerInfo.email || 'guest@meris.com').toLowerCase();
+      const email = (o.accountEmail || o.customerInfo.email || 'guest@radhafashions.com').toLowerCase();
       if (customerMap[email]) {
         customerMap[email].ordersCount += 1;
         customerMap[email].spent += Number(o.total) || 0;
@@ -191,13 +191,13 @@ export default function AdminDashboard({
   // Form states: Settings Management
   const [smtpHost, setSmtpHost] = useState(cms.smtpHost || 'smtp.gmail.com');
   const [smtpPort, setSmtpPort] = useState(cms.smtpPort || 587);
-  const [smtpUser, setSmtpUser] = useState(cms.smtpUser || 'meriseshop.2025@gmail.com');
+  const [smtpUser, setSmtpUser] = useState(cms.smtpUser || 'admin@radhafashions.com');
   const [smtpPass, setSmtpPass] = useState(cms.smtpPass || 'lljl hfcn geye rdlt');
   const [whatsappNo, setWhatsappNo] = useState(cms.whatsappNumber || '+919108319758');
   const [shipCharge, setShipCharge] = useState(cms.shippingCharges || 80);
   const [delivCharge, setDelivCharge] = useState(cms.deliveryCharges || 2000);
   const [logoUrl, setLogoUrl] = useState(cms.logoUrl || '');
-  const [headline, setHeadline] = useState(cms.headline || 'MERIS ARTISANAL STUDIO');
+  const [headline, setHeadline] = useState(cms.headline || 'Radha Fashions ARTISANAL STUDIO');
   const [subheadline, setSubheadline] = useState(cms.subheadline || 'Premium Handcrafted Traditional Indian Toys');
   const [aboutText, setAboutText] = useState(cms.aboutText || '');
   const [contactEmail, setContactEmail] = useState(cms.contactEmail || '');
@@ -212,7 +212,7 @@ export default function AdminDashboard({
   const [rewardsEnabled, setRewardsEnabled] = useState(cms.rewardsEnabled !== false);
   const [codEnabled, setCodEnabled] = useState(cms.codEnabled !== false);
   const [upiEnabled, setUpiEnabled] = useState(cms.upiEnabled !== false);
-  const [emailOrderSubject, setEmailOrderSubject] = useState(cms.emailOrderSubject || 'Order Confirmation - MERIS E-SHOP');
+  const [emailOrderSubject, setEmailOrderSubject] = useState(cms.emailOrderSubject || 'Order Confirmation - Radha Fashions');
   const [emailOrderBody, setEmailOrderBody] = useState(cms.emailOrderBody || 'Thank you for shopping with us! Your order is currently under validation.');
   const [emailDispatchSubject, setEmailDispatchSubject] = useState(cms.emailDispatchSubject || 'Your Order Has Been Dispatched!');
   const [emailDispatchBody, setEmailDispatchBody] = useState(cms.emailDispatchBody || 'Great news! Your handcrafted traditional toys are on their way.');
@@ -439,7 +439,7 @@ export default function AdminDashboard({
         description: prodDesc,
         specifications: {},
         reviews: [],
-        brand: 'Meris Brand',
+        brand: 'Radha Fashions Brand',
         availability: prodStock > 5 ? 'in-stock' : prodStock > 0 ? 'low-stock' : 'out-of-stock',
         minimumAge: prodMinAge,
         maximumAge: prodMaxAge,
@@ -495,7 +495,7 @@ export default function AdminDashboard({
   const handleExportPDF = (table: string) => {
     const doc = new jsPDF();
     doc.setFont('Helvetica', 'bold');
-    doc.text(`MERIS BOUTIQUE - ${table.toUpperCase()} LEDGER`, 20, 20);
+    doc.text(`Radha Fashions BOUTIQUE - ${table.toUpperCase()} LEDGER`, 20, 20);
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(9);
     let y = 30;
@@ -587,7 +587,7 @@ export default function AdminDashboard({
             <Menu className="w-5 h-5 text-gray-500" />
           </button>
           <span className="font-display font-extrabold text-sm uppercase tracking-widest text-[#C5A021]">
-            Meris Admin Hub
+            Radha Fashions Admin Hub
           </span>
         </div>
 
@@ -1556,7 +1556,7 @@ export default function AdminDashboard({
                         <form onSubmit={handlePublishCoupon} className="space-y-4 font-sans">
                           <div>
                             <label className="block text-[10px] text-gray-400 font-mono mb-1">Coupon code</label>
-                            <input type="text" required value={newCoupCode} onChange={(e) => setNewCoupCode(e.target.value)} placeholder="e.g. MERISVIP" className="w-full px-3 py-2 border rounded-xl uppercase" />
+                            <input type="text" required value={newCoupCode} onChange={(e) => setNewCoupCode(e.target.value)} placeholder="e.g. Radha FashionsVIP" className="w-full px-3 py-2 border rounded-xl uppercase" />
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>

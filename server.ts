@@ -80,6 +80,7 @@ async function seedSupabaseDatabase() {
         brand: p.brand,
         availability: p.availability,
         vendor_id: p.vendorId || null,
+        variation: p.variation || null,
         specifications: { ...(p.specifications || {}), Weight: parseProductWeightKg(p) ? `${parseProductWeightKg(p)} kg` : p.specifications?.Weight }
       }));
       await supabase.from('products').insert(mapped);
@@ -272,7 +273,9 @@ async function syncProductsFromSupabase() {
     const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     const { data, error } = await supabase.from('products').select('*');
     if (!error && data && data.length > 0) {
-      const mapped = data.map(p => ({
+      const mapped = data.map(p => {
+        const localMatch = localProds.find((localProduct: any) => localProduct?.id === p.id);
+        return {
         id: p.id,
         sku: p.sku,
         name: p.name,
@@ -291,10 +294,12 @@ async function syncProductsFromSupabase() {
         reviews: Array.isArray(p.reviews) ? p.reviews : [],
         isNew: Boolean(p.is_new),
         isBestseller: Boolean(p.is_bestseller),
-        brand: p.brand || 'Meris Couture',
+        brand: p.brand || 'Radha Fashions',
         availability: p.availability || 'in-stock',
-        vendorId: p.vendor_id || null
-      }));
+        vendorId: p.vendor_id || null,
+        variation: p.variation || localMatch?.variation || undefined
+        };
+      });
 
       // Merge local products so newly listed local items aren't deleted on startup
       const supabaseIds = new Set(mapped.map(m => m.id));
@@ -320,9 +325,10 @@ async function syncProductsFromSupabase() {
           reviews: p.reviews || [],
           is_new: p.isNew || false,
           is_bestseller: p.isBestseller || false,
-          brand: p.brand || 'MERIS',
+          brand: p.brand || 'Radha Fashions',
           availability: p.availability || 'in-stock',
-          vendor_id: p.vendorId || null
+          vendor_id: p.vendorId || null,
+          variation: p.variation || null
         }));
         await supabase.from('products').upsert(localMapped);
       }
@@ -431,7 +437,7 @@ function readAdminConfig() {
   }
   return {
     username: process.env.ADMIN_USERNAME || 'admin',
-    password: defaultPass || 'meriseshop_admin_secure_2026'
+    password: defaultPass || 'radha@123'
   };
 }
 
@@ -859,9 +865,10 @@ app.get('/api/catalog/products', async (req, res) => {
             reviews: Array.isArray(p.reviews) ? p.reviews : [],
             isNew: Boolean(p.is_new),
             isBestseller: Boolean(p.is_bestseller),
-            brand: p.brand || 'Meris Couture',
+            brand: p.brand || 'Radha Fashions',
             availability: p.availability || 'in-stock',
-            vendorId: p.vendor_id || null
+            vendorId: p.vendor_id || null,
+            variation: p.variation || localMatch?.variation || undefined
           };
         });
 
@@ -912,9 +919,10 @@ app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb'
           reviews: p.reviews || [],
           is_new: p.isNew || false,
           is_bestseller: p.isBestseller || false,
-          brand: p.brand || 'MERIS',
+          brand: p.brand || 'Radha Fashions',
           availability: p.availability || 'in-stock',
-          vendor_id: p.vendorId || null
+          vendor_id: p.vendorId || null,
+          variation: p.variation || null
         }));
         
         const { error: subErr } = await supabase.from('products').upsert(mapped);
@@ -1260,7 +1268,7 @@ app.post('/api/gemini/recommendations', rateLimiter(20, 60 * 1000), async (req, 
     const viewedContext = allProducts?.filter((p: any) => recentlyViewedIds?.includes(p.id))?.map((p: any) => p.name).join(', ') || 'None';
     const catalogSummary = allProducts?.map((p: any) => `ID: ${p.id}, Sku: ${p.sku}, Name: ${p.name}, Price: ₹${p.price}, Category: ${p.category}`).join('\n') || '';
 
-    const systemPrompt = `You are the Virtual Boutique Concierge at "MERIS E-SHOP", an ultra-premium, family-friendly e-commerce store sharing handcrafted gifts, toys, stencils, and leather bags.
+    const systemPrompt = `You are the Virtual Boutique Concierge at "Radha Fashions", an ultra-premium, family-friendly e-commerce store sharing handcrafted gifts, toys, stencils, and leather bags.
 Analyze user's shopping context and recommend EXACTLY 3 complementary products from the store catalogue. Write a luxurious, friendly, high-society commentary (1-2 sentences) about why these are perfect additions, matching their style.
 
 Strict Requirements:
@@ -1360,7 +1368,7 @@ app.post('/api/gemini/search', rateLimiter(20, 60 * 1000), async (req, res) => {
   try {
     const categoriesContext = allCategories?.map((c: any) => `${c.name} (slug: ${c.id})`).join(', ') || '';
 
-    const systemPrompt = `You are the smart search dispatcher for MERIS E-SHOP.
+    const systemPrompt = `You are the smart search dispatcher for Radha Fashions.
 Users search for items using casual phrases (e.g. "gift for my nephew" or "laser designs for holi" or "something to carry cosmetics").
 Your goal is to parse their intention and return:
 1. suggestedCategorySlug: The matched category slug from our list that best fits (or empty string if none).
@@ -1489,7 +1497,7 @@ function createSmtpTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.SMTP_USER || 'meriseshop.2025@gmail.com';
+  const user = process.env.SMTP_USER || 'admin@radhafashions.com';
   const pass = process.env.SMTP_PASS || 'lljl hfcn geye rdlt';
 
   return nodemailer.createTransport({
@@ -1508,11 +1516,11 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   const recipient = sanitizeEmail(to);
   if (!recipient) return false;
 
-  // 1. Try Resend HTTP REST API (Primary for Cloud / Custom Domain orders@orders.meriseshop.com - Port 443)
+  // 1. Try Resend HTTP REST API (Primary for Cloud / Custom Domain admin@radhafashions.com - Port 443)
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
-      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'orders@orders.meriseshop.com').trim();
+      const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
+      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.com').trim();
       let fromFormatted = rawFrom;
       if (rawFrom.includes('onboarding@resend.dev')) {
         fromFormatted = 'onboarding@resend.dev';
@@ -1547,8 +1555,8 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   // 2. Try Brevo v3 HTTP REST API (Secondary if BREVO_API_KEY configured - Fast, Reliable Port 443)
   if (isConfigured(process.env.BREVO_API_KEY)) {
     try {
-      const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'orders@orders.meriseshop.com').trim();
+      const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
+      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.com').trim();
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -1577,8 +1585,8 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   // 3. Fallback: Nodemailer SMTP
   try {
     const transporter = createSmtpTransporter();
-    const fromName = process.env.SMTP_FROM_NAME || 'Meris E-Shop';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'orders@orders.meriseshop.com';
+    const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'admin@radhafashions.com';
 
     await transporter.sendMail({
       from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
@@ -1670,7 +1678,7 @@ async function sendBookingEmail(order: any) {
     }
     const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || 'Valued Customer', 100);
     const orderNum = order.orderNumber || order.id || 'ORDER';
-    const subject = `Order Confirmation - Meris E-Shop (#${orderNum})`;
+    const subject = `Order Confirmation - Radha Fashions (#${orderNum})`;
 
     // Generate beautiful line items HTML
     let itemsHtml = '';
@@ -1678,6 +1686,9 @@ async function sendBookingEmail(order: any) {
       order.items.forEach((item: any) => {
         const productObj = item.product || item;
         const productName = productObj.name || 'Handcrafted Gift';
+        const variation = item.selectedVariation?.value
+          ? ` (${item.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${item.selectedVariation.value})`
+          : '';
         const qty = item.quantity || 1;
         const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
         const imageUrl = (Array.isArray(productObj.images) && productObj.images[0])
@@ -1690,7 +1701,7 @@ async function sendBookingEmail(order: any) {
               <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" />
             </td>
             <td style="padding: 12px 8px; font-size: 13px; color: #0f172a; font-weight: 500;">
-              ${productName}
+              ${productName}${variation}
               <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Qty: ${qty} × ₹${price}</div>
             </td>
             <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
@@ -1721,7 +1732,7 @@ async function sendBookingEmail(order: any) {
     
     <!-- Luxury Premium Header -->
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
-      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">MERIS</h1>
+      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
       <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
     </div>
 
@@ -1729,7 +1740,7 @@ async function sendBookingEmail(order: any) {
     <div style="padding: 32px 24px 20px 24px;">
       <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
-        Thank you for choosing <strong>Meris E-Shop</strong>. We are thrilled to confirm that your artisanal booking is officially registered under our workshop ledger. Our master craftspeople are preparing your order right now inside our certified cottage works.
+        Thank you for choosing <strong>Radha Fashions</strong>. We are thrilled to confirm that your artisanal booking is officially registered under our workshop ledger. Our master craftspeople are preparing your order right now inside our certified cottage works.
       </p>
     </div>
 
@@ -1805,10 +1816,10 @@ async function sendBookingEmail(order: any) {
     <!-- Premium Footer Note -->
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
       <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0; line-height: 1.5;">
-        Your dispatch tracking number is active. You can track this booking live in your Meris Account Dashboard anytime.
+        Your dispatch tracking number is active. You can track this booking live in your Radha Fashions Dashboard anytime.
       </p>
       <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
-        Meris Artisanal Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Studio Co. • Handcrafted in Tamil Nadu Workshops, India
       </p>
     </div>
 
@@ -1873,14 +1884,17 @@ async function sendAdminVendorNotificationEmail(order: any) {
     const customerAddress = sanitizeString(order.customerInfo?.address || '', 300);
     const customerPincode = sanitizeString(order.customerInfo?.pincode || '', 10);
 
-    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || 'meriseshop.2025@gmail.com');
-    const subject = `New Order Received - Meris E-Shop (#${orderNum})`;
+    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || 'admin@radhafashions.com');
+    const subject = `New Order Received - Radha Fashions (#${orderNum})`;
 
     let itemsHtml = '';
     if (order.items && Array.isArray(order.items)) {
       order.items.forEach((item: any) => {
         const productObj = item.product || item;
         const productName = productObj.name || 'Handcrafted Product';
+        const variation = item.selectedVariation?.value
+          ? ` (${item.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${item.selectedVariation.value})`
+          : '';
         const qty = item.quantity || 1;
         const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
         const vendorId = productObj.vendorId || item.vendorId || 'Store Direct';
@@ -1888,7 +1902,7 @@ async function sendAdminVendorNotificationEmail(order: any) {
         itemsHtml += `
           <tr style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 10px; font-size: 13px; color: #0f172a; font-weight: 500;">
-              ${productName}
+              ${productName}${variation}
               <div style="font-size: 11px; color: #64748b;">Listing / Vendor: ${vendorId} | Qty: ${qty} × ₹${price}</div>
             </td>
             <td style="padding: 10px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
@@ -1915,7 +1929,7 @@ async function sendAdminVendorNotificationEmail(order: any) {
     
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 24px; text-align: center; border-bottom: 4px solid #10b981;">
       <h1 style="color: #10b981; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px;">NEW ORDER ALERT</h1>
-      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Meris E-Shop Store & Listing Notification</p>
+      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Radha Fashions Store & Listing Notification</p>
     </div>
 
     <div style="padding: 24px;">
@@ -1952,7 +1966,7 @@ async function sendAdminVendorNotificationEmail(order: any) {
     </div>
 
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
-      Meris Artisanal Studio Co. Automated Merchant Dispatch Notification
+      Radha Fashions Studio Co. Automated Merchant Dispatch Notification
     </div>
 
   </div>
@@ -1979,7 +1993,7 @@ async function sendAdminVendorNotificationEmail(order: any) {
 
     for (const vEmail of vendorEmails) {
       if (vEmail !== adminEmail) {
-        await dispatchLiveEmail(vEmail, `Listing Order Alert - Meris E-Shop (#${orderNum})`, htmlContent);
+        await dispatchLiveEmail(vEmail, `Listing Order Alert - Radha Fashions (#${orderNum})`, htmlContent);
         console.log(`[Order Service] Dispatched listing order alert to vendor ${vEmail} for #${orderNum}`);
       }
     }
@@ -1993,8 +2007,8 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
   const customerName = order.customerInfo?.name || 'Valued Customer';
   const isApproved = type === 'approved';
   const subject = isApproved 
-    ? `💳 Meris E-Shop: Payment Approved - Order #${order.orderNumber}`
-    : `❌ Meris E-Shop: Payment Verification Failed - Order #${order.orderNumber}`;
+    ? `💳 Radha Fashions: Payment Approved - Order #${order.orderNumber}`
+    : `❌ Radha Fashions: Payment Verification Failed - Order #${order.orderNumber}`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -2008,7 +2022,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05);">
     
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? '#10b981' : '#ef4444'};">
-      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">MERIS</h1>
+      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
       <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
     </div>
 
@@ -2062,10 +2076,10 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
 
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
       <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0; line-height: 1.5;">
-        You can track your order status live in your Meris Account Dashboard at any time.
+        You can track your order status live in your Radha Fashions Dashboard at any time.
       </p>
       <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
-        Meris Artisanal Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Studio Co. • Handcrafted in Tamil Nadu Workshops, India
       </p>
     </div>
 
@@ -2124,7 +2138,7 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
   let badge = '';
   
   if (alertType === 'booking') {
-    message = `💚 *MERIS ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nWe are absolutely delighted to confirm that your booking *#${order.orderNumber}* has been successfully secured in our workshop ledger! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹${order.total}*\nMethod: *${order.paymentMethod}*\nEst. Shipping: *${order.shippingMethod === 'express' ? 'BlueDart Express (2-3 Days)' : 'Standard Ground'}*\n\nOur master craftspeople are preparing your items. 🪵🧑‍🎨\n\n📍 *Track Live inside your Account Dashboard*:\n👉 ${trackLink}\n\nThank you for supporting traditional handmade toys and premium local gifts. 💚`;
+    message = `💚 *Radha Fashions ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nWe are absolutely delighted to confirm that your booking *#${order.orderNumber}* has been successfully secured in our workshop ledger! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹${order.total}*\nMethod: *${order.paymentMethod}*\nEst. Shipping: *${order.shippingMethod === 'express' ? 'BlueDart Express (2-3 Days)' : 'Standard Ground'}*\n\nOur master craftspeople are preparing your items. 🪵🧑‍🎨\n\n📍 *Track Live inside your Account Dashboard*:\n👉 ${trackLink}\n\nThank you for supporting traditional handmade toys and premium local gifts. 💚`;
     badge = 'BOOKING SECURED';
   } else if (alertType === 'status_update') {
     const statusTitles: Record<string, string> = {
@@ -2134,10 +2148,10 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
       'delivered': 'Delivered Safely to Your Doorstep 🏡🎁'
     };
     const currentStatusText = statusTitles[order.status] || order.status.toUpperCase();
-    message = `💚 *MERIS ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nThere is a new dispatch update regarding your booking *#${order.orderNumber}*!\n\n📦 *Live Status*: *${currentStatusText}*\n\nYour artisanal package was updated in our ledger just now. Check full tracking coordinates live on our workshop map:\n👉 ${trackLink}\n\nLet us know if you need any support! ✨`;
+    message = `💚 *Radha Fashions ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nThere is a new dispatch update regarding your booking *#${order.orderNumber}*!\n\n📦 *Live Status*: *${currentStatusText}*\n\nYour artisanal package was updated in our ledger just now. Check full tracking coordinates live on our workshop map:\n👉 ${trackLink}\n\nLet us know if you need any support! ✨`;
     badge = 'DISPATCH NOTICE';
   } else if (alertType === 'refund_requested') {
-    message = `💚 *MERIS ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nYour refund ticket for order *#${order.orderNumber}* has been securely registered with our customer care ledger.\n\n🎟️ *Refund Details*:\nItem: *${extraData?.itemName || 'Artisanal Product'}*\nReason: _"${extraData?.reason || 'No description provided'}"_ \nStatus: *Under Artisan Review* 🔍\n\nOur audit team will review and approve this within 48 business hours. We value your feedback immensely!\n\n👉 Track Ticket: ${trackLink}`;
+    message = `💚 *Radha Fashions ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nYour refund ticket for order *#${order.orderNumber}* has been securely registered with our customer care ledger.\n\n🎟️ *Refund Details*:\nItem: *${extraData?.itemName || 'Artisanal Product'}*\nReason: _"${extraData?.reason || 'No description provided'}"_ \nStatus: *Under Artisan Review* 🔍\n\nOur audit team will review and approve this within 48 business hours. We value your feedback immensely!\n\n👉 Track Ticket: ${trackLink}`;
     badge = 'REFUND TICKET';
   }
 
@@ -2215,7 +2229,7 @@ async function sendSMSAlert(order: any) {
   const recipientPhone = normalizePhone(order.customerInfo?.phone);
   if (!recipientPhone) return;
 
-  const message = `Meris E-Shop: Order #${order.orderNumber} placed successfully! Total: ₹${order.total}. Est. Delivery: ${order.shippingMethod === 'express' ? 'BlueDart Express Air (2-3 Days)' : 'Standard Ground'}. Live tracking: ${process.env.APP_URL || 'http://localhost:3000'}/?track=${order.orderNumber}`;
+  const message = `Radha Fashions: Order #${order.orderNumber} placed successfully! Total: ₹${order.total}. Est. Delivery: ${order.shippingMethod === 'express' ? 'BlueDart Express Air (2-3 Days)' : 'Standard Ground'}. Live tracking: ${process.env.APP_URL || 'http://localhost:3000'}/?track=${order.orderNumber}`;
 
   if (realNotificationsEnabled() && isConfigured(process.env.TWILIO_ACCOUNT_SID) && isConfigured(process.env.TWILIO_AUTH_TOKEN) && isConfigured(process.env.TWILIO_SMS_NUMBER)) {
     try {
@@ -2346,11 +2360,11 @@ function smtpEmailConfigured(): boolean {
 }
 
 async function dispatchOtpEmail(email: string, code: string): Promise<void> {
-  const subject = 'Your Meris verification code';
+  const subject = 'Your Radha Fashions verification code';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
-      <h2 style="margin: 0 0 12px; color: #0f172a;">Meris verification code</h2>
-      <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Meris account. It is valid for 5 minutes.</p>
+      <h2 style="margin: 0 0 12px; color: #0f172a;">Radha Fashions verification code</h2>
+      <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Radha Fashions account. It is valid for 5 minutes.</p>
       <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
       <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
     </div>
@@ -2664,24 +2678,24 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     } catch { /* ignore */ }
 
     // Build the welcome email
-    const subject = `Welcome to MERIS E-SHOP - Happy Shopping!`;
+    const subject = `Welcome to Radha Fashions - Happy Shopping!`;
     const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Welcome to MERIS</title>
+  <title>Welcome to Radha Fashions</title>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px 0;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden;">
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
-      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;">MERIS</h1>
+      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;">Radha Fashions</h1>
       <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Handcrafted Toys & Premium Gifts</p>
     </div>
     <div style="padding: 32px 24px;">
       <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">Thanks for choosing us, ${name}!</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-        We are absolutely thrilled to welcome you to the MERIS family! Your account has been securely created.
+        We are absolutely thrilled to welcome you to the Radha Fashions family! Your account has been securely created.
       </p>
       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 12px;">
         Explore our curated collection of developmental craft toys, customized stencils, and premium handcrafted gifts. We hope you enjoy browsing and shopping our unique heritage crafts.
@@ -2692,7 +2706,7 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     </div>
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
       <p style="font-size: 11px; color: #94a3b8; margin: 0;">
-        Meris Artisanal Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Studio Co. • Handcrafted in Tamil Nadu Workshops, India
       </p>
     </div>
   </div>
@@ -3496,12 +3510,12 @@ app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
         <h2 style="color: #0f172a; margin-top: 0;">Live Email Dispatch Successful!</h2>
-        <p style="color: #475569;">Your server at <strong>https://meris-eshop-production.up.railway.app</strong> successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
+        <p style="color: #475569;">Your server at <strong>https://radhafashions.com</strong> successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
         <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Dispatched at ${new Date().toLocaleString()}</p>
       </div>
     `;
 
-    const sent = await dispatchLiveEmail(targetEmail, '🧪 Meris E-Shop: Live Email Dispatch Test', html);
+    const sent = await dispatchLiveEmail(targetEmail, '🧪 Radha Fashions: Live Email Dispatch Test', html);
     if (sent) {
       res.json({ success: true, message: `Test email successfully delivered to ${targetEmail}!` });
     } else {
@@ -3521,24 +3535,24 @@ app.get('/sitemap.xml', async (req, res) => {
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://meriseshop.com/</loc>
+    <loc>https://radhafashions.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://meriseshop.com/category/toys</loc>
+    <loc>https://radhafashions.com/category/toys</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meriseshop.com/category/wood-gifts</loc>
+    <loc>https://radhafashions.com/category/wood-gifts</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`;
     products.forEach((p: any) => {
       xml += `
   <url>
-    <loc>https://meriseshop.com/product/${p.id}</loc>
+    <loc>https://radhafashions.com/product/${p.id}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`;
@@ -3557,7 +3571,7 @@ app.get('/robots.txt', (req, res) => {
   res.status(200).send(`User-agent: *
 Allow: /
 Disallow: /api/admin/
-Sitemap: https://meriseshop.com/sitemap.xml
+Sitemap: https://radhafashions.com/sitemap.xml
 `);
 });
 
@@ -3590,13 +3604,18 @@ app.post('/api/gemini/invoice', async (req, res) => {
   const ai = getGeminiClient();
 
   const customerName = order?.customerInfo?.name || 'Customer';
-  const itemNames = order?.items?.map((it: any) => `${it.product.name} (x${it.quantity})`).join(', ') || 'Items';
+  const itemNames = order?.items?.map((it: any) => {
+    const variation = it.selectedVariation?.value
+      ? ` (${it.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${it.selectedVariation.value})`
+      : '';
+    return `${it.product.name}${variation} (x${it.quantity})`;
+  }).join(', ') || 'Items';
 
   const getLocalInvoiceFallback = () => {
     const delivery = order.shippingMethod === 'express' ? '3 days via BlueDart express' : '5-7 business days';
     return {
       greetingText: `Dear ${customerName}, we are absolutely thrilled to secure your order representing India's brilliant cottage craftsmen! Our local woodturners and master artisans are hand-inspecting and packing your ${itemNames} right now inside our Tamil Nadu workshop. Your support fuels genuine livelihoods.`,
-      invoiceVerificationCode: `MERIS-CRN-${Math.floor(100000 + Math.random() * 900000)}`,
+      invoiceVerificationCode: `RADHA-CRN-${Math.floor(100000 + Math.random() * 900000)}`,
       estimatedDeliveryDate: `Approx. delivery in ${delivery}`,
     };
   };
@@ -3612,20 +3631,20 @@ app.post('/api/gemini/invoice', async (req, res) => {
   }
 
   try {
-    const prompt = `Write a premium, heartwarming customer confirmation letter from the founders of MERIS E-SHOP.
+    const prompt = `Write a premium, heartwarming customer confirmation letter from the founders of Radha Fashions.
 Customer Name: ${customerName}
 Purchased Items: ${itemNames}
 Total Cart Amount: ₹${order?.total}
 Shipping Mode: ${order?.shippingMethod}
 
 Tone: Grateful, extremely warm, storytelling-focused, emphasizing local craftsmanship, hand-finished quality control, and standard delivery timelines.
-Also, generate a 12-character unique e-receipt serial verification hash starting with 'MERIS-'.
+Also, generate a 12-character unique e-receipt serial verification hash starting with 'Radha Fashions-'.
 Finally, approximate an elegant delivery date estimate.
 
 JSON Output Schema:
 {
   "greetingText": "The founders appreciation story letter text",
-  "invoiceVerificationCode": "MERIS-XXXXX",
+  "invoiceVerificationCode": "Radha Fashions-XXXXX",
   "estimatedDeliveryDate": "Elegant text format of delivery"
 }`;
 
@@ -3750,7 +3769,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 if (!process.env.VERCEL) {
   async function initializeServer() {
     const distIndexHtml = path.join(process.cwd(), 'dist', 'index.html');
-    const isProductionBuild = fs.existsSync(distIndexHtml) || process.env.NODE_ENV === 'production';
+    const isProductionBuild = process.env.NODE_ENV === 'production';
 
     if (isProductionBuild && fs.existsSync(distIndexHtml)) {
       const distPath = path.join(process.cwd(), 'dist');
@@ -3795,7 +3814,7 @@ if (!process.env.VERCEL) {
     }
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`MERIS E-SHOP Full-Stack Server listening on http://localhost:${PORT}`);
+      console.log(`Radha Fashions Full-Stack Server listening on http://localhost:${PORT}`);
     });
   }
 

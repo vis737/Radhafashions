@@ -57,7 +57,7 @@ export default function AdminSecurityCenter() {
   const exportSecurityReport = () => {
     const report = `
       ==================================================
-      MERIS SECURITY COMPLIANCE REPORT (OWASP Top 10 & ASVS)
+      Radha Fashions SECURITY COMPLIANCE REPORT (OWASP Top 10 & ASVS)
       Generated on: ${new Date().toLocaleString()}
       ==================================================
       Security Health Score: ${stats.securityScore}/100
@@ -73,7 +73,7 @@ export default function AdminSecurityCenter() {
     const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'meris_security_audit_report.txt';
+    link.download = 'radha_security_audit_report.txt';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

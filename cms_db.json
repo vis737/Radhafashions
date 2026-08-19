@@ -1,15 +1,10 @@
 {
-  "headline": "M E R I S",
-  "aboutText": "Premium organic wooden toys and custom stencils handcrafted by rural artisans.",
-  "codEnabled": true,
-  "upiEnabled": true,
-  "subheadline": "BOUTIQUE COTTAGE CRAFTS",
-  "contactEmail": "meriseshop.2025@gmail.com",
-  "contactPhone": "+91 93842 92229",
-  "privacyPolicy": "Your personal data (Name, Email, Address) is transmitted through full-stack secured channels. We use client local persistence for speedy loading times and never sell user profiling sheets to marketing aggregates.",
-  "contactAddress": "5/339, Fathima Road, nager, Azhagappapuram, Tamil Nadu 629401",
-  "rewardsEnabled": false,
-  "maintenanceMode": false,
-  "termsConditions": "All prices listed on MERIS E-SHOP are inclusive of standard 18% GST rules. Returns have a 7-day windows and of course must remain spotless inside initial package cases.",
-  "aiConciergeEnabled": true
+  "headline": "Timeless Ethnic Elegance, Crafted With Love",
+  "aboutText": "Radha Fashions was born from a deep love of Indian heritage and craftsmanship. We curate handpicked ethnic wear — from silk sarees and embroidered lehengas to everyday kurtis and statement jewellery — sourced directly from master weavers and artisans across India. Every piece in our collection tells a story of tradition, artistry, and timeless beauty.",
+  "subheadline": "Discover exquisite sarees, lehengas, kurtis and curated ethnic collections — woven with tradition, worn with pride.",
+  "contactEmail": "admin@radhafashions.com",
+  "contactPhone": "+91 91083 19758",
+  "privacyPolicy": "Your personal data (Name, Email, Address) is transmitted through fully secured channels. We use client-side local persistence for fast loading and never share your data with third parties.",
+  "contactAddress": "Radha Fashions, Tamil Nadu, India",
+  "termsConditions": "All prices at Radha Fashions are inclusive of applicable GST. Returns are accepted within 7 days of delivery provided items are in original, unworn condition with tags intact."
 }

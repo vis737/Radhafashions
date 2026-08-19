@@ -72,9 +72,9 @@ export default function AdminPaymentsTab({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-navy-900 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between shadow-lg text-white">
+      <div className="bg-gray-900 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between shadow-lg text-white">
         <div className="flex items-center">
-          <ShieldCheck className="w-10 h-10 text-[#C5A021] mr-4" />
+          <ShieldCheck className="w-10 h-10 text-[#D4648A] mr-4" />
           <div>
             <h1 className="text-3xl font-bold text-white mb-1">UPI Payment Verification Center</h1>
             <p className="text-gray-300">Review and verify manual UPI payment submissions.</p>
@@ -93,7 +93,7 @@ export default function AdminPaymentsTab({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm relative overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm relative overflow-hidden">
           {pendingOrders.length > 0 && (
             <div className="absolute top-0 right-0 w-3 h-3 m-4 rounded-full bg-amber-500 animate-ping"></div>
           )}
@@ -108,7 +108,7 @@ export default function AdminPaymentsTab({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-mono text-gray-500 dark:text-gray-400 mb-1">APPROVED TODAY</p>
@@ -120,7 +120,7 @@ export default function AdminPaymentsTab({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-mono text-gray-500 dark:text-gray-400 mb-1">REJECTED THIS MONTH</p>
@@ -134,13 +134,13 @@ export default function AdminPaymentsTab({
       </div>
 
       {/* Tabs */}
-      <div className="bg-white dark:bg-navy-900 rounded-3xl p-2 flex flex-wrap gap-2 border border-gray-100 dark:border-navy-700">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl p-2 flex flex-wrap gap-2 border border-gray-100 dark:border-gray-700">
         <button
           onClick={() => setActiveTab('pending')}
           className={`flex-1 min-w-[120px] py-3 px-4 rounded-2xl text-sm font-bold transition-all flex justify-center items-center ${
             activeTab === 'pending'
               ? 'bg-amber-500 text-white shadow-md'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-navy-800'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
           <Clock className="w-4 h-4 mr-2" /> Pending ({pendingOrders.length})
@@ -150,7 +150,7 @@ export default function AdminPaymentsTab({
           className={`flex-1 min-w-[120px] py-3 px-4 rounded-2xl text-sm font-bold transition-all flex justify-center items-center ${
             activeTab === 'approved'
               ? 'bg-emerald-500 text-white shadow-md'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-navy-800'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
           <CheckCircle className="w-4 h-4 mr-2" /> Approved ({approvedOrders.length})
@@ -160,7 +160,7 @@ export default function AdminPaymentsTab({
           className={`flex-1 min-w-[120px] py-3 px-4 rounded-2xl text-sm font-bold transition-all flex justify-center items-center ${
             activeTab === 'rejected'
               ? 'bg-red-500 text-white shadow-md'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-navy-800'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
           <XCircle className="w-4 h-4 mr-2" /> Rejected ({rejectedOrders.length})
@@ -168,13 +168,13 @@ export default function AdminPaymentsTab({
       </div>
 
       {/* Content Area */}
-      <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-6 shadow-sm min-h-[400px]">
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-sm min-h-[400px]">
         {/* PENDING TAB */}
         {activeTab === 'pending' && (
           <div className="space-y-6">
             {pendingOrders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
-                <ShieldCheck className="w-16 h-16 text-gray-300 dark:text-navy-700 mb-4" />
+                <ShieldCheck className="w-16 h-16 text-gray-300 dark:text-gray-700 mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">All caught up!</h3>
                 <p>There are no pending UPI payments to verify.</p>
               </div>
@@ -210,9 +210,9 @@ export default function AdminPaymentsTab({
                           <p className="text-sm text-gray-600 dark:text-gray-300">{order.customerInfo?.phone || 'N/A'}</p>
                         </div>
                         
-                        <div className="bg-white dark:bg-navy-950 p-3 rounded-xl border border-gray-200 dark:border-navy-700">
+                        <div className="bg-white dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
                           <p className="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1">SUBMITTED UPI TXN ID</p>
-                          <p className="font-mono font-bold text-gray-900 dark:text-[#C5A021]">
+                          <p className="font-mono font-bold text-gray-900 dark:text-[#D4648A]">
                             {order.upiTxnId || 'Not provided'}
                           </p>
                         </div>
@@ -230,7 +230,7 @@ export default function AdminPaymentsTab({
                             href={order.upiScreenshot} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="relative group rounded-xl overflow-hidden border-2 border-gray-200 dark:border-navy-700 block w-full max-w-[200px]"
+                            className="relative group rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 block w-full max-w-[200px]"
                           >
                             <img 
                               src={order.upiScreenshot} 
@@ -242,7 +242,7 @@ export default function AdminPaymentsTab({
                             </div>
                           </a>
                         ) : (
-                          <div className="w-full max-w-[200px] aspect-video bg-gray-100 dark:bg-navy-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-navy-600 flex flex-col items-center justify-center p-4 text-center">
+                          <div className="w-full max-w-[200px] aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center p-4 text-center">
                             <AlertCircle className="w-6 h-6 text-gray-400 mb-2" />
                             <p className="text-xs text-gray-500 dark:text-gray-400">No payment screenshot uploaded</p>
                           </div>
@@ -281,7 +281,7 @@ export default function AdminPaymentsTab({
                             value={rejectionReason[order.id] || ''}
                             onChange={(e) => setRejectionReason({ ...rejectionReason, [order.id]: e.target.value })}
                             placeholder="e.g., Transaction ID not found, screenshot unclear, amount mismatch..."
-                            className="w-full bg-white dark:bg-navy-950 border border-red-200 dark:border-red-500/30 rounded-xl p-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white"
+                            className="w-full bg-white dark:bg-gray-950 border border-red-200 dark:border-red-500/30 rounded-xl p-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white"
                             rows={2}
                           />
                           <div className="flex gap-3">
@@ -293,7 +293,7 @@ export default function AdminPaymentsTab({
                             </button>
                             <button
                               onClick={() => handleRejectClick(order.id)}
-                              className="px-4 py-2 bg-gray-200 dark:bg-navy-700 hover:bg-gray-300 dark:hover:bg-navy-600 text-gray-800 dark:text-gray-200 rounded-xl font-medium transition-colors"
+                              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-xl font-medium transition-colors"
                             >
                               Cancel
                             </button>
@@ -315,7 +315,7 @@ export default function AdminPaymentsTab({
               <div className="text-center py-12 text-gray-500">No approved payments found.</div>
             ) : (
               <table className="w-full text-left text-sm">
-                <thead className="text-gray-500 dark:text-gray-400 font-mono text-xs border-b border-gray-100 dark:border-navy-700">
+                <thead className="text-gray-500 dark:text-gray-400 font-mono text-xs border-b border-gray-100 dark:border-gray-700">
                   <tr>
                     <th className="pb-3 font-medium">DATE</th>
                     <th className="pb-3 font-medium">ORDER#</th>
@@ -325,9 +325,9 @@ export default function AdminPaymentsTab({
                     <th className="pb-3 font-medium">STATUS</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-navy-800">
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                   {approvedOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-navy-800/50">
+                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="py-4 text-gray-500 dark:text-gray-400 text-xs">
                         {new Date(order.date || new Date()).toLocaleDateString()}
                       </td>
@@ -363,7 +363,7 @@ export default function AdminPaymentsTab({
               <div className="text-center py-12 text-gray-500">No rejected payments found.</div>
             ) : (
               <table className="w-full text-left text-sm">
-                <thead className="text-gray-500 dark:text-gray-400 font-mono text-xs border-b border-gray-100 dark:border-navy-700">
+                <thead className="text-gray-500 dark:text-gray-400 font-mono text-xs border-b border-gray-100 dark:border-gray-700">
                   <tr>
                     <th className="pb-3 font-medium">DATE</th>
                     <th className="pb-3 font-medium">ORDER#</th>
@@ -372,9 +372,9 @@ export default function AdminPaymentsTab({
                     <th className="pb-3 font-medium">REJECTION REASON</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-navy-800">
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                   {rejectedOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-navy-800/50">
+                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="py-4 text-gray-500 dark:text-gray-400 text-xs">
                         {new Date(order.date || new Date()).toLocaleDateString()}
                       </td>

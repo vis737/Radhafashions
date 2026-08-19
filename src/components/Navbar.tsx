@@ -6,7 +6,7 @@ import { CartItem, Product } from '../types';
 import { CATEGORIES } from '../utils/mockData';
 import ThemeSwitcher from './ThemeSwitcher';
 
-const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
+const RadhaLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
   <svg
     className={className}
     viewBox="0 0 200 200"
@@ -19,14 +19,14 @@ const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
         <stop offset="100%" stopColor="#0F172A" />
       </radialGradient>
       <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#F59E0B" />
-        <stop offset="50%" stopColor="#FBBF24" />
-        <stop offset="100%" stopColor="#B45309" />
+        <stop offset="0%" stopColor="#EC4899" />
+        <stop offset="50%" stopColor="#FBCFE8" />
+        <stop offset="100%" stopColor="#BE185D" />
       </linearGradient>
       <linearGradient id="glitterGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.4" />
+        <stop offset="0%" stopColor="#EC4899" stopOpacity="0.4" />
         <stop offset="50%" stopColor="#FFF" stopOpacity="0.9" />
-        <stop offset="100%" stopColor="#D97706" stopOpacity="0.5" />
+        <stop offset="100%" stopColor="#DB2777" stopOpacity="0.5" />
       </linearGradient>
     </defs>
 
@@ -54,7 +54,7 @@ const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
     </g>
 
     {/* Random organic glitter flakes */}
-    <g fill="#FBBF24">
+    <g fill="#FBCFE8">
       <circle cx="100" cy="22" r="1.5" />
       <circle cx="145" cy="30" r="1.2" />
       <circle cx="155" cy="42" r="1.8" />
@@ -85,7 +85,7 @@ const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       fontWeight="bold"
       letterSpacing="2.5"
     >
-      MERIS
+      Radha Fashions
     </text>
     <text
       x="100"
@@ -266,39 +266,51 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0F172A] border-b-[3px] border-[#C5A021] text-white font-sans shadow-lg">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md text-foreground font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
           
           {/* Mobile Menu Icon */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 sm:hidden text-slate-300 hover:text-[#C5A021] border border-slate-700/60 rounded-xl hover:bg-slate-800"
+            className="p-2 sm:hidden text-muted-foreground hover:text-primary border border-border/60 rounded-full hover:bg-accent"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Luxury Gold/Navy Brand Typography Logo */}
+          {/* Boutique brand mark and typography */}
           <div
             onClick={() => { onNavigate('home'); clearSearch(); }}
-            className="flex items-center gap-2.5 cursor-pointer select-none"
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none group"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onNavigate('home');
+                clearSearch();
+              }
+            }}
+            aria-label="Go to Radha Fashions home"
           >
-            <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shadow-lg shadow-gold-500/10 border border-[#C5A021]/30 bg-[#0F172A] hover:scale-105 transition duration-300">
-              <MerisLogo className="w-full h-full" />
-            </div>
-            <div>
-              <span className="font-display font-black text-xl sm:text-2xl tracking-[0.5px] text-[#C5A021] uppercase">
-                MERIS<span className="text-white"> E-SHOP</span>
-              </span>
-              <p className="text-[9px] text-slate-400 tracking-[0.18em] font-medium leading-none">PREMIUM SELECTION</p>
-            </div>
+            <span className="shrink-0 overflow-hidden rounded-full bg-white p-0.5 shadow-sm ring-1 ring-pink-200/70 transition-transform duration-300 group-hover:scale-105 dark:ring-amber-200/35">
+              <img
+                src="/radha-fashions-logo.png"
+                alt="Radha Fashions logo"
+                className="h-10 w-10 rounded-full object-cover sm:h-12 sm:w-12"
+              />
+            </span>
+            <span className="flex flex-col leading-none">
+              <span className="font-display text-xl tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-2xl">Radha Fashions</span>
+              <span className="eyebrow mt-1">Boutique</span>
+            </span>
           </div>
 
           {/* Navigation Category list (Desktop) */}
           <nav className="hidden md:flex items-center gap-6">
             <button
               onClick={() => { onNavigate('home'); clearSearch(); }}
-              className={`text-xs font-bold tracking-wider uppercase transition cursor-pointer ${currentCategory === '' ? 'text-[#C5A021]' : 'text-slate-300 hover:text-[#C5A021]'}`}
+              className={`text-xs font-bold tracking-wider uppercase transition cursor-pointer ${currentCategory === '' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
             >
               Shop All
             </button>
@@ -307,7 +319,7 @@ export default function Navbar({
             <div className="relative">
               <button
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                className="text-xs font-bold tracking-wider uppercase flex items-center gap-1 text-slate-300 hover:text-[#C5A021] transition cursor-pointer"
+                className="text-xs font-bold tracking-wider uppercase flex items-center gap-1 text-muted-foreground hover:text-primary transition cursor-pointer"
               >
                 Categories <ChevronDown className="w-3.5 h-3.5" />
               </button>
@@ -319,7 +331,7 @@ export default function Navbar({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 5, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className="absolute top-8 left-0 w-64 bg-[#0F172A] border border-slate-700 rounded-xl shadow-2xl p-2 grid grid-cols-1 gap-1 z-50 text-left"
+                    className="absolute top-8 left-0 w-64 bg-card border border-border rounded-xl shadow-2xl p-2 grid grid-cols-1 gap-1 z-50 text-left"
                   >
                     {CATEGORIES.map((category, idx) => (
                       <motion.button
@@ -332,7 +344,7 @@ export default function Navbar({
                           onNavigate('category');
                           setCategoryDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-[#C5A021] rounded-lg transition"
+                        className="w-full text-left px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-primary rounded-lg transition"
                       >
                         {category.name}
                       </motion.button>
@@ -346,19 +358,19 @@ export default function Navbar({
           {/* AI-Integrated advanced Search Bar Container */}
           <div ref={searchRef} className="hidden sm:block flex-1 max-w-md relative">
             <div className="relative">
-              <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search premium toys, gold stencils, gifts..."
+                placeholder="Search premium collections..."
                 value={searchInput}
                 onFocus={() => setSearchFocused(true)}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-white/10 border border-slate-700 text-slate-200 placeholder-slate-400 focus:bg-[#1E293B] focus:border-[#C5A021] rounded-full text-xs focus:outline-none transition leading-normal"
+                className="w-full pl-10 pr-10 py-2.5 bg-muted/40 border border-border text-foreground placeholder-muted-foreground focus:bg-background focus:border-primary rounded-full text-xs focus:outline-none transition leading-normal"
               />
               {searchInput && (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-3.5 top-3 w-5 h-5 text-slate-400 hover:text-slate-200 font-mono text-xs"
+                  className="absolute right-3.5 top-3 w-5 h-5 text-muted-foreground hover:text-foreground font-mono text-xs"
                 >
                   x
                 </button>
@@ -367,14 +379,14 @@ export default function Navbar({
 
             {/* Smart suggestions popover */}
             {searchFocused && (searchInput || aiGreeting) && (
-              <div className="absolute top-12 left-0 right-0 bg-[#0F172A] border border-slate-700 shadow-2xl rounded-2xl p-4 z-50 space-y-3">
+              <div className="absolute top-12 left-0 right-0 bg-card border border-border shadow-2xl rounded-2xl p-4 z-50 space-y-3">
                 {aiGreeting && (
-                  <div className="p-3 bg-slate-800/80 border border-[#C5A021]/20 rounded-xl text-left">
-                    <p className="text-[11px] text-slate-400 font-display font-medium tracking-wide uppercase flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-[#C5A021]" />
+                  <div className="p-3 bg-muted/50 border border-primary/20 rounded-xl text-left">
+                    <p className="text-[11px] text-primary font-display font-medium tracking-wide uppercase flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
                       AI Search Assistant
                     </p>
-                    <p className="text-xs text-slate-200 font-sans italic mt-1 leading-relaxed">
+                    <p className="text-xs text-foreground font-sans italic mt-1 leading-relaxed">
                       "{aiGreeting}"
                     </p>
                     {suggestedSlug && (
@@ -384,7 +396,7 @@ export default function Navbar({
                           onNavigate('category');
                           setSearchFocused(false);
                         }}
-                        className="mt-2 text-[11px] font-semibold text-[#C5A021] hover:text-[#C5A021]/80 flex items-center gap-1"
+                        className="mt-2 text-[11px] font-semibold text-primary hover:text-primary-deep flex items-center gap-1"
                       >
                         Visit Category Page &gt;
                       </button>
@@ -394,13 +406,13 @@ export default function Navbar({
 
                 {suggestions.length > 0 && (
                   <div className="text-left">
-                    <p className="text-[10px] font-mono text-slate-400 tracking-wider uppercase mb-1">Recommended Suggestions</p>
+                    <p className="text-[10px] font-mono text-muted-foreground tracking-wider uppercase mb-1">Recommended Suggestions</p>
                     <div className="flex flex-wrap gap-2">
                       {suggestions.map((term, index) => (
                         <button
                           key={index}
                           onClick={() => handleSuggestionClick(term)}
-                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-[#C5A021] rounded-lg text-xs font-semibold border border-slate-700/50 transition whitespace-nowrap"
+                          className="px-3 py-1.5 bg-muted hover:bg-primary-soft text-foreground hover:text-primary rounded-lg text-xs font-semibold border border-border transition whitespace-nowrap"
                         >
                           {term}
                         </button>
@@ -417,12 +429,12 @@ export default function Navbar({
             {/* Wishlist triggers */}
             <button
               onClick={() => onNavigate('account')}
-              className="p-2 text-slate-300 hover:text-[#C5A021] hover:bg-slate-800 transition rounded-xl relative cursor-pointer font-semibold"
+              className="p-2 text-muted-foreground hover:text-primary hover:bg-accent transition rounded-full relative cursor-pointer font-semibold"
               title="Saved Wishlist"
             >
               <Heart className="w-5 h-5" />
               {wishlistIds.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground rounded-full text-[9px] flex items-center justify-center font-bold">
                   {wishlistIds.length}
                 </span>
               )}
@@ -430,23 +442,23 @@ export default function Navbar({
 
             {/* Profile trigger / Login status indicator */}
             {currentUser ? (
-              <div className="flex items-center gap-1 bg-[#C5A021]/15 border border-[#C5A021]/30 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-primary-soft border border-primary/20 rounded-full p-1">
                 <button
                   onClick={() => onNavigate('account')}
                   className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer pr-1"
                   title="View Account Profile"
                 >
-                  <div className="w-7 h-7 bg-[#C5A021] rounded-lg text-white font-bold text-xs flex items-center justify-center">
+                  <div className="w-7 h-7 bg-primary rounded-full text-primary-foreground font-bold text-xs flex items-center justify-center">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="hidden lg:block text-left">
-                    <p className="text-[10px] font-bold text-white truncate leading-none">{currentUser.name}</p>
-                    <p className="text-[8px] text-[#C5A021] font-mono tracking-wider">MEMBER</p>
+                    <p className="text-[10px] font-bold text-foreground truncate leading-none">{currentUser.name}</p>
+                    <p className="text-[8px] text-primary font-mono tracking-wider">MEMBER</p>
                   </div>
                 </button>
                 <button
                   onClick={handleLogoutClick}
-                  className="p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+                  className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition cursor-pointer"
                   title="Log Out Profile"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -455,7 +467,7 @@ export default function Navbar({
             ) : (
               <button
                 onClick={() => onNavigate('account')}
-                className="p-2 text-slate-400 hover:text-[#C5A021] hover:bg-slate-800 transition rounded-xl cursor-pointer"
+                className="p-2 text-muted-foreground hover:text-primary hover:bg-accent transition rounded-full cursor-pointer"
                 title="Account Login"
               >
                 <User className="w-5 h-5" />
@@ -468,12 +480,12 @@ export default function Navbar({
             {/* Shopping Cart Trigger */}
             <button
               onClick={onOpenCart}
-              className="p-2 text-slate-300 hover:text-[#C5A021] hover:bg-slate-800 transition rounded-xl relative cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-primary hover:bg-accent transition rounded-full relative cursor-pointer"
               title="Your Bag"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-[#C5A021] rounded-full text-[9px] text-white flex items-center justify-center font-bold border border-[#0F172A]">
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-primary rounded-full text-[9px] text-primary-foreground flex items-center justify-center font-bold border border-background">
                   {cartCount}
                 </span>
               )}
@@ -501,12 +513,12 @@ export default function Navbar({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="relative flex flex-col w-full max-w-xs bg-white h-full shadow-2xl p-6 overflow-y-auto space-y-6 z-10 text-left"
+              className="relative flex flex-col w-full max-w-xs bg-background h-full shadow-2xl p-6 overflow-y-auto space-y-6 z-10 text-left"
             >
               <div className="flex items-center justify-between">
-                <span className="font-display font-medium text-sm tracking-widest text-navy-900 uppercase">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-full bg-gray-50 border border-gray-100">
-                  <X className="w-4 h-4 text-gray-600" />
+                <span className="font-display font-medium text-sm tracking-widest text-foreground uppercase">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-full bg-accent border border-border">
+                  <X className="w-4 h-4 text-foreground" />
                 </button>
               </div>
 
@@ -514,13 +526,13 @@ export default function Navbar({
               <div className="space-y-4">
                 <button
                   onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                  className="block text-left w-full pb-2 border-b border-gray-100 text-sm font-semibold text-gray-800"
+                  className="block text-left w-full pb-2 border-b border-border text-sm font-semibold text-foreground"
                 >
                   Shop All
                 </button>
 
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Categories</span>
+                  <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase">Categories</span>
                   {CATEGORIES.map((category, idx) => (
                     <motion.button
                       key={category.id}
@@ -532,7 +544,7 @@ export default function Navbar({
                         onNavigate('category');
                         setMobileMenuOpen(false);
                       }}
-                      className="block text-left w-full py-1.5 text-xs text-slate-700 hover:text-[#C5A021] font-medium"
+                      className="block text-left w-full py-1.5 text-xs text-muted-foreground hover:text-primary font-medium"
                     >
                       {category.name}
                     </motion.button>
@@ -541,11 +553,11 @@ export default function Navbar({
               </div>
 
               {/* Help Block information */}
-              <div className="pt-8 border-t border-gray-100 space-y-2">
-                <p className="text-[10px] font-mono text-gray-400 uppercase">Assistance Contact</p>
-                <p className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                  <HelpCircle className="w-4 h-4 text-gold-400" />
-                  +91 93842 92229
+              <div className="pt-8 border-t border-border space-y-2">
+                <p className="text-[10px] font-mono text-muted-foreground uppercase">Assistance Contact</p>
+                <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <HelpCircle className="w-4 h-4 text-primary" />
+                  +91 97311 53609
                 </p>
               </div>
             </motion.div>

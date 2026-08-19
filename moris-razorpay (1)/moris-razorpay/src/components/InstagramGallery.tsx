@@ -16,7 +16,7 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
     imageUrl: 'https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?w=500&auto=format&fit=crop&q=80',
     likes: 245,
     comments: 18,
-    caption: 'Beveling our sheesham Keepsake boxes by hand under organic tung oil finishes. #meriscarpentry #handcraftedindia'
+    caption: 'Beveling our sheesham Keepsake boxes by hand under organic tung oil finishes. #radhafashions #handcraftedindia'
   },
   {
     id: 'post-2',
@@ -82,7 +82,7 @@ export default function InstagramGallery() {
           className="py-2.5 px-4 bg-[#0F172A] hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl text-xs font-semibold uppercase tracking-wider transition flex items-center gap-2 border border-slate-700/50 cursor-pointer self-start sm:self-auto shadow-xs active:scale-95"
         >
           <Instagram className="w-4 h-4 shrink-0" />
-          <span>@meris_boutique on Instagram</span>
+          <span>@radhafashions on Instagram</span>
         </button>
       </div>
 
@@ -138,7 +138,7 @@ export default function InstagramGallery() {
             </div>
             <div>
               <p className="text-xs font-bold text-gold-400 uppercase tracking-wider font-display">Redirecting to Instagram Vlog</p>
-              <p className="text-[10px] text-gray-400 font-mono mt-0.5">Mocking target: https://instagram.com/meris_boutique</p>
+              <p className="text-[10px] text-gray-400 font-mono mt-0.5">Mocking target: https://instagram.com/radha_boutique</p>
             </div>
           </motion.div>
         )}

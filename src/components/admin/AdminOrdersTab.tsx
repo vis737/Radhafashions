@@ -20,7 +20,7 @@ import {
   Printer
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import { Order } from '../../types';
+import { Order, formatSelectedVariation } from '../../types';
 import { generateInvoicePDF } from '../../lib/invoiceGenerator';
 
 interface AdminOrdersTabProps {
@@ -131,17 +131,40 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
   const handleExportPDF = () => {
     try {
       const doc = new jsPDF();
-      doc.text('Orders Export', 14, 15);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, pageWidth, 30, 'F');
+      doc.setTextColor(251, 191, 36);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('RADHA FASHIONS', 14, 13);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`Orders export · ${new Date().toLocaleDateString('en-IN')}`, 14, 21);
       
-      let y = 30;
+      let y = 40;
       filteredOrders.forEach((order, index) => {
         if (y > 280) {
           doc.addPage();
-          y = 20;
+          doc.setFillColor(15, 23, 42);
+          doc.rect(0, 0, pageWidth, 18, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(9);
+          doc.text('RADHA FASHIONS · ORDERS EXPORT', 14, 11);
+          y = 28;
         }
+        const items = order.items.map(item => `${item.product.name} ${formatSelectedVariation(item)}`).join(', ');
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.text(`${order.orderNumber} | ${order.customerInfo.name} | Rs. ${order.total} | ${order.status}`, 14, y);
-        y += 10;
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(71, 85, 105);
+        doc.setFontSize(8);
+        const itemLines = doc.splitTextToSize(items || 'No item details', 175);
+        doc.text(itemLines, 14, y + 5);
+        y += 10 + (itemLines.length * 4);
       });
       
       doc.save(`orders_export_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -222,18 +245,18 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold text-slate-800">Order Shipments Workspace</h2>
+        <h2 className="font-display text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">Order Shipments Workspace</h2>
         <div className="flex gap-3">
           <button 
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-all duration-300 hover:-translate-y-0.5"
           >
             <Download size={18} />
             Export CSV
           </button>
           <button 
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0f172a] text-white border border-amber-300/50 rounded-xl hover:bg-[#D4648A] hover:text-gray-950 transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
           >
             <FileText size={18} />
             Export PDF
@@ -256,18 +279,18 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
             key={i} 
             className={`bg-white p-6 rounded-3xl shadow-sm border-b-4 ${stat.color}`}
           >
-            <p className="text-sm text-slate-500 font-medium">{stat.label}</p>
-            <p className="text-3xl font-bold text-slate-800 mt-2">{stat.value}</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">{stat.label}</p>
+            <p className="text-3xl font-bold text-gray-800 mt-2">{stat.value}</p>
           </motion.div>
         ))}
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex border-b border-slate-200 gap-6">
+      <div className="flex border-b border-gray-200 dark:border-gray-800 gap-6">
         <button
           onClick={() => { setActiveTab('all'); setCurrentPage(1); }}
           className={`pb-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'all' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'
+            activeTab === 'all' ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700'
           }`}
         >
           All Shipments ({orders.length})
@@ -278,7 +301,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
         <button
           onClick={() => { setActiveTab('pending_upi'); setCurrentPage(1); }}
           className={`pb-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'pending_upi' ? 'text-amber-600' : 'text-slate-500 hover:text-slate-700'
+            activeTab === 'pending_upi' ? 'text-amber-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700'
           }`}
         >
           Pending UPI Verification ({pendingUpiOrders.length})
@@ -291,24 +314,24 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
       {activeTab === 'all' ? (
         <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
           {/* Filters */}
-          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 bg-slate-50/50">
+          <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 bg-gray-50/50 dark:bg-gray-950/50">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder="Search orders, customers..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
             <div className="flex gap-4">
               <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" size={18} />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-10 pr-8 py-2.5 rounded-xl border border-slate-200 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 >
                   <option value="all">All Statuses</option>
                   <option value="pending">Pending</option>
@@ -321,7 +344,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
               <select
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               >
                 <option value="all">All Payments</option>
                 <option value="paid">Paid</option>
@@ -335,14 +358,14 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-gray-50 dark:bg-navy-900/95 backdrop-blur z-10">
-                <tr className="border-b border-gray-100 dark:border-navy-800 text-left text-xs tracking-wider uppercase text-gray-500 dark:text-gray-400">
+              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900/95 backdrop-blur z-10">
+                <tr className="border-b border-gray-100 dark:border-gray-800 text-left text-xs tracking-wider uppercase text-gray-500 dark:text-gray-400">
                   <th className="p-4 font-medium w-12">
                     <input 
                       type="checkbox" 
                       checked={selectedOrderIds.size === paginatedOrders.length && paginatedOrders.length > 0}
                       onChange={handleSelectAll}
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </th>
                   <th className="p-4 font-medium">Order #</th>
@@ -362,23 +385,28 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       key={order.id} 
-                      className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group"
+                      className="border-b border-gray-50 hover:bg-gray-50/50 dark:hover:bg-gray-950/50 transition-colors group"
                     >
                       <td className="p-4">
                         <input 
                           type="checkbox" 
                           checked={selectedOrderIds.has(order.id)}
                           onChange={() => handleSelectOrder(order.id)}
-                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </td>
-                      <td className="p-4 font-medium text-slate-800">{order.orderNumber}</td>
-                      <td className="p-4">
-                        <p className="text-slate-800">{order.customerInfo.name}</p>
-                        <p className="text-xs text-slate-500">{order.customerInfo.email}</p>
+                      <td className="p-4 font-medium text-gray-800">
+                        <p>{order.orderNumber}</p>
+                        <p className="mt-1 max-w-52 truncate text-[10px] font-normal text-gray-500" title={order.items.map(item => `${item.product.name} ${formatSelectedVariation(item)}`).join(', ')}>
+                          {order.items.map(item => `${item.product.name} ${formatSelectedVariation(item)}`).join(', ')}
+                        </p>
                       </td>
-                      <td className="p-4 text-slate-600 text-sm">{formatDate(order.date)}</td>
-                      <td className="p-4 font-medium text-slate-800">{formatCurrency(order.total)}</td>
+                      <td className="p-4">
+                        <p className="text-gray-800">{order.customerInfo.name}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{order.customerInfo.email}</p>
+                      </td>
+                      <td className="p-4 text-gray-600 text-sm">{formatDate(order.date)}</td>
+                      <td className="p-4 font-medium text-gray-800">{formatCurrency(order.total)}</td>
                       <td className="p-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(order.paymentStatus)}`}>
                           {order.paymentStatus.toUpperCase()}
@@ -401,7 +429,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                         <div className="flex justify-end items-center gap-2">
                           <button 
                             onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}
-                            className="px-3 py-1.5 bg-[#C5A021]/10 hover:bg-[#C5A021]/20 text-[#C5A021] border border-[#C5A021]/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                            className="px-3 py-1.5 bg-[#D4648A]/10 hover:bg-[#D4648A]/20 text-[#D4648A] border border-[#D4648A]/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                             title="View full customer address, payment details, and order items"
                           >
                             <Eye size={14} />
@@ -409,7 +437,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                           </button>
                           <button 
                             onClick={() => handleDelete(order.id, order.orderNumber)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                             title="Delete Order"
                           >
                             <Trash2 size={16} />
@@ -422,9 +450,9 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                 
                 {paginatedOrders.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-12 text-center text-slate-500">
-                      <Package className="mx-auto h-12 w-12 text-slate-300 mb-3" />
-                      <p className="text-lg font-medium text-slate-700">No orders found</p>
+                    <td colSpan={8} className="p-12 text-center text-gray-400 dark:text-gray-500">
+                      <Package className="mx-auto h-12 w-12 text-gray-700 dark:text-gray-300 mb-3" />
+                      <p className="text-lg font-medium text-gray-700">No orders found</p>
                       <p className="text-sm">Try adjusting your filters or search query.</p>
                     </td>
                   </tr>
@@ -435,15 +463,15 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-white">
-              <p className="text-sm text-slate-500">
+            <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-white">
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} entries
               </p>
               <div className="flex gap-1">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg border border-gray-200 dark:border-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-950 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -453,8 +481,8 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-9 h-9 rounded-lg border text-sm font-medium transition-colors ${
                       currentPage === i + 1 
-                        ? 'bg-slate-800 text-white border-slate-800' 
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-gray-50 dark:bg-gray-800 text-white border-pink-100 dark:border-pink-900/20' 
+                        : 'border-gray-200 dark:border-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-950'
                     }`}
                   >
                     {i + 1}
@@ -463,7 +491,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg border border-gray-200 dark:border-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-950 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -480,33 +508,33 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 key={order.id}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200"
+                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 dark:border-gray-800"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-bold text-slate-800">{order.orderNumber}</h3>
-                    <p className="text-sm text-slate-500">{formatDate(order.date)}</p>
+                    <h3 className="font-bold text-gray-800">{order.orderNumber}</h3>
+                    <p className="text-sm text-gray-400 dark:text-gray-500">{formatDate(order.date)}</p>
                   </div>
                   <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium border border-amber-200 animate-pulse">
                     PENDING UPI
                   </span>
                 </div>
                 
-                <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl">
+                <div className="space-y-3 mb-6 bg-gray-50 dark:bg-gray-950 p-4 rounded-2xl">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Customer</span>
-                    <span className="font-medium text-slate-800">{order.customerInfo.name}</span>
+                    <span className="text-gray-400 dark:text-gray-500">Customer</span>
+                    <span className="font-medium text-gray-800">{order.customerInfo.name}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Amount</span>
-                    <span className="font-medium text-slate-800">{formatCurrency(order.total)}</span>
+                    <span className="text-gray-400 dark:text-gray-500">Amount</span>
+                    <span className="font-medium text-gray-800">{formatCurrency(order.total)}</span>
                   </div>
                   {order.upiScreenshot && (
                     <div className="mt-4">
-                      <p className="text-sm text-slate-500 mb-2">Screenshot attached</p>
-                      <a href={order.upiScreenshot} target="_blank" rel="noreferrer" className="block relative group rounded-xl overflow-hidden border border-slate-200">
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mb-2">Screenshot attached</p>
+                      <a href={order.upiScreenshot} target="_blank" rel="noreferrer" className="block relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
                         <img src={order.upiScreenshot} alt="UPI Screenshot" className="w-full h-32 object-cover" />
-                        <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <div className="absolute inset-0 bg-white/50 dark:bg-gray-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                           <Eye className="text-white" />
                         </div>
                       </a>
@@ -520,7 +548,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       placeholder="Reason for rejection..."
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                      className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
                       rows={2}
                     />
                     <div className="flex gap-2">
@@ -532,7 +560,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       </button>
                       <button 
                         onClick={() => setRejectingUpiOrderId(null)}
-                        className="flex-1 bg-slate-100 text-slate-700 py-2 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors"
+                        className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
                       >
                         Cancel
                       </button>
@@ -559,10 +587,10 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
           </AnimatePresence>
 
           {pendingUpiOrders.length === 0 && (
-            <div className="col-span-full py-16 text-center bg-white rounded-3xl border border-slate-200 border-dashed">
+            <div className="col-span-full py-16 text-center bg-white rounded-3xl border border-gray-200 dark:border-gray-800 border-dashed">
               <CheckCircle className="mx-auto h-16 w-16 text-emerald-400 mb-4" />
-              <h3 className="text-xl font-bold text-slate-800">All Caught Up!</h3>
-              <p className="text-slate-500 mt-2">There are no pending UPI verifications right now.</p>
+              <h3 className="text-xl font-bold text-gray-800">All Caught Up!</h3>
+              <p className="text-gray-400 dark:text-gray-500 mt-2">There are no pending UPI verifications right now.</p>
             </div>
           )}
         </div>
@@ -571,7 +599,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
       {/* Order Detail Modal */}
       <AnimatePresence>
         {isModalOpen && selectedOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 dark:bg-gray-900/60 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -579,7 +607,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
               className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-left"
             >
               {/* Header Bar */}
-              <div className="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-900 text-white">
+              <div className="px-6 py-4 border-b border-pink-200/50 dark:border-pink-900/30 flex justify-between items-center bg-white dark:bg-gray-900 text-white">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold text-white">Order Details</h3>
@@ -587,7 +615,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       {selectedOrder.status}
                     </span>
                   </div>
-                  <p className="text-slate-400 text-xs font-mono mt-0.5">Order ID: {selectedOrder.orderNumber} • Placed on {formatDate(selectedOrder.date)}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs font-mono mt-0.5">Order ID: {selectedOrder.orderNumber} • Placed on {formatDate(selectedOrder.date)}</p>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -596,7 +624,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       generateInvoicePDF(selectedOrder);
                       addToast('Downloading official Order Invoice PDF...', 'info');
                     }}
-                    className="px-3 py-1.5 bg-[#C5A021] hover:bg-[#B5952F] text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                    className="px-3 py-1.5 bg-[#D4648A] hover:bg-[#B5952F] text-gray-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-sm"
                     title="Download PDF Invoice"
                   >
                     <Download size={14} />
@@ -604,7 +632,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                   </button>
                   <button 
                     onClick={() => setIsModalOpen(false)}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer"
                   >
                     <X size={20} />
                   </button>
@@ -612,65 +640,65 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
               </div>
 
               {/* Scrollable Modal Content Body */}
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-50 space-y-6">
+              <div className="p-6 overflow-y-auto flex-1 bg-gray-50 dark:bg-gray-950 space-y-6">
                 
                 {/* Top Section: Address & Payment Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   
                   {/* Card 1: Customer Details & Shipping Address */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                    <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
-                      <MapPin className="w-4 h-4 text-[#C5A021]" />
+                  <div className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-amber-200/20 shadow-xs space-y-4">
+                    <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">
+                      <MapPin className="w-4 h-4 text-[#D4648A]" />
                       <span>Customer & Delivery Address</span>
                     </h4>
                     
                     <div className="space-y-2 text-xs">
                       <div className="grid grid-cols-3">
-                        <span className="text-slate-400 font-mono">Full Name:</span>
-                        <span className="col-span-2 font-bold text-slate-800">{selectedOrder.customerInfo.name}</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Full Name:</span>
+                        <span className="col-span-2 font-bold text-gray-800 dark:text-gray-100">{selectedOrder.customerInfo.name}</span>
                       </div>
                       <div className="grid grid-cols-3">
-                        <span className="text-slate-400 font-mono">Email Address:</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Email Address:</span>
                         <span className="col-span-2 font-medium text-blue-600 select-all">{selectedOrder.customerInfo.email}</span>
                       </div>
                       <div className="grid grid-cols-3">
-                        <span className="text-slate-400 font-mono">Phone Number:</span>
-                        <span className="col-span-2 font-mono font-semibold text-slate-800">{selectedOrder.customerInfo.phone || 'Not provided'}</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Phone Number:</span>
+                        <span className="col-span-2 font-mono font-semibold text-gray-800 dark:text-gray-100">{selectedOrder.customerInfo.phone || 'Not provided'}</span>
                       </div>
                       {selectedOrder.accountEmail && selectedOrder.accountEmail !== selectedOrder.customerInfo.email && (
                         <div className="grid grid-cols-3">
-                          <span className="text-slate-400 font-mono">Account Email:</span>
-                          <span className="col-span-2 font-mono text-slate-600">{selectedOrder.accountEmail}</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">Account Email:</span>
+                          <span className="col-span-2 font-mono text-gray-600 dark:text-gray-300">{selectedOrder.accountEmail}</span>
                         </div>
                       )}
                       
-                      <div className="pt-3 mt-2 border-t border-slate-100 space-y-1">
-                        <span className="text-slate-400 font-mono block text-[10px] uppercase">Shipping Address:</span>
-                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl font-sans text-slate-800 font-medium leading-relaxed">
+                      <div className="pt-3 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-1">
+                        <span className="text-gray-500 dark:text-gray-400 font-mono block text-[10px] uppercase">Shipping Address:</span>
+                        <div className="p-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-amber-200/25 rounded-xl font-sans text-gray-800 dark:text-gray-100 font-medium leading-relaxed shadow-inner">
                           <p>{selectedOrder.customerInfo.address}</p>
-                          <p className="font-bold text-slate-900 mt-1 font-mono">PINCODE: {selectedOrder.customerInfo.pincode}</p>
+                          <p className="font-bold text-gray-900 dark:text-amber-200 mt-1 font-mono">PINCODE: {selectedOrder.customerInfo.pincode}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Card 2: Payment Audit & Gateway Details */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                    <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
-                      <CreditCard className="w-4 h-4 text-[#C5A021]" />
+                  <div className="bg-white p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs space-y-4">
+                    <h4 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-gray-100 pb-2">
+                      <CreditCard className="w-4 h-4 text-[#D4648A]" />
                       <span>Payment Audit & Gateway Info</span>
                     </h4>
 
                     <div className="space-y-2.5 text-xs">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-mono">Payment Method:</span>
-                        <span className="font-bold text-slate-900 uppercase bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Payment Method:</span>
+                        <span className="font-bold text-gray-900 uppercase bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-800">
                           {selectedOrder.paymentMethod}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-mono">Payment Status:</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Payment Status:</span>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>
                           {selectedOrder.paymentStatus.toUpperCase()}
                         </span>
@@ -678,7 +706,7 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
 
                       {selectedOrder.codStatus && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-400 font-mono">COD Handover Status:</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">COD Handover Status:</span>
                           <span className="font-mono text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                             {selectedOrder.codStatus.toUpperCase()}
                           </span>
@@ -686,8 +714,8 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       )}
 
                       {selectedOrder.upiTxnId && (
-                        <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                          <span className="text-slate-400 font-mono">UPI Ref / UTR ID:</span>
+                        <div className="flex justify-between items-center pt-1 border-t border-gray-100">
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">UPI Ref / UTR ID:</span>
                           <span className="font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-xs select-all">
                             {selectedOrder.upiTxnId}
                           </span>
@@ -695,9 +723,9 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       )}
 
                       {selectedOrder.payuTxnId && (
-                        <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                          <span className="text-slate-400 font-mono">PayU Txn ID:</span>
-                          <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs select-all">
+                        <div className="flex justify-between items-center pt-1 border-t border-gray-100">
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">PayU Txn ID:</span>
+                          <span className="font-mono font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded text-xs select-all">
                             {selectedOrder.payuTxnId}
                           </span>
                         </div>
@@ -705,29 +733,29 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
 
                       {selectedOrder.payuPaymentId && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-400 font-mono">PayU Payment ID:</span>
-                          <span className="font-mono font-medium text-slate-700 select-all">{selectedOrder.payuPaymentId}</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">PayU Payment ID:</span>
+                          <span className="font-mono font-medium text-gray-700 select-all">{selectedOrder.payuPaymentId}</span>
                         </div>
                       )}
 
                       {selectedOrder.payuStatus && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-400 font-mono">Gateway Response:</span>
-                          <span className="font-mono text-xs font-semibold text-slate-700">{selectedOrder.payuStatus}</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">Gateway Response:</span>
+                          <span className="font-mono text-xs font-semibold text-gray-700">{selectedOrder.payuStatus}</span>
                         </div>
                       )}
 
                       {selectedOrder.upiSenderName && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-400 font-mono">Payer / App:</span>
-                          <span className="font-medium text-slate-800">{selectedOrder.upiSenderName}</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-mono">Payer / App:</span>
+                          <span className="font-medium text-gray-800">{selectedOrder.upiSenderName}</span>
                         </div>
                       )}
 
                       {selectedOrder.upiNotes && (
                         <div className="pt-1">
-                          <span className="text-slate-400 font-mono block text-[10px] uppercase">Customer Payment Notes:</span>
-                          <p className="text-slate-700 italic bg-slate-50 p-2 rounded-lg border border-slate-200 mt-1">{selectedOrder.upiNotes}</p>
+                          <span className="text-gray-500 dark:text-gray-400 font-mono block text-[10px] uppercase">Customer Payment Notes:</span>
+                          <p className="text-gray-700 italic bg-gray-50 dark:bg-gray-950 p-2 rounded-lg border border-gray-200 dark:border-gray-800 mt-1">{selectedOrder.upiNotes}</p>
                         </div>
                       )}
 
@@ -744,28 +772,28 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                 {/* Section: Logistics & Gift Wrapping */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Logistics */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                    <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
-                      <Truck className="w-4 h-4 text-[#C5A021]" />
+                  <div className="bg-white p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs space-y-3">
+                    <h4 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider border-b border-gray-100 pb-2">
+                      <Truck className="w-4 h-4 text-[#D4648A]" />
                       <span>Logistics & Courier Details</span>
                     </h4>
                     
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-mono">Shipping Method:</span>
-                        <span className="font-bold text-slate-800 uppercase">{selectedOrder.shippingMethod || 'standard'} Delivery</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Shipping Method:</span>
+                        <span className="font-bold text-gray-800 uppercase">{selectedOrder.shippingMethod || 'standard'} Delivery</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-mono">Estimated Parcel Weight:</span>
-                        <span className="font-mono text-slate-800 font-medium">{selectedOrder.shippingWeightKg || 0.5} kg</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Estimated Parcel Weight:</span>
+                        <span className="font-mono text-gray-800 font-medium">{selectedOrder.shippingWeightKg || 0.5} kg</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-mono">Shipping Zone:</span>
-                        <span className="font-medium text-slate-800">{selectedOrder.shippingZone || 'Domestic Direct'}</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Shipping Zone:</span>
+                        <span className="font-medium text-gray-800">{selectedOrder.shippingZone || 'Domestic Direct'}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-mono">Freight Charge:</span>
-                        <span className="font-mono font-bold text-slate-900">{formatCurrency(selectedOrder.shippingCost)}</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-mono">Freight Charge:</span>
+                        <span className="font-mono font-bold text-gray-900">{formatCurrency(selectedOrder.shippingCost)}</span>
                       </div>
                     </div>
                   </div>
@@ -808,33 +836,33 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-center items-center text-center">
-                      <Gift className="w-8 h-8 text-slate-300 mb-2" />
-                      <p className="text-xs font-bold text-slate-700">Standard Packaging</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">No custom gift wrapping or greeting note requested.</p>
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs flex flex-col justify-center items-center text-center">
+                      <Gift className="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" />
+                      <p className="text-xs font-bold text-gray-700">Standard Packaging</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">No custom gift wrapping or greeting note requested.</p>
                     </div>
                   )}
                 </div>
 
                 {/* Section: Itemized Purchased Products */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                  <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
+                <div className="bg-white rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs overflow-hidden">
+                  <div className="p-4 bg-white dark:bg-gray-900 text-white flex justify-between items-center">
                     <h4 className="font-bold text-sm uppercase tracking-wider">Itemized Products ({selectedOrder.items.length})</h4>
-                    <span className="text-xs font-mono text-slate-400">SKU Ledger</span>
+                    <span className="text-xs font-mono text-gray-500 dark:text-gray-400">SKU Ledger</span>
                   </div>
                   
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-gray-100">
                     {selectedOrder.items.map((item, idx) => {
                       const itemPrice = item.product.discountPrice || item.product.price;
                       return (
-                        <div key={idx} className="p-4 flex gap-4 items-center hover:bg-slate-50 transition-colors">
-                          <img src={item.product.images[0]} alt={item.product.name} className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0" />
+                        <div key={idx} className="p-4 flex gap-4 items-center hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
+                          <img src={item.product.images[0]} alt={item.product.name} className="w-14 h-14 object-cover rounded-xl border border-gray-200 dark:border-gray-800 shrink-0" />
                           <div className="flex-1 text-left">
-                            <h5 className="font-bold text-slate-900 text-sm">{item.product.name}</h5>
-                            <p className="text-xs text-slate-500 font-mono">SKU: {item.product.sku || item.product.id} • Category: {item.product.category}</p>
-                            <p className="text-xs text-slate-600 mt-0.5">Quantity: <strong className="text-slate-900">{item.quantity}</strong> × {formatCurrency(itemPrice)}</p>
+                            <h5 className="font-bold text-gray-900 text-sm">{item.product.name} {formatSelectedVariation(item)}</h5>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 font-mono">SKU: {item.product.sku || item.product.id} • Category: {item.product.category}</p>
+                            <p className="text-xs text-gray-600 mt-0.5">Quantity: <strong className="text-gray-900">{item.quantity}</strong> × {formatCurrency(itemPrice)}</p>
                           </div>
-                          <div className="text-right font-bold text-slate-900 font-mono text-sm">
+                          <div className="text-right font-bold text-gray-900 font-mono text-sm">
                             {formatCurrency(itemPrice * item.quantity)}
                           </div>
                         </div>
@@ -843,8 +871,8 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                   </div>
 
                   {/* Financial Breakdown Table */}
-                  <div className="p-5 bg-slate-50 border-t border-slate-200 space-y-2 text-xs">
-                    <div className="flex justify-between text-slate-600">
+                  <div className="p-5 bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 space-y-2 text-xs">
+                    <div className="flex justify-between text-gray-600">
                       <span>Items Subtotal:</span>
                       <span className="font-mono">{formatCurrency(selectedOrder.subtotal)}</span>
                     </div>
@@ -855,32 +883,32 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       </div>
                     )}
                     {selectedOrder.tax > 0 && (
-                      <div className="flex justify-between text-slate-600">
+                      <div className="flex justify-between text-gray-600">
                         <span>GST / Tax:</span>
                         <span className="font-mono">{formatCurrency(selectedOrder.tax)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-slate-600">
+                    <div className="flex justify-between text-gray-600">
                       <span>Shipping Fee:</span>
                       <span className="font-mono">{formatCurrency(selectedOrder.shippingCost)}</span>
                     </div>
-                    <div className="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-300">
+                    <div className="flex justify-between text-base font-bold text-gray-900 pt-3 border-t border-gray-300">
                       <span>Grand Total Paid:</span>
-                      <span className="font-mono text-lg text-[#C5A021]">{formatCurrency(selectedOrder.total)}</span>
+                      <span className="font-mono text-lg text-[#D4648A]">{formatCurrency(selectedOrder.total)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Section: UPI Screenshot Lightbox preview */}
                 {selectedOrder.upiScreenshot && (
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                  <div className="bg-white p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs space-y-3">
                     <div className="flex justify-between items-center">
-                      <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider">UPI Payment Proof Screenshot</h4>
+                      <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">UPI Payment Proof Screenshot</h4>
                       <a href={selectedOrder.upiScreenshot} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-bold font-mono flex items-center gap-1">
                         <span>Open Original Image</span>
                       </a>
                     </div>
-                    <a href={selectedOrder.upiScreenshot} target="_blank" rel="noreferrer" className="block max-w-xs rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+                    <a href={selectedOrder.upiScreenshot} target="_blank" rel="noreferrer" className="block max-w-xs rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all group">
                       <img src={selectedOrder.upiScreenshot} alt="UPI Payment Screenshot" className="w-full h-auto object-cover group-hover:scale-105 transition duration-300" />
                     </a>
                   </div>
@@ -888,9 +916,9 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
               </div>
 
               {/* Modal Footer Controls */}
-              <div className="px-6 py-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <span className="text-xs text-slate-500 font-mono uppercase">Change Status:</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 font-mono uppercase">Change Status:</span>
                   <select
                     value={selectedOrder.status}
                     onChange={(e) => {
@@ -915,14 +943,14 @@ const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({
                       generateInvoicePDF(selectedOrder);
                       addToast('Generating PDF Invoice...', 'success');
                     }}
-                    className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                    className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
                   >
                     <Download size={14} />
                     <span>Download Invoice</span>
                   </button>
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                    className="flex-1 sm:flex-none px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition cursor-pointer"
                   >
                     Close
                   </button>

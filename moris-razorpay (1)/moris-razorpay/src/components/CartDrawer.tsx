@@ -225,7 +225,7 @@ export default function CartDrawer({
                     <Tag className="absolute left-3 top-3 w-3.5 h-3.5 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Enter code (MERIS10, FESTIVE20)"
+                      placeholder="Enter code (Radha Fashions10, FESTIVE20)"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 focus:border-gold-300 rounded-xl text-xs focus:ring-1 focus:ring-gold-400 focus:outline-none"

@@ -216,7 +216,7 @@ export default function App() {
 
     // Restore the success order screen if the page was reloaded right after checkout
     try {
-      const pendingSuccess = sessionStorage.getItem('meris_pending_success_order');
+      const pendingSuccess = sessionStorage.getItem('radha_pending_success_order');
       if (pendingSuccess) {
         const restoredOrder = JSON.parse(pendingSuccess) as Order;
         setSelectedSuccessOrder(restoredOrder);
@@ -539,7 +539,7 @@ export default function App() {
 
     // Persist success order to sessionStorage so the invoice survives any accidental page reload
     try {
-      sessionStorage.setItem('meris_pending_success_order', JSON.stringify(newOrder));
+      sessionStorage.setItem('radha_pending_success_order', JSON.stringify(newOrder));
     } catch { /* storage unavailable */ }
 
     // Sync newly placed order to backend database
@@ -768,7 +768,7 @@ export default function App() {
               Workshop Polishing Underway
             </h1>
             <p className="text-xs text-gray-400 leading-relaxed font-light">
-              We are currently making some adjustments to the MERIS workshop to bring you an even better experience. Check back with us shortly!
+              We are currently making some adjustments to the Radha Fashions workshop to bring you an even better experience. Check back with us shortly!
             </p>
           </div>
 
@@ -1114,7 +1114,7 @@ export default function App() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(20,184,166,0.18),transparent_30%)] pointer-events-none" />
                 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gold-400 font-semibold block text-center">Reviews of the Meris Family</span>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gold-400 font-semibold block text-center">Reviews of the Radha Fashions Family</span>
                   <h3 className="font-display font-medium text-xl sm:text-2xl text-center uppercase tracking-widest mt-2 mb-10 text-white">Loved by Families Worldwide</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1331,7 +1331,7 @@ export default function App() {
                   <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm space-y-4">
                     <ShieldCheck className="w-10 h-10 text-gold-500 mx-auto" />
                     <h2 className="font-display font-semibold text-sm uppercase tracking-widest text-navy-900">Login Required</h2>
-                    <p className="text-xs text-gray-500">Please create or sign in to your Meris account before placing an order.</p>
+                    <p className="text-xs text-gray-500">Please create or sign in to your Radha Fashions account before placing an order.</p>
                     <button
                       onClick={() => {
                         setPendingCheckout(true);
@@ -1358,7 +1358,7 @@ export default function App() {
               <OrderSuccessModal
                 order={selectedSuccessOrder}
                 onClose={() => {
-                  try { sessionStorage.removeItem('meris_pending_success_order'); } catch {}
+                  try { sessionStorage.removeItem('radha_pending_success_order'); } catch {}
                   handleSwapView('home');
                 }}
               />
@@ -1533,7 +1533,7 @@ export default function App() {
                   Login Required
                 </h2>
                 <p className="text-[11px] text-navy-200 text-center font-light leading-relaxed max-w-xs">
-                  You need a Meris account to place orders, track deliveries, and access your personal shopping history.
+                  You need a Radha Fashions account to place orders, track deliveries, and access your personal shopping history.
                 </p>
               </div>
 
@@ -1752,7 +1752,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-left">
           
           <div className="space-y-3">
-            <span className="font-display font-bold text-sm tracking-wider text-white uppercase">MERIS <span className="text-gold-400">E-SHOP</span></span>
+            <span className="font-display font-bold text-sm tracking-wider text-white uppercase">Radha Fashions <span className="text-gold-400">E-SHOP</span></span>
             <p className="text-navy-200 leading-relaxed font-light">
               We engineer raw Indian woodcraft catalogs into luxury family experiences. Authentic block stencil systems, certified organic beeswax safety parameters.
             </p>
@@ -1780,14 +1780,14 @@ export default function App() {
             <p className="text-navy-200 leading-relaxed font-light">
               5/339, Fathima Road,<br />
               nager, Azhagappapuram, Tamil Nadu 629401<br />
-              Contact Desk: support@meris.com
+              Contact Desk: admin@radhafashions.com
             </p>
           </div>
 
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/5 pt-6 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-navy-300 text-[10px] font-mono tracking-wider">
-          <span>(c) 2026 MERIS E-SHOP STUDIOS - All Heritage Rights Reserved.</span>
+          <span>(c) 2026 Radha Fashions - All Heritage Rights Reserved.</span>
           <span className="text-gold-500/80">Crafted lovingly under Indian Wooden Toys safety standard rule (ISO 8124)</span>
         </div>
       </footer>

@@ -123,7 +123,7 @@ export default function CheckoutPanel({
         key: import.meta.env.VITE_RAZORPAY_KEY_ID as string,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Meris E-Shop',
+        name: 'Radha Fashions',
         description: 'Handcrafted Luxury Purchase',
         order_id: orderData.id,
         prefill: {
@@ -262,7 +262,7 @@ export default function CheckoutPanel({
               <div className="flex items-start gap-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-800">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <p>
-                  Checkout is linked to your signed-in Meris account. Receipts and WhatsApp alerts will be saved against this profile.
+                  Checkout is linked to your signed-in Radha Fashions account. Receipts and WhatsApp alerts will be saved against this profile.
                 </p>
               </div>
               
@@ -401,7 +401,7 @@ export default function CheckoutPanel({
                     }`}>
                       <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-1.5 mb-2 font-mono text-[9px] tracking-wider uppercase">
                         <span>{giftTheme} Greeting</span>
-                        <span>Meris Calligraphy</span>
+                        <span>Radha Fashions Calligraphy</span>
                       </div>
                       <p className="italic leading-relaxed font-sans">{giftMessage || 'Your message will appear here...'}</p>
                       {giftSender && (
@@ -490,7 +490,7 @@ export default function CheckoutPanel({
                         <div className="flex justify-between items-center w-full pb-3 border-b border-white/10">
                           <div className="flex items-center gap-2">
                             <Lock className="w-4 h-4 text-[#C5A021]" />
-                            <span className="text-[10px] font-display font-bold tracking-widest text-white uppercase">MERIS PAY</span>
+                            <span className="text-[10px] font-display font-bold tracking-widest text-white uppercase">Radha Fashions PAY</span>
                           </div>
                           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
@@ -502,7 +502,7 @@ export default function CheckoutPanel({
                         <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-left space-y-2">
                           <div className="flex justify-between items-center text-[10px]">
                             <span className="text-gray-400 font-sans">Merchant Name:</span>
-                            <span className="text-white font-semibold font-display">MERIS ARTISANAL STUDIO</span>
+                            <span className="text-white font-semibold font-display">Radha Fashions ARTISANAL STUDIO</span>
                           </div>
                           <div className="flex justify-between items-center text-[10px]">
                             <span className="text-gray-400 font-sans">Payment Method:</span>
@@ -528,11 +528,11 @@ export default function CheckoutPanel({
                           <div className="flex flex-col items-center space-y-1.5 w-full max-w-xs mx-auto">
                             <span className="text-[8px] text-gray-500 font-mono">OR PAY VIA UPI ID:</span>
                             <div className="flex items-center justify-between w-full p-2 bg-white/5 border border-white/10 rounded-xl text-left">
-                              <span className="text-xs font-mono text-gray-200 select-all pl-1.5">meriseshop@upi</span>
+                              <span className="text-xs font-mono text-gray-200 select-all pl-1.5">radhafashions@upi</span>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  navigator.clipboard.writeText('meriseshop@upi');
+                                  navigator.clipboard.writeText('radhafashions@upi');
                                   setCopiedUpi(true);
                                   setTimeout(() => setCopiedUpi(false), 2000);
                                 }}

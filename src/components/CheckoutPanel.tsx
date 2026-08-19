@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles, Copy, Check, Upload, Image, FileText, QrCode, AlertCircle, Hash, User, Link, ChevronRight, Edit3 } from 'lucide-react';
-import { CartItem, CustomerInfo, Coupon, Order } from '../types';
+import { CartItem, CustomerInfo, Coupon, Order, formatSelectedVariation, getCartItemKey } from '../types';
 import { handleImageError } from '../utils/imageUtils';
 import { calculateCartTotals } from '../utils/premiumData';
 import { preparePayUPaymentPayload } from '../utils/payu';
@@ -262,15 +262,15 @@ export default function CheckoutPanel({
   const StepHeader = ({ step, title, icon: Icon }: { step: number, title: string, icon: any }) => (
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${activeStep === step ? 'bg-gold-500 text-navy-950' : activeStep > step ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-navy-800 text-gray-400'}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${activeStep === step ? 'bg-pink-500 text-gray-950' : activeStep > step ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
           {activeStep > step ? <Check className="w-4 h-4" /> : step}
         </div>
-        <h2 className={`font-display font-semibold text-sm tracking-wider uppercase ${activeStep === step ? 'text-navy-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+        <h2 className={`font-display font-semibold text-sm tracking-wider uppercase ${activeStep === step ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
           {title}
         </h2>
       </div>
       {activeStep > step && (
-        <button type="button" onClick={() => setActiveStep(step)} className="text-xs font-medium text-gold-500 hover:text-gold-600 flex items-center gap-1">
+        <button type="button" onClick={() => setActiveStep(step)} className="text-xs font-medium text-pink-500 hover:text-pink-600 flex items-center gap-1">
           <Edit3 className="w-3.5 h-3.5" /> Edit
         </button>
       )}
@@ -287,10 +287,10 @@ export default function CheckoutPanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 dark:bg-navy-900/80 backdrop-blur-sm rounded-3xl"
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl"
           >
-            <div className="w-16 h-16 border-4 border-gold-200 border-t-gold-500 rounded-full animate-spin mb-4"></div>
-            <p className="font-display font-bold text-navy-900 dark:text-white tracking-widest uppercase">Processing Secure Order</p>
+            <div className="w-16 h-16 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin mb-4"></div>
+            <p className="font-display font-bold text-gray-900 dark:text-white tracking-widest uppercase">Processing Secure Order</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1"><ShieldCheck className="w-4 h-4" /> 256-Bit Encrypted Link</p>
           </motion.div>
         )}
@@ -299,16 +299,16 @@ export default function CheckoutPanel({
       {/* Return triggers */}
       <button
         onClick={onBackToCart}
-        className="mb-8 py-2.5 px-5 rounded-2xl bg-white dark:bg-navy-900 hover:bg-gray-50 dark:hover:bg-navy-800 border border-gray-100 dark:border-navy-800 font-display font-medium text-xs text-gray-700 dark:text-gray-300 hover:text-navy-900 dark:hover:text-white tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 transition"
+        className="mb-8 py-2.5 px-5 rounded-2xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800 font-display font-medium text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 transition"
       >
-        <ArrowLeft className="w-4 h-4 text-gold-500" />
+        <ArrowLeft className="w-4 h-4 text-pink-500" />
         <span>Return To Cart Summary</span>
       </button>
 
       <div className="space-y-6">
         
         {/* Step 1: Delivery Address */}
-        <div className={`bg-white dark:bg-navy-900/90 rounded-3xl border ${activeStep === 1 ? 'border-gold-400/50 shadow-xl dark:shadow-gold-900/10' : 'border-gray-100 dark:border-navy-800 shadow-sm'} overflow-hidden transition-all duration-300`}>
+        <div className={`bg-white dark:bg-gray-900/90 rounded-3xl border ${activeStep === 1 ? 'border-pink-400/50 shadow-xl dark:shadow-pink-900/10' : 'border-gray-100 dark:border-gray-800 shadow-sm'} overflow-hidden transition-all duration-300`}>
           <div className="p-6 sm:p-8">
             <StepHeader step={1} title="Delivery Address & Details" icon={Truck} />
             
@@ -323,7 +323,7 @@ export default function CheckoutPanel({
                   <div className="pt-6 space-y-5">
                     <div className="flex items-start gap-2 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300">
                       <ShieldCheck className="w-4.5 h-4.5 text-emerald-600 shrink-0" />
-                      <p>Checkout is linked to your signed-in Meris account. Receipts and WhatsApp alerts will be saved against this profile.</p>
+                      <p>Checkout is linked to your signed-in Radha Fashions account. Receipts and WhatsApp alerts will be saved against this profile.</p>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -335,7 +335,7 @@ export default function CheckoutPanel({
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="e.g. Charan Kumar"
-                          className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-sm"
+                          className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all duration-200 shadow-sm"
                         />
                       </div>
                       <div>
@@ -359,7 +359,7 @@ export default function CheckoutPanel({
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="e.g. +91 95020 XXXXX"
-                          className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-sm"
+                          className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all duration-200 shadow-sm"
                         />
                       </div>
                       <div>
@@ -372,7 +372,7 @@ export default function CheckoutPanel({
                           placeholder="e.g. 500033"
                           inputMode="numeric"
                           maxLength={6}
-                          className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-sm"
+                          className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all duration-200 shadow-sm"
                         />
                         {hasCompletePincode ? (
                           <p className="mt-2 text-[10px] font-mono font-bold tracking-[0.16em] uppercase text-emerald-600 dark:text-emerald-400">
@@ -394,7 +394,7 @@ export default function CheckoutPanel({
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="5/339, Fathima Road..."
-                        className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all duration-200 shadow-sm resize-none"
+                        className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all duration-200 shadow-sm resize-none"
                       />
                     </div>
 
@@ -412,7 +412,7 @@ export default function CheckoutPanel({
                             <Gift className="w-4.5 h-4.5 text-orange-500" />
                             Add Handcrafted Gift Wrap (Rs.100)
                           </span>
-                          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Authentic wax-sealed banana fiber pouch with dried marigold buds.</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Authentic wax-sealed banana fiber pouch with dried marigold buds.</p>
                         </div>
                       </label>
 
@@ -426,7 +426,7 @@ export default function CheckoutPanel({
                                 value={giftSender}
                                 onChange={(e) => setGiftSender(e.target.value)}
                                 placeholder="e.g. Grandma & Grandpa"
-                                className="w-full px-4 py-3 text-sm bg-white dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-orange-400/55 focus:border-orange-400 focus:outline-none transition-all shadow-sm"
+                                className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-orange-400/55 focus:border-orange-400 focus:outline-none transition-all shadow-sm"
                               />
                             </div>
                             <div>
@@ -434,7 +434,7 @@ export default function CheckoutPanel({
                               <select
                                 value={giftTheme}
                                 onChange={(e: any) => setGiftTheme(e.target.value)}
-                                className="w-full px-4 py-3 text-sm bg-white dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-orange-400/55 focus:border-orange-400 focus:outline-none transition-all shadow-sm cursor-pointer"
+                                className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-orange-400/55 focus:border-orange-400 focus:outline-none transition-all shadow-sm cursor-pointer"
                               >
                                 {['Birthday', 'Anniversary', 'Wedding', 'Baby Shower', 'Christmas', 'Diwali', 'Generic'].map(theme => (
                                   <option key={theme} value={theme}>{theme} Theme</option>
@@ -450,7 +450,7 @@ export default function CheckoutPanel({
                               value={giftMessage}
                               onChange={(e) => setGiftMessage(e.target.value)}
                               placeholder="Enter a message to be written with an ink dip pen..."
-                              className="w-full px-4 py-3 text-sm bg-white dark:bg-navy-950 text-navy-950 dark:text-white border border-gray-200 dark:border-navy-700/60 rounded-2xl focus:ring-2 focus:ring-orange-400/55 focus:border-orange-400 focus:outline-none transition-all shadow-sm resize-none"
+                              className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-orange-400/55 focus:border-orange-400 focus:outline-none transition-all shadow-sm resize-none"
                             />
                           </div>
                           <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -460,7 +460,7 @@ export default function CheckoutPanel({
                               onChange={(e) => setGiftHidePrice(e.target.checked)}
                               className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-400"
                             />
-                            <span className="text-xs text-gray-600 dark:text-slate-400 font-medium">Hide item prices on invoice receipt (Gift Invoice)</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-500 font-medium">Hide item prices on invoice receipt (Gift Invoice)</span>
                           </label>
                         </div>
                       )}
@@ -469,7 +469,7 @@ export default function CheckoutPanel({
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={() => handleNextStep(1)}
-                        className="py-3 px-8 bg-navy-900 dark:bg-white hover:bg-navy-800 dark:hover:bg-gray-100 text-white dark:text-navy-900 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center gap-2"
+                        className="py-3 px-8 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center gap-2"
                       >
                         Continue to Payment <ChevronRight className="w-4 h-4" />
                       </button>
@@ -482,8 +482,8 @@ export default function CheckoutPanel({
                   animate={{ opacity: 1 }}
                   className="pt-4"
                 >
-                  <div className="bg-gray-50 dark:bg-navy-950/50 p-4 rounded-2xl text-sm text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-navy-800/50">
-                    <p className="font-semibold text-navy-900 dark:text-white mb-1">{name} <span className="text-gray-400 font-normal">({phone})</span></p>
+                  <div className="bg-gray-50 dark:bg-gray-950/50 p-4 rounded-2xl text-sm text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800/50">
+                    <p className="font-semibold text-gray-900 dark:text-white mb-1">{name} <span className="text-gray-400 font-normal">({phone})</span></p>
                     <p>{address}</p>
                     <p>Pincode: {pincode}</p>
                     {giftWrapped && (
@@ -497,7 +497,7 @@ export default function CheckoutPanel({
         </div>
 
         {/* Step 2: Payment Route */}
-        <div className={`bg-white dark:bg-navy-900/90 rounded-3xl border ${activeStep === 2 ? 'border-gold-400/50 shadow-xl dark:shadow-gold-900/10' : 'border-gray-100 dark:border-navy-800 shadow-sm opacity-60'} overflow-hidden transition-all duration-300`}>
+        <div className={`bg-white dark:bg-gray-900/90 rounded-3xl border ${activeStep === 2 ? 'border-pink-400/50 shadow-xl dark:shadow-pink-900/10' : 'border-gray-100 dark:border-gray-800 shadow-sm opacity-60'} overflow-hidden transition-all duration-300`}>
           <div className="p-6 sm:p-8">
             <StepHeader step={2} title="Payment Route" icon={Landmark} />
             
@@ -516,13 +516,13 @@ export default function CheckoutPanel({
                         <button
                           type="button"
                           onClick={() => setPaymentError('PayU Gateway is Coming Soon. Please use Instant UPI QR Payment below.')}
-                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-navy-950/40 border-gray-200 dark:border-navy-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-navy-800/60"
+                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-gray-950/40 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60"
                         >
                           <ShieldCheck className="w-6 h-6 text-gray-400" />
                           <span className="uppercase tracking-wider font-bold">PayU Secure Online</span>
                           <span className="text-[10px] text-gray-400 font-normal">Cards, NetBanking, UPI</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-slate-800 text-gold-400 border border-gold-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
+                        <div className="absolute -top-2.5 -right-2 bg-gray-50 dark:bg-gray-800 text-pink-400 border border-pink-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
                           Coming Soon
                         </div>
                       </div>
@@ -532,13 +532,13 @@ export default function CheckoutPanel({
                         <button
                           type="button"
                           onClick={() => setPaymentError('Cash on Delivery is Coming Soon. Please use Instant UPI QR Payment below.')}
-                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-navy-950/40 border-gray-200 dark:border-navy-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-navy-800/60"
+                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-gray-950/40 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60"
                         >
                           <Truck className="w-6 h-6 text-gray-400" />
                           <span className="uppercase tracking-wider font-bold">Cash on Delivery</span>
                           <span className="text-[10px] text-gray-400 font-normal">Pay cash at doorstep</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-slate-800 text-amber-400 border border-amber-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
+                        <div className="absolute -top-2.5 -right-2 bg-gray-50 dark:bg-gray-800 text-amber-400 border border-amber-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
                           Coming Soon
                         </div>
                       </div>
@@ -548,7 +548,7 @@ export default function CheckoutPanel({
                         <button
                           type="button"
                           onClick={() => { setPaymentMethod('upi_qr'); setPaymentError(''); }}
-                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-navy-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-800/50'}`}
+                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
                         >
                           <QrCode className="w-6 h-6 text-emerald-500" />
                           <span className="uppercase tracking-wider font-bold">Instant UPI QR</span>
@@ -568,8 +568,8 @@ export default function CheckoutPanel({
                     </div>
 
                     {paymentMethod === 'payu' && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-gold-50/40 dark:bg-gold-950/10 border border-gold-200 dark:border-gold-800/30 rounded-2xl space-y-2 text-xs text-navy-900 dark:text-gold-200">
-                        <div className="flex items-center gap-2 font-bold uppercase text-gold-600 dark:text-gold-400">
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-pink-50/40 dark:bg-pink-950/10 border border-pink-200 dark:border-pink-800/30 rounded-2xl space-y-2 text-xs text-gray-900 dark:text-pink-200">
+                        <div className="flex items-center gap-2 font-bold uppercase text-pink-600 dark:text-pink-400">
                           <ShieldCheck className="w-4 h-4" /> PayU Secure Gateway
                         </div>
                         <p className="font-light">
@@ -599,13 +599,13 @@ export default function CheckoutPanel({
                     {/* UPI UI Block */}
                     {paymentMethod === 'upi_qr' && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                        <div className="w-full bg-navy-950 border border-[#C5A021]/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-center space-y-6">
-                          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C5A021] to-transparent animate-pulse" />
+                        <div className="w-full bg-gray-950 border border-[#D4648A]/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-center space-y-6">
+                          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4648A] to-transparent animate-pulse" />
                           
                           <div className="flex justify-between items-center w-full pb-4 border-b border-white/10">
                             <div className="flex items-center gap-2.5">
-                              <Lock className="w-5 h-5 text-[#C5A021]" />
-                              <span className="text-xs font-display font-bold tracking-widest text-white uppercase">MERIS PAY SECURE</span>
+                              <Lock className="w-5 h-5 text-[#D4648A]" />
+                              <span className="text-xs font-display font-bold tracking-widest text-white uppercase">Radha Fashions PAY SECURE</span>
                             </div>
                           </div>
 
@@ -622,7 +622,7 @@ export default function CheckoutPanel({
                                 </div>
                                 <div className="flex justify-between items-center gap-8">
                                   <span className="text-gray-400 text-xs">Merchant:</span>
-                                  <span className="text-[#C5A021] font-medium">Meris Artisanal</span>
+                                  <span className="text-[#D4648A] font-medium">Radha Fashions</span>
                                 </div>
                               </div>
                             </div>
@@ -637,12 +637,12 @@ export default function CheckoutPanel({
                               {/* UPI Payment App Dropdown Selection */}
                               <div>
                                 <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Wallet className="w-3.5 h-3.5 text-gold-400" /> Select Payment App Used <span className="text-red-500">*</span>
+                                  <Wallet className="w-3.5 h-3.5 text-pink-400" /> Select Payment App Used <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                   value={paymentApp}
                                   onChange={(e) => setPaymentApp(e.target.value)}
-                                  className="w-full px-4 py-3 text-sm bg-navy-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all font-sans cursor-pointer"
+                                  className="w-full px-4 py-3 text-sm bg-gray-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all font-sans cursor-pointer"
                                 >
                                   <option value="Google Pay">Google Pay (GPay)</option>
                                   <option value="PhonePe">PhonePe</option>
@@ -658,7 +658,7 @@ export default function CheckoutPanel({
                               {/* UPI Transaction Ref ID */}
                               <div>
                                 <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Hash className="w-3.5 h-3.5 text-gold-400" /> UPI Transaction ID / Ref No. <span className="text-red-500">*</span>
+                                  <Hash className="w-3.5 h-3.5 text-pink-400" /> UPI Transaction ID / Ref No. <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -666,17 +666,17 @@ export default function CheckoutPanel({
                                   value={upiTxnId}
                                   onChange={(e) => setUpiTxnId(e.target.value)}
                                   placeholder="12-digit transaction index / ref number"
-                                  className="w-full px-4 py-3 text-sm bg-navy-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-gold-400/50 focus:border-gold-400 focus:outline-none transition-all shadow-inner font-mono placeholder-gray-500"
+                                  className="w-full px-4 py-3 text-sm bg-gray-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all shadow-inner font-mono placeholder-gray-500"
                                 />
                               </div>
 
                               {/* Payment Receipt Screenshot Upload Dropdown / File Selector */}
                               <div>
                                 <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Upload className="w-3.5 h-3.5 text-gold-400" /> Upload Payment Receipt Screenshot (Mandatory) <span className="text-red-500">*</span>
+                                  <Upload className="w-3.5 h-3.5 text-pink-400" /> Upload Payment Receipt Screenshot (Mandatory) <span className="text-red-500">*</span>
                                 </label>
                                 {upiScreenshot ? (
-                                  <div className="relative p-3 bg-navy-900 border border-emerald-500/40 rounded-2xl flex items-center justify-between">
+                                  <div className="relative p-3 bg-gray-900 border border-emerald-500/40 rounded-2xl flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                       <img src={upiScreenshot} alt="Receipt Preview" className="w-12 h-12 object-cover rounded-xl border border-white/20" />
                                       <div>
@@ -695,9 +695,9 @@ export default function CheckoutPanel({
                                     </button>
                                   </div>
                                 ) : (
-                                  <label className="flex flex-col items-center justify-center p-4 bg-navy-900/80 hover:bg-navy-900 border-2 border-dashed border-white/20 hover:border-gold-400/60 rounded-2xl cursor-pointer transition-all group">
-                                    <div className="flex items-center gap-2 text-xs text-gray-300 group-hover:text-gold-300">
-                                      <Image className="w-4 h-4 text-gold-400" />
+                                  <label className="flex flex-col items-center justify-center p-4 bg-gray-900/80 hover:bg-gray-900 border-2 border-dashed border-white/20 hover:border-pink-400/60 rounded-2xl cursor-pointer transition-all group">
+                                    <div className="flex items-center gap-2 text-xs text-gray-300 group-hover:text-pink-300">
+                                      <Image className="w-4 h-4 text-pink-400" />
                                       <span>Click to upload payment screenshot / receipt image</span>
                                     </div>
                                     <span className="text-[10px] text-gray-500 mt-1">PNG, JPG, WEBP up to 8MB</span>
@@ -715,9 +715,9 @@ export default function CheckoutPanel({
                             <button
                               type="button"
                               onClick={() => setShowConfirmationForm(true)}
-                              className="w-full py-4 bg-[#C5A021] hover:bg-[#B3901E] text-navy-950 font-display font-bold text-sm uppercase tracking-widest rounded-2xl transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform duration-150"
+                              className="w-full py-4 bg-[#D4648A] hover:bg-[#B3901E] text-gray-950 font-display font-bold text-sm uppercase tracking-widest rounded-2xl transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform duration-150"
                             >
-                              <CheckCircle className="w-5 h-5 text-navy-950" />
+                              <CheckCircle className="w-5 h-5 text-gray-950" />
                               <span>I have completed the payment</span>
                             </button>
                           )}
@@ -728,7 +728,7 @@ export default function CheckoutPanel({
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={() => handleNextStep(2)}
-                        className="py-3 px-8 bg-navy-900 dark:bg-white hover:bg-navy-800 dark:hover:bg-gray-100 text-white dark:text-navy-900 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center gap-2"
+                        className="py-3 px-8 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center gap-2"
                       >
                         Continue to Summary <ChevronRight className="w-4 h-4" />
                       </button>
@@ -748,7 +748,7 @@ export default function CheckoutPanel({
         </div>
 
         {/* Step 3: Order Summary */}
-        <div className={`bg-white dark:bg-navy-900/90 rounded-3xl border ${activeStep === 3 ? 'border-gold-400/50 shadow-xl dark:shadow-gold-900/10' : 'border-gray-100 dark:border-navy-800 shadow-sm opacity-60'} overflow-hidden transition-all duration-300`}>
+        <div className={`bg-white dark:bg-gray-900/90 rounded-3xl border ${activeStep === 3 ? 'border-pink-400/50 shadow-xl dark:shadow-pink-900/10' : 'border-gray-100 dark:border-gray-800 shadow-sm opacity-60'} overflow-hidden transition-all duration-300`}>
           <div className="p-6 sm:p-8">
             <StepHeader step={3} title="Order Summary & Cart" icon={FileText} />
             
@@ -765,24 +765,25 @@ export default function CheckoutPanel({
                       {cartItems.map((item) => {
                         const itemPrice = item.product.discountPrice || item.product.price;
                         return (
-                          <div key={item.product.id} className="flex gap-4 items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-navy-950/50 border border-gray-100 dark:border-navy-800">
+                          <div key={getCartItemKey(item)} className="flex gap-4 items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-gray-950/50 border border-gray-100 dark:border-gray-800">
                             <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 rounded-xl bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-700 overflow-hidden shrink-0 shadow-sm">
+                              <div className="w-16 h-16 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 overflow-hidden shrink-0 shadow-sm">
                                 <img src={item.product.images && item.product.images[0] ? item.product.images[0] : ''} alt="" referrerPolicy="no-referrer" onError={(e) => handleImageError(e, item.product.category)} className="w-full h-full object-cover" />
                               </div>
                               <div className="text-left font-sans">
-                                <h5 className="text-sm font-bold text-navy-900 dark:text-white">{item.product.name}</h5>
+                                <h5 className="text-sm font-bold text-gray-900 dark:text-white">{item.product.name}</h5>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Qty: {item.quantity} | SKU: {item.product.sku}</p>
+                                {item.selectedVariation && <p className="text-xs font-semibold text-pink-600 mt-1">{formatSelectedVariation(item)}</p>}
                               </div>
                             </div>
-                            <span className="font-mono text-sm font-bold text-gold-500">Rs.{itemPrice * item.quantity}</span>
+                            <span className="font-mono text-sm font-bold text-pink-500">Rs.{itemPrice * item.quantity}</span>
                           </div>
                         );
                       })}
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-navy-900 text-white shadow-xl space-y-3 font-sans">
-                      <div className="flex justify-between text-navy-200 text-sm">
+                    <div className="p-5 rounded-2xl bg-gray-900 text-white shadow-xl space-y-3 font-sans">
+                      <div className="flex justify-between text-gray-200 text-sm">
                         <span>Items Subtotal</span>
                         <span>Rs.{subtotal}</span>
                       </div>
@@ -806,28 +807,28 @@ export default function CheckoutPanel({
                           <span>+Rs.{giftWrappingCost}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-navy-200 text-sm">
+                      <div className="flex justify-between text-gray-200 text-sm">
                         <span>GST (18%)</span>
                         <span>Rs.{gstTax}</span>
                       </div>
-                      <div className="flex justify-between text-navy-200 text-sm">
+                      <div className="flex justify-between text-gray-200 text-sm">
                         <span>Shipping ({shippingMethod}, {billableWeightKg.toFixed(2)} kg)</span>
                         <span>{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
                       </div>
-                      <div className="flex justify-between text-navy-300 text-xs">
+                      <div className="flex justify-between text-gray-300 text-xs">
                         <span>Delivery zone</span>
                         <span>{shippingZone} {shippingWeightKg > 0 ? `(${shippingWeightKg.toFixed(2)} kg actual)` : ''}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-white/10 pt-4 mt-2">
-                        <span className="font-display font-bold uppercase tracking-widest text-gold-400 text-sm">Grand Total</span>
-                        <span className="font-mono text-xl font-bold text-gold-300">Rs.{finalTotal}</span>
+                        <span className="font-display font-bold uppercase tracking-widest text-pink-400 text-sm">Grand Total</span>
+                        <span className="font-mono text-xl font-bold text-pink-300">Rs.{finalTotal}</span>
                       </div>
                     </div>
 
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={() => handleNextStep(3)}
-                        className="py-3 px-8 bg-navy-900 dark:bg-white hover:bg-navy-800 dark:hover:bg-gray-100 text-white dark:text-navy-900 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center gap-2"
+                        className="py-3 px-8 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center gap-2"
                       >
                         Proceed to Confirmation <ChevronRight className="w-4 h-4" />
                       </button>
@@ -836,9 +837,9 @@ export default function CheckoutPanel({
                 </motion.div>
               ) : activeStep > 3 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-4">
-                  <div className="flex items-center justify-between bg-gray-50 dark:bg-navy-950/50 p-4 rounded-2xl border border-gray-100 dark:border-navy-800/50">
+                  <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-950/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-800/50">
                     <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">{cartItems.length} items summarized</span>
-                    <span className="font-mono font-bold text-gold-500">Total: Rs.{finalTotal}</span>
+                    <span className="font-mono font-bold text-pink-500">Total: Rs.{finalTotal}</span>
                   </div>
                 </motion.div>
               )}
@@ -847,7 +848,7 @@ export default function CheckoutPanel({
         </div>
 
         {/* Step 4: Final Confirmation */}
-        <div className={`bg-white dark:bg-navy-900/90 rounded-3xl border ${activeStep === 4 ? 'border-gold-400/50 shadow-2xl dark:shadow-gold-900/10' : 'border-gray-100 dark:border-navy-800 shadow-sm opacity-40'} overflow-hidden transition-all duration-300`}>
+        <div className={`bg-white dark:bg-gray-900/90 rounded-3xl border ${activeStep === 4 ? 'border-pink-400/50 shadow-2xl dark:shadow-pink-900/10' : 'border-gray-100 dark:border-gray-800 shadow-sm opacity-40'} overflow-hidden transition-all duration-300`}>
           <div className="p-6 sm:p-8">
             <StepHeader step={4} title="Final Confirmation" icon={CheckCircle} />
             
@@ -864,18 +865,18 @@ export default function CheckoutPanel({
                       <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Lock className="w-8 h-8" />
                       </div>
-                      <h3 className="font-display font-bold text-lg text-navy-900 dark:text-white uppercase tracking-wider">Ready to securely place your order?</h3>
+                      <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white uppercase tracking-wider">Ready to securely place your order?</h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">By clicking the button below, your order will be processed securely using 256-bit encryption.</p>
                     </div>
 
                     <button
                       onClick={handleCheckoutSubmit}
                       disabled={isProcessing}
-                      className="w-full py-5 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-bold text-sm tracking-widest uppercase rounded-2xl flex items-center justify-center gap-2 shadow-2xl shadow-gold-500/20 hover:scale-[1.01] transform active:scale-95 transition cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="w-full py-5 bg-gradient-to-tr from-pink-500 to-pink-400 hover:from-pink-600 text-gray-950 font-display font-bold text-sm tracking-widest uppercase rounded-2xl flex items-center justify-center gap-2 shadow-2xl shadow-pink-500/20 hover:scale-[1.01] transform active:scale-95 transition cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {isProcessing ? (
                         <>
-                          <div className="w-5 h-5 border-2 border-navy-950/20 border-t-navy-950 rounded-full animate-spin"></div>
+                          <div className="w-5 h-5 border-2 border-gray-950/20 border-t-gray-950 rounded-full animate-spin"></div>
                           Processing...
                         </>
                       ) : (

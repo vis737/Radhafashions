@@ -247,7 +247,7 @@ export default function AdminCouponsTab({
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-navy-900 dark:text-white">Discounts & Coupon Codes Workspace</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Discounts & Coupon Codes Workspace</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Manage store discounts, promotions, and track usage</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -263,7 +263,7 @@ export default function AdminCouponsTab({
               resetForm();
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-2 bg-navy-900 hover:bg-gold-500 text-white px-5 py-2.5 rounded-3xl transition-colors font-medium shadow-sm hover:shadow-md"
+            className="flex items-center gap-2 bg-gray-900 hover:bg-pink-500 text-white px-5 py-2.5 rounded-3xl transition-colors font-medium shadow-sm hover:shadow-md"
           >
             <Plus size={20} />
             Create Coupon
@@ -311,7 +311,7 @@ export default function AdminCouponsTab({
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gold-50 dark:bg-gold-900/20 flex items-center justify-center text-gold-600 dark:text-gold-400">
+            <div className="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-pink-600 dark:text-pink-400">
               <Activity size={24} />
             </div>
             <div>
@@ -360,7 +360,7 @@ export default function AdminCouponsTab({
               placeholder="Search coupons..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 dark:focus:border-gold-500 outline-none text-sm transition-all"
+              className="w-full pl-9 pr-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500/20 focus:border-gray-500 dark:focus:border-pink-500 outline-none text-sm transition-all"
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -369,7 +369,7 @@ export default function AdminCouponsTab({
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full sm:w-auto pl-9 pr-8 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 text-sm focus:ring-2 focus:ring-navy-500/20 outline-none appearance-none cursor-pointer transition-all"
+                className="w-full sm:w-auto pl-9 pr-8 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 text-sm focus:ring-2 focus:ring-gray-500/20 outline-none appearance-none cursor-pointer transition-all"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -380,7 +380,7 @@ export default function AdminCouponsTab({
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as any)}
-              className="flex-1 sm:flex-none px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 text-sm focus:ring-2 focus:ring-navy-500/20 outline-none cursor-pointer transition-all"
+              className="flex-1 sm:flex-none px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 text-sm focus:ring-2 focus:ring-gray-500/20 outline-none cursor-pointer transition-all"
             >
               <option value="all">All Types</option>
               <option value="percentage">Percentage</option>
@@ -407,7 +407,7 @@ export default function AdminCouponsTab({
             {coupons.length === 0 && (
               <button
                 onClick={() => { resetForm(); setIsModalOpen(true); }}
-                className="mt-8 flex items-center gap-2 text-white font-medium bg-navy-900 hover:bg-gold-500 px-6 py-3 rounded-full transition-colors shadow-sm"
+                className="mt-8 flex items-center gap-2 text-white font-medium bg-gray-900 hover:bg-pink-500 px-6 py-3 rounded-full transition-colors shadow-sm"
               >
                 <Plus size={18} />
                 Create your first coupon
@@ -420,9 +420,9 @@ export default function AdminCouponsTab({
               <thead>
                 <tr className="bg-gray-50/50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700">
                   <th className="p-4 w-12">
-                    <button onClick={toggleSelectAll} className="text-gray-400 hover:text-navy-600 dark:hover:text-gold-400 transition-colors">
+                    <button onClick={toggleSelectAll} className="text-gray-400 hover:text-gray-600 dark:hover:text-pink-400 transition-colors">
                       {selectedCoupons.length > 0 && selectedCoupons.length === filteredCoupons.length ? (
-                        <CheckSquare size={20} className="text-navy-600 dark:text-gold-400" />
+                        <CheckSquare size={20} className="text-gray-600 dark:text-pink-400" />
                       ) : (
                         <Square size={20} />
                       )}
@@ -447,12 +447,12 @@ export default function AdminCouponsTab({
                   return (
                     <tr 
                       key={coupon.code} 
-                      className={`transition-colors ${isSelected ? 'bg-navy-50/50 dark:bg-navy-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
+                      className={`transition-colors ${isSelected ? 'bg-gray-50/50 dark:bg-gray-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
                     >
                       <td className="p-4">
-                        <button onClick={() => toggleSelection(coupon.code)} className="text-gray-400 hover:text-navy-600 dark:hover:text-gold-400 transition-colors">
+                        <button onClick={() => toggleSelection(coupon.code)} className="text-gray-400 hover:text-gray-600 dark:hover:text-pink-400 transition-colors">
                           {isSelected ? (
-                            <CheckSquare size={20} className="text-navy-600 dark:text-gold-400" />
+                            <CheckSquare size={20} className="text-gray-600 dark:text-pink-400" />
                           ) : (
                             <Square size={20} />
                           )}
@@ -518,7 +518,7 @@ export default function AdminCouponsTab({
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleDuplicate(coupon)}
-                            className="p-2 text-gray-400 hover:text-navy-600 dark:hover:text-gold-400 hover:bg-navy-50 dark:hover:bg-navy-900/30 rounded-xl transition-all"
+                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-pink-400 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-xl transition-all"
                             title="Duplicate"
                           >
                             <Copy size={16} />
@@ -614,7 +614,7 @@ export default function AdminCouponsTab({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-navy-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
               onClick={() => setIsModalOpen(false)}
             />
             
@@ -625,8 +625,8 @@ export default function AdminCouponsTab({
               className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
               <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800 z-10">
-                <h3 className="text-xl font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                  <Ticket className="text-gold-500" />
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Ticket className="text-pink-500" />
                   {newCoupon.code && newCoupon.code.endsWith('-COPY') ? 'Duplicate Coupon' : 'Create New Coupon'}
                 </h3>
                 <button
@@ -650,7 +650,7 @@ export default function AdminCouponsTab({
                         value={newCoupon.code}
                         onChange={handleCodeChange}
                         placeholder="e.g. SUMMER2024"
-                        className={`w-full px-4 py-3 rounded-2xl border ${codeError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20'} bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none transition-all font-mono uppercase`}
+                        className={`w-full px-4 py-3 rounded-2xl border ${codeError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20'} bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none transition-all font-mono uppercase`}
                         maxLength={30}
                         required
                       />
@@ -668,7 +668,7 @@ export default function AdminCouponsTab({
                         value={newCoupon.expiryDate}
                         onChange={(e) => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
                         min={today}
-                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20 outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20 outline-none transition-all"
                         required
                       />
                     </div>
@@ -681,7 +681,7 @@ export default function AdminCouponsTab({
                       <select
                         value={newCoupon.type}
                         onChange={(e) => setNewCoupon({ ...newCoupon, type: e.target.value as 'percentage' | 'flat' })}
-                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20 outline-none transition-all cursor-pointer"
+                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20 outline-none transition-all cursor-pointer"
                       >
                         <option value="percentage">Percentage (%)</option>
                         <option value="flat">Flat Amount (Rs.)</option>
@@ -704,7 +704,7 @@ export default function AdminCouponsTab({
                           min="0"
                           step={newCoupon.type === 'percentage' ? "1" : "0.01"}
                           max={newCoupon.type === 'percentage' ? "100" : undefined}
-                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20 outline-none transition-all"
+                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20 outline-none transition-all"
                           required
                         />
                       </div>
@@ -723,7 +723,7 @@ export default function AdminCouponsTab({
                           onChange={(e) => setNewCoupon({ ...newCoupon, minimumCartValue: parseFloat(e.target.value) })}
                           min="0"
                           placeholder="0 for no minimum"
-                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20 outline-none transition-all"
+                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20 outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -739,7 +739,7 @@ export default function AdminCouponsTab({
                         onChange={(e) => setNewCoupon({ ...newCoupon, usageLimit: parseInt(e.target.value, 10) })}
                         min="0"
                         placeholder="0 for unlimited"
-                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20 outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -754,7 +754,7 @@ export default function AdminCouponsTab({
                       value={newCoupon.description || ''}
                       onChange={(e) => setNewCoupon({ ...newCoupon, description: e.target.value })}
                       placeholder="Internal note or customer-facing description..."
-                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-navy-500 dark:focus:border-gold-500 focus:ring-2 focus:ring-navy-500/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-gray-500 dark:focus:border-pink-500 focus:ring-2 focus:ring-gray-500/20 outline-none transition-all"
                     />
                   </div>
 
@@ -789,7 +789,7 @@ export default function AdminCouponsTab({
                   type="submit"
                   form="coupon-form"
                   disabled={!!codeError || !newCoupon.code || !newCoupon.expiryDate}
-                  className="px-6 py-2.5 rounded-2xl bg-navy-900 hover:bg-gold-500 text-white font-medium shadow-sm hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 rounded-2xl bg-gray-900 hover:bg-pink-500 text-white font-medium shadow-sm hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {newCoupon.code && newCoupon.code.endsWith('-COPY') ? 'Duplicate Coupon' : 'Create Coupon'}
                 </button>

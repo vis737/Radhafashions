@@ -47,7 +47,7 @@ export default function AdminSecurityCenter() {
   const exportSecurityReport = () => {
     const report = `
       ==================================================
-      MERIS SECURITY COMPLIANCE REPORT (OWASP Top 10 & ASVS)
+      Radha Fashions SECURITY COMPLIANCE REPORT (OWASP Top 10 & ASVS)
       Generated on: ${new Date().toLocaleString()}
       ==================================================
       Security Health Score: ${stats.securityScore}/100
@@ -63,7 +63,7 @@ export default function AdminSecurityCenter() {
     const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'meris_security_audit_report.txt';
+    link.download = 'radha_security_audit_report.txt';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -73,9 +73,9 @@ export default function AdminSecurityCenter() {
     <div className="space-y-6 text-left font-sans select-none">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-50 dark:border-navy-800 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-50 dark:border-gray-800 pb-4">
         <div>
-          <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-2">
+          <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-emerald-500" /> Administrative Security Center
           </h3>
           <p className="text-[10px] text-gray-400 dark:text-gray-500 font-sans mt-0.5">
@@ -85,7 +85,7 @@ export default function AdminSecurityCenter() {
 
         <button
           onClick={exportSecurityReport}
-          className="px-3.5 py-2 bg-navy-950 hover:bg-gold-500 text-white hover:text-navy-950 border border-navy-800 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+          className="px-3.5 py-2 bg-gray-950 hover:bg-pink-500 text-white hover:text-gray-950 border border-gray-800 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
         >
           <Download className="w-3.5 h-3.5" /> Security Report
         </button>
@@ -95,7 +95,7 @@ export default function AdminSecurityCenter() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Score Card */}
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm flex items-center justify-between col-span-1">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm flex items-center justify-between col-span-1">
           <div className="space-y-1">
             <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider block font-semibold">Security Score</span>
             <h3 className="font-display font-black text-4xl text-emerald-500 leading-none">
@@ -111,8 +111,8 @@ export default function AdminSecurityCenter() {
         </div>
 
         {/* Audit metrics */}
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm col-span-2 grid grid-cols-2 gap-4">
-          <div className="space-y-1 border-r border-gray-50 dark:border-navy-800 pr-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm col-span-2 grid grid-cols-2 gap-4">
+          <div className="space-y-1 border-r border-gray-50 dark:border-gray-800 pr-2">
             <span className="text-[9px] font-mono text-gray-400 uppercase">Failed Logins</span>
             <p className="font-display font-extrabold text-xl text-amber-500">{stats.failedAttempts} Attempts</p>
           </div>
@@ -120,11 +120,11 @@ export default function AdminSecurityCenter() {
             <span className="text-[9px] font-mono text-gray-400 uppercase">Blocked IPs</span>
             <p className="font-display font-extrabold text-xl text-red-500">{stats.blockedIps} IPs</p>
           </div>
-          <div className="space-y-1 border-t border-r border-gray-50 dark:border-navy-800 pt-3 pr-2">
+          <div className="space-y-1 border-t border-r border-gray-50 dark:border-gray-800 pt-3 pr-2">
             <span className="text-[9px] font-mono text-gray-400">Active Admins</span>
             <p className="font-display font-extrabold text-xl text-emerald-500">{stats.activeAdminSessions} Session</p>
           </div>
-          <div className="space-y-1 border-t border-gray-50 dark:border-navy-800 pt-3 pl-2">
+          <div className="space-y-1 border-t border-gray-50 dark:border-gray-800 pt-3 pl-2">
             <span className="text-[9px] font-mono text-gray-400">Expired Cookies</span>
             <p className="font-display font-extrabold text-xl text-gray-500">{stats.expiredTokens} JWTs</p>
           </div>
@@ -136,23 +136,23 @@ export default function AdminSecurityCenter() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Real-time Security Threat Logs */}
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm lg:col-span-2 space-y-4">
-          <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1.5">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm lg:col-span-2 space-y-4">
+          <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5">
             <ShieldAlert className="w-4 h-4 text-amber-500" /> Active Threat Detections Timeline
           </h4>
           <div className="space-y-3.5 max-h-60 overflow-y-auto no-scrollbar">
             {threatLogs.map((log) => (
-              <div key={log.id} className="flex justify-between items-start text-xs border-b border-gray-50 dark:border-navy-800 pb-3 last:border-0 last:pb-0 text-left">
+              <div key={log.id} className="flex justify-between items-start text-xs border-b border-gray-50 dark:border-gray-800 pb-3 last:border-0 last:pb-0 text-left">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase ${
-                      log.severity === 'high' ? 'bg-red-500 text-white' : log.severity === 'medium' ? 'bg-amber-400 text-navy-950' : 'bg-gray-100 text-gray-600'
+                      log.severity === 'high' ? 'bg-red-500 text-white' : log.severity === 'medium' ? 'bg-amber-400 text-gray-950' : 'bg-gray-100 text-gray-600'
                     }`}>
                       {log.type}
                     </span>
                     <span className="text-[10px] text-gray-400 font-mono font-medium">{log.ip}</span>
                   </div>
-                  <p className="text-gray-600 dark:text-slate-300 leading-normal font-sans">{log.details}</p>
+                  <p className="text-gray-600 dark:text-gray-400 leading-normal font-sans">{log.details}</p>
                 </div>
                 <span className="text-[9px] text-gray-400 font-mono flex-shrink-0 ml-4 mt-0.5">{log.timestamp}</span>
               </div>
@@ -161,9 +161,9 @@ export default function AdminSecurityCenter() {
         </div>
 
         {/* Cryptographic and System Protection */}
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm space-y-4">
-          <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1.5">
-            <Server className="w-4 h-4 text-[#C5A021]" /> WAF & System Configuration
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm space-y-4">
+          <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5">
+            <Server className="w-4 h-4 text-[#D4648A]" /> WAF & System Configuration
           </h4>
           <div className="space-y-4 text-xs font-sans">
             <div className="flex justify-between items-center">
@@ -184,10 +184,10 @@ export default function AdminSecurityCenter() {
                 <Clock className="w-3.5 h-3.5" /> 15 mins
               </span>
             </div>
-            <div className="flex justify-between items-center border-t border-gray-100 dark:border-navy-800 pt-4 font-semibold">
+            <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-800 pt-4 font-semibold">
               <span className="text-gray-400 font-normal">CORS Mapping config</span>
-              <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                <Globe className="w-3.5 h-3.5 text-[#C5A021]" /> Restrictive
+              <span className="text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                <Globe className="w-3.5 h-3.5 text-[#D4648A]" /> Restrictive
               </span>
             </div>
           </div>
@@ -233,8 +233,8 @@ function SmtpTesterBlock() {
   };
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-navy-800 space-y-3 text-left">
-      <h5 className="font-display font-bold text-[11px] uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1">
+    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3 text-left">
+      <h5 className="font-display font-bold text-[11px] uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1">
         ✉️ Test Railway SMTP Credentials
       </h5>
       <p className="text-[10px] text-gray-500">
@@ -246,13 +246,13 @@ function SmtpTesterBlock() {
           placeholder="your-email@gmail.com"
           value={targetEmail}
           onChange={(e) => setTargetEmail(e.target.value)}
-          className="flex-1 px-3 py-1.5 bg-gray-50 dark:bg-navy-950 border border-gray-200 dark:border-navy-800 rounded-xl text-xs text-navy-900 dark:text-navy-50 focus:outline-none focus:border-gold-500"
+          className="flex-1 px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-900 dark:text-gray-50 focus:outline-none focus:border-pink-500"
           required
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-3 py-1.5 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+          className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-gray-950 font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
         >
           {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Send Test'}
         </button>

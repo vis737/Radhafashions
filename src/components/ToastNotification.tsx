@@ -34,18 +34,18 @@ function ToastItem({ toast, onClose }: { toast: ToastMessage; onClose: (id: stri
   }, [toast.id, onClose]);
 
   let icon = <CheckCircle className="w-4 h-4 text-emerald-500" />;
-  let bgColor = 'bg-white dark:bg-navy-900 border-emerald-500/30';
-  let textColor = 'text-gray-800 dark:text-slate-100';
+  let bgColor = 'bg-white dark:bg-gray-900 border-emerald-500/30';
+  let textColor = 'text-gray-800 dark:text-gray-100';
 
   if (toast.type === 'error') {
     icon = <AlertTriangle className="w-4 h-4 text-red-500" />;
-    bgColor = 'bg-white dark:bg-navy-900 border-red-500/30';
+    bgColor = 'bg-white dark:bg-gray-900 border-red-500/30';
   } else if (toast.type === 'warning') {
     icon = <AlertTriangle className="w-4 h-4 text-amber-500" />;
-    bgColor = 'bg-white dark:bg-navy-900 border-amber-500/30';
+    bgColor = 'bg-white dark:bg-gray-900 border-amber-500/30';
   } else if (toast.type === 'info') {
-    icon = <Info className="w-4 h-4 text-[#C5A021]" />;
-    bgColor = 'bg-white dark:bg-navy-900 border-[#C5A021]/30';
+    icon = <Info className="w-4 h-4 text-[#D4648A]" />;
+    bgColor = 'bg-white dark:bg-gray-900 border-[#D4648A]/30';
   }
 
   return (
@@ -62,7 +62,7 @@ function ToastItem({ toast, onClose }: { toast: ToastMessage; onClose: (id: stri
       </div>
       <button
         onClick={() => onClose(toast.id)}
-        className="p-1 hover:bg-gray-100 dark:hover:bg-navy-800 rounded-lg text-gray-400 hover:text-gray-600 transition shrink-0 cursor-pointer"
+        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-400 hover:text-gray-600 transition shrink-0 cursor-pointer"
       >
         <X className="w-3.5 h-3.5" />
       </button>

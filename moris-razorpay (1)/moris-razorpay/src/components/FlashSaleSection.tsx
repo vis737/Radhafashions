@@ -16,7 +16,7 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
 
   useEffect(() => {
     // Read or initiate target session countdown time to keep it ticking
-    const stored = sessionStorage.getItem('meris_flash_sale_end');
+    const stored = sessionStorage.getItem('radha_flash_sale_end');
     const now = Math.floor(Date.now() / 1000);
     let targetEnd = now + 8070; // 2h 14m 30s in future
 
@@ -26,10 +26,10 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
         targetEnd = parsed;
       } else {
         // Reset to another 2 hours if expired so the demo is always lively!
-        sessionStorage.setItem('meris_flash_sale_end', targetEnd.toString());
+        sessionStorage.setItem('radha_flash_sale_end', targetEnd.toString());
       }
     } else {
-      sessionStorage.setItem('meris_flash_sale_end', targetEnd.toString());
+      sessionStorage.setItem('radha_flash_sale_end', targetEnd.toString());
     }
 
     setTimeLeft(targetEnd - now);

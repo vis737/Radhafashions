@@ -152,7 +152,7 @@ export default function TrackingTab({
       className="space-y-6 text-left"
     >
       <div>
-        <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest pb-1 border-b border-gray-100">Order Verification & Tracking</h3>
+        <h3 className="font-display font-medium text-sm text-gray-900 uppercase tracking-widest pb-1 border-b border-gray-100">Order Verification & Tracking</h3>
         <p className="text-xs text-gray-400 mt-2">
           Enter the order code or select from your active order list below to check the real-time package milestones.
         </p>
@@ -166,10 +166,10 @@ export default function TrackingTab({
             value={trackingInput}
             onChange={(e) => setTrackingInput(e.target.value)}
             placeholder="e.g. MR-123456-789"
-            className="w-full bg-transparent pl-9 pr-3 py-2 text-xs focus:outline-none font-mono uppercase tracking-wider text-navy-950 font-bold"
+            className="w-full bg-transparent pl-9 pr-3 py-2 text-xs focus:outline-none font-mono uppercase tracking-wider text-gray-950 font-bold"
           />
         </div>
-        <button type="submit" className="px-4 py-2 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 text-navy-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer active:scale-95 shadow-sm">
+        <button type="submit" className="px-4 py-2 bg-gradient-to-tr from-pink-500 to-pink-400 hover:from-pink-600 text-gray-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer active:scale-95 shadow-sm">
           Track Status
         </button>
       </form>
@@ -191,11 +191,11 @@ export default function TrackingTab({
                 onClick={() => handleTrackOrderSearch(undefined, o.orderNumber)}
                 className={`px-3 py-1.5 rounded-xl border text-[10px] font-mono font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                   searchedOrder?.id === o.id
-                    ? 'bg-gold-50 border-gold-400 text-gold-700 font-bold shadow-sm'
+                    ? 'bg-pink-50 border-pink-400 text-gold-700 font-bold shadow-sm'
                     : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-500'
                 }`}
               >
-                <Package className="w-3.5 h-3.5 text-gold-400" />
+                <Package className="w-3.5 h-3.5 text-pink-400" />
                 <span>{o.orderNumber}</span>
               </button>
             ))}
@@ -215,47 +215,47 @@ export default function TrackingTab({
                     LIVE REMOTE DB
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wider rounded bg-yellow-500/10 text-yellow-600 border border-yellow-500/20">
+                  <span className="px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wider rounded bg-pink-500/10 text-pink-600 border border-pink-500/20">
                     LOCAL CACHE
                   </span>
                 )}
               </div>
-              <h4 className="font-mono text-xs font-bold text-navy-950 uppercase">{searchedOrder.orderNumber}</h4>
+              <h4 className="font-mono text-xs font-bold text-gray-950 uppercase">{searchedOrder.orderNumber}</h4>
               <span className="text-[10px] text-gray-400 block mt-0.5">Purchased on {searchedOrder.date}</span>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
               <div className="text-left sm:text-right font-sans shrink-0">
                 <span className="text-[10px] font-mono text-gray-400 block">BILLING AMOUNT</span>
-                <h4 className="text-xs font-bold text-navy-950">Rs.{searchedOrder.total}</h4>
+                <h4 className="text-xs font-bold text-gray-950">Rs.{searchedOrder.total}</h4>
                 <span className="text-[10px] font-mono text-gray-400 mt-0.5 block">
                   Method: {searchedOrder.paymentMethod}
                 </span>
               </div>
               <button
                 onClick={() => generateInvoicePDF(searchedOrder)}
-                className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-slate-800 hover:text-navy-950 font-display font-bold text-[10px] uppercase tracking-wider rounded-xl transition cursor-pointer active:scale-95 shadow-sm flex items-center justify-center gap-1.5 shrink-0"
+                className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 hover:text-gray-950 font-display font-bold text-[10px] uppercase tracking-wider rounded-xl transition cursor-pointer active:scale-95 shadow-sm flex items-center justify-center gap-1.5 shrink-0"
               >
-                <Download className="w-3.5 h-3.5 text-gold-500 shrink-0" />
+                <Download className="w-3.5 h-3.5 text-pink-500 shrink-0" />
                 <span>Download Invoice</span>
               </button>
             </div>
           </div>
 
-          <div className="p-5 bg-navy-950 text-white rounded-2xl md:p-6 space-y-4 shadow-md select-none border border-navy-900">
-            <div className="flex justify-between items-center text-[10px] font-mono tracking-widest text-gold-400 uppercase font-semibold">
+          <div className="p-5 bg-gray-950 text-white rounded-2xl md:p-6 space-y-4 shadow-md select-none border border-gray-900">
+            <div className="flex justify-between items-center text-[10px] font-mono tracking-widest text-pink-400 uppercase font-semibold">
               <span className="flex items-center gap-1.5">
                 Live Status Pulse
                 {isTrackingLoading && (
-                  <span className="animate-spin text-gold-400 text-[10px]">...</span>
+                  <span className="animate-spin text-pink-400 text-[10px]">...</span>
                 )}
               </span>
-              <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-white">
+              <span className="px-2 py-0.5 rounded bg-gray-900 border border-gray-800 text-white">
                 {searchedOrder.status === 'cancelled' ? 'CANCELLED' : searchedOrder.status.toUpperCase()}
               </span>
             </div>
 
             <div className="relative">
-              <div className="absolute top-1/2 left-0 right-0 h-1.5 bg-navy-900/80 rounded-full -translate-y-1/2" />
+              <div className="absolute top-1/2 left-0 right-0 h-1.5 bg-gray-900/80 rounded-full -translate-y-1/2" />
               
               <motion.div
                 initial={{ width: '0%' }}
@@ -271,7 +271,7 @@ export default function TrackingTab({
                 className={`absolute top-1/2 left-0 h-1.5 rounded-full -translate-y-1/2 transition-colors duration-300 ${
                   searchedOrder.status === 'cancelled' 
                     ? 'bg-red-500' 
-                    : 'bg-gradient-to-r from-gold-500 via-gold-400 to-emerald-500'
+                    : 'bg-gradient-to-r from-pink-500 via-pink-400 to-emerald-500'
                 }`}
               />
 
@@ -290,7 +290,7 @@ export default function TrackingTab({
                       {searchedOrder.status === 'cancelled' ? <AlertCircle className="w-4 h-4" /> : <Clipboard className="w-4 h-4" />}
                     </div>
                     {searchedOrder.status !== 'cancelled' && (
-                      <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-navy-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-navy-950 text-[8px] font-black shadow-sm">
+                      <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-gray-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-gray-950 text-[8px] font-black shadow-sm">
                         Check
                       </div>
                     )}
@@ -303,10 +303,10 @@ export default function TrackingTab({
                   const isCancelled = searchedOrder.status === 'cancelled';
                   const isReached = isCompleted || searchedOrder.status === 'processing';
                   
-                  let nodeStyle = 'bg-navy-900 border-navy-800 text-navy-400';
+                  let nodeStyle = 'bg-gray-900 border-gray-800 text-gray-400';
                   if (isCancelled) nodeStyle = 'bg-red-950/20 border-red-900/40 text-red-900';
                   else if (isCompleted) nodeStyle = 'bg-emerald-950 border-emerald-400 text-emerald-400';
-                  else if (isActive) nodeStyle = 'bg-gold-950 border-gold-400 text-gold-400 ring-4 ring-gold-950/40';
+                  else if (isActive) nodeStyle = 'bg-pink-950 border-pink-400 text-pink-400 ring-4 ring-pink-950/40';
 
                   return (
                     <div className="flex flex-col items-center">
@@ -319,7 +319,7 @@ export default function TrackingTab({
                           <Clock className={`w-4 h-4 ${isActive ? 'animate-spin' : ''}`} />
                         </div>
                         {isCompleted && !isCancelled && (
-                          <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-navy-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-navy-950 text-[8px] font-black shadow-sm">Check</div>
+                          <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-gray-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-gray-950 text-[8px] font-black shadow-sm">Check</div>
                         )}
                       </motion.div>
                     </div>
@@ -332,10 +332,10 @@ export default function TrackingTab({
                   const isCancelled = searchedOrder.status === 'cancelled';
                   const isReached = isCompleted || isActive;
                   
-                  let nodeStyle = 'bg-navy-900 border-navy-800 text-navy-400';
+                  let nodeStyle = 'bg-gray-900 border-gray-800 text-gray-400';
                   if (isCancelled) nodeStyle = 'bg-red-950/20 border-red-900/40 text-red-900';
                   else if (isCompleted) nodeStyle = 'bg-emerald-950 border-emerald-400 text-emerald-400';
-                  else if (isActive) nodeStyle = 'bg-gold-950 border-gold-400 text-gold-400 ring-4 ring-gold-950/40';
+                  else if (isActive) nodeStyle = 'bg-pink-950 border-pink-400 text-pink-400 ring-4 ring-pink-950/40';
 
                   return (
                     <div className="flex flex-col items-center">
@@ -348,7 +348,7 @@ export default function TrackingTab({
                           <Truck className={`w-4 h-4 ${isActive ? 'animate-pulse' : ''}`} />
                         </div>
                         {isCompleted && !isCancelled && (
-                          <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-navy-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-navy-950 text-[8px] font-black shadow-sm">Check</div>
+                          <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-gray-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-gray-950 text-[8px] font-black shadow-sm">Check</div>
                         )}
                       </motion.div>
                     </div>
@@ -360,7 +360,7 @@ export default function TrackingTab({
                   const isCancelled = searchedOrder.status === 'cancelled';
                   const isReached = isCompleted;
                   
-                  let nodeStyle = 'bg-navy-900 border-navy-800 text-navy-400';
+                  let nodeStyle = 'bg-gray-900 border-gray-800 text-gray-400';
                   if (isCancelled) nodeStyle = 'bg-red-950/20 border-red-900/40 text-red-900';
                   else if (isCompleted) nodeStyle = 'bg-emerald-950 border-emerald-400 text-emerald-400 ring-4 ring-emerald-950/40';
 
@@ -375,7 +375,7 @@ export default function TrackingTab({
                           <Package className="w-4 h-4" />
                         </div>
                         {isCompleted && !isCancelled && (
-                          <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-navy-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-navy-950 text-[8px] font-black shadow-sm">Check</div>
+                          <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-gray-950 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-gray-950 text-[8px] font-black shadow-sm">Check</div>
                         )}
                       </motion.div>
                     </div>
@@ -390,14 +390,14 @@ export default function TrackingTab({
               </span>
               <span className={
                 (searchedOrder.status as string) === 'cancelled' ? 'text-red-900/60' :
-                (searchedOrder.status as string) === 'pending' || (searchedOrder.status as string) === 'processing' ? 'text-gold-400 font-bold' :
+                (searchedOrder.status as string) === 'pending' || (searchedOrder.status as string) === 'processing' ? 'text-pink-400 font-bold' :
                 (searchedOrder.status as string) !== 'pending' ? 'text-emerald-400 font-bold' : 'text-gray-400'
               }>
                 2. Processing
               </span>
               <span className={
                 (searchedOrder.status as string) === 'cancelled' ? 'text-red-900/60' :
-                (searchedOrder.status as string) === 'shipped' ? 'text-gold-400 font-bold' :
+                (searchedOrder.status as string) === 'shipped' ? 'text-pink-400 font-bold' :
                 (searchedOrder.status as string) === 'delivered' ? 'text-emerald-400 font-bold' : 'text-gray-400'
               }>
                 3. Dispatched
@@ -417,23 +417,23 @@ export default function TrackingTab({
             
             return (
               <div className="space-y-6">
-                <div className="p-5 sm:p-6 bg-slate-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="p-5 sm:p-6 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-2 text-left">
-                    <span className="text-[9px] font-mono font-bold tracking-widest text-gold-600 uppercase block">Courier Dispatch Partner</span>
+                    <span className="text-[9px] font-mono font-bold tracking-widest text-pink-600 uppercase block">Courier Dispatch Partner</span>
                     <div className="flex items-center gap-2">
-                      <div className="px-3 py-1 bg-navy-950 text-white font-display font-black text-xs rounded-lg uppercase tracking-wide">
+                      <div className="px-3 py-1 bg-gray-950 text-white font-display font-black text-xs rounded-lg uppercase tracking-wide">
                         {courier.partner}
                       </div>
-                      <span className="text-xs text-slate-500 font-medium">Official Cargo Consignment</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">Official Cargo Consignment</span>
                     </div>
                     <div className="flex items-center gap-2 pt-1 flex-wrap">
-                      <span className="text-xs font-mono text-navy-900 font-bold">AWB Tracking Code:</span>
-                      <span className="font-mono text-xs font-black text-gold-600 bg-white border px-2 py-0.5 rounded shadow-2xs select-all">
+                      <span className="text-xs font-mono text-gray-900 font-bold">AWB Tracking Code:</span>
+                      <span className="font-mono text-xs font-black text-pink-600 bg-white border px-2 py-0.5 rounded shadow-2xs select-all">
                         {courier.awb}
                       </span>
                       <button
                         onClick={() => handleCopyAWB(courier.awb)}
-                        className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-navy-950 rounded-lg transition active:scale-95"
+                        className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-950 rounded-lg transition active:scale-95"
                       >
                         <Clipboard className="w-4 h-4" />
                       </button>
@@ -458,8 +458,8 @@ export default function TrackingTab({
                                 ? isSuccess
                                   ? 'bg-emerald-500 border-emerald-400 text-white ring-4 ring-emerald-100'
                                   : isActive
-                                    ? 'bg-gold-500 border-gold-400 text-white ring-4 ring-gold-100'
-                                    : 'bg-navy-950 border-navy-800 text-white ring-4 ring-navy-100'
+                                    ? 'bg-pink-500 border-pink-400 text-white ring-4 ring-pink-100'
+                                    : 'bg-gray-950 border-gray-800 text-white ring-4 ring-gray-100'
                                 : 'bg-white border-gray-200 text-gray-400'
                             }`}>
                               {isSuccess ? <Check className="w-3 h-3 font-bold" /> : isActive ? <Truck className="w-3 h-3 animate-pulse" /> : isPending ? <Clock className="w-3 h-3 animate-spin" /> : <Package className="w-3 h-3" />}
@@ -470,12 +470,12 @@ export default function TrackingTab({
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[10px] font-mono font-semibold text-gray-400">{log.time}</span>
                               {isLatest && (
-                                <span className="text-[8px] font-mono font-bold bg-navy-950 text-gold-400 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
+                                <span className="text-[8px] font-mono font-bold bg-gray-950 text-pink-400 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
                                   LATEST PULSE
                                 </span>
                               )}
                             </div>
-                            <h6 className={`text-xs font-bold ${isLatest ? 'text-navy-950' : 'text-gray-500'}`}>
+                            <h6 className={`text-xs font-bold ${isLatest ? 'text-gray-950' : 'text-gray-500'}`}>
                               {log.title}
                             </h6>
                             <p className="text-xs text-gray-500 font-light leading-relaxed max-w-xl font-sans">
@@ -496,7 +496,7 @@ export default function TrackingTab({
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
               <div>
                 <p className="font-bold">Purchase Cancelled</p>
-                <p>This transaction sequence is aborted. Check email details or request inquiry via support@meris.com.</p>
+                <p>This transaction sequence is aborted. Check email details or request inquiry via admin@radhafashions.com.</p>
               </div>
             </div>
           )}
@@ -506,7 +506,7 @@ export default function TrackingTab({
             <div className="space-y-1.5 font-sans">
               {searchedOrder.items.map((it: any) => (
                 <div key={it.product.id} className="flex justify-between items-center text-xs bg-gray-50 p-2.5 rounded-lg">
-                  <span className="font-semibold text-navy-900">{it.product.name} (x{it.quantity})</span>
+                  <span className="font-semibold text-gray-900">{it.product.name} (x{it.quantity})</span>
                   <span className="font-mono text-gray-500">Rs.{(it.product.discountPrice || it.product.price) * it.quantity}</span>
                 </div>
               ))}

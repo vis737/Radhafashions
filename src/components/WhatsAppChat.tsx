@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 export default function WhatsAppChat() {
-  const phoneNo = '+919384292229'; // matching official contact
+  const phoneNo = '+919731153609'; // matching official contact
 
   const handleOpenWhatsApp = () => {
     const uri = `https://wa.me/${phoneNo.replace(/[^0-9]/g, '')}`;

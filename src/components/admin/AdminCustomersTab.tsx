@@ -196,7 +196,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
     switch (tier) {
       case 'Platinum': return 'bg-purple-100 text-purple-800';
       case 'Gold': return 'bg-amber-100 text-amber-700 border border-amber-300';
-      case 'Silver': return 'bg-slate-100 text-slate-700';
+      case 'Silver': return 'bg-gray-100 text-gray-700';
       case 'Bronze': return 'bg-orange-50 text-orange-700';
       default: return 'bg-gray-100 text-gray-700';
     }
@@ -217,7 +217,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
         <div>
           <h2 className="text-2xl font-bold text-[#0B1B3D] flex items-center gap-3">
             Customer Portfolios CRM Workspace
-            <span className="bg-[#C5A021] text-white text-xs px-2.5 py-1 rounded-full font-medium">
+            <span className="bg-[#D4648A] text-white text-xs px-2.5 py-1 rounded-full font-medium">
               {totalCustomers}
             </span>
           </h2>
@@ -262,7 +262,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-[#C5A021]/10 flex items-center justify-center text-[#C5A021] shrink-0">
+          <div className="w-12 h-12 rounded-full bg-[#D4648A]/10 flex items-center justify-center text-[#D4648A] shrink-0">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
@@ -340,7 +340,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                 className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden"
               >
                 {/* Decorative blob */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#0B1B3D]/5 to-[#C5A021]/5 rounded-bl-full -z-0" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#0B1B3D]/5 to-[#D4648A]/5 rounded-bl-full -z-0" />
                 
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-3">
@@ -349,10 +349,10 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                         <img
                           src={customer.imageUrl}
                           alt={customer.name}
-                          className="w-10 h-10 rounded-full object-cover border border-[#C5A021]/30 shrink-0"
+                          className="w-10 h-10 rounded-full object-cover border border-[#D4648A]/30 shrink-0"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-[#C5A021]/10 text-[#C5A021] rounded-full flex items-center justify-center font-bold text-lg shrink-0">
+                        <div className="w-10 h-10 bg-[#D4648A]/10 text-[#D4648A] rounded-full flex items-center justify-center font-bold text-lg shrink-0">
                           {customer.name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -374,7 +374,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                           customer.authProvider.toLowerCase().includes('google')
                             ? 'bg-blue-50 text-blue-600 border border-blue-200'
                             : customer.authProvider.toLowerCase().includes('apple')
-                              ? 'bg-slate-900 text-white'
+                              ? 'bg-white dark:bg-gray-900 text-white'
                               : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
                           {customer.authProvider.toLowerCase().includes('google') ? 'Google ID' : customer.authProvider.toLowerCase().includes('apple') ? 'Apple ID' : 'Clerk Auth'}
@@ -383,8 +383,8 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                     </div>
                   </div>
                   {customer.clerkId && (
-                    <div className="mb-3 px-2.5 py-1 bg-slate-50 rounded-lg text-[10px] text-slate-500 font-mono flex items-center gap-1 border border-slate-200/60">
-                      <span className="font-bold text-slate-700">Clerk ID:</span>
+                    <div className="mb-3 px-2.5 py-1 bg-gray-50 dark:bg-gray-950 rounded-lg text-[10px] text-gray-400 dark:text-gray-500 font-mono flex items-center gap-1 border border-gray-200/60 dark:border-gray-800/60">
+                      <span className="font-bold text-gray-700">Clerk ID:</span>
                       <span className="truncate">{customer.clerkId}</span>
                     </div>
                   )}
@@ -411,7 +411,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                       <p className="text-[10px] text-gray-500 font-medium uppercase mb-0.5 flex items-center gap-1">
                         <TrendingUp className="w-3 h-3" /> Spent
                       </p>
-                      <p className="text-lg font-bold text-[#C5A021]">
+                      <p className="text-lg font-bold text-[#D4648A]">
                         ₹{customer.totalSpent.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                       </p>
                     </div>
@@ -521,7 +521,7 @@ export default function AdminCustomersTab({ orders, onLogActivity, addToast }: A
                               <td className="py-4 whitespace-nowrap text-gray-600">
                                 {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
                               </td>
-                              <td className="py-4 whitespace-nowrap font-medium text-[#C5A021]">
+                              <td className="py-4 whitespace-nowrap font-medium text-[#D4648A]">
                                 ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                               </td>
                               <td className="py-4 whitespace-nowrap">

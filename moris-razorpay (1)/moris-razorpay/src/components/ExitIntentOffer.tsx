@@ -13,14 +13,14 @@ export default function ExitIntentOffer({ onApplyCoupon }: ExitIntentOfferProps)
 
   useEffect(() => {
     // Prevent repeated popups during the same browser session
-    const shownThisSession = sessionStorage.getItem('meris_exit_intent_shown');
+    const shownThisSession = sessionStorage.getItem('radha_exit_intent_shown');
     if (shownThisSession) return;
 
     const handleMouseLeave = (e: MouseEvent) => {
       // clientY < 15 indicates cursor moving towards tab headers
       if (e.clientY < 15) {
         setShow(true);
-        sessionStorage.setItem('meris_exit_intent_shown', 'true');
+        sessionStorage.setItem('radha_exit_intent_shown', 'true');
         // clean up event after triggering
         document.removeEventListener('mouseleave', handleMouseLeave);
       }

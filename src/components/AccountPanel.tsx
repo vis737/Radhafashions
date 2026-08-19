@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useUser, useClerk, SignIn } from '@clerk/clerk-react';
-import { dark } from '@clerk/themes';
+import { useUser, useClerk, useSignIn } from '@clerk/clerk-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogIn, Lock, Mail, Clipboard, Heart, Tag, RotateCcw, Compass, MapPin, Truck, AlertCircle, ShoppingCart, Check, Search, Package, Clock, ArrowRight, Download, X, Eye, EyeOff, Gift, ShieldCheck, MessageSquare, Smartphone, Copy, ExternalLink, AlertTriangle, Plus, Trash2, LogOut } from 'lucide-react';
 import { Product, Order, Coupon, CartItem } from '../types';
@@ -36,6 +35,91 @@ interface AccountPanelProps {
   rewardsEnabled?: boolean;
 }
 
+const glassFieldClass =
+  'w-full h-11 rounded-md bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 outline-none border border-white/80 shadow-inner focus:ring-2 focus:ring-black/10';
+const glassButtonClass =
+  'w-full h-11 rounded-md bg-black text-white text-[15px] font-semibold tracking-wide hover:bg-neutral-900 transition disabled:opacity-60 cursor-pointer';
+
+const SakuraAccent = () => (
+  <svg
+    className="pointer-events-none absolute -right-7 top-8 w-20 h-20 drop-shadow-sm"
+    viewBox="0 0 80 80"
+    fill="none"
+    aria-hidden="true"
+  >
+    <g>
+      {[0, 72, 144, 216, 288].map((deg) => (
+        <ellipse
+          key={deg}
+          cx="40"
+          cy="22"
+          rx="9"
+          ry="16"
+          fill="#F4A7C1"
+          opacity="0.95"
+          transform={`rotate(${deg} 40 40)`}
+        />
+      ))}
+      <circle cx="40" cy="40" r="6" fill="#FCE7F3" />
+      <circle cx="40" cy="40" r="3.2" fill="#E86A9A" />
+    </g>
+  </svg>
+);
+
+const GoogleMark = () => (
+  <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.223 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
+    <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
+    <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
+    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
+  </svg>
+);
+
+const AppleMark = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      fill="#000000"
+      d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"
+    />
+  </svg>
+);
+
+const socialButtonClass =
+  'w-full h-11 rounded-md bg-white text-black text-[13px] font-semibold border border-[#d4d4d4] flex items-center justify-center gap-2 hover:bg-neutral-50 transition cursor-pointer disabled:opacity-60';
+
+const ClerkSocialButtons = () => {
+  const { signIn, isLoaded } = useSignIn();
+
+  const continueWith = (strategy: 'oauth_google' | 'oauth_apple') => {
+    if (!isLoaded || !signIn) return;
+    void signIn.authenticateWithRedirect({
+      strategy,
+      redirectUrl: '/sso-callback',
+      redirectUrlComplete: '/',
+    });
+  };
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="h-px flex-1 bg-black/15" />
+        <span className="text-[11px] text-neutral-600">or continue with</span>
+        <div className="h-px flex-1 bg-black/15" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <button type="button" className={socialButtonClass} disabled={!isLoaded} onClick={() => continueWith('oauth_google')}>
+          <GoogleMark />
+          Continue with Google
+        </button>
+        <button type="button" className={socialButtonClass} disabled={!isLoaded} onClick={() => continueWith('oauth_apple')}>
+          <AppleMark />
+          Continue with Apple
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function AccountPanel({
   wishlistProducts,
   orders,
@@ -53,7 +137,7 @@ export default function AccountPanel({
 }: AccountPanelProps) {
   // Clerk authentication state & hooks
   const { user: clerkUser, isSignedIn: isClerkSignedIn } = useUser();
-  const { openSignIn, signOut: clerkSignOut } = useClerk();
+  const { signOut: clerkSignOut } = useClerk();
 
   const handleUserLogout = async () => {
     try {
@@ -256,6 +340,10 @@ export default function AccountPanel({
 
     if (authMethod === 'password') {
       if (!email.trim() || !password.trim()) return;
+      if (!isSignUp && !email.trim().includes('@')) {
+        setOtpError('Please enter the email you used as your username.');
+        return;
+      }
 
       if (isSignUp) {
         // Enforce strong password validation
@@ -551,305 +639,228 @@ export default function AccountPanel({
     return () => clearInterval(interval);
   }, [subTab, searchedOrder?.orderNumber, searchedOrder?.status]);
 
+  const resetAuthMessages = () => {
+    setOtpError('');
+    setRateLimitMessage('');
+    setPasswordErrors([]);
+    setShowPasswordValidation(false);
+    setOtpSuccessMessage('');
+  };
+
+  const showSignIn = () => {
+    setIsSignUp(false);
+    setAuthMethod('password');
+    setAuthStep('email');
+    resetAuthMessages();
+  };
+
+  const showSignUp = () => {
+    setIsSignUp(true);
+    setAuthMethod('password');
+    setAuthStep('email');
+    resetAuthMessages();
+  };
+
+  const showForgotPassword = () => {
+    setIsSignUp(false);
+    setAuthMethod('otp');
+    setAuthStep('email');
+    resetAuthMessages();
+    if (email.trim()) setOtpEmail(email.trim());
+  };
+
+  const authTitle = isSignUp ? 'Sign Up' : authMethod === 'otp' ? 'Reset' : 'Sign In';
+  const authButtonLabel = otpLoading
+    ? 'Please wait...'
+    : isSignUp
+      ? 'Create account'
+      : authMethod === 'otp'
+        ? authStep === 'otp'
+          ? 'Verify'
+          : 'Send code'
+        : 'Login';
+
   // --- Render Authentication Gate ---
   if (!currentUser) {
     return (
-      <>
-        <div className="max-w-md mx-auto py-12 px-4 font-sans text-left">
-          <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-navy-800 shadow-2xl space-y-6">
-            <div className="text-center space-y-1.5">
-              <div className="w-12 h-12 bg-gradient-to-tr from-gold-600 via-gold-400 to-gold-300 rounded-2xl flex items-center justify-center mx-auto shadow-md animate-pulse">
-                <User className="text-navy-950 w-6 h-6" />
-              </div>
-              <h2 className="font-display font-medium text-lg text-navy-900 dark:text-navy-50 uppercase tracking-widest pt-2">
-                {isSignUp ? 'Enroll New Account' : 'Secure Member Gate'}
-              </h2>
-              <p className="text-xs text-gray-400">Secure OTP & Password validation</p>
-            </div>
+      <div className="fixed inset-0 z-40 flex items-center justify-center px-4 pt-16 pb-8 font-sans">
+        <div
+          className="absolute inset-0 bg-cover bg-center scale-105"
+          style={{ backgroundImage: "url('/sakura-auth-bg.png')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-rose-200/25 via-transparent to-fuchsia-900/20" />
 
-            {rateLimitMessage && (
-              <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl text-xs font-semibold leading-relaxed flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{rateLimitMessage}</span>
-              </div>
-            )}
+        <div
+          className="relative z-10 w-full max-w-[340px] rounded-md px-9 py-10 shadow-[0_18px_50px_rgba(80,20,50,0.28)] text-left"
+          style={{
+            background: 'rgba(232, 214, 220, 0.55)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.35)',
+          }}
+        >
+          <SakuraAccent />
 
-            {/* Secure Method Switch Tabs */}
-            {!isSignUp && (
-              <div className="flex gap-2 p-1 bg-gray-50 dark:bg-navy-950 rounded-xl border border-gray-200/50">
-                <button
-                  type="button"
-                  onClick={() => { setAuthMethod('password'); setOtpError(''); setRateLimitMessage(''); }}
-                  className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer text-center ${authMethod === 'password' ? 'bg-white dark:bg-navy-800 text-gold-500 shadow-sm border border-gray-200' : 'text-gray-400 hover:text-navy-900 font-normal'}`}
-                >
-                  Password Login
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setAuthMethod('otp'); setOtpError(''); setRateLimitMessage(''); }}
-                  className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer text-center ${authMethod === 'otp' ? 'bg-white dark:bg-navy-800 text-gold-500 shadow-sm border border-gray-200' : 'text-gray-400 hover:text-navy-900 font-normal'}`}
-                >
-                  Email OTP Safe
-                </button>
-              </div>
-            )}
+          <h2 className="text-center text-[28px] font-bold text-black tracking-tight mb-7">
+            {authTitle}
+          </h2>
 
-            {authMethod === 'password' && !isSignUp ? (
-              <div className="flex justify-center w-full py-1">
-                <SignIn
-                  routing="virtual"
-                  appearance={{
-                    baseTheme: dark,
-                    variables: {
-                      colorPrimary: '#C5A021',
-                      colorBackground: 'transparent',
-                      colorText: '#FFFFFF',
-                      colorTextSecondary: '#94A3B8',
-                      colorInputBackground: '#020617',
-                      colorInputText: '#FFFFFF',
-                      colorBorder: '#1E293B',
-                      borderRadius: '0.75rem',
-                    },
-                    elements: {
-                      rootBox: "w-full flex justify-center",
-                      cardBox: "!shadow-none w-full !border-0 !bg-transparent",
-                      card: "!bg-transparent !shadow-none !border-0 p-0 !text-slate-100 w-full",
-                      headerTitle: "!text-white font-display text-sm uppercase tracking-widest text-center",
-                      headerSubtitle: "!text-slate-400 text-xs text-center",
-                      socialButtonsBlockButton: "!bg-slate-900/90 !border-slate-700 !text-white hover:!bg-slate-800 transition rounded-xl text-xs py-2.5 shadow-sm",
-                      socialButtonsBlockButtonText: "!text-white font-semibold text-xs tracking-wide",
-                      socialButtonsBlockButtonArrow: "!text-white",
-                      dividerLine: "!bg-slate-800",
-                      dividerText: "!text-slate-400 text-[10px] uppercase font-mono tracking-wider",
-                      formFieldLabel: "!text-slate-300 text-[10px] uppercase font-mono tracking-wider mb-1",
-                      formFieldInput: "!bg-slate-950 !border-slate-800 !text-white rounded-xl text-xs py-2.5 px-3 focus:!border-[#C5A021] focus:!ring-1 focus:!ring-[#C5A021]",
-                      formButtonPrimary: "!bg-gradient-to-tr !from-[#C5A021] !to-[#E6C35C] hover:!from-[#B59011] hover:!to-[#D5B24B] !text-slate-950 font-display font-bold rounded-xl py-3 text-xs uppercase tracking-widest shadow-md transition active:scale-95 border-0",
-                      footer: "!bg-transparent border-t border-slate-800/50 pt-3 !text-slate-400 text-xs",
-                      footerActionText: "!text-slate-400 text-xs",
-                      footerActionLink: "!text-[#C5A021] hover:!text-[#E6C35C] font-semibold text-xs",
-                      identityPreviewText: "!text-slate-200 text-xs font-semibold",
-                      identityPreviewEditButton: "!text-[#C5A021] hover:!text-[#E6C35C] text-xs"
-                    }
-                  }}
+          {(otpError || rateLimitMessage) && (
+            <p className="mb-4 text-center text-[11px] font-medium text-red-700 bg-white/50 rounded px-2 py-1.5">
+              {rateLimitMessage || otpError}
+            </p>
+          )}
+          {otpSuccessMessage && authMethod === 'otp' && (
+            <p className="mb-4 text-center text-[11px] font-medium text-emerald-800 bg-white/50 rounded px-2 py-1.5">
+              {otpSuccessMessage}
+            </p>
+          )}
+
+          <form
+            id={authMethod === 'otp' ? 'otp-login-form' : 'customer-auth-form'}
+            onSubmit={handleLoginSubmit}
+          >
+            {authMethod === 'password' && !isSignUp && (
+              <>
+                <input
+                  type="text"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Username"
+                  autoComplete="username"
+                  className={`${glassFieldClass} mb-4`}
                 />
-              </div>
-            ) : isSignUp ? (
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
-                {otpError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl text-xs font-semibold leading-relaxed flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{otpError}</span>
-                  </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  autoComplete="current-password"
+                  className={`${glassFieldClass} mb-5`}
+                />
+              </>
+            )}
+
+            {isSignUp && (
+              <>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Username"
+                  autoComplete="name"
+                  className={`${glassFieldClass} mb-4`}
+                />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  autoComplete="email"
+                  className={`${glassFieldClass} mb-4`}
+                />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    const validation = evaluatePasswordStrength(e.target.value);
+                    setPasswordErrors(validation.errors);
+                    setPasswordStrength(validation.strength);
+                    setShowPasswordValidation(true);
+                  }}
+                  placeholder="Password"
+                  autoComplete="new-password"
+                  className={`${glassFieldClass} mb-2`}
+                />
+                {showPasswordValidation && (
+                  <p className={`mb-4 text-[10px] ${passwordErrors.length === 0 ? 'text-emerald-800' : 'text-gray-700'}`}>
+                    {passwordErrors[0] || 'Strong password'}
+                  </p>
                 )}
-                {isSignUp && (
-                  <div>
-                    <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Your Name</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. Charan Kumar"
-                        className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                )}
+              </>
+            )}
 
-                <div>
-                  <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Email Coordinates</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. customer@example.com"
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 dark:text-white"
-                    />
-                  </div>
-                </div>
+            {authMethod === 'otp' && authStep === 'email' && (
+              <input
+                type="email"
+                required
+                value={otpEmail}
+                onChange={(e) => setOtpEmail(e.target.value)}
+                placeholder="Email"
+                autoComplete="email"
+                className={`${glassFieldClass} mb-5`}
+              />
+            )}
 
-                <div>
-                  <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (isSignUp) {
-                          import('../utils/passwordValidator').then(({ evaluatePasswordStrength }) => {
-                            const validation = evaluatePasswordStrength(e.target.value);
-                            setPasswordErrors(validation.errors);
-                            setPasswordStrength(validation.strength);
-                            setShowPasswordValidation(true);
-                          });
-                        }
-                      }}
-                      placeholder="--------"
-                      className="w-full pl-9 pr-10 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 dark:text-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gold-500 transition-colors"
-                      aria-label="Toggle password visibility"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {isSignUp && showPasswordValidation && (
-                    <div className="mt-2 p-2.5 bg-navy-950/40 border border-gray-200 dark:border-navy-800 rounded-xl space-y-2 text-[10px]">
-                      <div className="flex justify-between items-center">
-                        <span className="font-mono uppercase text-[9px] text-[#C5A021] font-bold">Password Strength</span>
-                        <span className={`font-bold text-[10px] ${passwordStrength === 'Strong' ? 'text-emerald-500' : passwordStrength === 'Medium' ? 'text-amber-500' : 'text-red-500'}`}>{passwordStrength}</span>
-                      </div>
-                      <div className="w-full h-1 bg-gray-200 dark:bg-navy-900 rounded-full overflow-hidden">
-                        <div className={`h-full transition-all duration-300 ${passwordStrength === 'Strong' ? 'w-full bg-emerald-500' : passwordStrength === 'Medium' ? 'w-2/3 bg-amber-500' : 'w-1/3 bg-red-500'}`} />
-                      </div>
-                      
-                      {passwordErrors.length > 0 ? (
-                        <ul className="list-disc pl-3 text-red-500 space-y-0.5 mt-2">
-                          {passwordErrors.map((err, i) => (
-                            <li key={i}>{err}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-emerald-500 font-bold flex items-center gap-1 mt-2">
-                          <Check className="w-3.5 h-3.5" /> Password meets all security criteria
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+            {authMethod === 'otp' && authStep === 'otp' && (
+              <input
+                type="text"
+                required
+                inputMode="numeric"
+                maxLength={4}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="4-digit code"
+                disabled={otpLoading}
+                className={`${glassFieldClass} mb-5 text-center tracking-[0.4em] font-semibold placeholder:tracking-normal`}
+              />
+            )}
 
-                <button
-                  type="submit"
-                  disabled={!!rateLimitMessage || (isSignUp && passwordErrors.length > 0)}
-                  className="w-full py-3 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 disabled:from-gray-300 disabled:to-gray-300 disabled:text-gray-500 text-navy-950 font-display font-semibold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shadow-md active:scale-95"
-                >
-                  <LogIn className="w-4 h-4 text-navy-950" />
-                  <span>{isSignUp ? 'Sign Up' : 'Sign In Now'}</span>
+            <button
+              type="submit"
+              disabled={!!rateLimitMessage || otpLoading || (isSignUp && passwordErrors.length > 0 && password.length > 0)}
+              className={glassButtonClass}
+            >
+              {authButtonLabel}
+            </button>
+          </form>
+
+          {authMethod === 'otp' && authStep === 'otp' && (
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={resendCooldown > 0 || otpLoading}
+              className="mt-3 w-full text-center text-[11px] text-neutral-700 hover:text-black disabled:text-gray-400 cursor-pointer"
+            >
+              {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
+            </button>
+          )}
+
+          {authMethod !== 'otp' && <ClerkSocialButtons />}
+
+          <div className="mt-8 flex items-center justify-between text-[13px] text-neutral-800">
+            {authMethod === 'password' && !isSignUp ? (
+              <>
+                <button type="button" onClick={showForgotPassword} className="hover:text-black cursor-pointer">
+                  Forget Password?
                 </button>
-
-                <div className="text-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setOtpError('');
-                      setRateLimitMessage('');
-                      setPasswordErrors([]);
-                      setShowPasswordValidation(false);
-                    }}
-                    className="text-[11px] text-gray-500 hover:text-gold-600 font-medium transition cursor-pointer"
-                  >
-                    {isSignUp ? 'Already have an account? Sign In' : 'Don\'t have an account? Sign Up'}
-                  </button>
-                </div>
-              </form>
+                <button type="button" onClick={showSignUp} className="hover:text-black cursor-pointer">
+                  Signup
+                </button>
+              </>
             ) : (
-              <form id="otp-login-form" onSubmit={handleLoginSubmit} className="space-y-4">
-                {otpError && (
-                  <div className="text-red-500 text-[11px] font-medium leading-tight">
-                    Warning {otpError}
-                  </div>
-                )}
-
-                {authStep === 'email' ? (
-                  <div>
-                    <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Email Address</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input
-                        type="email"
-                        required
-                        value={otpEmail}
-                        onChange={(e) => setOtpEmail(e.target.value)}
-                        placeholder="e.g. customer@example.com"
-                        className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 dark:text-white"
-                      />
-                    </div>
-                    <p className="text-[10px] text-gray-400 mt-1 font-mono">Verify with a one-time passcode sent by email</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="p-3 bg-amber-50 dark:bg-navy-950 border border-amber-200 dark:border-navy-800 rounded-xl text-[11.5px] text-amber-700 dark:text-gold-300 font-sans leading-relaxed text-left">
-                      Secure passcode dispatched to <strong className="font-mono text-xs">{otpEmail}</strong>. Please check your inbox.
-                      <span className="text-emerald-500">
-                        {otpSuccessMessage}
-                      </span>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono tracking-wider uppercase text-gray-400 mb-1">Enter 4-Digit OTP Code</label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                        <input
-                          type="text"
-                          required
-                          maxLength={4}
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                          placeholder="e.g. 1234"
-                          disabled={otpLoading}
-                          className="w-full pl-9 pr-3 py-2 text-xs font-mono font-bold tracking-widest text-center border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none dark:bg-navy-950 dark:border-navy-800 dark:text-white disabled:opacity-60"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={!!rateLimitMessage || otpLoading}
-                  className="w-full py-3 bg-gradient-to-tr from-gold-500 to-gold-400 hover:from-gold-600 disabled:from-gray-300 disabled:to-gray-300 disabled:text-gray-500 text-navy-950 font-display font-semibold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shadow-md active:scale-95"
-                >
-                  <LogIn className="w-4 h-4 text-navy-950" />
-                  <span>
-                    {otpLoading
-                      ? 'Please wait...'
-                      : authStep === 'otp'
-                        ? 'Confirm Secure Access'
-                        : 'Send Email Passcode'}
-                  </span>
+              <>
+                <button type="button" onClick={showSignIn} className="hover:text-black cursor-pointer">
+                  {isSignUp ? 'Have an account?' : 'Back to login'}
                 </button>
-
-                {authStep === 'otp' && (
-                  <div className="flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={handleResendOtp}
-                      disabled={resendCooldown > 0 || otpLoading}
-                      className="w-full text-center text-[10px] text-gold-600 hover:text-gold-700 underline font-mono cursor-pointer disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
-                    >
-                      {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend verification code'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsSignUp(false);
-                        setOtpError('');
-                        setOtpSuccessMessage('');
-                        setResendCooldown(0);
-                        setAuthStep('email');
-                      }}
-                      className="w-full text-center text-[10px] text-gray-400 hover:text-navy-900 underline font-mono cursor-pointer"
-                    >
-                      Change email address
-                    </button>
-                  </div>
-                )}
-              </form>
+                <button
+                  type="button"
+                  onClick={isSignUp ? showForgotPassword : showSignUp}
+                  className="hover:text-black cursor-pointer"
+                >
+                  {isSignUp ? 'Forget Password?' : 'Signup'}
+                </button>
+              </>
             )}
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -860,14 +871,14 @@ export default function AccountPanel({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
         {/* Left Side Navigation panel Menu */}
-        <div className="md:col-span-3 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6 text-left">
+        <div className="md:col-span-3 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6 text-left text-black">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-gold-500 to-gold-300 flex items-center justify-center text-navy-950 font-bold font-display text-lg shadow-md">
+            <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white font-bold font-display text-lg shadow-md">
               {currentUser.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="font-display font-semibold text-xs text-navy-900 tracking-wide">{currentUser.name}</h3>
-              <span className="text-[9px] font-mono text-gray-400">{currentUser.email}</span>
+              <h3 className="font-display font-semibold text-xs text-black tracking-wide">{currentUser.name}</h3>
+              <span className="text-[9px] font-mono text-neutral-800">{currentUser.email}</span>
             </div>
           </div>
           <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-4 font-sans">
@@ -883,10 +894,10 @@ export default function AccountPanel({
                 <button
                   key={tab.id}
                   onClick={() => setSubTab(tab.id)}
-                  className={`py-2.5 px-3.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition cursor-pointer ${subTab === tab.id ? 'bg-gold-50 text-gold-600 border-l-4 border-gold-400 font-bold' : 'text-gray-500 hover:bg-gray-50'}`}
+                  className={`py-2.5 px-3.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition cursor-pointer ${subTab === tab.id ? 'bg-rose-50 text-black border-l-4 border-pink-500 font-bold' : 'text-black hover:bg-gray-50'}`}
                 >
                   <span className="flex items-center gap-2">
-                    <TabIcon className="w-4 h-4 text-gold-400" />
+                    <TabIcon className="w-4 h-4 text-black" />
                     {tab.label}
                   </span>
                   {tab.badge !== undefined && tab.badge > 0 && (

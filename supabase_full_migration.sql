@@ -31,6 +31,7 @@ CREATE TABLE public.products (
   brand TEXT,
   availability TEXT,
   vendor_id TEXT,
+  variation JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

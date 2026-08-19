@@ -5,7 +5,7 @@ import { CartItem, Product } from '../types';
 import { CATEGORIES } from '../utils/mockData';
 import ThemeSwitcher from './ThemeSwitcher';
 
-const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
+const RadhaLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
   <svg
     className={className}
     viewBox="0 0 200 200"
@@ -84,7 +84,7 @@ const MerisLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       fontWeight="bold"
       letterSpacing="2.5"
     >
-      MERIS
+      Radha Fashions
     </text>
     <text
       x="100"
@@ -269,11 +269,11 @@ export default function Navbar({
             className="flex items-center gap-2.5 cursor-pointer select-none"
           >
             <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shadow-lg shadow-gold-500/10 border border-[#C5A021]/30 bg-[#0F172A] hover:scale-105 transition duration-300">
-              <MerisLogo className="w-full h-full" />
+              <RadhaLogo className="w-full h-full" />
             </div>
             <div>
               <span className="font-display font-black text-xl sm:text-2xl tracking-[0.5px] text-[#C5A021] uppercase">
-                MERIS<span className="text-white"> E-SHOP</span>
+                Radha Fashions<span className="text-white"> E-SHOP</span>
               </span>
               <p className="text-[9px] text-slate-400 tracking-[0.18em] font-medium leading-none">PREMIUM SELECTION</p>
             </div>

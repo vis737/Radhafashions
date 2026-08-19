@@ -27,7 +27,7 @@ export default function SupportTab({ orders, onRequestRefund }: any) {
       exit={{ opacity: 0, y: -5 }}
       className="space-y-6 text-left"
     >
-      <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest pb-1 border-b border-gray-100">Support & Returns</h3>
+      <h3 className="font-display font-medium text-sm text-gray-900 uppercase tracking-widest pb-1 border-b border-gray-100">Support & Returns</h3>
       
       {orders.length === 0 ? (
         <div className="text-center py-10 space-y-2 text-xs">
@@ -76,15 +76,15 @@ export default function SupportTab({ orders, onRequestRefund }: any) {
               value={returnReason}
               onChange={(e) => setReturnReason(e.target.value)}
               placeholder="e.g., The wooden stacking dowel contains slight wood knot blemish..."
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-gold-400 focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-pink-400 focus:outline-none"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-gradient-to-r from-gold-500 to-gold-400 text-navy-950 font-display font-medium text-xs uppercase tracking-wider rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5"
+            className="w-full py-2.5 bg-gradient-to-r from-pink-500 to-pink-400 text-gray-950 font-display font-medium text-xs uppercase tracking-wider rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5"
           >
-            <RotateCcw className="w-4 h-4 text-navy-950" />
+            <RotateCcw className="w-4 h-4 text-gray-950" />
             <span>Submit Secure Refund Ticket</span>
           </button>
         </form>

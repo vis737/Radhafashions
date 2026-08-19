@@ -120,7 +120,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
             <div>
               <p className="text-[9px] text-gray-400 font-mono tracking-wide uppercase leading-none">Security Hash</p>
               <span className="text-xs font-bold text-navy-900 font-mono mt-1 block">
-                {invoiceResponse?.invoiceVerificationCode || `MERIS-HSH-${order.orderNumber.split('-')[1]}`}
+                {invoiceResponse?.invoiceVerificationCode || `RADHA-HSH-${order.orderNumber.split('-')[1]}`}
               </span>
             </div>
             <div>
@@ -136,10 +136,10 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
         <div id="invoice-printable-section" className="p-6 md:p-8 text-left bg-white font-sans space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-gray-100">
             <div className="space-y-1">
-              <span className="font-display font-bold text-lg tracking-wider text-navy-900">MERIS <span className="text-gold-400">E-SHOP</span></span>
+              <span className="font-display font-bold text-lg tracking-wider text-navy-900">Radha Fashions <span className="text-gold-400">E-SHOP</span></span>
               <p className="text-[10px] text-gray-400 leading-relaxed font-light">
                 5/339, Fathima Road, nager, Azhagappapuram, Tamil Nadu 629401<br />
-                support@meris.com | +91 93842 92229
+                admin@radhafashions.com | +91 93842 92229
               </p>
             </div>
             <div className="sm:text-right text-xs text-gray-500 space-y-0.5">

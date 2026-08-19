@@ -83,11 +83,11 @@ export function generateInvoicePDF(order: Order) {
   doc.text(`Postal PIN: ${order.customerInfo.pincode}`, marginX, currentY + 15 + (wrappingAddress.length * 4.5));
 
   // Shop Seller details
-  doc.text('MERIS Boutique & Studios', 115, currentY);
+  doc.text('Radha Fashions Boutique & Studios', 115, currentY);
   doc.text('5/339, Fathima Road, Azhagappapuram', 115, currentY + 5);
   doc.text('Kanyakumari District, Tamil Nadu', 115, currentY + 10);
   doc.text('PINCODE: 629401', 115, currentY + 15);
-  doc.text('support@meris.com', 115, currentY + 20);
+  doc.text('admin@radhafashions.com', 115, currentY + 20);
 
   // Increment Y past coordinates info
   const addressBlockHeight = 15 + (wrappingAddress.length * 4.5);
@@ -235,8 +235,8 @@ export function generateInvoicePDF(order: Order) {
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2]);
-  doc.text('This is a simulated secure digitally certified voucher for your Meris active order ledger.', 105, currentY + 13, { align: 'center' });
+  doc.text('This is a simulated secure digitally certified voucher for your Radha Fashions active order ledger.', 105, currentY + 13, { align: 'center' });
 
   // Save the PDF
-  doc.save(`Invoice-MERIS-INV-${orderSlug}.pdf`);
+  doc.save(`Invoice-RADHA-INV-${orderSlug}.pdf`);
 }

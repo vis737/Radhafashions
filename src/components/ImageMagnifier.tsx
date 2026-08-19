@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
 interface ImageMagnifierProps {
   src: string;
@@ -45,7 +45,7 @@ export default function ImageMagnifier({
   };
 
   return (
-    <div className="relative inline-block w-full h-full select-none justify-center items-center overflow-hidden rounded-2xl border border-gray-100 dark:border-navy-900 bg-gray-50/50 dark:bg-navy-900/40">
+    <div className="relative inline-block w-full h-full select-none justify-center items-center overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-900 bg-gray-50/50 dark:bg-gray-900/40">
       <img
         ref={imgRef}
         src={src}
@@ -71,7 +71,7 @@ export default function ImageMagnifier({
             top: `${y - magnifierHeight / 2}px`,
             left: `${x - magnifierWidth / 2}px`,
             opacity: '1',
-            border: '2px solid #D4AF37', // Gold ring brand accent
+            border: '2px solid #D4648A', // Pink ring brand accent
             borderRadius: '50%',
             backgroundColor: 'white',
             backgroundImage: `url('${src}')`,
@@ -87,7 +87,7 @@ export default function ImageMagnifier({
       )}
 
       {/* Helpful Hint */}
-      <span className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded bg-black/60 dark:bg-navy-950/80 text-[9px] font-mono tracking-wider text-gold-400 select-none backdrop-blur-xs pointer-events-none uppercase">
+      <span className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded bg-black/60 dark:bg-gray-950/80 text-[9px] font-mono tracking-wider text-pink-400 select-none backdrop-blur-xs pointer-events-none uppercase">
         Hover to Magnify
       </span>
     </div>

@@ -35,14 +35,14 @@ export default function VendorDashboard({
   };
 
   return (
-    <div className="space-y-6 text-slate-800 dark:text-gray-100 font-sans text-left">
+    <div className="space-y-6 text-gray-800 dark:text-gray-100 font-sans text-left">
       {/* Premium Hero block */}
-      <div className="p-6 rounded-3xl bg-navy-950 text-white border border-navy-900 space-y-2 select-none relative overflow-hidden">
+      <div className="p-6 rounded-3xl bg-gray-950 text-white border border-gray-900 space-y-2 select-none relative overflow-hidden">
         <div className="absolute right-0 bottom-0 translate-y-8 translate-x-8 opacity-10">
-          <Shield className="w-48 h-48 text-gold-400" />
+          <Shield className="w-48 h-48 text-pink-400" />
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded bg-amber-500/10 text-gold-400 border border-gold-500/20 text-[9px] font-mono tracking-widest font-black uppercase">
+          <span className="px-2.5 py-0.5 rounded bg-amber-500/10 text-pink-400 border border-pink-500/20 text-[9px] font-mono tracking-widest font-black uppercase">
             Marketplace Engine v1.0
           </span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -57,13 +57,13 @@ export default function VendorDashboard({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 dark:border-navy-900 pb-px gap-2">
+      <div className="flex border-b border-gray-100 dark:border-gray-900 pb-px gap-2">
         <button
           onClick={() => setActiveTab('vendors')}
           className={`py-2 px-4 font-display font-bold text-xs uppercase tracking-wider border-b-2 transition ${
             activeTab === 'vendors'
-              ? 'border-gold-500 text-navy-950 dark:text-gold-400'
-              : 'border-transparent text-gray-400 hover:text-navy-900'
+              ? 'border-pink-500 text-gray-950 dark:text-pink-400'
+              : 'border-transparent text-gray-400 hover:text-gray-900'
           }`}
         >
           Active Guilds ({vendors.length})
@@ -72,8 +72,8 @@ export default function VendorDashboard({
           onClick={() => setActiveTab('inquiries')}
           className={`py-2 px-4 font-display font-bold text-xs uppercase tracking-wider border-b-2 transition ${
             activeTab === 'inquiries'
-              ? 'border-gold-500 text-navy-950 dark:text-gold-400'
-              : 'border-transparent text-gray-400 hover:text-navy-900'
+              ? 'border-pink-500 text-gray-950 dark:text-pink-400'
+              : 'border-transparent text-gray-400 hover:text-gray-900'
           }`}
         >
           Bulk Sourcing Tickets ({bulkInquiries.length})
@@ -82,8 +82,8 @@ export default function VendorDashboard({
           onClick={() => setActiveTab('rates')}
           className={`py-2 px-4 font-display font-bold text-xs uppercase tracking-wider border-b-2 transition ${
             activeTab === 'rates'
-              ? 'border-gold-500 text-navy-950 dark:text-gold-400'
-              : 'border-transparent text-gray-400 hover:text-navy-900'
+              ? 'border-pink-500 text-gray-950 dark:text-pink-400'
+              : 'border-transparent text-gray-400 hover:text-gray-900'
           }`}
         >
           Commission Matrix
@@ -108,13 +108,13 @@ export default function VendorDashboard({
                     onClick={() => setSelectedVendorForDashboard(vendor)}
                     className={`w-full p-4 rounded-2xl border text-left transition ${
                       selectedVendorForDashboard?.id === vendor.id
-                        ? 'bg-gold-50/50 dark:bg-navy-900/60 border-gold-400 dark:border-gold-800'
-                        : 'bg-white dark:bg-navy-950 border-gray-100 hover:border-gray-300 dark:border-navy-900'
+                        ? 'bg-pink-50/50 dark:bg-gray-900/60 border-pink-400 dark:border-pink-800'
+                        : 'bg-white dark:bg-gray-950 border-gray-100 hover:border-gray-300 dark:border-gray-900'
                     }`}
                   >
                     <div className="flex justify-between items-start gap-2">
                       <div>
-                        <h4 className="font-display font-bold text-xs text-navy-950 dark:text-white uppercase tracking-wider line-clamp-1">{vendor.storeName}</h4>
+                        <h4 className="font-display font-bold text-xs text-gray-950 dark:text-white uppercase tracking-wider line-clamp-1">{vendor.storeName}</h4>
                         <p className="text-[10px] text-gray-400 mt-0.5">{vendor.name}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded text-[8px] font-mono tracking-wider font-bold uppercase ${
@@ -130,7 +130,7 @@ export default function VendorDashboard({
 
                     <div className="flex justify-between items-center mt-3 text-[10px] font-mono text-gray-500">
                       <span>Rate: {vendor.commissionRate}%</span>
-                      <span className="font-bold text-navy-900 dark:text-gold-400">Rs.{vendor.revenue.toLocaleString()} sales</span>
+                      <span className="font-bold text-gray-900 dark:text-pink-400">Rs.{vendor.revenue.toLocaleString()} sales</span>
                     </div>
                   </button>
                 ))}
@@ -140,16 +140,16 @@ export default function VendorDashboard({
             {/* Vendor Dynamic Detail Sandbox Panel */}
             <div className="lg:col-span-2">
               {selectedVendorForDashboard ? (
-                <div className="p-6 rounded-3xl border border-gray-100 dark:border-navy-900 bg-white dark:bg-navy-950 space-y-6">
+                <div className="p-6 rounded-3xl border border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-950 space-y-6">
                   {/* Title Bar */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 dark:border-navy-900/50 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 dark:border-gray-900/50 pb-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-display font-black text-sm uppercase tracking-wider text-navy-950 dark:text-white">
+                        <h4 className="font-display font-black text-sm uppercase tracking-wider text-gray-950 dark:text-white">
                           {selectedVendorForDashboard.storeName}
                         </h4>
                         {!selectedVendorForDashboard.approved && (
-                          <span className="px-2 py-0.5 bg-amber-500/10 text-gold-500 rounded text-[8px] font-mono font-bold tracking-widest uppercase">
+                          <span className="px-2 py-0.5 bg-amber-500/10 text-pink-500 rounded text-[8px] font-mono font-bold tracking-widest uppercase">
                             Awaiting Approval
                           </span>
                         )}
@@ -195,24 +195,24 @@ export default function VendorDashboard({
 
                   {/* Info stats grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-navy-900 border text-left">
+                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border text-left">
                       <span className="text-[9px] font-mono text-gray-450 dark:text-gray-505 uppercase block">Sales Total</span>
-                      <span className="text-base font-bold font-mono text-slate-800 dark:text-white">Rs.{selectedVendorForDashboard.revenue}</span>
+                      <span className="text-base font-bold font-mono text-gray-800 dark:text-white">Rs.{selectedVendorForDashboard.revenue}</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-navy-900 border text-left">
+                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border text-left">
                       <span className="text-[9px] font-mono text-gray-450 dark:text-gray-505 uppercase block">Commission Due</span>
-                      <span className="text-base font-bold font-mono text-gold-500">Rs.{Math.round(selectedVendorForDashboard.revenue * (selectedVendorForDashboard.commissionRate / 100))}</span>
+                      <span className="text-base font-bold font-mono text-pink-500">Rs.{Math.round(selectedVendorForDashboard.revenue * (selectedVendorForDashboard.commissionRate / 100))}</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-navy-900 border text-left">
+                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border text-left">
                       <span className="text-[9px] font-mono text-gray-450 dark:text-gray-505 uppercase block">Registered Owner</span>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white truncate block">{selectedVendorForDashboard.name}</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-white truncate block">{selectedVendorForDashboard.name}</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-navy-900 border text-left">
+                    <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border text-left">
                       <span className="text-[9px] font-mono text-gray-450 dark:text-gray-505 uppercase block">Associated Items</span>
-                      <span className="text-base font-bold font-mono text-slate-800 dark:text-white">
+                      <span className="text-base font-bold font-mono text-gray-800 dark:text-white">
                         {products.filter(p => p.vendorId === selectedVendorForDashboard.id || (p.brand.toLowerCase().includes('kids') && selectedVendorForDashboard.id === 'vendor-1')).length}
                       </span>
                     </div>
@@ -221,7 +221,7 @@ export default function VendorDashboard({
                   {/* Vendor Inventory Ownership List */}
                   <div className="space-y-3">
                     <span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider font-bold block">Assigned Atelier Items & Inventory Pools</span>
-                    <div className="divide-y divide-gray-100 dark:divide-navy-900">
+                    <div className="divide-y divide-gray-100 dark:divide-gray-900">
                       {products
                         .filter(p => p.vendorId === selectedVendorForDashboard.id || (p.brand.toLowerCase().includes('kids') && selectedVendorForDashboard.id === 'vendor-1'))
                         .map(p => (
@@ -229,7 +229,7 @@ export default function VendorDashboard({
                             <div className="flex items-center gap-3">
                               <img src={p.images[0]} alt={p.name} className="w-8 h-8 rounded object-cover" />
                               <div>
-                                <span className="font-bold text-slate-800 dark:text-white line-clamp-1">{p.name}</span>
+                                <span className="font-bold text-gray-800 dark:text-white line-clamp-1">{p.name}</span>
                                 <span className="text-[10px] text-gray-400 font-mono uppercase">{p.sku}</span>
                               </div>
                             </div>
@@ -248,13 +248,13 @@ export default function VendorDashboard({
                   </div>
 
                   {/* Contact metadata */}
-                  <div className="p-4 rounded-2xl bg-gray-50/50 dark:bg-navy-900/50 text-xs font-mono grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-400">
+                  <div className="p-4 rounded-2xl bg-gray-50/50 dark:bg-gray-900/50 text-xs font-mono grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-400">
                     <div className="flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-gold-500" />
+                      <Mail className="w-3.5 h-3.5 text-pink-500" />
                       <span>{selectedVendorForDashboard.email}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Smartphone className="w-3.5 h-3.5 text-gold-500" />
+                      <Smartphone className="w-3.5 h-3.5 text-pink-500" />
                       <span>{selectedVendorForDashboard.phone}</span>
                     </div>
                   </div>
@@ -285,28 +285,28 @@ export default function VendorDashboard({
                 bulkInquiries.map((inq) => (
                   <div
                     key={inq.id}
-                    className="p-5 bg-white dark:bg-navy-950 rounded-2xl border border-gray-100 dark:border-navy-900 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    className="p-5 bg-white dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-900 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-navy-100 dark:bg-navy-900 border border-gray-200 dark:border-navy-800 text-navy-600 dark:text-gold-400 text-[9px] font-mono font-bold uppercase">
+                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-pink-400 text-[9px] font-mono font-bold uppercase">
                           {inq.eventType} Event
                         </span>
                         <span className="text-gray-300 font-mono">|</span>
                         <span className="text-[10px] text-gray-400 font-mono">{inq.date}</span>
                       </div>
 
-                      <h4 className="font-display font-bold text-xs uppercase text-slate-800 dark:text-white">
+                      <h4 className="font-display font-bold text-xs uppercase text-gray-800 dark:text-white">
                         {inq.quantity}x {inq.productName}
                       </h4>
 
                       <p className="text-[11px] text-gray-400 leading-relaxed font-sans mt-1">
-                        Contact: <span className="text-slate-800 dark:text-white font-medium">{inq.name}</span> ({inq.phone} | {inq.email}) 
+                        Contact: <span className="text-gray-800 dark:text-white font-medium">{inq.name}</span> ({inq.phone} | {inq.email}) 
                         {inq.companyName && ` at ${inq.companyName}`}
                       </p>
 
                       {inq.notes && (
-                        <p className="text-[10px] text-gray-400 italic bg-gray-50 dark:bg-navy-900 p-2.5 rounded-lg border-l-2 border-gold-400">
+                        <p className="text-[10px] text-gray-400 italic bg-gray-50 dark:bg-gray-900 p-2.5 rounded-lg border-l-2 border-pink-400">
                           &ldquo;{inq.notes}&rdquo;
                         </p>
                       )}
@@ -316,7 +316,7 @@ export default function VendorDashboard({
                       {inq.status === 'pending' ? (
                         <button
                           onClick={() => onResolveInquiry(inq.id)}
-                          className="px-4 py-2 bg-navy-950 dark:bg-gold-400 hover:bg-gold-500 text-white dark:text-navy-900 font-display font-medium text-[10px] uppercase tracking-wider rounded-xl transition cursor-pointer flex items-center gap-1"
+                          className="px-4 py-2 bg-gray-950 dark:bg-pink-400 hover:bg-pink-500 text-white dark:text-gray-900 font-display font-medium text-[10px] uppercase tracking-wider rounded-xl transition cursor-pointer flex items-center gap-1"
                         >
                           <CheckCircle className="w-3.5 h-3.5" />
                           <span>Approve Tier & Email Quote</span>
@@ -339,20 +339,20 @@ export default function VendorDashboard({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-6 rounded-3xl bg-white dark:bg-navy-950 border border-gray-100 dark:border-navy-900 space-y-4"
+            className="p-6 rounded-3xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-900 space-y-4"
           >
-            <h4 className="font-display font-black text-sm uppercase tracking-wider text-navy-950 dark:text-white">
+            <h4 className="font-display font-black text-sm uppercase tracking-wider text-gray-950 dark:text-white">
               Global Platform Commission Rules
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
               Adjust commission multipliers applied on third-party sales. The platform retains these percentages automatically during client checkout. Adjusted payouts are reflected inside vendor revenue sheets immediately.
             </p>
 
-            <div className="divide-y divide-gray-100 dark:divide-navy-900 border-t border-gray-100 dark:border-navy-900 pt-2">
+            <div className="divide-y divide-gray-100 dark:divide-gray-900 border-t border-gray-100 dark:border-gray-900 pt-2">
               {vendors.map((vendor) => (
                 <div key={vendor.id} className="py-4 flex justify-between items-center">
                   <div>
-                    <h5 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">{vendor.storeName}</h5>
+                    <h5 className="text-xs font-bold text-gray-800 dark:text-white uppercase tracking-wider">{vendor.storeName}</h5>
                     <p className="text-[10px] text-gray-400">Owner: {vendor.name} - Commission ID: {vendor.id}</p>
                   </div>
 
@@ -380,7 +380,7 @@ export default function VendorDashboard({
                     ) : (
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <span className="text-sm font-bold font-mono text-gold-500">{vendor.commissionRate}%</span>
+                          <span className="text-sm font-bold font-mono text-pink-500">{vendor.commissionRate}%</span>
                           <span className="text-[9px] text-gray-400 block">Current Rate</span>
                         </div>
                         <button
@@ -388,7 +388,7 @@ export default function VendorDashboard({
                             setEditingCommissionId(vendor.id);
                             setCommissionInputValue(vendor.commissionRate);
                           }}
-                          className="px-2.5 py-1 border border-gray-200 dark:border-navy-800 hover:border-gold-300 rounded text-[10px] font-bold text-gray-500 dark:text-gold-400 uppercase transition"
+                          className="px-2.5 py-1 border border-gray-200 dark:border-gray-800 hover:border-pink-300 rounded text-[10px] font-bold text-gray-500 dark:text-pink-400 uppercase transition"
                         >
                           Edit
                         </button>

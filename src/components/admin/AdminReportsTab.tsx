@@ -146,7 +146,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
     });
     
     const csv = [headers.join(','), ...rows].join('\n');
-    downloadFile(csv, 'meris-orders.csv', 'text/csv');
+    downloadFile(csv, 'radha-orders.csv', 'text/csv');
     addToast('Orders CSV exported', 'success');
   };
 
@@ -164,7 +164,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
     });
     
     const csv = [headers.join(','), ...rows].join('\n');
-    downloadFile(csv, 'meris-products.csv', 'text/csv');
+    downloadFile(csv, 'radha-products.csv', 'text/csv');
     addToast('Products CSV exported', 'success');
   };
 
@@ -172,7 +172,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
     const doc = new jsPDF();
     
     doc.setFontSize(20);
-    doc.text('MERIS E-SHOP Performance Report', 14, 22);
+    doc.text('Radha Fashions Performance Report', 14, 22);
     
     doc.setFontSize(12);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 32);
@@ -197,7 +197,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
       y += 7;
     });
     
-    doc.save('meris-report.pdf');
+    doc.save('radha-report.pdf');
     addToast('PDF Report exported', 'success');
   };
 
@@ -214,15 +214,15 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
   };
 
   return (
-    <div className="space-y-8 p-6 bg-slate-900 min-h-screen text-slate-200">
+    <div className="space-y-8 p-6 bg-white dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-200">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700 pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-pink-200/50 dark:border-pink-900/30 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#C5A021] flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[#D4648A] flex items-center gap-2">
             <BarChart3 className="w-7 h-7" />
             Store Performance Analytics Reports
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Track revenue, orders, and product performance over time.
           </p>
         </div>
@@ -261,8 +261,8 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
       </div>
 
       {/* Date Filter */}
-      <div className="flex flex-wrap items-center gap-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700 inline-flex">
-        <Calendar className="w-4 h-4 text-slate-400 ml-2 mr-1" />
+      <div className="flex flex-wrap items-center gap-2 bg-gray-50/50 dark:bg-gray-800/50 p-2 rounded-xl border border-pink-200/50 dark:border-pink-900/30 inline-flex">
+        <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
         {[
           { label: 'Last 7 Days', value: '7' },
           { label: 'Last 30 Days', value: '30' },
@@ -274,8 +274,8 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
             onClick={() => setDateRange(range.value as DateRange)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               dateRange === range.value 
-                ? 'bg-[#C5A021] text-slate-900 shadow-lg shadow-[#C5A021]/20' 
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                ? 'bg-[#D4648A] text-gray-900 shadow-lg shadow-[#D4648A]/20' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-700/50'
             }`}
           >
             {range.label}
@@ -288,12 +288,12 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group"
+          className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30 relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <DollarSign className="w-16 h-16 text-emerald-500" />
           </div>
-          <p className="text-slate-400 text-sm font-medium mb-1">Total Revenue</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Total Revenue</p>
           <h3 className="text-3xl font-bold text-emerald-400">Rs. {totalRevenue.toLocaleString()}</h3>
         </motion.div>
 
@@ -301,38 +301,38 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group"
+          className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30 relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <ShoppingCart className="w-16 h-16 text-blue-500" />
           </div>
-          <p className="text-slate-400 text-sm font-medium mb-1">Total Orders</p>
-          <h3 className="text-3xl font-bold text-slate-100">{totalOrdersCount}</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Total Orders</p>
+          <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{totalOrdersCount}</h3>
         </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group"
+          className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30 relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <TrendingUp className="w-16 h-16 text-[#C5A021]" />
+            <TrendingUp className="w-16 h-16 text-[#D4648A]" />
           </div>
-          <p className="text-slate-400 text-sm font-medium mb-1">Average Order Value</p>
-          <h3 className="text-3xl font-bold text-[#C5A021]">Rs. {averageOrderValue.toFixed(2)}</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Average Order Value</p>
+          <h3 className="text-3xl font-bold text-[#D4648A]">Rs. {averageOrderValue.toFixed(2)}</h3>
         </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group"
+          className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30 relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <AlertCircle className="w-16 h-16 text-amber-500" />
           </div>
-          <p className="text-slate-400 text-sm font-medium mb-1">Pending Payments</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Pending Payments</p>
           <div className="flex items-center gap-3">
             <h3 className="text-3xl font-bold text-amber-400">{pendingPaymentsCount}</h3>
             {pendingPaymentsCount > 0 && (
@@ -347,9 +347,9 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Sales Over Time Chart */}
-        <div className="xl:col-span-2 bg-slate-800/80 p-6 rounded-2xl border border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#C5A021]" />
+        <div className="xl:col-span-2 bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-[#D4648A]" />
             Sales Over Time
           </h3>
           
@@ -360,15 +360,15 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
                 return (
                   <div key={i} className="flex-1 flex flex-col justify-end items-center group relative h-full">
                     <div 
-                      className="w-full bg-gradient-to-t from-[#C5A021]/80 to-[#f5d564] rounded-t-sm transition-all duration-300 group-hover:opacity-80 cursor-pointer"
+                      className="w-full bg-gradient-to-t from-[#D4648A]/80 to-[#f5d564] rounded-t-sm transition-all duration-300 group-hover:opacity-80 cursor-pointer"
                       style={{ height: `${Math.max(heightPercent, 2)}%` }}
                       title={`${d.dateStr}: Rs. ${d.revenue}`}
                     ></div>
-                    <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 bg-slate-900 text-xs px-2 py-1 rounded border border-slate-700 whitespace-nowrap z-10 pointer-events-none transition-opacity">
+                    <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 bg-white dark:bg-gray-900 text-xs px-2 py-1 rounded border border-pink-200/50 dark:border-pink-900/30 whitespace-nowrap z-10 pointer-events-none transition-opacity">
                       {d.dateStr}: Rs. {d.revenue}
                     </div>
                     {(salesData.length <= 15 || i % Math.ceil(salesData.length / 10) === 0) && (
-                      <span className="text-[10px] text-slate-500 mt-2 truncate w-full text-center">
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 truncate w-full text-center">
                         {d.dateStr}
                       </span>
                     )}
@@ -376,7 +376,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
                 );
               })
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-500 italic">
+              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500 italic">
                 No revenue data in selected period
               </div>
             )}
@@ -384,29 +384,29 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
         </div>
 
         {/* Category Breakdown */}
-        <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-100 mb-6">Category Breakdown</h3>
+        <div className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Category Breakdown</h3>
           
           <div className="space-y-4">
             {categoryData.data.length > 0 ? (
               categoryData.data.map((cat, idx) => (
                 <div key={idx} className="space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-300">{cat.name}</span>
-                    <span className="text-[#C5A021] font-medium">{cat.count} units ({cat.percentage.toFixed(1)}%)</span>
+                    <span className="text-gray-700 dark:text-gray-300">{cat.name}</span>
+                    <span className="text-[#D4648A] font-medium">{cat.count} units ({cat.percentage.toFixed(1)}%)</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${cat.percentage}%` }}
                       transition={{ duration: 1, delay: idx * 0.1 }}
-                      className="h-full bg-gradient-to-r from-[#8a7017] to-[#C5A021]"
+                      className="h-full bg-gradient-to-r from-[#8a7017] to-[#D4648A]"
                     ></motion.div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center text-slate-500 italic py-8">
+              <div className="text-center text-gray-400 dark:text-gray-500 italic py-8">
                 No category data
               </div>
             )}
@@ -415,11 +415,11 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
       </div>
 
       {/* Order Status Distribution */}
-      <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700">
-        <h3 className="text-lg font-semibold text-slate-100 mb-6">Order Status Distribution</h3>
+      <div className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Order Status Distribution</h3>
         <div className="flex flex-wrap gap-4">
           {[
-            { label: 'Pending', count: orderStatusCounts.pending, color: 'bg-slate-600/20 border-slate-500/50', text: 'text-slate-300' },
+            { label: 'Pending', count: orderStatusCounts.pending, color: 'bg-gray-600/20 border-gray-500/50', text: 'text-gray-700 dark:text-gray-300' },
             { label: 'Processing', count: orderStatusCounts.processing, color: 'bg-blue-600/20 border-blue-500/50', text: 'text-blue-400' },
             { label: 'Shipped', count: orderStatusCounts.shipped, color: 'bg-purple-600/20 border-purple-500/50', text: 'text-purple-400' },
             { label: 'Delivered', count: orderStatusCounts.delivered, color: 'bg-emerald-600/20 border-emerald-500/50', text: 'text-emerald-400' },
@@ -427,7 +427,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
           ].map((stat, i) => (
             <div key={i} className={`flex-1 min-w-[140px] p-4 rounded-xl border ${stat.color} flex flex-col items-center justify-center gap-2`}>
               <span className={`text-3xl font-bold ${stat.text}`}>{stat.count}</span>
-              <span className="text-xs uppercase tracking-wider text-slate-400 font-medium">{stat.label}</span>
+              <span className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">{stat.label}</span>
             </div>
           ))}
         </div>
@@ -435,43 +435,43 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products Leaderboard */}
-        <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2">
+        <div className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
             Top Products
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-slate-500 text-sm border-b border-slate-700">
+                <tr className="text-gray-400 dark:text-gray-500 text-sm border-b border-pink-200/50 dark:border-pink-900/30">
                   <th className="pb-3 font-medium px-2">Rank</th>
                   <th className="pb-3 font-medium px-2">Product</th>
                   <th className="pb-3 font-medium px-2 text-right">Units Sold</th>
                   <th className="pb-3 font-medium px-2 text-right">Revenue</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-pink-200/50 dark:divide-pink-900/30">
                 {topProducts.length > 0 ? (
                   topProducts.map((p, i) => (
-                    <tr key={i} className="hover:bg-slate-700/20 transition-colors">
+                    <tr key={i} className="hover:bg-gray-700/20 transition-colors">
                       <td className="py-4 px-2">
                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                           i === 0 ? 'bg-amber-500 text-white' : 
-                          i === 1 ? 'bg-slate-300 text-slate-800' : 
+                          i === 1 ? 'bg-gray-300 text-gray-800' : 
                           i === 2 ? 'bg-orange-700 text-white' : 
-                          'bg-slate-700 text-slate-300'
+                          'bg-gray-700 text-gray-700 dark:text-gray-300'
                         }`}>
                           {i + 1}
                         </span>
                       </td>
-                      <td className="py-4 px-2 font-medium text-slate-200">{p.name}</td>
-                      <td className="py-4 px-2 text-right text-slate-300">{p.units}</td>
-                      <td className="py-4 px-2 text-right text-[#C5A021] font-medium">Rs. {p.revenue.toLocaleString()}</td>
+                      <td className="py-4 px-2 font-medium text-gray-800 dark:text-gray-200">{p.name}</td>
+                      <td className="py-4 px-2 text-right text-gray-700 dark:text-gray-300">{p.units}</td>
+                      <td className="py-4 px-2 text-right text-[#D4648A] font-medium">Rs. {p.revenue.toLocaleString()}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-slate-500 italic">No sales data</td>
+                    <td colSpan={4} className="py-8 text-center text-gray-400 dark:text-gray-500 italic">No sales data</td>
                   </tr>
                 )}
               </tbody>
@@ -480,44 +480,44 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
         </div>
 
         {/* Coupon Performance */}
-        <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2">
+        <div className="bg-gray-50/80 dark:bg-gray-800/80 p-6 rounded-2xl border border-pink-200/50 dark:border-pink-900/30">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
             <Tag className="w-5 h-5 text-purple-400" />
             Coupon Performance
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-slate-500 text-sm border-b border-slate-700">
+                <tr className="text-gray-400 dark:text-gray-500 text-sm border-b border-pink-200/50 dark:border-pink-900/30">
                   <th className="pb-3 font-medium px-2">Code</th>
                   <th className="pb-3 font-medium px-2">Discount</th>
                   <th className="pb-3 font-medium px-2">Usage</th>
                   <th className="pb-3 font-medium px-2">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-pink-200/50 dark:divide-pink-900/30">
                 {coupons.length > 0 ? (
                   coupons.map((c, i) => {
                     const isExpired = new Date(c.expiryDate) < new Date();
                     const usagePercent = c.usageLimit ? (c.usageCount / c.usageLimit) * 100 : 0;
                     
                     return (
-                      <tr key={c.code || i} className="hover:bg-slate-700/20 transition-colors">
+                      <tr key={c.code || i} className="hover:bg-gray-700/20 transition-colors">
                         <td className="py-4 px-2">
-                          <span className="font-mono bg-slate-900 px-2 py-1 rounded text-slate-300 border border-slate-700 text-sm">
+                          <span className="font-mono bg-white dark:bg-gray-900 px-2 py-1 rounded text-gray-700 dark:text-gray-300 border border-pink-200/50 dark:border-pink-900/30 text-sm">
                             {c.code}
                           </span>
                         </td>
-                        <td className="py-4 px-2 text-slate-300">
+                        <td className="py-4 px-2 text-gray-700 dark:text-gray-300">
                           {c.type === 'percentage' ? `${c.value}%` : `Rs. ${c.value}`}
                         </td>
                         <td className="py-4 px-2">
                           <div className="flex flex-col gap-1 w-24">
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {c.usageCount} {c.usageLimit ? `/ ${c.usageLimit}` : 'uses'}
                             </span>
                             {c.usageLimit && (
-                              <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
                                 <div 
                                   className={`h-full ${usagePercent >= 100 ? 'bg-red-500' : 'bg-emerald-500'}`} 
                                   style={{ width: `${Math.min(usagePercent, 100)}%` }}
@@ -528,7 +528,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
                         </td>
                         <td className="py-4 px-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            !c.active ? 'bg-slate-500/20 text-slate-400' :
+                            !c.active ? 'bg-gray-500/20 text-gray-500 dark:text-gray-400' :
                             isExpired ? 'bg-red-500/20 text-red-400' :
                             (c.usageLimit && c.usageCount >= c.usageLimit) ? 'bg-orange-500/20 text-orange-400' :
                             'bg-emerald-500/20 text-emerald-400'
@@ -541,7 +541,7 @@ const AdminReportsTab: React.FC<AdminReportsTabProps> = ({ products, orders, cou
                   })
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-slate-500 italic">No coupons found</td>
+                    <td colSpan={4} className="py-8 text-center text-gray-400 dark:text-gray-500 italic">No coupons found</td>
                   </tr>
                 )}
               </tbody>

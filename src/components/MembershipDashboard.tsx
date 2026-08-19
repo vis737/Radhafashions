@@ -19,14 +19,14 @@ export default function MembershipDashboard({ membership }: MembershipDashboardP
   let nextLevel = 'Silver';
 
   if (level === 'Silver') {
-    cardGradient = 'from-slate-400 via-slate-500 to-slate-600 text-slate-50 border-slate-300/30';
-    cardBadgeColor = 'text-slate-200';
+    cardGradient = 'from-slate-400 via-slate-500 to-slate-600 text-gray-50 border-gray-300/30';
+    cardBadgeColor = 'text-gray-800 dark:text-gray-200';
     pointsToNext = 1500;
     currentProgress = (loyaltyPoints / 1500) * 100;
     nextLevel = 'Gold';
   } else if (level === 'Gold') {
-    cardGradient = 'from-yellow-600 via-amber-600 to-yellow-800 text-yellow-50 border-yellow-500/30';
-    cardBadgeColor = 'text-yellow-300';
+    cardGradient = 'from-pink-600 via-amber-600 to-pink-800 text-pink-50 border-pink-500/30';
+    cardBadgeColor = 'text-pink-300';
     pointsToNext = 3000;
     currentProgress = (loyaltyPoints / 3000) * 100;
     nextLevel = 'Platinum';
@@ -86,10 +86,10 @@ export default function MembershipDashboard({ membership }: MembershipDashboardP
 
       {/* Progress to Next Tier Card */}
       {pointsToNext > 0 && (
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-5 shadow-sm space-y-3">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-5 shadow-sm space-y-3">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-navy-900 dark:text-navy-50 flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-[#C5A021]" /> Tier Progress
+            <span className="font-bold text-gray-900 dark:text-gray-50 flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-[#D4648A]" /> Tier Progress
             </span>
             <span className="text-[10px] text-gray-400 font-mono">
               {loyaltyPoints}/{pointsToNext} to {nextLevel}
@@ -97,12 +97,12 @@ export default function MembershipDashboard({ membership }: MembershipDashboardP
           </div>
           
           {/* Progress bar container */}
-          <div className="w-full bg-gray-100 dark:bg-navy-950 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-100 dark:bg-gray-950 rounded-full h-2 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(currentProgress, 100)}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="bg-[#C5A021] h-full rounded-full"
+              className="bg-[#D4648A] h-full rounded-full"
             />
           </div>
           
@@ -113,26 +113,26 @@ export default function MembershipDashboard({ membership }: MembershipDashboardP
       )}
 
       {/* Tier Benefits Panel */}
-      <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-5 shadow-sm space-y-4">
-        <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-[#C5A021]" /> Member Benefits
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-5 shadow-sm space-y-4">
+        <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-[#D4648A]" /> Member Benefits
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans">
-          <div className="p-3 bg-gray-50 dark:bg-navy-950 rounded-2xl space-y-1">
-            <p className="font-bold text-navy-950 dark:text-gold-300">Exclusive Discounts</p>
-            <p className="text-[11px] text-gray-500 dark:text-slate-400 font-light">
+          <div className="p-3 bg-gray-50 dark:bg-gray-950 rounded-2xl space-y-1">
+            <p className="font-bold text-gray-950 dark:text-pink-300">Exclusive Discounts</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-500 font-light">
               Automatic checkout savings of {level === 'Bronze' ? 'Free Shipping' : level === 'Silver' ? '5% OFF' : level === 'Gold' ? '10% OFF' : '15% OFF'} on all catalog orders.
             </p>
           </div>
-          <div className="p-3 bg-gray-50 dark:bg-navy-950 rounded-2xl space-y-1">
-            <p className="font-bold text-navy-950 dark:text-gold-300">Priority Support</p>
-            <p className="text-[11px] text-gray-500 dark:text-slate-400 font-light">
+          <div className="p-3 bg-gray-50 dark:bg-gray-950 rounded-2xl space-y-1">
+            <p className="font-bold text-gray-950 dark:text-pink-300">Priority Support</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-500 font-light">
               Direct high-speed routing via our active helpdesk for expedited order processing.
             </p>
           </div>
         </div>
         {expiryDate && (
-          <p className="text-[10px] text-gray-400 font-sans border-t pt-3 border-gray-50 dark:border-navy-800 flex items-center gap-1">
+          <p className="text-[10px] text-gray-400 font-sans border-t pt-3 border-gray-50 dark:border-gray-800 flex items-center gap-1">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
             Membership expires on {expiryDate} and will automatically renew.
           </p>
@@ -140,16 +140,16 @@ export default function MembershipDashboard({ membership }: MembershipDashboardP
       </div>
 
       {/* Point History Log Card */}
-      <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-5 shadow-sm space-y-4">
-        <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1.5">
-          <HelpCircle className="w-4 h-4 text-[#C5A021]" /> Points Ledger Audit
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-5 shadow-sm space-y-4">
+        <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5">
+          <HelpCircle className="w-4 h-4 text-[#D4648A]" /> Points Ledger Audit
         </h4>
         <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
           {history && history.length > 0 ? (
             history.map((log, index) => (
-              <div key={index} className="flex justify-between items-center text-xs border-b border-gray-50 dark:border-navy-800 pb-2 last:border-b-0 last:pb-0">
+              <div key={index} className="flex justify-between items-center text-xs border-b border-gray-50 dark:border-gray-800 pb-2 last:border-b-0 last:pb-0">
                 <div className="text-left">
-                  <p className="font-semibold text-navy-900 dark:text-navy-50">{log.action}</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-50">{log.action}</p>
                   <p className="text-[9px] text-gray-400 font-mono mt-0.5">{log.date}</p>
                 </div>
                 <span className={`font-mono font-bold ${log.points > 0 ? 'text-emerald-500' : 'text-red-500'}`}>

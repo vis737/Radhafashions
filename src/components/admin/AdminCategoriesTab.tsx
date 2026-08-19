@@ -126,11 +126,11 @@ export default function AdminCategoriesTab({
   const disabledCount = categories.length - enabledCount;
 
   return (
-    <div className="space-y-6 text-slate-200">
+    <div className="space-y-6 text-gray-800 dark:text-gray-200">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-[#C5A021] flex items-center gap-3">
+        <h2 className="text-3xl font-bold text-[#D4648A] flex items-center gap-3">
           Category Shelves Manager
-          <span className="bg-[#C5A021] text-slate-900 text-sm py-1 px-3 rounded-full font-semibold">
+          <span className="bg-[#D4648A] text-gray-900 text-sm py-1 px-3 rounded-full font-semibold">
             {categories.length} Categories
           </span>
         </h2>
@@ -138,31 +138,31 @@ export default function AdminCategoriesTab({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <motion.div whileHover={{ scale: 1.02 }} className="bg-slate-800 p-6 rounded-3xl border border-slate-700/50 shadow-xl flex items-center gap-4">
-          <div className="p-4 bg-[#C5A021]/20 text-[#C5A021] rounded-2xl">
+        <motion.div whileHover={{ scale: 1.02 }} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl border border-pink-200/50 dark:border-pink-900/30 shadow-xl flex items-center gap-4">
+          <div className="p-4 bg-[#D4648A]/20 text-[#D4648A] rounded-2xl">
             <Tag size={28} />
           </div>
           <div>
-            <p className="text-sm text-slate-400 font-medium">Total Categories</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Categories</p>
             <p className="text-3xl font-bold text-white">{categories.length}</p>
           </div>
         </motion.div>
-        <motion.div whileHover={{ scale: 1.02 }} className="bg-slate-800 p-6 rounded-3xl border border-slate-700/50 shadow-xl flex items-center gap-4">
+        <motion.div whileHover={{ scale: 1.02 }} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl border border-pink-200/50 dark:border-pink-900/30 shadow-xl flex items-center gap-4">
           <div className="p-4 bg-emerald-500/20 text-emerald-400 rounded-2xl">
             <BarChart2 size={28} />
           </div>
           <div>
-            <p className="text-sm text-slate-400 font-medium">Products in Categories</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Products in Categories</p>
             <p className="text-3xl font-bold text-white">{totalProductsMapped}</p>
           </div>
         </motion.div>
-        <motion.div whileHover={{ scale: 1.02 }} className="bg-slate-800 p-6 rounded-3xl border border-slate-700/50 shadow-xl flex items-center gap-4">
+        <motion.div whileHover={{ scale: 1.02 }} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl border border-pink-200/50 dark:border-pink-900/30 shadow-xl flex items-center gap-4">
           <div className="p-4 bg-blue-500/20 text-blue-400 rounded-2xl">
             <CheckCircle size={28} />
           </div>
           <div>
-            <p className="text-sm text-slate-400 font-medium">Enabled / Disabled</p>
-            <p className="text-3xl font-bold text-white">{enabledCount} <span className="text-slate-500 text-lg">/ {disabledCount}</span></p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Enabled / Disabled</p>
+            <p className="text-3xl font-bold text-white">{enabledCount} <span className="text-gray-400 dark:text-gray-500 text-lg">/ {disabledCount}</span></p>
           </div>
         </motion.div>
       </div>
@@ -170,53 +170,53 @@ export default function AdminCategoriesTab({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Sidebar Form */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700/50 shadow-xl">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-3xl p-6 border border-pink-200/50 dark:border-pink-900/30 shadow-xl">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Plus className="text-[#C5A021]" /> Create Category
+              <Plus className="text-[#D4648A]" /> Create Category
             </h3>
             <form onSubmit={handleCreateCategory} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Category Name *</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category Name *</label>
                 <input
                   type="text"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all"
+                  className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all"
                   placeholder="e.g. Vintage Watches"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Image URL *</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Image URL *</label>
                 <input
                   type="url"
                   value={newCatImage}
                   onChange={(e) => setNewCatImage(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all"
+                  className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all"
                   placeholder="https://..."
                   required
                 />
                 {newCatImage && (
-                  <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-slate-700 group">
+                  <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-pink-200/50 dark:border-pink-900/30 group">
                     <img src={newCatImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 opacity-0 group-hover:opacity-100 transition-opacity">
                       <span className="text-xs font-semibold">Image Preview</span>
                     </div>
                   </div>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Description</label>
                 <textarea
                   value={newCatDesc}
                   onChange={(e) => setNewCatDesc(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all resize-none h-24"
+                  className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all resize-none h-24"
                   placeholder="Brief description of the category..."
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#C5A021] hover:bg-[#b08d1a] text-slate-900 font-bold py-3 rounded-xl transition-colors mt-2"
+                className="w-full bg-[#D4648A] hover:bg-[#b08d1a] text-gray-900 font-bold py-3 rounded-xl transition-colors mt-2"
               >
                 Publish Category
               </button>
@@ -227,21 +227,21 @@ export default function AdminCategoriesTab({
         {/* Categories Grid */}
         <div className="lg:col-span-8 space-y-6">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all shadow-lg"
+              className="w-full bg-gray-50 dark:bg-gray-800 border border-pink-200/50 dark:border-pink-900/30 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all shadow-lg"
             />
           </div>
 
           {filteredCategories.length === 0 ? (
-            <div className="bg-slate-800 rounded-3xl p-12 text-center border border-slate-700/50">
-              <ImageIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-3xl p-12 text-center border border-pink-200/50 dark:border-pink-900/30">
+              <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-white mb-2">No Categories Found</h3>
-              <p className="text-slate-400">Try adjusting your search or create a new category.</p>
+              <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or create a new category.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -257,14 +257,14 @@ export default function AdminCategoriesTab({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
                       key={cat.id}
-                      className="bg-slate-800 rounded-3xl border border-slate-700/50 overflow-hidden shadow-xl flex flex-col group"
+                      className="bg-gray-50 dark:bg-gray-800 rounded-3xl border border-pink-200/50 dark:border-pink-900/30 overflow-hidden shadow-xl flex flex-col group"
                     >
-                      <div className="h-28 relative overflow-hidden bg-slate-900">
+                      <div className="h-28 relative overflow-hidden bg-white dark:bg-gray-900">
                         <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105" />
                         <div className="absolute top-3 right-3">
                           <button
                             onClick={() => handleToggleCategory(cat)}
-                            className={`w-12 h-6 rounded-full p-1 transition-colors ${isEnabled ? 'bg-emerald-500' : 'bg-slate-600'}`}
+                            className={`w-12 h-6 rounded-full p-1 transition-colors ${isEnabled ? 'bg-emerald-500' : 'bg-gray-600'}`}
                           >
                             <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
                           </button>
@@ -272,19 +272,19 @@ export default function AdminCategoriesTab({
                       </div>
                       <div className="p-5 flex-1 flex flex-col">
                         <h4 className="text-lg font-bold text-white mb-1">{cat.name}</h4>
-                        <p className="text-xs font-mono text-[#C5A021] mb-3">/{cat.id}</p>
-                        <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-1">
+                        <p className="text-xs font-mono text-[#D4648A] mb-3">/{cat.id}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-1">
                           {cat.description || <span className="italic opacity-50">No description</span>}
                         </p>
                         
                         <div className="flex items-center justify-between mt-auto">
-                          <span className="text-xs font-medium bg-slate-900 text-slate-300 px-3 py-1 rounded-full border border-slate-700">
+                          <span className="text-xs font-medium bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-pink-200/50 dark:border-pink-900/30">
                             {pCount} products
                           </span>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => openEditModal(cat)}
-                              className="p-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-colors"
+                              className="p-2 bg-gray-700/50 hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-white rounded-xl transition-colors"
                               title="Edit Category"
                             >
                               <Edit2 size={16} />
@@ -316,18 +316,18 @@ export default function AdminCategoriesTab({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm"
               onClick={() => setIsEditModalOpen(false)}
             />
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="relative bg-slate-800 rounded-3xl p-6 md:p-8 w-full max-w-lg border border-slate-700 shadow-2xl"
+              className="relative bg-gray-50 dark:bg-gray-800 rounded-3xl p-6 md:p-8 w-full max-w-lg border border-pink-200/50 dark:border-pink-900/30 shadow-2xl"
             >
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white"
+                className="absolute top-6 right-6 text-gray-500 dark:text-gray-400 hover:text-white"
               >
                 <X size={24} />
               </button>
@@ -336,49 +336,49 @@ export default function AdminCategoriesTab({
               
               <form onSubmit={handleUpdateCategory} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Category Name *</label>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category Name *</label>
                   <input
                     type="text"
                     value={editCatName}
                     onChange={(e) => setEditCatName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all"
+                    className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Image URL *</label>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Image URL *</label>
                   <input
                     type="url"
                     value={editCatImage}
                     onChange={(e) => setEditCatImage(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all"
+                    className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all"
                     required
                   />
                   {editCatImage && (
-                    <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-slate-700">
+                    <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-pink-200/50 dark:border-pink-900/30">
                       <img src={editCatImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
                     </div>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Description</label>
                   <textarea
                     value={editCatDesc}
                     onChange={(e) => setEditCatDesc(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-all resize-none h-24"
+                    className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all resize-none h-24"
                   />
                 </div>
                 <div className="pt-4 flex gap-4">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors"
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-[#C5A021] hover:bg-[#b08d1a] text-slate-900 font-bold py-3 rounded-xl transition-colors"
+                    className="flex-1 bg-[#D4648A] hover:bg-[#b08d1a] text-gray-900 font-bold py-3 rounded-xl transition-colors"
                   >
                     Save Changes
                   </button>

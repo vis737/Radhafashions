@@ -52,7 +52,7 @@ export function evaluatePasswordStrength(password: string): PasswordValidationRe
     'password123',
     'admin123',
     'welcome123',
-    'meriseshop',
+    'radhafashions',
     'qwertyuiop',
   ];
   

@@ -53,17 +53,17 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 20, opacity: 0 }}
-        className="relative max-w-2xl w-full bg-white dark:bg-navy-950 rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-navy-900 p-6 md:p-8 text-left font-sans"
+        className="relative max-w-2xl w-full bg-white dark:bg-gray-950 rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-900 p-6 md:p-8 text-left font-sans"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-navy-900 text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gold-400 transition cursor-pointer"
+          className="absolute top-6 right-6 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-pink-400 transition cursor-pointer"
         >
           x
         </button>
@@ -76,10 +76,10 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
               className="space-y-5"
             >
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-gold-500 font-bold block mb-1">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-pink-500 font-bold block mb-1">
                   Artisanal Sourcing Portal
                 </span>
-                <h3 className="font-display font-black text-2xl uppercase tracking-tight text-navy-950 dark:text-white">
+                <h3 className="font-display font-black text-2xl uppercase tracking-tight text-gray-950 dark:text-white">
                   Bulk Return Gift Inquiry
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-1">
@@ -88,13 +88,13 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
               </div>
 
               {/* Volume Discount Indicator bar */}
-              <div className="p-4 rounded-2xl bg-gold-50/50 dark:bg-navy-900/60 border border-gold-200 dark:border-gold-950 flex flex-col md:flex-row justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-pink-50/50 dark:bg-gray-900/60 border border-pink-200 dark:border-pink-950 flex flex-col md:flex-row justify-between gap-4">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-gold-700 dark:text-gold-400 font-bold uppercase block">
+                  <span className="text-[10px] font-mono text-pink-700 dark:text-pink-400 font-bold uppercase block">
                     Current Tier Volume Reward
                   </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-display font-extrabold text-2xl text-navy-950 dark:text-white">
+                    <span className="font-display font-extrabold text-2xl text-gray-950 dark:text-white">
                       {currentRate}% OFF
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -105,19 +105,19 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
 
                 {/* Milestones */}
                 <div className="grid grid-cols-4 gap-2 text-center text-[9px] font-mono">
-                  <div className={`p-1.5 rounded-lg border ${quantity >= 50 ? 'bg-gold-100 border-gold-300 dark:bg-gold-500/10 text-gold-700 dark:text-gold-400' : 'bg-transparent border-gray-100 dark:border-navy-900 text-gray-400'}`}>
+                  <div className={`p-1.5 rounded-lg border ${quantity >= 50 ? 'bg-pink-100 border-pink-300 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400' : 'bg-transparent border-gray-100 dark:border-gray-900 text-gray-400'}`}>
                     <span>Qty 50+</span>
                     <span className="block font-bold">10% Off</span>
                   </div>
-                  <div className={`p-1.5 rounded-lg border ${quantity >= 100 ? 'bg-gold-100 border-gold-300 dark:bg-gold-500/10 text-gold-700 dark:text-gold-400' : 'bg-transparent border-gray-100 dark:border-navy-900 text-gray-400'}`}>
+                  <div className={`p-1.5 rounded-lg border ${quantity >= 100 ? 'bg-pink-100 border-pink-300 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400' : 'bg-transparent border-gray-100 dark:border-gray-900 text-gray-400'}`}>
                     <span>Qty 100+</span>
                     <span className="block font-bold">15% Off</span>
                   </div>
-                  <div className={`p-1.5 rounded-lg border ${quantity >= 200 ? 'bg-gold-100 border-gold-300 dark:bg-gold-500/10 text-gold-700 dark:text-gold-400' : 'bg-transparent border-gray-100 dark:border-navy-900 text-gray-400'}`}>
+                  <div className={`p-1.5 rounded-lg border ${quantity >= 200 ? 'bg-pink-100 border-pink-300 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400' : 'bg-transparent border-gray-100 dark:border-gray-900 text-gray-400'}`}>
                     <span>Qty 200+</span>
                     <span className="block font-bold">20% Off</span>
                   </div>
-                  <div className={`p-1.5 rounded-lg border ${quantity >= 500 ? 'bg-gold-100 border-gold-300 dark:bg-gold-500/10 text-gold-700 dark:text-gold-400' : 'bg-transparent border-gray-100 dark:border-navy-900 text-gray-400'}`}>
+                  <div className={`p-1.5 rounded-lg border ${quantity >= 500 ? 'bg-pink-100 border-pink-300 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400' : 'bg-transparent border-gray-100 dark:border-gray-900 text-gray-400'}`}>
                     <span>Qty 500+</span>
                     <span className="block font-bold">25% Off</span>
                   </div>
@@ -181,7 +181,7 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
                   <select
                     value={pName}
                     onChange={e => setPName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white text-slate-800"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white text-gray-800"
                   >
                     {products.map(p => (
                       <option key={p.id} value={p.name}>
@@ -216,8 +216,8 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
                       onClick={() => setEventType(type)}
                       className={`py-2 px-3 rounded-lg border text-xs font-bold uppercase tracking-wider transition ${
                         eventType === type
-                          ? 'bg-navy-950 dark:bg-gold-500 border-navy-950 dark:border-gold-500 text-white dark:text-navy-950'
-                          : 'bg-transparent border-gray-250 dark:border-navy-900 text-gray-400 hover:text-navy-950 dark:hover:text-white'
+                          ? 'bg-gray-950 dark:bg-pink-500 border-gray-950 dark:border-pink-500 text-white dark:text-gray-950'
+                          : 'bg-transparent border-gray-250 dark:border-gray-900 text-gray-400 hover:text-gray-950 dark:hover:text-white'
                       }`}
                     >
                       {type}
@@ -242,13 +242,13 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-1/3 py-3 border border-gray-200 dark:border-navy-800 rounded-xl font-display font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-800 dark:hover:text-white transition cursor-pointer"
+                  className="w-1/3 py-3 border border-gray-200 dark:border-gray-800 rounded-xl font-display font-bold text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-white transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-2/3 py-3 bg-navy-950 dark:bg-gold-400 hover:bg-navy-900 text-white dark:text-navy-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer active:scale-95 shadow-md flex items-center justify-center gap-2"
+                  className="w-2/3 py-3 bg-gray-950 dark:bg-pink-400 hover:bg-gray-900 text-white dark:text-gray-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer active:scale-95 shadow-md flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4 shrink-0" />
                   <span>SubmitSourcing Request</span>
@@ -267,32 +267,32 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-display font-black text-xl uppercase tracking-wider text-navy-900 dark:text-white">
-                  Gold Inquiry Lodged Successfully
+                <h4 className="font-display font-black text-xl uppercase tracking-wider text-gray-900 dark:text-white">
+                  Bulk Inquiry Lodged Successfully
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
-                  Our guild master has logged your interest in <span className="font-semibold text-navy-950 dark:text-gold-400">{quantity}x {pName}</span> with a <span className="text-emerald-500 font-bold">{currentRate}% bulk discount</span> applied. We will contact you at <span className="font-semibold">{email}</span> within 4 business hours.
+                  Our guild master has logged your interest in <span className="font-semibold text-gray-950 dark:text-pink-400">{quantity}x {pName}</span> with a <span className="text-emerald-500 font-bold">{currentRate}% bulk discount</span> applied. We will contact you at <span className="font-semibold">{email}</span> within 4 business hours.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-navy-900/65 max-w-sm mx-auto text-left space-y-2 text-[10px] font-mono">
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/65 max-w-sm mx-auto text-left space-y-2 text-[10px] font-mono">
                 <div className="flex justify-between text-gray-400">
                   <span>INQUIRY TICKET</span>
-                  <span className="text-navy-950 dark:text-white">#INQ-{Math.floor(Math.random() * 90000 + 10000)}</span>
+                  <span className="text-gray-950 dark:text-white">#INQ-{Math.floor(Math.random() * 90000 + 10000)}</span>
                 </div>
                 <div className="flex justify-between text-gray-400">
                   <span>PRODUCT CODE</span>
-                  <span className="text-navy-950 dark:text-white">{pName.substring(0, 20)}...</span>
+                  <span className="text-gray-950 dark:text-white">{pName.substring(0, 20)}...</span>
                 </div>
                 <div className="flex justify-between text-gray-400">
                   <span>ESTIMATED LEADTIME</span>
-                  <span className="text-gold-600 dark:text-gold-400 font-bold">14 Working Days</span>
+                  <span className="text-pink-600 dark:text-pink-400 font-bold">14 Working Days</span>
                 </div>
               </div>
 
               <button
                 onClick={onClose}
-                className="px-8 py-3 bg-navy-950 dark:bg-gold-400 hover:bg-navy-900 text-white dark:text-navy-950 font-display font-bold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer"
+                className="px-8 py-3 bg-gray-950 dark:bg-pink-400 hover:bg-gray-900 text-white dark:text-gray-950 font-display font-bold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer"
               >
                 Return to Gallery
               </button>

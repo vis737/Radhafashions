@@ -132,7 +132,7 @@ export default function AdminDashboard({
     const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n');
     const link = document.createElement('a');
     link.setAttribute('href', encodeURI(csvContent));
-    link.setAttribute('download', `meris_export_${table}.csv`);
+    link.setAttribute('download', `radha_export_${table}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -142,7 +142,7 @@ export default function AdminDashboard({
   const handleExportPDF = (table: string) => {
     const doc = new jsPDF();
     doc.setFont('Helvetica', 'bold');
-    doc.text(`MERIS BOUTIQUE - ${table.toUpperCase()} LEDGER`, 20, 20);
+    doc.text(`Radha Fashions BOUTIQUE - ${table.toUpperCase()} LEDGER`, 20, 20);
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(9);
     let y = 30;
@@ -159,7 +159,7 @@ export default function AdminDashboard({
         if (y > 270) { doc.addPage(); y = 20; }
       });
     }
-    doc.save(`meris_export_${table}.pdf`);
+    doc.save(`radha_export_${table}.pdf`);
     addToast(`PDF report generated for [${table}].`);
   };
 
@@ -212,17 +212,17 @@ export default function AdminDashboard({
   // Auth gate screen
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-950 px-4 select-none">
+      <div className="min-h-screen flex items-center justify-center bg-pink-50 dark:bg-gray-950 px-4 select-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full p-8 bg-white dark:bg-navy-900 border border-gray-150 dark:border-navy-800 rounded-3xl shadow-xl text-left space-y-6"
+          className="max-w-md w-full p-8 bg-white dark:bg-gray-900 border border-gray-150 dark:border-pink-900/30 rounded-3xl shadow-xl text-left space-y-6"
         >
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-gold-400/10 rounded-full flex items-center justify-center mx-auto text-[#C5A021]">
+            <div className="w-12 h-12 bg-pink-400/10 rounded-full flex items-center justify-center mx-auto text-pink-500">
               <ShieldCheck className="w-6 h-6" />
             </div>
-            <h2 className="font-display font-bold text-lg uppercase tracking-wider text-navy-950 dark:text-white">Admin Lock Gate</h2>
+            <h2 className="font-display font-bold text-lg uppercase tracking-wider text-pink-900 dark:text-white">Admin Lock Gate</h2>
             <p className="text-xs text-gray-400">Unlock administrative workspace credentials.</p>
           </div>
           <form onSubmit={handleAdminAuthSubmit} className="space-y-4 text-xs">
@@ -234,7 +234,7 @@ export default function AdminDashboard({
                 required
                 value={adminUsername}
                 onChange={(e) => setAdminUsername(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-navy-950 border border-gray-200 dark:border-navy-800 rounded-xl focus:ring-1 focus:ring-[#C5A021] focus:outline-none text-navy-950 dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-950 border border-pink-200 dark:border-pink-900/30 rounded-xl focus:ring-1 focus:ring-pink-500 focus:outline-none text-gray-900 dark:text-white"
               />
             </div>
             <div>
@@ -245,12 +245,12 @@ export default function AdminDashboard({
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-navy-950 border border-gray-200 dark:border-navy-800 rounded-xl focus:ring-1 focus:ring-[#C5A021] focus:outline-none text-navy-950 dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-950 border border-pink-200 dark:border-pink-900/30 rounded-xl focus:ring-1 focus:ring-pink-500 focus:outline-none text-gray-900 dark:text-white"
               />
             </div>
             <button
               type="submit"
-              className="w-full py-2.5 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 border border-navy-800 rounded-xl font-bold uppercase tracking-wider transition cursor-pointer"
+              className="w-full py-2.5 bg-pink-600 hover:bg-pink-700 text-white hover:text-white border border-pink-700 rounded-xl font-bold uppercase tracking-wider transition cursor-pointer"
             >
               Access Workspace
             </button>
@@ -261,32 +261,32 @@ export default function AdminDashboard({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-navy-950 text-gray-800 dark:text-slate-100 flex flex-col font-sans select-none relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100 flex flex-col font-sans select-none relative">
       <ToastNotification toasts={toasts} onClose={handleRemoveToast} />
 
       {/* Sticky top navigation */}
-      <header className="sticky top-0 z-40 bg-white/70 dark:bg-navy-900/70 backdrop-blur-md border-b border-gray-150 dark:border-navy-850 px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border-b border-gray-150 dark:border-pink-900/20 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1.5 hover:bg-gray-100 dark:hover:bg-navy-800 rounded-lg cursor-pointer"
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
           >
             <Menu className="w-5 h-5 text-gray-500" />
           </button>
-          <span className="font-display font-extrabold text-sm uppercase tracking-widest text-[#C5A021]">
-            Meris Admin Hub
+          <span className="font-display font-extrabold text-sm uppercase tracking-widest text-pink-600 dark:text-pink-400">
+            Radha Fashions Admin Hub
           </span>
         </div>
 
         {/* Global search bar */}
-        <div className="hidden sm:flex items-center gap-2 max-w-sm w-full bg-gray-50 dark:bg-navy-950 border border-gray-250 dark:border-navy-850 px-3 py-1.5 rounded-xl text-xs">
+        <div className="hidden sm:flex items-center gap-2 max-w-sm w-full bg-gray-50 dark:bg-gray-950 border border-pink-200 dark:border-pink-900/20 px-3 py-1.5 rounded-xl text-xs">
           <Search className="w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={globalSearch}
             onChange={(e) => setGlobalSearch(e.target.value)}
             placeholder="Search products, orders, coupons..."
-            className="bg-transparent border-none outline-none w-full text-navy-950 dark:text-white text-xs"
+            className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-white text-xs"
           />
         </div>
 
@@ -295,7 +295,7 @@ export default function AdminDashboard({
           <div className="relative">
             <button
               onClick={() => setIsNotifOpen(!isNotifOpen)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-navy-850 rounded-xl cursor-pointer relative"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl cursor-pointer relative"
             >
               <Bell className="w-4 h-4 text-gray-500" />
               {notifications.length > 0 && (
@@ -308,17 +308,17 @@ export default function AdminDashboard({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="absolute right-0 mt-2 w-72 bg-white dark:bg-navy-900 border border-gray-150 dark:border-navy-800 rounded-2xl shadow-xl p-3 text-xs space-y-2.5 z-[99]"
+                  className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/30 rounded-2xl shadow-xl p-3 text-xs space-y-2.5 z-[99]"
                 >
                   <div className="flex justify-between items-center pb-2 border-b">
-                    <span className="font-bold text-navy-950 dark:text-white">System Alerts</span>
-                    <button onClick={() => setNotifications([])} className="text-[10px] text-gray-400 hover:text-navy-950 cursor-pointer">
+                    <span className="font-bold text-gray-900 dark:text-white">System Alerts</span>
+                    <button onClick={() => setNotifications([])} className="text-[10px] text-gray-400 hover:text-gray-900 cursor-pointer">
                       Clear all
                     </button>
                   </div>
                   {notifications.map(n => (
-                    <div key={n.id} className="text-left py-1 text-gray-600 dark:text-slate-300 flex items-start gap-1.5">
-                      <span className="text-[#C5A021] mt-0.5">•</span>
+                    <div key={n.id} className="text-left py-1 text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
+                      <span className="text-pink-500 mt-0.5">•</span>
                       <span>{n.text}</span>
                     </div>
                   ))}
@@ -344,7 +344,7 @@ export default function AdminDashboard({
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-full bg-[#C5A021]/20 text-[#C5A021] flex items-center justify-center font-bold font-mono text-xs">
+              <div className="w-8 h-8 rounded-full bg-pink-500/20 text-pink-600 dark:text-pink-400 flex items-center justify-center font-bold font-mono text-xs">
                 M
               </div>
             </button>
@@ -354,17 +354,17 @@ export default function AdminDashboard({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-navy-900 border border-gray-150 dark:border-navy-800 rounded-2xl shadow-xl p-2 z-[99]"
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/30 rounded-2xl shadow-xl p-2 z-[99]"
                 >
                   <button
                     onClick={() => { setIsProfileOpen(false); setActiveTab('settings'); }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-navy-950 rounded-xl text-navy-950 dark:text-white"
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-950 rounded-xl text-gray-900 dark:text-white"
                   >
                     Manage Settings
                   </button>
                   <button
                     onClick={() => { setIsProfileOpen(false); setActiveTab('security'); }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-navy-950 rounded-xl text-navy-950 dark:text-white"
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-950 rounded-xl text-gray-900 dark:text-white"
                   >
                     Security Center
                   </button>
@@ -385,7 +385,7 @@ export default function AdminDashboard({
       <div className="flex-1 flex overflow-hidden">
 
         {/* Collapsible Sidebar */}
-        <aside className={`${isSidebarCollapsed ? 'w-16' : 'w-60'} bg-white dark:bg-navy-900 border-r border-gray-150 dark:border-navy-850 transition-all duration-300 flex flex-col shrink-0 justify-between select-none`}>
+        <aside className={`${isSidebarCollapsed ? 'w-16' : 'w-60'} bg-white dark:bg-gray-900 border-r border-pink-100 dark:border-pink-900/20 transition-all duration-300 flex flex-col shrink-0 justify-between select-none`}>
           <div className="py-4 space-y-0.5 overflow-y-auto">
             {sidebarTabs.map((tab) => {
               const Icon = tab.icon;
@@ -396,17 +396,17 @@ export default function AdminDashboard({
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full py-2.5 px-4 flex items-center justify-between text-xs font-semibold transition cursor-pointer ${
                     isActive
-                      ? 'bg-[#C5A021]/8 dark:bg-navy-950 text-[#C5A021] border-l-4 border-[#C5A021]'
-                      : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-navy-950/60 border-l-4 border-transparent'
+                      ? 'bg-pink-500/10 dark:bg-gray-950 text-pink-600 dark:text-pink-400 border-l-4 border-pink-500'
+                      : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-950/60 border-l-4 border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#C5A021]' : 'text-gray-400'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-pink-600 dark:text-pink-400' : 'text-gray-400'}`} />
                     {!isSidebarCollapsed && <span>{tab.label}</span>}
                   </div>
                   {!isSidebarCollapsed && tab.count !== undefined && tab.count > 0 && (
                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold ${
-                      tab.id === 'payments' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 dark:bg-navy-950 text-gray-500'
+                      tab.id === 'payments' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 dark:bg-gray-950 text-gray-500'
                     }`}>
                       {tab.count}
                     </span>
@@ -416,7 +416,7 @@ export default function AdminDashboard({
             })}
           </div>
 
-          <div className="p-4 border-t border-gray-100 dark:border-navy-850">
+          <div className="p-4 border-t border-gray-100 dark:border-pink-900/20">
             <button
               onClick={() => onLogoutAdmin?.()}
               className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"

@@ -35,7 +35,7 @@ export default function WhatsAppChat() {
                   M
                 </div>
                 <div>
-                  <h4 className="font-display font-semibold text-xs tracking-wide text-white">Meris Support</h4>
+                  <h4 className="font-display font-semibold text-xs tracking-wide text-white">Radha Fashions Support</h4>
                   <p className="text-[10px] text-emerald-300 font-mono flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
                     Online - Responds Instantly
@@ -53,7 +53,7 @@ export default function WhatsAppChat() {
             {/* Simulated Chat Screen */}
             <div className="p-4 bg-gray-50 flex-1 text-xs space-y-3 max-h-48 overflow-y-auto">
               <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm text-gray-700 border border-gray-100">
-                Greetings from active Meris family! How can we assist you with our handcrafted stencils, toys, or gift packages today?
+                Greetings from active Radha Fashions family! How can we assist you with our handcrafted stencils, toys, or gift packages today?
               </div>
             </div>
 

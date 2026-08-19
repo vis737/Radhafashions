@@ -100,16 +100,16 @@ export default function AdminSecurityTab({
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
-    <div className="space-y-8 p-6 text-slate-800">
+    <div className="space-y-8 p-6 text-gray-800">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-serif text-[#0f172a] font-bold tracking-tight">Admin Security Control Vault</h2>
       </div>
 
       {/* Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <motion.div whileHover={{ y: -2 }} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <motion.div whileHover={{ y: -2 }} className="bg-white p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-mono text-slate-500 uppercase tracking-wider mb-1">Security Score</p>
+            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Security Score</p>
             <p className="text-3xl font-bold text-emerald-600">98/100</p>
           </div>
           <div className="bg-emerald-100 p-3 rounded-full">
@@ -117,19 +117,19 @@ export default function AdminSecurityTab({
           </div>
         </motion.div>
 
-        <motion.div whileHover={{ y: -2 }} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <motion.div whileHover={{ y: -2 }} className="bg-white p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-mono text-slate-500 uppercase tracking-wider mb-1">Active Sessions</p>
-            <p className="text-3xl font-bold text-slate-900">1</p>
+            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Active Sessions</p>
+            <p className="text-3xl font-bold text-gray-900">1</p>
           </div>
-          <div className="bg-slate-100 p-3 rounded-full">
-            <Users className="w-8 h-8 text-slate-700" />
+          <div className="bg-gray-100 p-3 rounded-full">
+            <Users className="w-8 h-8 text-gray-700" />
           </div>
         </motion.div>
 
-        <motion.div whileHover={{ y: -2 }} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <motion.div whileHover={{ y: -2 }} className="bg-white p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-mono text-slate-500 uppercase tracking-wider mb-1">2FA Status</p>
+            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">2FA Status</p>
             <p className={`text-xl font-bold ${twoFactorEnabled ? 'text-emerald-600' : 'text-rose-600'}`}>
               {twoFactorEnabled ? 'Enabled' : 'Disabled'}
             </p>
@@ -141,7 +141,7 @@ export default function AdminSecurityTab({
               addToast(`Two-Factor Authentication ${!twoFactorEnabled ? 'enabled' : 'disabled'}`, 'info');
             }}
             className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-              twoFactorEnabled ? 'bg-emerald-500' : 'bg-slate-300'
+              twoFactorEnabled ? 'bg-emerald-500' : 'bg-gray-300'
             }`}
           >
             <span
@@ -155,9 +155,9 @@ export default function AdminSecurityTab({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Security Checklist */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="text-lg font-serif font-semibold text-slate-900 mb-4 flex items-center">
-            <Lock className="w-5 h-5 mr-2 text-[#C5A021]" />
+        <div className="bg-white rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+          <h3 className="text-lg font-serif font-semibold text-gray-900 mb-4 flex items-center">
+            <Lock className="w-5 h-5 mr-2 text-[#D4648A]" />
             Security Checklist
           </h3>
           <ul className="space-y-3">
@@ -171,8 +171,8 @@ export default function AdminSecurityTab({
               { label: 'SQL injection prevention', active: true },
               { label: 'XSS protection active', active: true },
             ].map((item, idx) => (
-              <li key={idx} className="flex items-center justify-between p-2 rounded hover:bg-slate-50">
-                <span className="text-sm text-slate-700">{item.label}</span>
+              <li key={idx} className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-950">
+                <span className="text-sm text-gray-700">{item.label}</span>
                 {item.active ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 ) : (
@@ -184,16 +184,16 @@ export default function AdminSecurityTab({
         </div>
 
         {/* Change Password */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 h-fit">
+        <div className="bg-white rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 h-fit">
           <button
             onClick={() => setPasswordSectionOpen(!passwordSectionOpen)}
             className="w-full flex items-center justify-between"
           >
-            <h3 className="text-lg font-serif font-semibold text-slate-900 flex items-center">
-              <Key className="w-5 h-5 mr-2 text-[#C5A021]" />
+            <h3 className="text-lg font-serif font-semibold text-gray-900 flex items-center">
+              <Key className="w-5 h-5 mr-2 text-[#D4648A]" />
               Change Password
             </h3>
-            {passwordSectionOpen ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+            {passwordSectionOpen ? <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />}
           </button>
           
           {passwordSectionOpen && (
@@ -204,28 +204,28 @@ export default function AdminSecurityTab({
               onSubmit={handlePasswordChange}
             >
               <div>
-                <label className="block text-xs font-mono uppercase text-slate-500 mb-1">New Password</label>
+                <label className="block text-xs font-mono uppercase text-gray-400 dark:text-gray-500 mb-1">New Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-[#C5A021] focus:border-transparent outline-none"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4648A] focus:border-transparent outline-none"
                   placeholder="Min 8 characters"
                 />
               </div>
               <div>
-                <label className="block text-xs font-mono uppercase text-slate-500 mb-1">Confirm Password</label>
+                <label className="block text-xs font-mono uppercase text-gray-400 dark:text-gray-500 mb-1">Confirm Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-[#C5A021] focus:border-transparent outline-none"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4648A] focus:border-transparent outline-none"
                   placeholder="Repeat new password"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#0f172a] text-[#C5A021] py-2 rounded font-medium hover:bg-slate-800 transition-colors"
+                className="w-full bg-[#0f172a] text-[#D4648A] py-2 rounded font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Update Password
               </button>
@@ -235,26 +235,26 @@ export default function AdminSecurityTab({
       </div>
 
       {/* Audit Logs */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <h3 className="text-lg font-serif font-semibold text-slate-900 flex items-center">
-            <AlertTriangle className="w-5 h-5 mr-2 text-[#C5A021]" />
+          <h3 className="text-lg font-serif font-semibold text-gray-900 flex items-center">
+            <AlertTriangle className="w-5 h-5 mr-2 text-[#D4648A]" />
             Audit Logs Timeline
           </h3>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search logs..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#C5A021] outline-none"
+                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-[#D4648A] outline-none"
               />
             </div>
             <button
               onClick={handleExportCSV}
-              className="p-2 text-slate-600 hover:text-[#0f172a] hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+              className="p-2 text-gray-600 hover:text-[#0f172a] hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 dark:border-gray-800"
               title="Export CSV"
             >
               <Download className="w-4 h-4" />
@@ -278,7 +278,7 @@ export default function AdminSecurityTab({
 
         <div className="bg-[#0f172a] rounded-lg p-4 max-h-[400px] overflow-y-auto custom-scrollbar">
           {filteredLogs.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 font-mono text-sm">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400 font-mono text-sm">
               No audit logs found.
             </div>
           ) : (
@@ -288,20 +288,20 @@ export default function AdminSecurityTab({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   key={log.id}
-                  className="group flex flex-col sm:flex-row sm:items-start justify-between p-3 rounded border border-slate-800 bg-slate-900 hover:bg-slate-800/80 transition-colors"
+                  className="group flex flex-col sm:flex-row sm:items-start justify-between p-3 rounded border border-pink-100 dark:border-pink-900/20 bg-white dark:bg-gray-900 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 transition-colors"
                 >
-                  <div className="flex-1 font-mono text-xs text-slate-300">
-                    <span className="text-[#C5A021] font-bold mr-2">[{log.action}]</span>
+                  <div className="flex-1 font-mono text-xs text-gray-700 dark:text-gray-300">
+                    <span className="text-[#D4648A] font-bold mr-2">[{log.action}]</span>
                     {log.details}
-                    <div className="mt-1 text-slate-500">User: {log.user}</div>
+                    <div className="mt-1 text-gray-400 dark:text-gray-500">User: {log.user}</div>
                   </div>
                   <div className="flex items-center gap-4 mt-2 sm:mt-0">
-                    <span className="text-[10px] text-slate-500 font-mono">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                       {new Date(log.timestamp).toLocaleString()}
                     </span>
                     <button
                       onClick={() => onDeleteLog(log.id)}
-                      className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 transition-all"
+                      className="opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 hover:text-rose-400 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

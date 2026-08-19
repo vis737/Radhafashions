@@ -15,7 +15,7 @@ const getThemeColor = (theme: string) => {
   switch (theme?.toLowerCase()) {
     case 'birthday': return 'bg-sky-100 text-sky-800 border-sky-300';
     case 'anniversary': return 'bg-rose-100 text-rose-800 border-rose-300';
-    case 'wedding': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    case 'wedding': return 'bg-pink-100 text-pink-800 border-pink-300';
     case 'baby shower': return 'bg-green-100 text-green-800 border-green-300';
     case 'christmas': return 'bg-red-100 text-red-800 border-red-300';
     case 'diwali': return 'bg-amber-100 text-amber-800 border-amber-300';
@@ -27,7 +27,7 @@ const getThemeChartColor = (theme: string) => {
   switch (theme?.toLowerCase()) {
     case 'birthday': return 'bg-sky-500';
     case 'anniversary': return 'bg-rose-500';
-    case 'wedding': return 'bg-yellow-500';
+    case 'wedding': return 'bg-pink-500';
     case 'baby shower': return 'bg-green-500';
     case 'christmas': return 'bg-red-500';
     case 'diwali': return 'bg-amber-500';
@@ -104,9 +104,9 @@ const AdminGiftOrdersTab: React.FC<AdminGiftOrdersTabProps> = ({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          <Gift className="text-[#C5A021]" size={28} />
+          <Gift className="text-[#D4648A]" size={28} />
           Gift Wrapping Orders Tracker
-          <span className="bg-[#C5A021] text-black text-sm px-3 py-1 rounded-full font-bold">
+          <span className="bg-[#D4648A] text-black text-sm px-3 py-1 rounded-full font-bold">
             {stats.totalCount}
           </span>
         </h2>
@@ -117,7 +117,7 @@ const AdminGiftOrdersTab: React.FC<AdminGiftOrdersTabProps> = ({
             placeholder="Search order or customer..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#1e2738] border border-[#2d3a4f] rounded-full px-11 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-[#C5A021] focus:ring-1 focus:ring-[#C5A021] transition-colors"
+            className="w-full bg-[#1e2738] border border-[#2d3a4f] rounded-full px-11 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-colors"
           />
           <Search className="absolute left-4 top-3 text-gray-400" size={18} />
         </div>
@@ -139,7 +139,7 @@ const AdminGiftOrdersTab: React.FC<AdminGiftOrdersTabProps> = ({
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#1e2738] rounded-3xl p-5 border border-[#2d3a4f]">
           <p className="text-sm text-gray-400 mb-1">Avg Gift Value</p>
-          <p className="text-2xl font-bold text-[#C5A021]">Rs. {stats.avgValue.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-[#D4648A]">Rs. {stats.avgValue.toFixed(2)}</p>
         </motion.div>
       </div>
 
@@ -225,7 +225,7 @@ const AdminGiftOrdersTab: React.FC<AdminGiftOrdersTabProps> = ({
                     <ul className="text-sm text-gray-300 space-y-1">
                       {order.items.map((item, idx) => (
                         <li key={idx} className="flex items-center gap-2">
-                          <Package size={14} className="text-[#C5A021]" />
+                          <Package size={14} className="text-[#D4648A]" />
                           {item.quantity}x {item.product.name}
                         </li>
                       ))}
@@ -236,7 +236,7 @@ const AdminGiftOrdersTab: React.FC<AdminGiftOrdersTabProps> = ({
                 <div className="flex flex-col justify-between md:items-end gap-4 md:w-48 border-t md:border-t-0 md:border-l border-[#2d3a4f] pt-4 md:pt-0 md:pl-6">
                   <div className="text-left md:text-right">
                     <p className="text-sm text-gray-400">Total Value</p>
-                    <p className="text-2xl font-bold text-[#C5A021]">Rs. {order.total}</p>
+                    <p className="text-2xl font-bold text-[#D4648A]">Rs. {order.total}</p>
                   </div>
 
                   <div className="flex flex-col gap-2 w-full">
@@ -247,7 +247,7 @@ const AdminGiftOrdersTab: React.FC<AdminGiftOrdersTabProps> = ({
                         onLogActivity('UPDATE_GIFT_STATUS', `Updated gift order ${order.orderNumber} status to ${e.target.value}`);
                         addToast(`Status updated for ${order.orderNumber}`, 'success');
                       }}
-                      className="w-full bg-[#111827] border border-[#2d3a4f] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C5A021]"
+                      className="w-full bg-[#111827] border border-[#2d3a4f] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4648A]"
                     >
                       <option value="pending">Pending</option>
                       <option value="processing">Processing</option>

@@ -16,7 +16,7 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
     imageUrl: 'https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?w=500&auto=format&fit=crop&q=80',
     likes: 245,
     comments: 18,
-    caption: 'Beveling our sheesham Keepsake boxes by hand under organic tung oil finishes. #meriscarpentry #handcraftedindia'
+    caption: 'Beveling our sheesham Keepsake boxes by hand under organic tung oil finishes. #radhafashions #handcraftedindia'
   },
   {
     id: 'post-2',
@@ -58,28 +58,28 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
 export default function InstagramGallery() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const handleInstagramVisit = () => {
-    window.open('https://instagram.com/meris_boutique', '_blank', 'noopener,noreferrer');
+    window.open('https://instagram.com/radhafashionss', '_blank', 'noopener,noreferrer');
   };
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none font-sans my-12">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <span className="text-[10px] font-mono text-gold-500 uppercase tracking-widest font-black block">
+          <span className="text-[10px] font-mono text-pink-500 uppercase tracking-widest font-black block">
             Inside the Workspace Guilds
           </span>
-          <h3 className="font-display font-black text-slate-800 dark:text-white text-lg uppercase tracking-wider mt-1">
+          <h3 className="font-display font-black text-gray-800 dark:text-white text-lg uppercase tracking-wider mt-1">
             Follow Our Artisan Journey
           </h3>
-          <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
+          <div className="w-10 h-0.5 bg-[#D4648A] mt-2 rounded"></div>
         </div>
 
         <button
           onClick={handleInstagramVisit}
-          className="py-2.5 px-4 bg-[#0F172A] hover:bg-[#C5A021] text-white hover:text-navy-950 rounded-xl text-xs font-semibold uppercase tracking-wider transition flex items-center gap-2 border border-slate-700/50 cursor-pointer self-start sm:self-auto shadow-sm active:scale-95"
+          className="py-2.5 px-4 bg-[#0F172A] hover:bg-[#D4648A] text-white hover:text-gray-950 rounded-xl text-xs font-semibold uppercase tracking-wider transition flex items-center gap-2 border border-pink-200/50 dark:border-pink-900/30 cursor-pointer self-start sm:self-auto shadow-sm active:scale-95"
         >
           <Instagram className="w-4 h-4 shrink-0" />
-          <span>@meris_boutique on Instagram</span>
+          <span>@radhafashionss on Instagram</span>
         </button>
       </div>
 
@@ -90,7 +90,7 @@ export default function InstagramGallery() {
             onMouseEnter={() => setHoveredId(post.id)}
             onMouseLeave={() => setHoveredId(null)}
             onClick={handleInstagramVisit}
-            className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-gray-100 dark:border-navy-900 cursor-zoom-in group select-none shadow-sm hover:shadow-md transition duration-300"
+            className="group relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-900 cursor-zoom-in group select-none shadow-sm hover:shadow-md transition duration-300"
           >
             <img
               src={post.imageUrl}

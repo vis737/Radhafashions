@@ -77,15 +77,15 @@ export default function AdminDashboardTab({
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-navy-900 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between shadow-lg text-white"
+        className="bg-gradient-to-r from-pink-600 to-pink-500 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between shadow-lg text-white"
       >
         <div>
-          <h1 className="text-3xl font-bold text-[#C5A021] mb-2">Welcome to Meris Admin Hub</h1>
+          <h1 className="text-3xl font-bold text-[#D4648A] mb-2">Welcome to Radha Fashions Admin Hub</h1>
           <p className="text-gray-300">Here's what's happening with your store today.</p>
         </div>
-        <div className="mt-4 md:mt-0 text-right bg-navy-800/50 p-4 rounded-2xl border border-navy-700">
+        <div className="mt-4 md:mt-0 text-right bg-gray-800/50 p-4 rounded-2xl border border-gray-700">
           <p className="text-sm text-gray-400 font-medium">Current Date & Time</p>
-          <p className="text-lg font-mono text-[#C5A021]">{currentDate}</p>
+          <p className="text-lg font-mono text-[#D4648A]">{currentDate}</p>
         </div>
       </motion.div>
 
@@ -94,7 +94,7 @@ export default function AdminDashboardTab({
         {/* Row 1 */}
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
@@ -110,15 +110,15 @@ export default function AdminDashboardTab({
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-mono text-gray-500 dark:text-gray-400 mb-1">TODAY'S ORDERS</p>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{todaysOrders.length}</h3>
-              <p className="text-xs text-navy-500 dark:text-navy-400 mt-2">orders placed today</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">orders placed today</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-navy-100 dark:bg-navy-500/20 flex items-center justify-center text-navy-600 dark:text-navy-400">
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-500/20 flex items-center justify-center text-gray-600 dark:text-gray-400">
               <ShoppingBag className="w-6 h-6" />
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function AdminDashboardTab({
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm relative overflow-hidden"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm relative overflow-hidden"
         >
           {pendingUpiOrders.length > 0 && (
             <div className="absolute top-0 right-0 w-3 h-3 m-4 rounded-full bg-amber-500 animate-ping"></div>
@@ -145,7 +145,7 @@ export default function AdminDashboardTab({
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
@@ -162,7 +162,7 @@ export default function AdminDashboardTab({
         {/* Row 2 */}
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
@@ -178,15 +178,15 @@ export default function AdminDashboardTab({
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-mono text-gray-500 dark:text-gray-400 mb-1">ACTIVE COUPONS</p>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{activeCoupons.length}</h3>
-              <p className="text-xs text-[#C5A021] mt-2">currently running</p>
+              <p className="text-xs text-[#D4648A] mt-2">currently running</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-[#C5A021]/10 flex items-center justify-center text-[#C5A021]">
+            <div className="w-12 h-12 rounded-full bg-[#D4648A]/10 flex items-center justify-center text-[#D4648A]">
               <Percent className="w-6 h-6" />
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function AdminDashboardTab({
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
@@ -210,7 +210,7 @@ export default function AdminDashboardTab({
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-5 shadow-sm"
+          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-sm"
         >
           <div className="flex justify-between items-start">
             <div>
@@ -226,26 +226,26 @@ export default function AdminDashboardTab({
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-sm">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
           Quick Actions
         </h2>
         <div className="flex flex-wrap gap-3">
           <button 
             onClick={onAddProduct}
-            className="flex items-center px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-medium transition-colors"
+            className="flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-sm font-medium transition-colors"
           >
-            <Plus className="w-4 h-4 mr-2 text-[#C5A021]" /> Add Product
+            <Plus className="w-4 h-4 mr-2 text-[#D4648A]" /> Add Product
           </button>
           <button 
             onClick={onCreateCoupon}
-            className="flex items-center px-4 py-2 bg-[#C5A021] hover:bg-[#b08d1d] text-white rounded-xl text-sm font-medium transition-colors"
+            className="flex items-center px-4 py-2 bg-[#D4648A] hover:bg-[#b08d1d] text-white rounded-xl text-sm font-medium transition-colors"
           >
             <Percent className="w-4 h-4 mr-2" /> Create Coupon
           </button>
           <button 
             onClick={() => onNavigate('payments')}
-            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-navy-800 dark:hover:bg-navy-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-navy-600 relative"
+            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-gray-600 relative"
           >
             <CreditCard className="w-4 h-4 mr-2 text-amber-500" /> Verify Payments
             {pendingUpiOrders.length > 0 && (
@@ -257,19 +257,19 @@ export default function AdminDashboardTab({
           </button>
           <button 
             onClick={() => onNavigate('reports')}
-            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-navy-800 dark:hover:bg-navy-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-navy-600"
+            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-gray-600"
           >
             <FileText className="w-4 h-4 mr-2" /> View Reports
           </button>
           <button 
             onClick={() => onNavigate('orders')}
-            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-navy-800 dark:hover:bg-navy-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-navy-600"
+            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-gray-600"
           >
             <ShoppingBag className="w-4 h-4 mr-2" /> Go to Orders
           </button>
           <button 
             onClick={() => onNavigate('settings')}
-            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-navy-800 dark:hover:bg-navy-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-navy-600"
+            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl text-sm font-medium transition-colors border border-transparent dark:border-gray-600"
           >
             <Settings className="w-4 h-4 mr-2" /> Settings
           </button>
@@ -279,12 +279,12 @@ export default function AdminDashboardTab({
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Recent Orders */}
-        <div className="lg:col-span-2 bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-6 shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-sm overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Recent Orders</h2>
             <button 
               onClick={() => onNavigate('orders')}
-              className="text-sm font-medium text-[#C5A021] hover:text-[#b08d1d] flex items-center"
+              className="text-sm font-medium text-[#D4648A] hover:text-[#b08d1d] flex items-center"
             >
               View all <ChevronRight className="w-4 h-4 ml-1" />
             </button>
@@ -292,7 +292,7 @@ export default function AdminDashboardTab({
           
           <div className="overflow-x-auto flex-1">
             <table className="w-full text-left text-sm">
-              <thead className="text-gray-500 dark:text-gray-400 font-mono text-xs border-b border-gray-100 dark:border-navy-700">
+              <thead className="text-gray-500 dark:text-gray-400 font-mono text-xs border-b border-gray-100 dark:border-gray-700">
                 <tr>
                   <th className="pb-3 font-medium">ORDER#</th>
                   <th className="pb-3 font-medium">CUSTOMER</th>
@@ -302,14 +302,14 @@ export default function AdminDashboardTab({
                   <th className="pb-3 font-medium">DATE</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-navy-800">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {recentOrders.map((order) => (
                   <tr 
                     key={order.id} 
                     onClick={() => onNavigate('orders')}
-                    className="group cursor-pointer hover:bg-gray-50 dark:hover:bg-navy-800/50 transition-colors"
+                    className="group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="py-4 font-mono font-medium text-gray-900 dark:text-white group-hover:text-[#C5A021]">
+                    <td className="py-4 font-mono font-medium text-gray-900 dark:text-white group-hover:text-[#D4648A]">
                       #{order.id.substring(0, 6).toUpperCase()}
                     </td>
                     <td className="py-4 text-gray-600 dark:text-gray-300">
@@ -335,7 +335,7 @@ export default function AdminDashboardTab({
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
                           : order.status === 'processing' || order.status === 'shipped'
                             ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
-                            : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-navy-700 dark:text-gray-300 dark:border-navy-600'
+                            : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
                       }`}>
                         {order.status}
                       </span>
@@ -358,7 +358,7 @@ export default function AdminDashboardTab({
         </div>
 
         {/* Right: Stock Alerts */}
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-6 shadow-sm flex flex-col">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-amber-500" /> Stock Alerts
@@ -379,7 +379,7 @@ export default function AdminDashboardTab({
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-3">
             {stockAlerts.map(product => (
-              <div key={product.id} className="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-navy-800 rounded-xl transition-colors border border-gray-100 dark:border-navy-700/50">
+              <div key={product.id} className="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors border border-gray-100 dark:border-gray-700/50">
                 <div className="flex-1 min-w-0 pr-4">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={product.name}>
                     {product.name}
@@ -390,7 +390,7 @@ export default function AdminDashboardTab({
                 </div>
                 <button 
                   onClick={() => onNavigate('products')}
-                  className="px-3 py-1.5 bg-gray-100 dark:bg-navy-700 hover:bg-gray-200 dark:hover:bg-navy-600 text-xs font-medium rounded-lg text-gray-700 dark:text-gray-300 transition-colors shrink-0"
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg text-gray-700 dark:text-gray-300 transition-colors shrink-0"
                 >
                   Manage
                 </button>
@@ -409,9 +409,9 @@ export default function AdminDashboardTab({
       {/* Sales Timeline & Logs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Timeline */}
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-700 rounded-3xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Sales Timeline</h2>
-          <div className="relative border-l-2 border-gray-100 dark:border-navy-700 ml-4 space-y-6">
+          <div className="relative border-l-2 border-gray-100 dark:border-gray-700 ml-4 space-y-6">
             {salesTimeline.map((order, idx) => {
               const statusColor = 
                 order.status === 'delivered' ? 'bg-emerald-500' :
@@ -421,7 +421,7 @@ export default function AdminDashboardTab({
               
               return (
                 <div key={order.id} className="relative pl-6">
-                  <div className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-4 border-white dark:border-navy-900 ${statusColor}`}></div>
+                  <div className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-4 border-white dark:border-gray-900 ${statusColor}`}></div>
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center">
                     <div>
                       <p className="text-sm font-bold text-gray-900 dark:text-white flex items-center">
@@ -435,7 +435,7 @@ export default function AdminDashboardTab({
                       </p>
                     </div>
                     <div className="mt-2 sm:mt-0 text-left sm:text-right">
-                      <p className="text-sm font-bold text-[#C5A021]">Rs. {order.total}</p>
+                      <p className="text-sm font-bold text-[#D4648A]">Rs. {order.total}</p>
                       <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mt-0.5">{order.status}</p>
                     </div>
                   </div>
@@ -449,14 +449,14 @@ export default function AdminDashboardTab({
         </div>
 
         {/* Activity Logs */}
-        <div className="bg-navy-950 rounded-3xl p-6 shadow-sm border border-navy-800 flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200 dark:border-pink-900/20 flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-white flex items-center">
-              <Search className="w-5 h-5 mr-2 text-[#C5A021]" /> System Logs
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+              <Search className="w-5 h-5 mr-2 text-[#D4648A]" /> System Logs
             </h2>
             <button 
               onClick={() => onNavigate('security')}
-              className="text-xs font-mono text-gray-400 hover:text-white transition-colors"
+              className="text-xs font-mono text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               [VIEW ALL LOGS]
             </button>
@@ -464,7 +464,7 @@ export default function AdminDashboardTab({
           
           <div className="flex-1 space-y-3 font-mono text-xs">
             {recentLogs.map((log, idx) => (
-              <div key={log.id || idx} className="p-3 bg-navy-900/50 rounded-xl border border-navy-800 text-slate-300">
+              <div key={log.id || idx} className="p-3 bg-gray-900/50 rounded-xl border border-gray-800 text-gray-700 dark:text-gray-300">
                 <div className="flex justify-between mb-2 opacity-60">
                   <span>[{new Date(log.timestamp).toLocaleString()}]</span>
                   <span>{log.user || 'SYSTEM'}</span>
@@ -476,13 +476,13 @@ export default function AdminDashboardTab({
                     'text-emerald-400'
                   }`}>&gt;</span>
                   <p>
-                    <span className="font-bold text-white">{log.action}:</span> {log.details}
+                    <span className="font-bold text-gray-900 dark:text-white">{log.action}:</span> {log.details}
                   </p>
                 </div>
               </div>
             ))}
             {recentLogs.length === 0 && (
-              <div className="p-4 text-center text-slate-500 italic">
+              <div className="p-4 text-center text-gray-400 dark:text-gray-500 italic">
                 System idle... No recent logs.
               </div>
             )}

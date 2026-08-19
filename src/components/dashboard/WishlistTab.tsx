@@ -11,7 +11,7 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
 
   const wishlistProductIds = wishlistProducts.map((p: any) => p.id).join(',');
   const shareUrl = `${window.location.origin}/?wishlist=${encodeURIComponent(wishlistProductIds)}`;
-  const shareText = `Check out my handcrafted wishlist on Meris E-Shop! 🌟 ${shareUrl}`;
+  const shareText = `Check out my handcrafted wishlist on Radha Fashions! 🌟 ${shareUrl}`;
 
   const downloadWishlistPdf = () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -42,7 +42,7 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
       currentY += 20;
     });
 
-    doc.save('meris_my_wishlist.pdf');
+    doc.save('radha_my_wishlist.pdf');
   };
 
   const handleCopyLink = () => {
@@ -61,7 +61,7 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
       className="space-y-6 text-left"
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-gray-100">
-        <h3 className="font-display font-medium text-sm text-navy-900 uppercase tracking-widest">Saved Wishlist Items</h3>
+        <h3 className="font-display font-medium text-sm text-gray-900 uppercase tracking-widest">Saved Wishlist Items</h3>
         {wishlistProducts.length > 0 && (
           <button
             onClick={downloadWishlistPdf}
@@ -79,19 +79,19 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="p-4 rounded-3xl bg-gray-50 dark:bg-navy-950 border border-gray-150 dark:border-navy-800 text-xs font-sans space-y-4">
+          <div className="p-4 rounded-3xl bg-gray-50 dark:bg-gray-950 border border-gray-150 dark:border-gray-800 text-xs font-sans space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="space-y-1">
-                <span className="font-bold text-navy-950 dark:text-white block">Share My Collection</span>
+                <span className="font-bold text-gray-950 dark:text-white block">Share My Collection</span>
                 <span className="text-[10px] text-gray-400">Share your handpicked crafts with friends or public visitors.</span>
               </div>
-              <div className="flex bg-white dark:bg-navy-900 p-0.5 rounded-lg border border-gray-250 dark:border-navy-800 text-[10px]">
+              <div className="flex bg-white dark:bg-gray-900 p-0.5 rounded-lg border border-gray-250 dark:border-gray-800 text-[10px]">
                 {['Public', 'Friends', 'Private'].map(priv => (
                   <button
                     key={priv}
                     onClick={() => setWishlistPrivacy(priv as any)}
                     className={`px-2.5 py-1 rounded-md font-bold uppercase transition cursor-pointer ${
-                      wishlistPrivacy === priv ? 'bg-navy-950 dark:bg-navy-850 text-white' : 'text-gray-400'
+                      wishlistPrivacy === priv ? 'bg-gray-950 dark:bg-gray-800 text-white' : 'text-gray-400'
                     }`}
                   >
                     {priv}
@@ -102,14 +102,14 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
 
             {wishlistPrivacy !== 'Private' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                <div className="flex items-center gap-3 bg-white dark:bg-navy-900 p-3 rounded-2xl border border-gray-200 dark:border-navy-800">
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-900 p-3 rounded-2xl border border-gray-200 dark:border-gray-800">
                   <img
                     src={getQrCodeUrl(shareUrl)}
                     alt="Wishlist QR Code"
                     className="w-16 h-16 rounded border bg-white shrink-0"
                   />
                   <div className="space-y-0.5 text-left">
-                    <span className="font-semibold text-[10px] text-navy-950 dark:text-white block">Scan to Share</span>
+                    <span className="font-semibold text-[10px] text-gray-950 dark:text-white block">Scan to Share</span>
                     <span className="text-[9px] text-gray-400 leading-normal block">Scan QR Code with any camera to instantly load this wishlist.</span>
                   </div>
                 </div>
@@ -119,11 +119,11 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
                     <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-[10px] transition">WhatsApp</a>
                     <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl font-semibold text-[10px] transition">Twitter (X)</a>
                     <a href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold text-[10px] transition">Telegram</a>
-                    <button onClick={handleCopyLink} className="px-3 py-2 bg-gray-200 dark:bg-navy-800 hover:bg-gray-300 text-gray-700 dark:text-slate-300 rounded-xl font-semibold text-[10px] transition cursor-pointer">
+                    <button onClick={handleCopyLink} className="px-3 py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 text-gray-700 dark:text-gray-400 rounded-xl font-semibold text-[10px] transition cursor-pointer">
                       {copiedLink ? 'Copied!' : 'Copy Link'}
                     </button>
                   </div>
-                  <span className="font-mono text-[9px] text-gray-400 dark:text-gray-500 truncate block bg-white dark:bg-navy-900 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-navy-800">
+                  <span className="font-mono text-[9px] text-gray-400 dark:text-gray-500 truncate block bg-white dark:bg-gray-900 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-800">
                     {shareUrl}
                   </span>
                 </div>
@@ -133,20 +133,20 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {wishlistProducts.map((prod: any) => (
-              <div key={prod.id} className="p-3.5 rounded-2xl border border-gray-100 dark:border-navy-800 bg-white dark:bg-navy-900 shadow-sm flex items-center gap-3 justify-between">
+              <div key={prod.id} className="p-3.5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm flex items-center gap-3 justify-between">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectProduct(prod.id)}>
                   <img src={prod.images[0]} alt="" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=120&auto=format&fit=crop&q=60'; }} className="w-14 h-14 rounded-xl object-cover bg-gray-50 shrink-0" />
                   <div className="text-left font-sans space-y-0.5">
-                    <h5 className="text-xs font-semibold text-navy-900 dark:text-navy-50 line-clamp-1">{prod.name}</h5>
+                    <h5 className="text-xs font-semibold text-gray-900 dark:text-gray-50 line-clamp-1">{prod.name}</h5>
                     <span className="text-[10px] text-gray-400 font-mono block">{prod.category}</span>
-                    <span className="text-xs font-bold text-navy-900 dark:text-navy-50 block mt-0.5">Rs.{prod.discountPrice || prod.price}</span>
+                    <span className="text-xs font-bold text-gray-900 dark:text-gray-50 block mt-0.5">Rs.{prod.discountPrice || prod.price}</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5 shrink-0 select-none">
                   <button
                     onClick={() => onMoveToCart(prod)}
-                    className="p-2 border border-gold-300 bg-gold-400 hover:bg-gold-500 rounded-lg text-navy-950 hover:text-navy-950 flex items-center justify-center gap-1 text-[11px] font-bold cursor-pointer transition active:scale-95"
+                    className="p-2 border border-pink-300 bg-pink-400 hover:bg-pink-500 rounded-lg text-gray-950 hover:text-gray-950 flex items-center justify-center gap-1 text-[11px] font-bold cursor-pointer transition active:scale-95"
                   >
                     <ShoppingCart className="w-3 h-3" />
                     <span>Add Bag</span>

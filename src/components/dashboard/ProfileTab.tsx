@@ -65,23 +65,23 @@ export default function ProfileTab({
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
-      className="space-y-8 animate-fade-in text-navy-950 text-left"
+      className="space-y-8 animate-fade-in text-gray-950 text-left"
     >
-      <div className="p-6 bg-gradient-to-r from-navy-950 to-navy-900 border border-gold-400/20 rounded-3xl relative overflow-hidden text-white shadow-lg">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A021]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="p-6 bg-gradient-to-r from-gray-950 to-gray-900 border border-pink-400/20 rounded-3xl relative overflow-hidden text-white shadow-lg">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4648A]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <span className="text-[9px] font-mono text-gold-400 uppercase tracking-widest block mb-1">Customer Workspace</span>
+            <span className="text-[9px] font-mono text-pink-400 uppercase tracking-widest block mb-1">Customer Workspace</span>
             <h2 className="font-display font-bold text-lg uppercase tracking-wide text-white">Welcome back, {currentUser.name}!</h2>
             <p className="text-[11px] text-gray-300 font-light mt-0.5">Manage your address logs, check loyalty coordinates, and view purchases.</p>
           </div>
           <div className="flex gap-3 shrink-0">
             <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl text-center">
-              <span className="text-[9px] font-mono text-gold-300 block">TOTAL ORDERS</span>
+              <span className="text-[9px] font-mono text-pink-300 block">TOTAL ORDERS</span>
               <span className="text-sm font-bold font-mono text-white mt-0.5 block">{orders.length}</span>
             </div>
             <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl text-center">
-              <span className="text-[9px] font-mono text-gold-300 block">REWARD POINTS</span>
+              <span className="text-[9px] font-mono text-pink-300 block">REWARD POINTS</span>
               <span className="text-sm font-bold font-mono text-white mt-0.5 block">{mockMembership.loyaltyPoints}</span>
             </div>
           </div>
@@ -91,13 +91,13 @@ export default function ProfileTab({
       <MembershipDashboard membership={mockMembership} />
 
       <div className="pt-4">
-        <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm space-y-4">
-          <h3 className="font-display font-bold text-xs text-navy-900 dark:text-navy-50 uppercase tracking-wider pb-2 border-b border-gray-150 dark:border-navy-850">Quick Workspace Access</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm space-y-4">
+          <h3 className="font-display font-bold text-xs text-gray-900 dark:text-gray-50 uppercase tracking-wider pb-2 border-b border-gray-150 dark:border-gray-800">Quick Workspace Access</h3>
           <div className="grid grid-cols-2 gap-3 text-[11px] font-semibold">
-            <button onClick={() => setSubTab('orders')} className="p-3 rounded-2xl bg-gray-50 dark:bg-navy-950 hover:bg-gold-50/50 dark:hover:bg-navy-850 border text-[#C5A021] text-center transition cursor-pointer">
+            <button onClick={() => setSubTab('orders')} className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950 hover:bg-pink-50/50 dark:hover:bg-gray-800 border text-[#D4648A] text-center transition cursor-pointer">
               View Invoices
             </button>
-            <button onClick={() => setSubTab('tracking')} className="p-3 rounded-2xl bg-gray-50 dark:bg-navy-950 hover:bg-gold-50/50 dark:hover:bg-navy-850 border text-[#C5A021] text-center transition cursor-pointer">
+            <button onClick={() => setSubTab('tracking')} className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950 hover:bg-pink-50/50 dark:hover:bg-gray-800 border text-[#D4648A] text-center transition cursor-pointer">
               Track Shipments
             </button>
           </div>
@@ -105,11 +105,11 @@ export default function ProfileTab({
       </div>
 
       <div>
-        <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-navy-850">
-          <h3 className="font-display font-bold text-xs text-navy-900 dark:text-navy-50 uppercase tracking-wider">Saved Shipping Address</h3>
+        <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="font-display font-bold text-xs text-gray-900 dark:text-gray-50 uppercase tracking-wider">Saved Shipping Address</h3>
           <button
             onClick={() => setIsEditingAddress(!isEditingAddress)}
-            className="text-[10px] font-bold text-[#C5A021] hover:underline cursor-pointer uppercase tracking-wider font-mono"
+            className="text-[10px] font-bold text-[#D4648A] hover:underline cursor-pointer uppercase tracking-wider font-mono"
           >
             {isEditingAddress ? 'Cancel' : 'Edit Coordinates'}
           </button>
@@ -185,14 +185,14 @@ export default function ProfileTab({
                 setIsEditingAddress(false);
                 import('react-hot-toast').then(t => t.default.success("Shipping address updated successfully in your session database!"));
               }}
-              className="px-4 py-2 bg-navy-950 hover:bg-[#C5A021] text-white hover:text-navy-950 font-bold rounded-lg uppercase tracking-wide cursor-pointer transition text-[10px] text-center"
+              className="px-4 py-2 bg-gray-950 hover:bg-[#D4648A] text-white hover:text-gray-950 font-bold rounded-lg uppercase tracking-wide cursor-pointer transition text-[10px] text-center"
             >
               Save Coordinates
             </button>
           </div>
         ) : (
           <div className="p-4 rounded-xl bg-gray-50 border mt-4 text-xs font-light leading-relaxed max-w-md">
-            <p className="font-semibold text-navy-900">{shippingName || currentUser?.name}</p>
+            <p className="font-semibold text-gray-900">{shippingName || currentUser?.name}</p>
             <p className="mt-1">{shippingAddress || 'No address provided yet.'}</p>
             <p>{shippingCity} {shippingPincode}</p>
             <p className="text-[10px] mt-1">Contact: {shippingPhone}</p>

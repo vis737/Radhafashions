@@ -36,7 +36,7 @@ import {
 
 import { calculateCartTotals } from './utils/premiumData';
 
-import { Product, CartItem, Coupon, Order, CustomerInfo, ActivityLog, CMSConfig, Review, BannerCampaign } from './types';
+import { Product, CartItem, Coupon, Order, CustomerInfo, ActivityLog, CMSConfig, Review, BannerCampaign, SelectedVariation, getCartItemKey } from './types';
 
 // Framer Motion staggered grid entrance variants
 const staggersContainerVariants = {
@@ -239,7 +239,7 @@ export default function App() {
 
     // Restore the success order screen if the page was reloaded right after checkout
     try {
-      const pendingSuccess = sessionStorage.getItem('meris_pending_success_order');
+      const pendingSuccess = sessionStorage.getItem('radha_pending_success_order');
       if (pendingSuccess) {
         const restoredOrder = JSON.parse(pendingSuccess) as Order;
         setSelectedSuccessOrder(restoredOrder);
@@ -402,22 +402,41 @@ export default function App() {
   };
 
   // Add to cart state logic
-  const handleAddProductToCart = (product: Product, quantity = 1) => {
+  const handleAddProductToCart = (product: Product, selectedVariation?: SelectedVariation, quantity = 1) => {
+    if (product.variation?.values?.length && !selectedVariation) {
+      setCurrentProductId(product.id);
+      handleSwapView('product');
+      alert(`Please choose a ${product.variation.type === 'color' ? 'colour' : 'size'} before adding this product to your bag.`);
+      return;
+    }
+
     const limit = cms.maxCartQty || 10;
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
+      const cartKey = getCartItemKey({ product, selectedVariation });
+      const existing = prev.find((item) => getCartItemKey(item) === cartKey);
+      const quantityAlreadyInCart = prev
+        .filter((item) => item.product.id === product.id)
+        .reduce((total, item) => total + item.quantity, 0);
+      const otherVariantQuantity = quantityAlreadyInCart - (existing?.quantity || 0);
+      const maximumForThisVariant = Math.min(limit, Math.max(0, product.stock - otherVariantQuantity));
+
+      if (maximumForThisVariant === 0) {
+        alert('This product is no longer available in the requested quantity.');
+        return prev;
+      }
+
       if (existing) {
-        if (existing.quantity >= limit) {
-          alert(`You can purchase a maximum of ${limit} units per product item.`);
+        if (existing.quantity >= maximumForThisVariant) {
+          alert(`You can purchase a maximum of ${maximumForThisVariant} unit${maximumForThisVariant === 1 ? '' : 's'} of this selection.`);
           return prev;
         }
         return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: Math.min(product.stock, limit, item.quantity + quantity) }
+          getCartItemKey(item) === cartKey
+            ? { ...item, quantity: Math.min(maximumForThisVariant, item.quantity + quantity) }
             : item
         );
       }
-      return [...prev, { product, quantity: Math.min(product.stock, limit, quantity) }];
+      return [...prev, { product, selectedVariation, quantity: Math.min(maximumForThisVariant, quantity) }];
     });
     setCartOpen(true);
     handleLogActivity('Item Added to Cart', `Added unit of ${product.name} to shopping bag.`);
@@ -451,8 +470,13 @@ export default function App() {
   };
 
   // Quick buy trigger (adds and redirects to checkout) - requires login
-  const handleBuyNowTrigger = (product: Product) => {
-    handleAddProductToCart(product, 1);
+  const handleBuyNowTrigger = (product: Product, selectedVariation?: SelectedVariation) => {
+    if (product.variation?.values?.length && !selectedVariation) {
+      setCurrentProductId(product.id);
+      alert(`Please choose a ${product.variation.type === 'color' ? 'colour' : 'size'} before checkout.`);
+      return;
+    }
+    handleAddProductToCart(product, selectedVariation, 1);
     if (!currentUser) {
       setPendingCheckout(true);
       setShowLoginGate(true);
@@ -577,9 +601,11 @@ export default function App() {
     // Update real physical stock counts in database
     setProducts((prevProducts) =>
       prevProducts.map((p) => {
-        const inCart = cartItems.find((ci) => ci.product.id === p.id);
-        if (inCart) {
-          return { ...p, stock: Math.max(0, p.stock - inCart.quantity) };
+        const cartQuantity = cartItems
+          .filter((ci) => ci.product.id === p.id)
+          .reduce((total, ci) => total + ci.quantity, 0);
+        if (cartQuantity > 0) {
+          return { ...p, stock: Math.max(0, p.stock - cartQuantity) };
         }
         return p;
       })
@@ -592,7 +618,7 @@ export default function App() {
 
     // Persist success order to sessionStorage so the invoice survives any accidental page reload
     try {
-      sessionStorage.setItem('meris_pending_success_order', JSON.stringify(newOrder));
+      sessionStorage.setItem('radha_pending_success_order', JSON.stringify(newOrder));
     } catch { /* storage unavailable */ }
 
     handleSwapView('ordersuccess');
@@ -812,33 +838,33 @@ export default function App() {
 
   if (cms.maintenanceMode && activeView !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center p-6 text-center font-sans relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl" />
+      <div className="min-h-screen bg-pink-50 dark:bg-gray-950 flex flex-col items-center justify-center p-6 text-center font-sans relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-300/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-400/10 rounded-full blur-3xl" />
 
-        <div className="max-w-md w-full bg-navy-900/40 border border-gold-400/20 backdrop-blur-xl rounded-3xl p-8 space-y-6 shadow-2xl relative z-10 text-white">
-          <div className="mx-auto w-20 h-20 bg-gold-400/10 rounded-full flex items-center justify-center border border-gold-400/30 animate-pulse">
-            <span className="text-3xl text-gold-400">🔨</span>
+        <div className="max-w-md w-full bg-white dark:bg-gray-900 border border-pink-200 dark:border-pink-800/30 rounded-3xl p-8 space-y-6 shadow-2xl relative z-10">
+          <div className="mx-auto w-20 h-20 bg-pink-400/10 rounded-full flex items-center justify-center border border-pink-400/30 animate-pulse">
+            <span className="text-3xl text-pink-500">🔨</span>
           </div>
 
           <div className="space-y-2">
-            <h1 className="font-display font-bold text-lg text-white uppercase tracking-widest leading-snug">
+            <h1 className="font-display font-bold text-lg text-gray-900 dark:text-white uppercase tracking-widest leading-snug">
               Workshop Polishing Underway
             </h1>
             <p className="text-xs text-gray-400 leading-relaxed font-light">
-              We are currently making some adjustments to the MERIS workshop to bring you an even better experience. Check back with us shortly!
+              We are currently making some adjustments to the Radha Fashions workshop to bring you an even better experience. Check back with us shortly!
             </p>
           </div>
 
-          <div className="border-t border-navy-800 pt-4 flex justify-center gap-4 text-xs text-gray-500">
-            <span>Helpline: {cms.contactPhone || '+91 91083 19758'}</span>
+          <div className="border-t border-pink-200 dark:border-gray-800 pt-4 flex justify-center gap-4 text-xs text-gray-500">
+            <span>Helpline: {cms.contactPhone || '+91 97311 53609'}</span>
           </div>
         </div>
 
         <div className="absolute bottom-6 right-6 z-20">
           <button 
             onClick={() => setActiveView('admin')}
-            className="text-[10px] text-gray-600 hover:text-gold-400 transition uppercase font-mono font-bold tracking-wider cursor-pointer"
+            className="text-[10px] text-gray-600 hover:text-pink-500 transition uppercase font-mono font-bold tracking-wider cursor-pointer"
           >
             Staff Portal Bypass &rarr;
           </button>
@@ -848,13 +874,13 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-navy-950 text-gray-900 dark:text-slate-100 flex flex-col justify-between select-none transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col justify-between select-none transition-colors duration-300">
       
       {/* Scroll Viewport Progress Indicator */}
       <div id="scroll-progress-container" className="fixed top-0 left-0 w-full h-[3px] bg-transparent z-[9999] pointer-events-none">
         <div
           id="scroll-progress-bar"
-          className="h-full bg-gradient-to-r from-[#C5A021] via-amber-400 to-[#C5A021] ease-out shadow-[0_1px_8px_rgba(197,160,33,0.5)] transition-[width] duration-75"
+          className="h-full bg-gradient-to-r from-pink-500 via-pink-400 to-pink-500 ease-out shadow-[0_1px_8px_rgba(212,100,138,0.5)] transition-[width] duration-75"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
@@ -892,125 +918,100 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
-              {/* Premium Rotating Hero Banner — Full enlarged product background image banner with 30-min reshuffle */}
-              <div className="relative min-h-[32rem] sm:min-h-[38rem] lg:min-h-[42rem] bg-slate-950 overflow-hidden text-white font-sans select-none flex items-center">
-                <AnimatePresence mode="wait">
-                  {heroProducts[activeHeroIndex] && (
-                    <motion.div
-                      key={heroProducts[activeHeroIndex].id || activeHeroIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.8 }}
-                      className="absolute inset-0"
-                    >
-                      {/* Full enlarged background image with smooth zoom animation */}
-                      <motion.img
-                        initial={{ scale: 1.12 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 6, ease: "linear" }}
-                        src={getProductHeroImage(heroProducts[activeHeroIndex])}
-                        alt={heroProducts[activeHeroIndex].name}
-                        className="absolute inset-0 w-full h-full object-cover saturate-110"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'https://images.unsplash.com/photo-1515488042361-404e9250afef?w=1600&auto=format&fit=crop&q=80';
+              {/* Premium Hero + values — sakura fades into the page */}
+              <section className="relative overflow-hidden">
+                <div
+                  className="absolute inset-0 scale-105 bg-cover bg-center"
+                  style={{ backgroundImage: "url('/sakura-auth-bg.png')" }}
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-[#140c14]/82 via-[#1e1220]/62 to-[#2a1824]/38"
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute inset-0 bg-gradient-to-b from-rose-950/20 via-transparent to-transparent"
+                  aria-hidden="true"
+                />
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent via-background/55 to-background"
+                  aria-hidden="true"
+                />
+                <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 md:grid-cols-2 md:pb-10 md:pt-24">
+                  <div className="text-left">
+                    <p className="text-[0.6875rem] uppercase tracking-[0.28em] text-white/80">
+                      New season · Collection 2026
+                    </p>
+                    <h1 className="mt-5 font-display text-5xl leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-7xl">
+                      Elegance,
+                      <br />
+                      tailored to you.
+                    </h1>
+                    <p className="mt-6 max-w-md text-base leading-relaxed text-white/85 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+                      A boutique of quietly romantic Indian ethnic wear — handpicked silk sarees, designer lehengas and curated jewelry made in small batches.
+                    </p>
+                    <div className="mt-9 flex flex-wrap gap-3">
+                      <button
+                        onClick={() => {
+                          const featuredCategoriesEl = document.getElementById('featured-categories');
+                          if (featuredCategoriesEl) {
+                            featuredCategoriesEl.scrollIntoView({ behavior: 'smooth' });
+                          }
                         }}
-                      />
-
-                      {/* Multi-layered cinematic gradient overlays for 100% text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/40" />
-
-                      {/* Content Container */}
-                      <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 w-full h-full flex items-center py-12">
-                        <div className="max-w-2xl space-y-6 text-left">
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className="px-3.5 py-1 bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 uppercase text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] rounded-full inline-flex items-center gap-1.5 shadow-lg backdrop-blur-md">
-                              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                              {heroProducts[activeHeroIndex].category || 'Artisan Featured'}
-                            </span>
-                            {heroProducts[activeHeroIndex].rating > 0 && (
-                              <span className="px-3 py-1 bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-mono rounded-full inline-flex items-center gap-1 backdrop-blur-md">
-                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                                {heroProducts[activeHeroIndex].rating} ({heroProducts[activeHeroIndex].ratingCount || 12} reviews)
-                              </span>
-                            )}
-                          </div>
-
-                          <h2 className="font-display font-semibold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight max-w-2xl drop-shadow-xl">
-                            {heroProducts[activeHeroIndex].name}
-                          </h2>
-
-                          <p className="text-sm sm:text-base text-slate-200 max-w-xl leading-relaxed drop-shadow-md">
-                            {heroProducts[activeHeroIndex].shortDescription || heroProducts[activeHeroIndex].description?.slice(0, 150) + '...'}
-                          </p>
-
-                          <div className="flex flex-wrap items-center gap-4 pt-2">
-                            <div className="flex items-baseline gap-2 bg-slate-950/80 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/10 shadow-xl">
-                              <span className="text-2xl sm:text-3xl font-mono font-bold text-emerald-400">
-                                ₹{heroProducts[activeHeroIndex].discountPrice || heroProducts[activeHeroIndex].price}
-                              </span>
-                              {heroProducts[activeHeroIndex].discountPrice && heroProducts[activeHeroIndex].discountPrice < heroProducts[activeHeroIndex].price && (
-                                <span className="text-sm font-mono text-slate-400 line-through">
-                                  ₹{heroProducts[activeHeroIndex].price}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex flex-wrap gap-3">
-                              <button
-                                onClick={() => {
-                                  const p = heroProducts[activeHeroIndex];
-                                  if (p) {
-                                    setCurrentProductId(p.id);
-                                    setActiveView('product');
-                                  }
-                                }}
-                                className="py-3 px-6 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-display font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
-                              >
-                                Shop Now <ArrowRight className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleSelectCategoryGroup(heroProducts[activeHeroIndex].categorySlug || '')}
-                                className="py-3 px-6 rounded-xl border border-white/30 hover:border-emerald-400/60 hover:bg-white/15 text-white text-xs font-display font-medium uppercase tracking-wider transition cursor-pointer active:scale-95 backdrop-blur-md"
-                              >
-                                Explore Category
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Dot Controls */}
-                <div className="absolute bottom-6 right-6 z-20 flex gap-2">
-                  {heroProducts.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveHeroIndex(i)}
-                      className={`w-3 h-3 rounded-full cursor-pointer transition-all ${
-                        i === activeHeroIndex ? 'bg-emerald-400 scale-125 shadow-lg shadow-emerald-400/50' : 'bg-white/40 hover:bg-white/70'
-                      }`}
+                        className="py-3 px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
+                      >
+                        Shop the collection
+                      </button>
+                      <button
+                        onClick={() => {
+                          const ourStoryEl = document.getElementById('our-story');
+                          if (ourStoryEl) {
+                            ourStoryEl.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                        className="py-3 px-6 rounded-sm border border-white/55 bg-black/15 hover:bg-white/15 text-white text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                      >
+                        Our story
+                      </button>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <img
+                      src="/hero-boutique.jpg"
+                      alt="Model wearing a blush pink silk dress from the Pink Petal Boutique collection"
+                      width={1600}
+                      height={1104}
+                      className="w-full rounded-sm object-cover shadow-petal animate-fade-in ring-1 ring-white/25"
                     />
+                  </div>
+                </div>
+
+                <div className="relative z-10 mx-auto grid max-w-7xl px-6 pb-10 pt-4 sm:grid-cols-3 sm:divide-x sm:divide-white/10 text-left">
+                  {[
+                    ["Small batch", "Limited runs, never mass produced"],
+                    ["Hand finished", "Each seam checked in our atelier"],
+                    ["Gift wrapped", "Every order arrives ribboned"],
+                  ].map(([title, copy]) => (
+                    <div key={title} className="py-6 sm:px-8 first:pl-0">
+                      <p className="font-display text-xl text-white">{title}</p>
+                      <p className="mt-1 text-sm text-white/70">{copy}</p>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </section>
 
               {searchResultsList.length > 0 && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                   <div className="flex justify-between items-end mb-6">
                     <div>
-                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
+                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
                         Search Results
                       </h3>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                         Matching products from the live catalog.
                       </p>
                     </div>
-                    <span className="text-xs font-mono text-slate-400">{searchResultsList.length} shown</span>
+                    <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{searchResultsList.length} shown</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1049,12 +1050,12 @@ export default function App() {
               </div>
 
               {/* Dynamic Featured Category Grid Shelf */}
-              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
+              <section id="featured-categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="mb-6">
-                  <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
+                  <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
                     Featured Collection Categories
                   </h3>
-                  <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
+                  <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
@@ -1062,7 +1063,7 @@ export default function App() {
                     <div
                       key={category.id}
                       onClick={() => handleSelectCategoryGroup(category.id)}
-                      className="group relative h-40 sm:h-44 rounded-2xl overflow-hidden bg-slate-950 border border-slate-100/10 cursor-pointer select-none shadow-sm hover:shadow-xl hover:border-gold-500/25 transition-all duration-300"
+                      className="group relative h-40 sm:h-44 rounded-2xl overflow-hidden bg-white dark:bg-gray-950 border border-gray-100/10 cursor-pointer select-none shadow-sm hover:shadow-xl hover:border-pink-500/25 transition-all duration-300"
                     >
                       <img
                         src={category.imageUrl}
@@ -1072,11 +1073,11 @@ export default function App() {
                       />
                       
                       {/* Premium glassmorphic gradient footer label */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent flex flex-col justify-end p-4">
-                        <span className="text-[9px] font-mono text-gold-400 uppercase tracking-widest mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/40 to-transparent flex flex-col justify-end p-4">
+                        <span className="text-[9px] font-mono text-pink-400 uppercase tracking-widest mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           Explore Collection
                         </span>
-                        <h4 className="font-display font-semibold text-xs sm:text-sm text-white tracking-wide leading-none group-hover:text-gold-300 transition duration-300">
+                        <h4 className="font-display font-semibold text-xs sm:text-sm text-white tracking-wide leading-none group-hover:text-pink-300 transition duration-300">
                           {category.name}
                         </h4>
                         <p className="text-[9px] text-gray-300 font-sans mt-2 line-clamp-1 font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -1092,14 +1093,14 @@ export default function App() {
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
+                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
                       Heritage Best Sellers
                     </h3>
-                    <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
+                    <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                   </div>
                   <button
                     onClick={() => handleSelectCategoryGroup('toys')}
-                    className="text-xs font-semibold text-[#C5A021] hover:text-[#C5A021]/80 flex items-center gap-1"
+                    className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
                   >
                     View All <ChevronRight className="w-4 h-4" />
                   </button>
@@ -1124,14 +1125,14 @@ export default function App() {
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white">
+                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
                       New Craft Arrivals
                     </h3>
-                    <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
+                    <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                   </div>
                   <button
                     onClick={() => handleSelectCategoryGroup('kolam')}
-                    className="text-xs font-semibold text-[#C5A021] hover:text-[#C5A021]/80 flex items-center gap-1"
+                    className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
                   >
                     View Arrivals <ChevronRight className="w-4 h-4" />
                   </button>
@@ -1167,8 +1168,8 @@ export default function App() {
                   if (list.length === 0) return null;
                   return (
                     <div className="space-y-4">
-                      <h4 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50 flex items-center gap-1.5 border-b border-gray-150 dark:border-navy-850 pb-2">
-                        <Sparkles className="w-3.5 h-3.5 text-[#C5A021]" /> {title}
+                      <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5 border-b border-gray-150 dark:border-gray-800 pb-2">
+                        <Sparkles className="w-3.5 h-3.5 text-pink-500" /> {title}
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 animate-fade-in">
                         {list.map(p => (
@@ -1188,15 +1189,15 @@ export default function App() {
                 };
 
                 return (
-                  <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left space-y-8 py-8 border-t border-gray-100 dark:border-navy-800">
+                  <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left space-y-8 py-8 border-t border-gray-100 dark:border-gray-800">
                     <div>
-                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-[#C5A021]" /> AI Personalized Recommendations
+                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-pink-500" /> AI Personalized Recommendations
                       </h3>
                       <p className="text-xs text-gray-400 dark:text-gray-500 font-sans mt-1">
                         Moris algorithmic scoring engine computing affinity profiles dynamically.
                       </p>
-                      <div className="w-10 h-0.5 bg-[#C5A021] mt-2 rounded"></div>
+                      <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                     </div>
 
                     {renderShelf("Recommended For You", recs.recommendedForYou)}
@@ -1210,11 +1211,11 @@ export default function App() {
               })()}
 
               {/* Professional testimonials review widgets */}
-              <section className="bg-slate-950 text-white py-16 text-left select-none relative overflow-hidden border-t border-b border-emerald-300/25">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(20,184,166,0.18),transparent_30%)] pointer-events-none" />
+              <section className="bg-pink-900 dark:bg-gray-950 text-white py-16 text-left select-none relative overflow-hidden border-t border-b border-pink-400/20">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,100,138,0.18),transparent_30%)] pointer-events-none" />
                 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gold-400 font-semibold block text-center">Reviews of the Meris Family</span>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-pink-300 font-semibold block text-center">Reviews of the Radha Fashions Family</span>
                   <h3 className="font-display font-medium text-xl sm:text-2xl text-center uppercase tracking-widest mt-2 mb-10 text-white">Loved by Families Worldwide</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1223,20 +1224,32 @@ export default function App() {
                       { quote: "My grandchildren completely ditched digital tablets for the organic stacking wooden horses. Safe chemical-free smells are amazing.", author: "Kiran Mazumdar", loc: "Bangalore" },
                       { quote: "Superb custom packaged bottles for our wedding return gift bags. Each bottle got custom praise. Outstanding client service support.", author: "Rohan Advani", loc: "Mumbai" }
                     ].map((t, idx) => (
-                      <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-gold-400/40 transition flex flex-col justify-between">
+                      <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-pink-400/40 transition flex flex-col justify-between">
                         <div className="space-y-4">
                           <div className="flex gap-1 text-amber-400">
                             {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400" />)}
                           </div>
                           <p className="text-xs sm:text-sm text-gray-300 italic font-light leading-relaxed">"{t.quote}"</p>
                         </div>
-                        <div className="pt-4 border-t border-white/5 mt-4 text-xs font-semibold text-gold-300 font-sans flex justify-between items-center">
+                        <div className="pt-4 border-t border-white/5 mt-4 text-xs font-semibold text-pink-300 font-sans flex justify-between items-center">
                           <span>{t.author}</span>
                           <span className="text-[10px] text-gray-500 font-mono italic">{t.loc}</span>
                         </div>
                       </div>
                     ))}
                   </div>
+                </div>
+              </section>
+              {/* Atelier / Our Story (adapted from Pink Petal Boutique) */}
+              <section id="our-story" className="bg-petal mt-12 rounded-sm border border-border">
+                <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+                  <p className="eyebrow">Our atelier</p>
+                  <h2 className="mt-4 font-display text-4xl leading-tight md:text-5xl text-foreground">
+                    Made slowly, in small rooms with good light.
+                  </h2>
+                  <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                    Radha Fashions began as a passion for heritage craftsmanship. Today every piece in our boutique still passes through the same standard of perfection — hand-selected silks, checked seams, and wrapped with love in tissue and ribbon.
+                  </p>
                 </div>
               </section>
 
@@ -1259,9 +1272,9 @@ export default function App() {
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 
                 {/* Left: Filters Panel (Desktop) */}
-                <div className="bg-white border rounded-3xl p-6 h-fit text-left space-y-6">
+                <div className="bg-white dark:bg-gray-900 border rounded-3xl p-6 h-fit text-left space-y-6">
                   <div>
-                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 mb-2">Category Selector</h3>
+                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Category Selector</h3>
                     <div className="flex flex-col gap-1 text-xs">
                       {CATEGORIES.map((category, idx) => (
                         <motion.button
@@ -1270,7 +1283,7 @@ export default function App() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.04, duration: 0.25, ease: "easeOut" }}
                           onClick={() => handleSelectCategoryGroup(category.id)}
-                          className={`w-full text-left py-2 px-2.5 rounded-lg transition font-semibold ${currentCategorySlug === category.id ? 'bg-[#C5A021]/10 text-[#C5A021] font-bold border-l-4 border-[#C5A021]' : 'text-slate-600 hover:bg-slate-50'}`}
+                          className={`w-full text-left py-2 px-2.5 rounded-lg transition font-semibold ${currentCategorySlug === category.id ? 'bg-pink-500/10 text-pink-600 font-bold border-l-4 border-pink-500' : 'text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-950'}`}
                         >
                           {category.name}
                         </motion.button>
@@ -1279,11 +1292,11 @@ export default function App() {
                   </div>
 
                   <div className="border-t pt-4">
-                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 mb-2">Sort Order Catalog</h3>
+                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Sort Order Catalog</h3>
                     <select
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value as any)}
-                      className="w-full px-2.5 py-2 text-xs border rounded-lg focus:outline-none bg-white"
+                      className="w-full px-2.5 py-2 text-xs border rounded-lg focus:outline-none bg-white dark:bg-gray-900"
                     >
                       <option value="rating">Sort by Rating Stars</option>
                       <option value="price-asc">Price: Low to High</option>
@@ -1292,13 +1305,13 @@ export default function App() {
                   </div>
 
                   <div className="border-t pt-4">
-                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 mb-2">Availability Filters</h3>
+                    <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Availability Filters</h3>
                     <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={stockOnly}
                         onChange={(e) => setStockOnly(e.target.checked)}
-                        className="text-gold-500 focus:ring-gold-400"
+                        className="text-pink-500 focus:ring-pink-400"
                       />
                       <span>In-Stock Items Only</span>
                     </label>
@@ -1328,16 +1341,16 @@ export default function App() {
                 <div className="lg:col-span-3 space-y-6">
                   {/* Category banner description card */}
                   {activeCategoryObject && (
-                    <div className="relative h-44 sm:h-52 rounded-3xl overflow-hidden text-left border border-gold-400/10 shadow-lg select-none">
+                    <div className="relative h-44 sm:h-52 rounded-3xl overflow-hidden text-left border border-pink-400/10 shadow-lg select-none">
                       <img 
                         src={activeCategoryObject.imageUrl} 
                         alt={activeCategoryObject.name}
                         referrerPolicy="no-referrer"
                         className="absolute inset-0 w-full h-full object-cover" 
                       />
-                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/75 to-transparent" />
                       <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-10 space-y-1.5 z-10 max-w-xl">
-                        <span className="text-[9px] font-mono tracking-widest text-gold-400 font-semibold uppercase">Collection Category</span>
+                        <span className="text-[9px] font-mono tracking-widest text-pink-400 font-semibold uppercase">Collection Category</span>
                         <h2 className="font-display font-bold text-lg sm:text-2xl text-white uppercase leading-none">{activeCategoryObject.name}</h2>
                         <p className="text-[11px] text-gray-200 leading-normal font-light">{activeCategoryObject.description}</p>
                       </div>
@@ -1346,12 +1359,12 @@ export default function App() {
 
                   {/* dynamic list of products */}
                   {categoryProductsFiltered.length === 0 ? (
-                    <div className="p-16 text-center bg-white dark:bg-navy-900 border border-dashed border-gray-200 dark:border-navy-800 rounded-3xl space-y-4">
-                      <div className="w-12 h-12 bg-[#C5A021]/15 rounded-full flex items-center justify-center mx-auto text-[#C5A021]">
+                    <div className="p-16 text-center bg-white dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-3xl space-y-4">
+                      <div className="w-12 h-12 bg-pink-500/15 rounded-full flex items-center justify-center mx-auto text-pink-500">
                         <Heart className="w-6 h-6 animate-pulse" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs font-bold text-navy-950 dark:text-white">No Matching Crafts Found</p>
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">No Matching Crafts Found</p>
                         <p className="text-[10px] text-gray-400 font-sans max-w-xs mx-auto">
                           We couldn't discover any items matching your selected age groups or filter criteria. Try adjusting your selector.
                         </p>
@@ -1429,15 +1442,15 @@ export default function App() {
               ) : (
                 <div className="max-w-xl mx-auto px-4 py-16 text-center">
                   <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm space-y-4">
-                    <ShieldCheck className="w-10 h-10 text-gold-500 mx-auto" />
-                    <h2 className="font-display font-semibold text-sm uppercase tracking-widest text-navy-900">Login Required</h2>
-                    <p className="text-xs text-gray-500">Please create or sign in to your Meris account before placing an order.</p>
+                    <ShieldCheck className="w-10 h-10 text-pink-500 mx-auto" />
+                    <h2 className="font-display font-semibold text-sm uppercase tracking-widest text-gray-900 dark:text-white">Login Required</h2>
+                    <p className="text-xs text-gray-500">Please create or sign in to your Radha Fashions account before placing an order.</p>
                     <button
                       onClick={() => {
                         setPendingCheckout(true);
                         handleSwapView('account');
                       }}
-                      className="px-5 py-3 bg-gold-500 hover:bg-gold-600 text-navy-950 rounded-2xl text-xs font-bold uppercase tracking-widest transition"
+                      className="px-5 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-2xl text-xs font-bold uppercase tracking-widest transition"
                     >
                       Sign In / Register
                     </button>
@@ -1458,7 +1471,7 @@ export default function App() {
               <OrderSuccessModal
                 order={selectedSuccessOrder}
                 onClose={() => {
-                  try { sessionStorage.removeItem('meris_pending_success_order'); } catch {}
+                  try { sessionStorage.removeItem('radha_pending_success_order'); } catch {}
                   handleSwapView('home');
                 }}
               />
@@ -1493,9 +1506,9 @@ export default function App() {
                   setCartItems([]);
                   setWishlistIds([]);
                   try {
-                    localStorage.removeItem('meris_user');
-                    localStorage.removeItem('meris_cart');
-                    localStorage.removeItem('meris_wishlist');
+                    localStorage.removeItem('radha_user');
+                    localStorage.removeItem('radha_cart');
+                    localStorage.removeItem('radha_wishlist');
                     sessionStorage.clear();
                   } catch {}
                   handleLogActivity('Session Closed', 'Shopper terminated session.');
@@ -1676,10 +1689,10 @@ export default function App() {
         isOpen={cartOpen}
         onClose={() => setCartOpen(false)}
         cartItems={cartItems}
-        onUpdateQuantity={(id, q) =>
-          setCartItems((prev) => prev.map((it) => (it.product.id === id ? { ...it, quantity: q } : it)))
+        onUpdateQuantity={(cartItemKey, q) =>
+          setCartItems((prev) => prev.map((it) => (getCartItemKey(it) === cartItemKey ? { ...it, quantity: q } : it)))
         }
-        onRemoveItem={(id) => setCartItems((prev) => prev.filter((it) => it.product.id !== id))}
+        onRemoveItem={(cartItemKey) => setCartItems((prev) => prev.filter((it) => getCartItemKey(it) !== cartItemKey))}
         activeCoupon={activeCoupon}
         onApplyCoupon={setActiveCoupon}
         shippingMethod={shippingMethod}
@@ -1690,51 +1703,57 @@ export default function App() {
       {/* Login Gate Modal - shown when guest tries to checkout */}
       <AnimatePresence>
         {showLoginGate && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md select-none">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url('/sakura-auth-bg.png')" }}
+            />
+            <div className="absolute inset-0 bg-black/35 backdrop-blur-[2px]" />
             <motion.div
               initial={{ scale: 0.92, opacity: 0, y: 12 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 12 }}
               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-              className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden text-left"
+              className="relative w-full max-w-[340px] rounded-md px-8 py-9 text-left shadow-[0_18px_50px_rgba(80,20,50,0.28)]"
+              style={{
+                background: 'rgba(232, 214, 220, 0.58)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.35)',
+              }}
             >
-              {/* Gold header */}
-              <div className="bg-gradient-to-tr from-navy-950 to-navy-900 p-6 flex flex-col items-center gap-3 border-b border-gold-400/20">
-                <div className="w-12 h-12 bg-gradient-to-tr from-gold-600 to-gold-400 rounded-2xl flex items-center justify-center shadow-md">
-                  <ShieldCheck className="w-6 h-6 text-navy-950" />
-                </div>
-                <h2 className="font-display font-semibold text-sm text-gold-300 uppercase tracking-widest text-center">
-                  Login Required
-                </h2>
-                <p className="text-[11px] text-navy-200 text-center font-light leading-relaxed max-w-xs">
-                  You need a Meris account to place orders, track deliveries, and access your personal shopping history.
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="p-5 space-y-3">
-                <button
-                  onClick={() => {
-                    setShowLoginGate(false);
-                    handleSwapView('account');
-                  }}
-                  className="w-full py-3 bg-gradient-to-r from-gold-500 to-gold-400 text-navy-950 font-display font-semibold text-xs tracking-widest uppercase rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-gold-400/20 cursor-pointer hover:from-gold-600 transition"
-                >
-                  <Key className="w-4 h-4" />
-                  Sign In / Register Free
-                </button>
+              <h2 className="text-center text-[26px] font-bold text-black mb-3">Sign In</h2>
+              <p className="text-[12px] text-neutral-700 text-center mb-6 leading-relaxed">
+                You need a Radha Fashions account to place orders and track deliveries.
+              </p>
+              <button
+                onClick={() => {
+                  setShowLoginGate(false);
+                  handleSwapView('account');
+                }}
+                className="w-full h-11 rounded-md bg-black text-white text-[15px] font-semibold hover:bg-neutral-900 transition cursor-pointer"
+              >
+                Login
+              </button>
+              <div className="mt-6 flex items-center justify-between text-[13px] text-neutral-800">
                 <button
                   onClick={() => {
                     setShowLoginGate(false);
                     setPendingCheckout(false);
                   }}
-                  className="w-full py-3 border border-gray-200 text-gray-500 hover:text-gray-800 hover:border-gray-300 font-sans text-xs font-semibold uppercase tracking-wider rounded-2xl cursor-pointer transition"
+                  className="hover:text-black cursor-pointer"
                 >
-                  Continue Shopping
+                  Keep shopping
                 </button>
-                <p className="text-[10px] text-gray-400 text-center font-mono pt-1">
-                  Free to join - No credit card required
-                </p>
+                <button
+                  onClick={() => {
+                    setShowLoginGate(false);
+                    handleSwapView('account');
+                  }}
+                  className="hover:text-black cursor-pointer"
+                >
+                  Signup
+                </button>
               </div>
             </motion.div>
           </div>
@@ -1744,12 +1763,12 @@ export default function App() {
       {/* Secret Admin Login Prompt Modal */}
       <AnimatePresence>
         {showAdminLoginPrompt && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/70 backdrop-blur-md select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm select-none">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-navy-900 border border-gold-400/20 text-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 sm:p-8 relative text-left"
+              className="bg-pink-50 dark:bg-gray-900 border border-pink-300 dark:border-pink-800/40 text-gray-900 dark:text-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 sm:p-8 relative text-left"
             >
               <button
                 onClick={() => {
@@ -1758,17 +1777,17 @@ export default function App() {
                   setAdminLoginUser('');
                   setAdminLoginPass('');
                 }}
-                className="absolute top-4 right-4 p-2 text-navy-300 hover:text-white bg-white/5 border border-white/10 rounded-full cursor-pointer focus:outline-none"
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 border border-pink-200 dark:border-pink-900/30 rounded-full cursor-pointer focus:outline-none"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="text-center space-y-1.5 pb-4 border-b border-white/5">
-                <div className="w-12 h-12 bg-gradient-to-tr from-gold-600 to-gold-400 rounded-2xl flex items-center justify-center mx-auto shadow-md">
-                  <Key className="text-navy-950 w-5 h-5 animate-pulse" />
+              <div className="text-center space-y-1.5 pb-4 border-b border-pink-200 dark:border-pink-900/30">
+                <div className="w-12 h-12 bg-gradient-to-tr from-pink-600 to-pink-400 rounded-2xl flex items-center justify-center mx-auto shadow-md">
+                  <Key className="text-white w-5 h-5 animate-pulse" />
                 </div>
-                <h2 className="font-display font-medium text-sm text-gold-300 uppercase tracking-widest pt-2">Secured Admin Login</h2>
-                <p className="text-[10px] text-navy-200">Please enter credentials to initialize session keys.</p>
+                <h2 className="font-display font-medium text-sm text-pink-700 dark:text-pink-300 uppercase tracking-widest pt-2">Secured Admin Login</h2>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400">Please enter credentials to initialize session keys.</p>
               </div>
 
               <form
@@ -1802,7 +1821,7 @@ export default function App() {
                 className="space-y-4 pt-4 text-xs"
               >
                 <div>
-                  <label className="block text-[10px] font-mono text-navy-300 uppercase mb-1">Username</label>
+                  <label className="block text-[10px] font-mono text-gray-500 dark:text-gray-400 uppercase mb-1">Username</label>
                   <input
                     type="text"
                     required
@@ -1810,12 +1829,12 @@ export default function App() {
                     value={adminLoginUser}
                     onChange={(e) => setAdminLoginUser(e.target.value)}
                     placeholder="e.g. admin"
-                    className="w-full px-3 py-2 bg-navy-800 border border-white/10 focus:outline-none focus:border-gold-400 rounded-xl text-white"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-pink-300 dark:border-pink-900/30 focus:outline-none focus:border-pink-500 rounded-xl text-gray-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono text-navy-300 uppercase mb-1">Password</label>
+                  <label className="block text-[10px] font-mono text-gray-500 dark:text-gray-400 uppercase mb-1">Password</label>
                   <input
                     type="password"
                     required
@@ -1823,9 +1842,9 @@ export default function App() {
                     value={adminLoginPass}
                     onChange={(e) => setAdminLoginPass(e.target.value)}
                     placeholder="--------"
-                    className="w-full px-3 py-2 bg-navy-800 border border-white/10 focus:outline-none focus:border-gold-400 rounded-xl text-white"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-pink-300 dark:border-pink-900/30 focus:outline-none focus:border-pink-500 rounded-xl text-gray-900 dark:text-white"
                   />
-                  <p className="text-[9px] text-navy-400 mt-1 font-mono">Hint: User 'admin' / Pass 'password' or 'admin123'</p>
+                  <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-1 font-mono">Hint: User 'admin' / Pass 'password' or 'admin123'</p>
                 </div>
 
                 {adminLoginError && (
@@ -1834,9 +1853,9 @@ export default function App() {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-gradient-to-tr from-gold-500 to-gold-400 text-navy-950 font-display font-semibold text-xs tracking-widest uppercase rounded-xl transition cursor-pointer text-center flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 bg-gradient-to-tr from-pink-600 to-pink-500 text-white font-display font-semibold text-xs tracking-widest uppercase rounded-xl transition cursor-pointer text-center flex items-center justify-center gap-1.5"
                 >
-                  <ShieldCheck className="w-4 h-4 text-navy-950" />
+                  <ShieldCheck className="w-4 h-4 text-white" />
                   <span>Verify Credentials</span>
                 </button>
               </form>
@@ -1857,7 +1876,7 @@ export default function App() {
             >
               <button
                 onClick={() => setQuickViewProduct(null)}
-                className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-navy-950 bg-gray-50 border border-gray-100 rounded-full cursor-pointer focus:outline-none"
+                className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-gray-950 bg-gray-50 border border-gray-100 rounded-full cursor-pointer focus:outline-none"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1869,14 +1888,14 @@ export default function App() {
                 
                 <div className="flex flex-col justify-between space-y-4">
                   <div className="space-y-1 text-left">
-                    <span className="text-[10px] font-mono text-gold-500 uppercase font-semibold">{quickViewProduct.category}</span>
-                    <h3 className="font-display font-medium text-navy-900 leading-snug">{quickViewProduct.name}</h3>
+                    <span className="text-[10px] font-mono text-pink-500 uppercase font-semibold">{quickViewProduct.category}</span>
+                    <h3 className="font-display font-medium text-gray-900 dark:text-gray-100 leading-snug">{quickViewProduct.name}</h3>
                     <p className="text-[10px] text-gray-400 font-mono">SKU: {quickViewProduct.sku}</p>
                     <p className="text-xs text-gray-600 font-light mt-2 line-clamp-3">{quickViewProduct.shortDescription}</p>
                   </div>
 
                   <div className="flex items-baseline gap-2 pb-2">
-                    <span className="text-lg font-bold text-navy-950 font-sans">
+                    <span className="text-lg font-bold text-gray-900 dark:text-white font-sans">
                       Rs.{quickViewProduct.discountPrice || quickViewProduct.price}
                     </span>
                     {quickViewProduct.discountPrice && (
@@ -1892,7 +1911,7 @@ export default function App() {
                         handleAddProductToCart(quickViewProduct);
                         setQuickViewProduct(null);
                       }}
-                      className="flex-1 py-2 px-4 bg-navy-900 text-white rounded-xl text-xs font-semibold uppercase hover:bg-gold-500 hover:text-navy-950 transition cursor-pointer"
+                      className="flex-1 py-2 px-4 bg-pink-600 text-white rounded-xl text-xs font-semibold uppercase hover:bg-pink-700 hover:text-white transition cursor-pointer"
                     >
                       Add Bag
                     </button>
@@ -1922,49 +1941,51 @@ export default function App() {
 
 
       {/* Universal brand footer */}
-      <footer className="bg-navy-950 text-white py-12 border-t border-gold-400/20 text-xs font-sans">
+      {!(activeView === 'account' && !currentUser) && (
+      <footer className="bg-pink-900 dark:bg-gray-950 text-white py-12 border-t border-pink-800/30 dark:border-pink-900/20 text-xs font-sans">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-left">
           
           <div className="space-y-3">
-            <span className="font-display font-bold text-sm tracking-wider text-white uppercase">MERIS <span className="text-gold-400">E-SHOP</span></span>
-            <p className="text-navy-200 leading-relaxed font-light">
+            <span className="font-display font-bold text-sm tracking-wider text-white uppercase">Radha Fashions <span className="text-pink-300">E-SHOP</span></span>
+            <p className="text-pink-200 dark:text-gray-400 leading-relaxed font-light">
               We engineer raw Indian woodcraft catalogs into luxury family experiences. Authentic block stencil systems, certified organic beeswax safety parameters.
             </p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-display font-semibold text-xs text-gold-300 uppercase tracking-widest leading-none">Catalog Sections</h4>
-            <div className="flex flex-col gap-1.5 font-light text-navy-200">
-              <button onClick={() => handleSelectCategoryGroup('toys')} className="text-left hover:text-gold-400 transition cursor-pointer">Family Learning Stuff</button>
-              <button onClick={() => handleSelectCategoryGroup('kolam')} className="text-left hover:text-gold-400 transition cursor-pointer">Indigenous Kolam Stencils</button>
-              <button onClick={() => handleSelectCategoryGroup('bottles')} className="text-left hover:text-gold-400 transition cursor-pointer">Gifts and Return Bottles</button>
+            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Catalog Sections</h4>
+            <div className="flex flex-col gap-1.5 font-light text-pink-200 dark:text-gray-400">
+              <button onClick={() => handleSelectCategoryGroup('toys')} className="text-left hover:text-pink-300 transition cursor-pointer">Family Learning Stuff</button>
+              <button onClick={() => handleSelectCategoryGroup('kolam')} className="text-left hover:text-pink-300 transition cursor-pointer">Indigenous Kolam Stencils</button>
+              <button onClick={() => handleSelectCategoryGroup('bottles')} className="text-left hover:text-pink-300 transition cursor-pointer">Gifts and Return Bottles</button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-display font-semibold text-xs text-gold-300 uppercase tracking-widest leading-none">Administrative Links</h4>
-            <div className="flex flex-col gap-1.5 font-light text-navy-200">
-              <button onClick={() => handleSwapView('account')} className="text-left hover:text-gold-400 transition cursor-pointer">Customer Account Login</button>
-              <button onClick={() => handleSwapView('home')} className="text-left hover:text-gold-400 transition cursor-pointer">Shopping Storefront Homepage</button>
+            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Administrative Links</h4>
+            <div className="flex flex-col gap-1.5 font-light text-pink-200 dark:text-gray-400">
+              <button onClick={() => handleSwapView('account')} className="text-left hover:text-pink-300 transition cursor-pointer">Customer Account Login</button>
+              <button onClick={() => handleSwapView('home')} className="text-left hover:text-pink-300 transition cursor-pointer">Shopping Storefront Homepage</button>
             </div>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-display font-semibold text-xs text-gold-300 uppercase tracking-widest leading-none">Indian Headquarters</h4>
-            <p className="text-navy-200 leading-relaxed font-light">
+            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Indian Headquarters</h4>
+            <p className="text-pink-200 dark:text-gray-400 leading-relaxed font-light">
               5/339, Fathima Road,<br />
               nager, Azhagappapuram, Tamil Nadu 629401<br />
-              Contact Desk: support@meris.com
+              Contact Desk: admin@radhafashions.com
             </p>
           </div>
 
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/5 pt-6 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-navy-300 text-[10px] font-mono tracking-wider">
-          <span>(c) 2026 MERIS E-SHOP STUDIOS - All Heritage Rights Reserved.</span>
-          <span className="text-gold-500/80">Crafted lovingly under Indian Wooden Toys safety standard rule (ISO 8124)</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/5 pt-6 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-pink-300 dark:text-gray-500 text-[10px] font-mono tracking-wider">
+          <span>(c) 2026 Radha Fashions - All Heritage Rights Reserved.</span>
+          <span className="text-pink-400/80">Crafted lovingly under Indian Wooden Toys safety standard rule (ISO 8124)</span>
         </div>
       </footer>
+      )}
 
     </div>
   );

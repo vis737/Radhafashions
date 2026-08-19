@@ -343,7 +343,7 @@ export default function AccountPanel({
       logs.push({
         time: 'Today, 11:30 AM',
         title: 'Artisan Quality Check Cleared',
-        description: 'Handcrafted premium items verified, packaged securely, and weight stamped in Meris ledger.',
+        description: 'Handcrafted premium items verified, packaged securely, and weight stamped in Radha Fashions ledger.',
         status: 'success'
       });
       logs.push({
@@ -362,7 +362,7 @@ export default function AccountPanel({
       logs.push({
         time: 'Yesterday, 04:30 PM',
         title: `Collected by ${courier}`,
-        description: `Successfully collected from Meris Studio warehouse (Tamil Nadu). Sorted and checked at main partner depot.`,
+        description: `Successfully collected from Radha Fashions warehouse (Tamil Nadu). Sorted and checked at main partner depot.`,
         status: 'success'
       });
     } else if (order.status === 'delivered') {
@@ -802,7 +802,7 @@ export default function AccountPanel({
                       Choose an account
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 mb-6">
-                      to continue to <span className="font-semibold text-slate-800">Meris E-Shop</span>
+                      to continue to <span className="font-semibold text-slate-800">Radha Fashions</span>
                     </p>
 
                     <div className="space-y-2 text-left max-h-72 overflow-y-auto pr-1">
@@ -1798,7 +1798,7 @@ export default function AccountPanel({
                         <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
                         <div>
                           <p className="font-bold">Purchase Cancelled</p>
-                          <p>This transaction sequence is aborted. Check email details or request inquiry via support@meris.com.</p>
+                          <p>This transaction sequence is aborted. Check email details or request inquiry via admin@radhafashions.com.</p>
                         </div>
                       </div>
                     )}
@@ -1850,7 +1850,7 @@ export default function AccountPanel({
             {subTab === 'wishlist' && (() => {
               const wishlistProductIds = wishlistProducts.map(p => p.id).join(',');
               const shareUrl = `${window.location.origin}/?wishlist=${encodeURIComponent(wishlistProductIds)}`;
-              const shareText = `Check out my handcrafted wishlist on Meris E-Shop! 🌟 ${shareUrl}`;
+              const shareText = `Check out my handcrafted wishlist on Radha Fashions! 🌟 ${shareUrl}`;
 
               const downloadWishlistPdf = () => {
                 const doc = new jsPDF({
@@ -1887,7 +1887,7 @@ export default function AccountPanel({
                   currentY += 20;
                 });
 
-                doc.save('meris_my_wishlist.pdf');
+                doc.save('radha_my_wishlist.pdf');
               };
 
               const handleCopyLink = () => {
@@ -2495,7 +2495,7 @@ export default function AccountPanel({
                       Loyalty Rewards Shop
                     </h3>
                     <p className="text-[10px] text-gray-400 mt-0.5">
-                      Exchange accumulated Meris points to unlock exclusive workshop discount coupons
+                      Exchange accumulated Radha Fashions points to unlock exclusive workshop discount coupons
                     </p>
                   </div>
                   <div className="px-3.5 py-1.5 bg-gold-50 border border-gold-200 text-[#C5A021] font-mono font-bold text-xs rounded-full">

@@ -44,7 +44,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     isBestseller: true,
     isNew: false,
-    brand: 'Meris Kids',
+    brand: 'Radha Fashions',
     availability: 'in-stock',
     minimumAge: 1,
     maximumAge: 2,
@@ -55,7 +55,7 @@ export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'toy-2',
     sku: 'TOY-CR-BUNNY',
-    name: 'Meris Hand-Knit Crochet Cotton Bunny',
+    name: 'Radha Fashions Hand-Knit Crochet Cotton Bunny',
     category: 'Kids Toys',
     categorySlug: 'toys',
     price: 1199,
@@ -79,7 +79,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-3', author: 'Priyanka R.', rating: 5, comment: 'Unbelievable quality. The stitches are extremely uniform. Highly recommend for infants.', date: '2026-04-18', approved: true }
     ],
     isNew: true,
-    brand: 'Meris Handwoven',
+    brand: 'Radha Fashions',
     availability: 'low-stock',
     minimumAge: 0,
     maximumAge: 0.5,
@@ -116,7 +116,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-4', author: 'Vikram J.', rating: 5, comment: 'Outstanding craftsmanship. Smells exactly like real sweet rosewood.', date: '2026-05-30', approved: true }
     ],
     isBestseller: true,
-    brand: 'Meris Artisanal',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -143,7 +143,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Space',
+    brand: 'Radha Fashions',
     availability: 'low-stock'
   },
 
@@ -175,7 +175,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-5', author: 'Ridhima M.', rating: 5, comment: 'The golden clasps look so incredibly luxury! Stitching is super clean.', date: '2026-06-10', approved: true }
     ],
     isBestseller: true,
-    brand: 'Meris Couture',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -204,7 +204,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-6', author: 'Sonal C.', rating: 5, comment: 'Pure luxury! Took this to a family wedding and got continuous praise.', date: '2026-05-18', approved: true }
     ],
     isNew: true,
-    brand: 'Meris Heritage',
+    brand: 'Radha Fashions',
     availability: 'out-of-stock'
   },
 
@@ -232,7 +232,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Skill Focus': 'Early math concept and motor precision'
     },
     reviews: [],
-    brand: 'Meris Kids',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
 
@@ -264,7 +264,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-7', author: 'Ritu V.', rating: 5, comment: 'Best lavender candle ever! The crackle sound from the wooden wick is incredibly calming.', date: '2026-06-05', approved: true }
     ],
     isBestseller: true,
-    brand: 'Meris Botanics',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -291,7 +291,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Glazing Coating': 'Lead-free food-compliant silica glaze'
     },
     reviews: [],
-    brand: 'Meris Ceramics',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
 
@@ -322,7 +322,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-8', author: 'Meenakshi N.', rating: 5, comment: 'So quick and flawless. Making morning entryway rangolis takes under 2 minutes now! Gold acrylic looks beautiful.', date: '2026-06-11', approved: true }
     ],
     isBestseller: true,
-    brand: 'Meris festive',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
 
@@ -355,7 +355,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     isNew: false,
     isBestseller: true,
-    brand: 'Meris Script',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -382,7 +382,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Script',
+    brand: 'Radha Fashions',
     availability: 'low-stock'
   },
 
@@ -414,7 +414,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-10', author: 'Aditya G.', rating: 5, comment: 'Phenomenal piece. This is heirloom quality. The weights of the knights feel so solid.', date: '2026-05-25', approved: true }
     ],
     isNew: true,
-    brand: 'Meris Heritage',
+    brand: 'Radha Fashions',
     availability: 'low-stock'
   },
 
@@ -442,7 +442,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Design': 'Traditional hand-hammered finish'
     },
     reviews: [],
-    brand: 'Meris Wellness',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -471,7 +471,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-t3-1', author: 'Siddharth M.', rating: 5, comment: 'Very sturdy, looks amazing on the shelf when not in use!', date: '2026-06-20', approved: true }
     ],
     isNew: true,
-    brand: 'Meris Kids',
+    brand: 'Radha Fashions',
     availability: 'in-stock',
     minimumAge: 0.5,
     maximumAge: 1,
@@ -502,7 +502,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: false,
-    brand: 'Meris Kids',
+    brand: 'Radha Fashions',
     availability: 'in-stock',
     minimumAge: 2,
     maximumAge: 4,
@@ -532,7 +532,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Learn',
+    brand: 'Radha Fashions Learn',
     availability: 'in-stock',
     minimumAge: 4,
     maximumAge: 6,
@@ -563,7 +563,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: false,
-    brand: 'Meris Active',
+    brand: 'Radha Fashions',
     availability: 'in-stock',
     minimumAge: 6,
     maximumAge: 8,
@@ -594,7 +594,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: false,
-    brand: 'Meris Tech',
+    brand: 'Radha Fashions',
     availability: 'in-stock',
     minimumAge: 8,
     maximumAge: 10,
@@ -625,7 +625,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: false,
-    brand: 'Meris Games',
+    brand: 'Radha Fashions',
     availability: 'in-stock',
     minimumAge: 10,
     maximumAge: 13,
@@ -656,7 +656,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Tech',
+    brand: 'Radha Fashions',
     availability: 'low-stock',
     minimumAge: 13,
     maximumAge: 99,
@@ -688,7 +688,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isBestseller: true,
-    brand: 'Meris Artisanal',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -714,7 +714,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Strap length': 'Adjustable 115cm sling'
     },
     reviews: [],
-    brand: 'Meris Couture',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -743,7 +743,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-l2-1', author: 'Dr. Aris V.', rating: 5, comment: 'An amazing tool that is literally educational art. The detailing on Saturn is wonderful.', date: '2026-06-18', approved: true }
     ],
     isBestseller: true,
-    brand: 'Meris Kids',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -770,7 +770,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Ceramics',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -799,7 +799,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       { id: 'r-k2-1', author: 'Lakshmi S.', rating: 5, comment: 'Spectacular quality! Brass is heavy and stays firmly in place during drawing.', date: '2026-06-22', approved: true }
     ],
     isNew: true,
-    brand: 'Meris festive',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -826,7 +826,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Script',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -852,7 +852,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Finish': 'Polished silk-varnish coating'
     },
     reviews: [],
-    brand: 'Meris Heritage',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   },
   {
@@ -879,14 +879,14 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     reviews: [],
     isNew: true,
-    brand: 'Meris Wellness',
+    brand: 'Radha Fashions',
     availability: 'in-stock'
   }
 ];
 
 export const INITIAL_COUPONS: Coupon[] = [
   {
-    code: 'MERIS10',
+    code: 'Radha Fashions10',
     type: 'percentage',
     value: 10,
     expiryDate: '2027-01-01',
@@ -953,22 +953,22 @@ export const INITIAL_CAMPAIGNS: BannerCampaign[] = [
 export const DEFAULT_CMS: CMSConfig = {
   headline: 'Distinctive Heritage Collections For Creative Families',
   subheadline: 'Crafted with absolute devotion from luxury gold brass, polished hardwoods, fine linens & combed threads.',
-  aboutText: 'MERIS E-SHOP grew out of a love for organic tactile treasures that persist across generations. What started in 2025 as a small studio workshop crafting traditional timber Toys has evolved into prime curation hubs for Handbags, learning tools, home accessories, and festive stencils. Every single item traces back to hand-perfected mockups, chemical-free finishing, and ethical rural workforces.',
-  contactEmail: 'support@meris.com',
+  aboutText: 'Radha Fashions grew out of a love for organic tactile treasures that persist across generations. What started in 2025 as a small studio workshop crafting traditional timber Toys has evolved into prime curation hubs for Handbags, learning tools, home accessories, and festive stencils. Every single item traces back to hand-perfected mockups, chemical-free finishing, and ethical rural workforces.',
+  contactEmail: 'admin@radhafashions.com',
   contactPhone: '+91 93842 92229',
   contactAddress: '5/339, Fathima Road, nager, Azhagappapuram, Tamil Nadu 629401',
   privacyPolicy: 'Your personal data (Name, Email, Address) is transmitted through full-stack secured channels. We use client local persistence for speedy loading times and never sell user profiling sheets to marketing aggregates.',
-  termsConditions: 'All prices listed on MERIS E-SHOP are inclusive of standard 18% GST rules. Returns have a 7-day windows and of course must remain spotless inside initial package cases.'
+  termsConditions: 'All prices listed on Radha Fashions are inclusive of standard 18% GST rules. Returns have a 7-day windows and of course must remain spotless inside initial package cases.'
 };
 
 // Database local storage management
 export const getStoredDb = () => {
   if (typeof window === 'undefined') return { products: INITIAL_PRODUCTS, coupons: INITIAL_COUPONS, campaigns: INITIAL_CAMPAIGNS, cms: DEFAULT_CMS };
   try {
-    const productsJson = localStorage.getItem('meris_products');
-    const couponsJson = localStorage.getItem('meris_coupons');
-    const campaignsJson = localStorage.getItem('meris_campaigns');
-    const cmsJson = localStorage.getItem('meris_cms');
+    const productsJson = localStorage.getItem('radha_products');
+    const couponsJson = localStorage.getItem('radha_coupons');
+    const campaignsJson = localStorage.getItem('radha_campaigns');
+    const cmsJson = localStorage.getItem('radha_cms');
 
     let mergedProducts = INITIAL_PRODUCTS;
     if (productsJson) {
@@ -1024,10 +1024,10 @@ export const getStoredDb = () => {
 export const saveStoredDb = (db: { products?: Product[]; coupons?: Coupon[]; campaigns?: BannerCampaign[]; cms?: CMSConfig }) => {
   if (typeof window === 'undefined') return;
   try {
-    if (db.products) localStorage.setItem('meris_products', JSON.stringify(db.products));
-    if (db.coupons) localStorage.setItem('meris_coupons', JSON.stringify(db.coupons));
-    if (db.campaigns) localStorage.setItem('meris_campaigns', JSON.stringify(db.campaigns));
-    if (db.cms) localStorage.setItem('meris_cms', JSON.stringify(db.cms));
+    if (db.products) localStorage.setItem('radha_products', JSON.stringify(db.products));
+    if (db.coupons) localStorage.setItem('radha_coupons', JSON.stringify(db.coupons));
+    if (db.campaigns) localStorage.setItem('radha_campaigns', JSON.stringify(db.campaigns));
+    if (db.cms) localStorage.setItem('radha_cms', JSON.stringify(db.cms));
   } catch (e) {
     console.error('Failed writing storage DB', e);
   }
@@ -1052,11 +1052,11 @@ export const loadInitialState = () => {
     return { cart: [], wishlist: [], orders: [], recentlyViewed: [], currentUser: null };
   }
   try {
-    const cartJson = localStorage.getItem('meris_cart');
-    const wishlistJson = localStorage.getItem('meris_wishlist');
-    const ordersJson = localStorage.getItem('meris_orders');
-    const recentlyViewedJson = localStorage.getItem('meris_recently_viewed');
-    const userJson = localStorage.getItem('meris_current_user');
+    const cartJson = localStorage.getItem('radha_cart');
+    const wishlistJson = localStorage.getItem('radha_wishlist');
+    const ordersJson = localStorage.getItem('radha_orders');
+    const recentlyViewedJson = localStorage.getItem('radha_recently_viewed');
+    const userJson = localStorage.getItem('radha_current_user');
 
     return {
       cart: cartJson ? JSON.parse(cartJson) : [],
@@ -1074,14 +1074,14 @@ export const loadInitialState = () => {
 export const saveToStorage = (state: { cart: any[]; wishlist: string[]; orders: any[]; recentlyViewed: string[]; currentUser: any }) => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem('meris_cart', JSON.stringify(state.cart));
-    localStorage.setItem('meris_wishlist', JSON.stringify(state.wishlist));
-    localStorage.setItem('meris_orders', JSON.stringify(state.orders));
-    localStorage.setItem('meris_recently_viewed', JSON.stringify(state.recentlyViewed));
+    localStorage.setItem('radha_cart', JSON.stringify(state.cart));
+    localStorage.setItem('radha_wishlist', JSON.stringify(state.wishlist));
+    localStorage.setItem('radha_orders', JSON.stringify(state.orders));
+    localStorage.setItem('radha_recently_viewed', JSON.stringify(state.recentlyViewed));
     if (state.currentUser) {
-      localStorage.setItem('meris_current_user', JSON.stringify(state.currentUser));
+      localStorage.setItem('radha_current_user', JSON.stringify(state.currentUser));
     } else {
-      localStorage.removeItem('meris_current_user');
+      localStorage.removeItem('radha_current_user');
     }
   } catch (err) {
     console.error('Error writing state indexes:', err);

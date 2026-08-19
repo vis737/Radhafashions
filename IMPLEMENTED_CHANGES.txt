@@ -1,0 +1,50 @@
+RADHA FASHIONS - IMPLEMENTED CHANGES
+=====================================
+
+1. Product variations
+---------------------
+- Added a Product Variations dropdown in the admin product form.
+- Admin can choose: No variations, Color, or Size.
+- When Color is selected, the admin can enter comma-separated colors such as:
+  Lightblue, Pink, White
+- When Size is selected, the admin can enter comma-separated size values.
+- Bangle size codes are supported exactly as entered, for example:
+  2/4, 2/6, 2/8, 2/10
+- Customers can select the configured color or size on the product page.
+- Selected variations are preserved in the cart, checkout, order confirmation,
+  customer order history, admin order view, emails, and generated invoices.
+- Admin order items show the selected variation in brackets, for example:
+  Product Name (Color: Lightblue)
+  Product Name (Size: 2/6)
+
+2. Admin order screen improvements
+----------------------------------
+- Fixed the shipping address card in dark mode.
+- Address text, customer details, and pincode now use high-contrast dark-theme
+  colors so they remain readable.
+- Updated the Export PDF button so it is visible and usable in light theme.
+- Exported order PDFs include a refined navy-and-gold heading treatment and
+  include selected product variations.
+
+3. Visual polish
+----------------
+- Added smooth page scrolling.
+- Refined product variation controls with a boutique/royal visual style:
+  navy, amber-gold, and soft pink accents.
+- Added smoother hover, selection, and transition effects to variation options
+  and action buttons.
+- Styled the admin variations section with a subtle premium gradient.
+
+4. Database and data compatibility
+----------------------------------
+- Added variation support to the product type and cart/order data.
+- Added Supabase migration support for the product variation JSON field.
+- New migration file: supabase_variations_migration.sql
+
+5. Verification status
+----------------------
+- Type-checking passes: npm run lint
+- Production build is currently blocked by a Windows permission issue while
+  starting the build service (spawn EPERM), not a TypeScript error.
+- Browser-based visual verification could not be completed because the Codex
+  Chrome connection is not configured for the active Chrome profile.

@@ -30,7 +30,7 @@ export function preparePayUPaymentPayload(
   return {
     txnid: orderNumber,
     amount: amount.toFixed(2),
-    productinfo: `MERIS Order ${orderNumber}`,
+    productinfo: `Radha Fashions Order ${orderNumber}`,
     firstname: customerName.trim().split(/\s+/)[0] || 'Customer',
     email: customerEmail,
     phone: customerPhone,

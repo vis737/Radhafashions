@@ -17,7 +17,7 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
 
   useEffect(() => {
     // Read or initiate target session countdown time to keep it ticking
-    const stored = sessionStorage.getItem('meris_flash_sale_end');
+    const stored = sessionStorage.getItem('radha_flash_sale_end');
     const now = Math.floor(Date.now() / 1000);
     let targetEnd = now + 8070; // 2h 14m 30s in future
 
@@ -27,10 +27,10 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
         targetEnd = parsed;
       } else {
         // Reset to another 2 hours if expired so the demo is always lively!
-        sessionStorage.setItem('meris_flash_sale_end', targetEnd.toString());
+        sessionStorage.setItem('radha_flash_sale_end', targetEnd.toString());
       }
     } else {
-      sessionStorage.setItem('meris_flash_sale_end', targetEnd.toString());
+      sessionStorage.setItem('radha_flash_sale_end', targetEnd.toString());
     }
 
     setTimeLeft(targetEnd - now);
@@ -82,36 +82,36 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
   if (timeLeft <= 0) return null; // Hide if expired
 
   return (
-    <section className="bg-gradient-to-tr from-[#0F172A] to-slate-900 border border-gold-300/30 rounded-3xl p-6 md:p-8 text-left relative overflow-hidden select-none font-sans max-w-7xl mx-auto my-12">
+    <section className="bg-gray-50 dark:bg-gradient-to-tr dark:from-[#0F172A] dark:to-gray-950 border border-pink-200 dark:border-pink-900/20 rounded-3xl p-6 md:p-8 text-left relative overflow-hidden select-none font-sans max-w-7xl mx-auto my-12">
       {/* Background Gold Ambient glow blur */}
-      <div className="absolute right-0 top-0 translate-y-[-20%] translate-x-[20%] w-96 h-96 bg-gold-400/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute right-0 top-0 translate-y-[-20%] translate-x-[20%] w-96 h-96 bg-pink-400/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pb-6 border-b border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pb-6 border-b border-pink-100 dark:border-pink-900/20">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono font-bold tracking-widest uppercase">
             <Zap className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-bounce" />
             Urgent Hourly Craft Flash Offer
           </div>
 
-          <h3 className="font-display font-black text-white text-xl sm:text-2xl uppercase tracking-wider">
+          <h3 className="font-display font-black text-gray-900 dark:text-white text-xl sm:text-2xl uppercase tracking-wider">
             Limited Artisan Slots Remaining
           </h3>
-          <p className="text-xs text-slate-450 dark:text-gray-400 max-w-lg leading-relaxed">
-            Our guild members have released limited back-stocks. Enjoy up to <span className="text-gold-400 font-bold">30% direct drop</span> automatically updated on raw materials while this stopwatch is active.
+          <p className="text-xs text-gray-600 dark:text-gray-400 max-w-lg leading-relaxed">
+            Our guild members have released limited back-stocks. Enjoy up to <span className="text-pink-400 font-bold">30% direct drop</span> automatically updated on raw materials while this stopwatch is active.
           </p>
         </div>
 
         {/* Stopwatch display */}
-        <div className="flex items-center gap-3 bg-slate-950/65 border border-slate-800 p-4 rounded-2xl max-w-sm">
-          <Timer className="w-5 h-5 text-gold-400 shrink-0" />
+        <div className="flex items-center gap-3 bg-white/65 dark:bg-gray-950/65 border border-pink-100 dark:border-pink-900/20 p-4 rounded-2xl max-w-sm">
+          <Timer className="w-5 h-5 text-pink-400 shrink-0" />
           <div className="space-y-1">
-            <span className="text-[9px] font-mono tracking-widest uppercase text-slate-400 font-bold block">Expiring In</span>
-            <div className="flex gap-1.5 font-mono text-lg font-black text-white">
-              <span className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-gold-400">{hours}</span>
-              <span className="text-gold-400 animate-pulse">:</span>
-              <span className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-gold-400">{minutes}</span>
-              <span className="text-gold-400 animate-pulse">:</span>
-              <span className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-gold-400">{seconds}</span>
+            <span className="text-[9px] font-mono tracking-widest uppercase text-gray-500 dark:text-gray-400 font-bold block">Expiring In</span>
+            <div className="flex gap-1.5 font-mono text-lg font-black text-gray-900 dark:text-white">
+              <span className="px-2 py-1 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/20 rounded-lg text-pink-400">{hours}</span>
+              <span className="text-pink-400 animate-pulse">:</span>
+              <span className="px-2 py-1 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/20 rounded-lg text-pink-400">{minutes}</span>
+              <span className="text-pink-400 animate-pulse">:</span>
+              <span className="px-2 py-1 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/20 rounded-lg text-pink-400">{seconds}</span>
             </div>
           </div>
         </div>
@@ -127,11 +127,11 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
           return (
             <div
               key={product.id}
-              className="group p-4 bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-gold-500/40 rounded-2xl transition duration-300 flex gap-4 text-left cursor-pointer"
+              className="group p-4 bg-white/40 dark:bg-gray-900/40 hover:bg-white/80 dark:hover:bg-gray-900/80 border border-pink-100 dark:border-pink-900/20 hover:border-pink-500/40 rounded-2xl transition duration-300 flex gap-4 text-left cursor-pointer"
               onClick={() => onSelectProduct(product.id)}
             >
               {/* Image with badge */}
-              <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-950 shrink-0 border border-slate-800">
+              <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-gray-950 shrink-0 border border-pink-100 dark:border-pink-900/20">
                 <img src={product.images && product.images[0] ? product.images[0] : ''} alt="" referrerPolicy="no-referrer" onError={(e) => handleImageError(e, product.category)} className="w-full h-full object-cover" />
                 <span className="absolute top-1 left-1 bg-rose-600 text-white text-[8px] font-bold px-1 rounded uppercase tracking-[0.5px]">
                   -{percentSavings}%
@@ -141,17 +141,17 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
               {/* metadata */}
               <div className="flex-1 flex flex-col justify-between">
                 <div>
-                  <span className="text-[8px] font-mono text-gold-500 uppercase font-black block">{product.category}</span>
-                  <h4 className="font-display font-bold text-xs text-white line-clamp-1 mt-0.5 group-hover:text-gold-300 transition">
+                  <span className="text-[8px] font-mono text-pink-500 uppercase font-black block">{product.category}</span>
+                  <h4 className="font-display font-bold text-xs text-gray-900 dark:text-white line-clamp-1 mt-0.5 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
                     {product.name}
                   </h4>
-                  <p className="text-[10px] text-slate-400 font-light line-clamp-1 mt-0.5">{product.shortDescription}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-light line-clamp-1 mt-0.5">{product.shortDescription}</p>
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-bold text-white font-mono">Rs.{flashPrice}</span>
-                    <span className="text-[10px] text-slate-500 line-through font-mono">Rs.{product.price}</span>
+                    <span className="text-xs font-bold text-gray-950 dark:text-white font-mono">Rs.{flashPrice}</span>
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 line-through font-mono">Rs.{product.price}</span>
                   </div>
 
                   <button
@@ -164,9 +164,9 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
                       };
                       onAddProductToCart(copy);
                     }}
-                    className="p-1 px-2.5 rounded bg-amber-500 text-navy-950 hover:bg-amber-600 text-[10px] font-display font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                    className="p-1 px-2.5 rounded bg-pink-500 text-white hover:bg-pink-600 text-[10px] font-display font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer active:scale-95"
                   >
-                    <ShoppingBag className="w-3 h-3 text-navy-950" />
+                    <ShoppingBag className="w-3 h-3 text-white" />
                     <span>Buy now</span>
                   </button>
                 </div>

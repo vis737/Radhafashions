@@ -1,64 +1,61 @@
 [
   {
-    "id": "ord-1784995631712",
-    "orderNumber": "MR-563171-318",
+    "id": "ord-1787144329102",
+    "orderNumber": "MR-432910-365",
     "customerInfo": {
-      "name": "vishnu",
-      "email": "vishnuvardhan7219@gmail.com",
+      "name": "Radha Fashion Designer",
+      "email": "radhanarayan0709@gmail.com",
       "phone": "9108319758",
-      "address": "awdfdsdfsxffddfcsdfcfs",
-      "pincode": "560067"
+      "address": "toward Marathahalli to kr puram",
+      "pincode": "560037"
     },
     "items": [
       {
         "product": {
-          "id": "bag-1",
-          "sku": "BG-SADDLE-TAN",
-          "name": "Serena Minimalist Vegan Saddle Tote",
-          "brand": "Meris Couture",
+          "id": "prod_1787144087627_mzhfl9p",
+          "sku": "RF 2",
+          "name": "Shirt for mens",
+          "brand": "radha fashions",
           "isNew": false,
-          "price": 3290,
-          "stock": 14,
+          "price": 500,
+          "stock": 10,
           "images": [
-            "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&auto=format&fit=crop"
+            "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-19/670f15c4-5aee-46e1-aaef-9d14f342ec5d.jpg"
           ],
-          "rating": 4.8,
+          "rating": 5,
           "reviews": [],
-          "category": "Handbags",
-          "vendorId": null,
-          "description": "Upgrade your morning commute with our best-selling saddle shoulder container. Crafted from durable weather-resistant vegan polyurethane leather with exquisite top stitching. The dual interior chamber is extremely spacious, easily housing your tablet, cosmetic bags, and everyday carry essentials.",
-          "ratingCount": 150,
+          "category": "western",
+          "description": "Shirt for mens",
+          "ratingCount": 1,
           "availability": "in-stock",
-          "categorySlug": "handbags",
-          "isBestseller": true,
-          "discountPrice": 2490,
-          "specifications": {
-            "Strap Type": "Adjustable belt-style harness",
-            "Outer Cover": "Ultra-soft Eco-polyurethane leather",
-            "Inner Liners": "Recycled linen-sateen canvas",
-            "Metal Accents": "18k Gold plated premium electro-lacquered alloy"
-          },
-          "shortDescription": "Structured top-tier synthetic leather handbag in tan finish, with gold-accent magnet buckles."
+          "categorySlug": "western",
+          "isBestseller": false,
+          "discountPrice": 450,
+          "specifications": {},
+          "shortDescription": "Shirt for mens"
         },
-        "quantity": 1
+        "quantity": 1,
+        "selectedVariation": {
+          "type": "color",
+          "value": "white"
+        }
       }
     ],
     "shippingMethod": "standard",
-    "shippingCost": 186,
-    "tax": 448,
+    "shippingCost": 138,
+    "tax": 81,
     "discount": 0,
-    "subtotal": 2490,
-    "total": 3124,
-    "status": "pending",
+    "subtotal": 450,
+    "total": 669,
+    "status": "processing",
     "couponCode": null,
-    "date": "2026-07-25",
+    "date": "2026-08-19",
     "paymentMethod": "UPI QR Payment",
-    "paymentStatus": "pending",
+    "paymentStatus": "paid",
     "giftWrappingRequested": false,
     "giftWrappingType": "Generic",
     "giftMessage": null,
-    "accountEmail": "vishnuvardhan7219@gmail.com",
-    "accountName": "vishnu"
+    "accountEmail": "radhanarayan0709@gmail.com",
+    "accountName": "Radha Fashion Designer"
   }
 ]

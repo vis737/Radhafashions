@@ -43,16 +43,16 @@ export default function AgeToyFinder({
   onClearFilters
 }: AgeToyFinderProps) {
   return (
-    <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 text-left space-y-6 shadow-sm">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 text-left space-y-6 shadow-sm">
       
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-50 dark:border-navy-800/60 pb-4">
+      <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-800/60 pb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#C5A021]/15 text-[#C5A021] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#D4648A]/15 text-[#D4648A] flex items-center justify-center">
             <Brain className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-navy-900 dark:text-navy-50">
+            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50">
               Age-Based Toy Finder
             </h3>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-sans mt-0.5">
@@ -63,7 +63,7 @@ export default function AgeToyFinder({
         {(selectedAgeGroup || selectedSkills.length > 0) && (
           <button
             onClick={onClearFilters}
-            className="text-[10px] font-semibold text-[#C5A021] hover:text-[#C5A021]/80 flex items-center gap-1.5 cursor-pointer"
+            className="text-[10px] font-semibold text-[#D4648A] hover:text-[#D4648A]/80 flex items-center gap-1.5 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Clear Filters
           </button>
@@ -74,7 +74,7 @@ export default function AgeToyFinder({
       <div className="space-y-4">
         <div className="flex justify-between items-center text-[10px] font-mono tracking-wider text-gray-400 dark:text-gray-500 uppercase font-semibold">
           <span>Developmental Age Range</span>
-          <span className="text-[#C5A021] font-bold text-xs font-sans">
+          <span className="text-[#D4648A] font-bold text-xs font-sans">
             {(() => {
               if (!selectedAgeGroup) return 'All Developmental Stages';
               return `${selectedAgeGroup}`;
@@ -93,7 +93,7 @@ export default function AgeToyFinder({
               const idx = parseInt(e.target.value, 10);
               onSelectAgeGroup(idx === AGE_GROUPS.length - 1 && !selectedAgeGroup ? '' : AGE_GROUPS[idx]);
             }}
-            className="w-full h-1.5 bg-gray-150 dark:bg-navy-950 rounded-lg appearance-none cursor-pointer accent-[#C5A021]"
+            className="w-full h-1.5 bg-gray-150 dark:bg-gray-950 rounded-lg appearance-none cursor-pointer accent-[#D4648A]"
           />
           <div className="flex justify-between text-[9px] text-gray-400 dark:text-gray-500 font-mono pt-1">
             <span>0 Months</span>
@@ -114,8 +114,8 @@ export default function AgeToyFinder({
                 onClick={() => onSelectAgeGroup(isSelected ? '' : age)}
                 className={`px-3 py-1.5 rounded-xl text-[10px] font-medium transition cursor-pointer border ${
                   isSelected
-                    ? 'bg-[#C5A021]/15 text-[#C5A021] border-[#C5A021]'
-                    : 'bg-transparent border-gray-150 dark:border-navy-800 text-gray-500 dark:text-slate-400 hover:border-gray-300'
+                    ? 'bg-[#D4648A]/15 text-[#D4648A] border-[#D4648A]'
+                    : 'bg-transparent border-gray-150 dark:border-gray-800 text-gray-500 dark:text-gray-500 hover:border-gray-300'
                 }`}
               >
                 {age}
@@ -130,8 +130,8 @@ export default function AgeToyFinder({
                 onClick={() => onSelectAgeGroup(isSelected ? '' : age)}
                 className={`px-3 py-1.5 rounded-xl text-[10px] font-medium transition cursor-pointer border ${
                   isSelected
-                    ? 'bg-[#C5A021]/15 text-[#C5A021] border-[#C5A021]'
-                    : 'bg-transparent border-gray-150 dark:border-navy-800 text-gray-500 dark:text-slate-400 hover:border-gray-300'
+                    ? 'bg-[#D4648A]/15 text-[#D4648A] border-[#D4648A]'
+                    : 'bg-transparent border-gray-150 dark:border-gray-800 text-gray-500 dark:text-gray-500 hover:border-gray-300'
                 }`}
               >
                 {age}
@@ -144,7 +144,7 @@ export default function AgeToyFinder({
       {/* Skill Filters Badges */}
       <div className="space-y-2">
         <span className="text-[10px] font-mono tracking-wider text-gray-400 dark:text-gray-500 uppercase font-semibold flex items-center gap-1">
-          <Filter className="w-3 h-3 text-[#C5A021]" /> Cognitive & Play Focus
+          <Filter className="w-3 h-3 text-[#D4648A]" /> Cognitive & Play Focus
         </span>
         <div className="flex flex-wrap gap-1.5 pt-0.5">
           {SKILL_FILTERS.map((skill) => {
@@ -155,11 +155,11 @@ export default function AgeToyFinder({
                 onClick={() => onToggleSkill(skill)}
                 className={`px-3 py-1.5 rounded-xl text-[10px] font-medium transition cursor-pointer border flex items-center gap-1 ${
                   isSelected
-                    ? 'bg-[#C5A021]/15 text-[#C5A021] border-[#C5A021] font-semibold'
-                    : 'bg-transparent border-gray-150 dark:border-navy-800 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-700'
+                    ? 'bg-[#D4648A]/15 text-[#D4648A] border-[#D4648A] font-semibold'
+                    : 'bg-transparent border-gray-150 dark:border-gray-800 text-gray-500 dark:text-gray-500 hover:border-gray-300 dark:hover:border-pink-900/30'
                 }`}
               >
-                {isSelected && <Sparkles className="w-2.5 h-2.5 text-[#C5A021]" />}
+                {isSelected && <Sparkles className="w-2.5 h-2.5 text-[#D4648A]" />}
                 {skill}
               </button>
             );
