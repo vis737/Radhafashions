@@ -431,7 +431,11 @@ export function calculateCartTotals(
   const tax = Math.round(taxableAmount * 0.18);
 
   // 7. Local shipping logic: billable weight slab + destination pincode zone
-  const allTestProducts = cartItems.every(item => item.product.isTestProduct);
+  // Older carts can contain a cached copy of the test product without the
+  // isTestProduct flag. Keep its checkout shipping-free using its stable ID/SKU.
+  const allTestProducts = cartItems.length > 0 && cartItems.every(({ product }) =>
+    product.isTestProduct || product.id === 'TEST-RF-001' || product.sku === 'TEST-10'
+  );
   const shippingWeightKg = getCartShipmentWeightKg(cartItems);
   const shippingQuote = allTestProducts
     ? { cost: 0, billableWeightKg: 0, zone: 'Test — Free Shipping' }
