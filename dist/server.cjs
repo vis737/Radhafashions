@@ -129,7 +129,29 @@ var import_jsonwebtoken = __toESM(require("jsonwebtoken"), 1);
 init_passwordValidator();
 
 // src/utils/mockData.ts
-var INITIAL_PRODUCTS = [];
+var INITIAL_PRODUCTS = [
+  {
+    id: "TEST-RF-001",
+    sku: "TEST-10",
+    name: "Test Product \u2014 \u20B910 Checkout",
+    category: "Dupattas",
+    categorySlug: "dupattas",
+    price: 8,
+    stock: 999,
+    rating: 5,
+    ratingCount: 1,
+    images: ["https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop"],
+    shortDescription: "Test product for \u20B910 Razorpay checkout. Free shipping.",
+    description: "This is a test product for verifying Razorpay payment integration. Price is \u20B98 + GST (18%) = ~\u20B910 total with free shipping.",
+    specifications: { Weight: "0.05 kg" },
+    reviews: [],
+    isNew: true,
+    isBestseller: false,
+    brand: "Radha Fashions",
+    availability: "in-stock",
+    isTestProduct: true
+  }
+];
 var INITIAL_COUPONS = [
   {
     code: "RADHA10",
@@ -454,7 +476,8 @@ async function syncProductsFromSupabase() {
           brand: p.brand || "Radha Fashions",
           availability: p.availability || "in-stock",
           vendorId: p.vendor_id || null,
-          variation: p.variation || localMatch?.variation || void 0
+          variation: p.variation || localMatch?.variation || void 0,
+          isTestProduct: p.id === "TEST-RF-001"
         };
       });
       const supabaseIds = new Set(mapped.map((m) => m.id));
@@ -493,8 +516,42 @@ async function syncProductsFromSupabase() {
     console.error("Failed to sync products from Supabase on startup:", err);
   }
 }
+async function upsertTestProduct() {
+  if (!supabase) return;
+  try {
+    const testProd = INITIAL_PRODUCTS.find((p) => p.isTestProduct);
+    if (!testProd) return;
+    await supabase.from("products").upsert({
+      id: testProd.id,
+      sku: testProd.sku,
+      name: testProd.name,
+      category: testProd.category,
+      category_slug: testProd.categorySlug,
+      price: testProd.price,
+      discount_price: null,
+      stock: testProd.stock,
+      rating: testProd.rating,
+      rating_count: testProd.ratingCount,
+      images: testProd.images,
+      short_description: testProd.shortDescription,
+      description: testProd.description,
+      specifications: testProd.specifications,
+      reviews: [],
+      is_new: true,
+      is_bestseller: false,
+      brand: testProd.brand,
+      availability: "in-stock",
+      vendor_id: null,
+      variation: null
+    }, { onConflict: "id" });
+    console.log("\u2726 Upserted test product TEST-RF-001 (\u20B910 checkout).");
+  } catch (err) {
+    console.error("Failed to upsert test product:", err);
+  }
+}
 if (supabase) {
   seedSupabaseDatabase().then(() => {
+    upsertTestProduct();
     syncProductsFromSupabase();
     syncOrdersFromSupabase();
     syncAdminConfigFromSupabase();

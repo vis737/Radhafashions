@@ -68,6 +68,8 @@ export interface Product {
   seoDescription?: string;
   /** One customer-selectable option configured by the administrator. */
   variation?: ProductVariation;
+  /** Internal flag — test products get free shipping and are capped at ₹10 total */
+  isTestProduct?: boolean;
 }
 
 export type VariationType = 'color' | 'size';

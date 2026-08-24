@@ -12,7 +12,29 @@ export const CATEGORIES = [
   { id: 'western', name: 'Fusion & Western', description: 'Indo-western fusion dresses, printed maxi dresses, and contemporary ethnic coordinates.', imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800&auto=format&fit=crop&q=80' }
 ];
 
-export const INITIAL_PRODUCTS: Product[] = [];
+export const INITIAL_PRODUCTS: Product[] = [
+  {
+    id: 'TEST-RF-001',
+    sku: 'TEST-10',
+    name: 'Test Product — ₹10 Checkout',
+    category: 'Dupattas',
+    categorySlug: 'dupattas',
+    price: 8,
+    stock: 999,
+    rating: 5,
+    ratingCount: 1,
+    images: ['https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop'],
+    shortDescription: 'Test product for ₹10 Razorpay checkout. Free shipping.',
+    description: 'This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (18%) = ~₹10 total with free shipping.',
+    specifications: { Weight: '0.05 kg' },
+    reviews: [],
+    isNew: true,
+    isBestseller: false,
+    brand: 'Radha Fashions',
+    availability: 'in-stock',
+    isTestProduct: true
+  }
+];
 
 export const INITIAL_COUPONS: Coupon[] = [
   {

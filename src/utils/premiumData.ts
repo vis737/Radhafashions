@@ -431,8 +431,11 @@ export function calculateCartTotals(
   const tax = Math.round(taxableAmount * 0.18);
 
   // 7. Local shipping logic: billable weight slab + destination pincode zone
+  const allTestProducts = cartItems.every(item => item.product.isTestProduct);
   const shippingWeightKg = getCartShipmentWeightKg(cartItems);
-  const shippingQuote = calculateLocalShippingCost(shippingWeightKg, destinationPincode, shippingMethod, subtotal);
+  const shippingQuote = allTestProducts
+    ? { cost: 0, billableWeightKg: 0, zone: 'Test — Free Shipping' }
+    : calculateLocalShippingCost(shippingWeightKg, destinationPincode, shippingMethod, subtotal);
   const shippingCost = shippingQuote.cost;
 
   // 8. Grand total payable

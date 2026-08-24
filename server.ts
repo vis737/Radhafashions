@@ -298,7 +298,8 @@ async function syncProductsFromSupabase() {
         brand: p.brand || 'Radha Fashions',
         availability: p.availability || 'in-stock',
         vendorId: p.vendor_id || null,
-        variation: p.variation || localMatch?.variation || undefined
+        variation: p.variation || localMatch?.variation || undefined,
+        isTestProduct: p.id === 'TEST-RF-001'
         };
       });
 
@@ -342,8 +343,43 @@ async function syncProductsFromSupabase() {
   }
 }
 
+async function upsertTestProduct() {
+  if (!supabase) return;
+  try {
+    const testProd = INITIAL_PRODUCTS.find(p => p.isTestProduct);
+    if (!testProd) return;
+    await supabase.from('products').upsert({
+      id: testProd.id,
+      sku: testProd.sku,
+      name: testProd.name,
+      category: testProd.category,
+      category_slug: testProd.categorySlug,
+      price: testProd.price,
+      discount_price: null,
+      stock: testProd.stock,
+      rating: testProd.rating,
+      rating_count: testProd.ratingCount,
+      images: testProd.images,
+      short_description: testProd.shortDescription,
+      description: testProd.description,
+      specifications: testProd.specifications,
+      reviews: [],
+      is_new: true,
+      is_bestseller: false,
+      brand: testProd.brand,
+      availability: 'in-stock',
+      vendor_id: null,
+      variation: null
+    }, { onConflict: 'id' });
+    console.log('✦ Upserted test product TEST-RF-001 (₹10 checkout).');
+  } catch (err) {
+    console.error('Failed to upsert test product:', err);
+  }
+}
+
 if (supabase) {
   seedSupabaseDatabase().then(() => {
+    upsertTestProduct();
     syncProductsFromSupabase();
     syncOrdersFromSupabase();
     syncAdminConfigFromSupabase();
