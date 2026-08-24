@@ -2079,7 +2079,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
         <div style="background-color: #fef2f2; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #fee2e2;">
           <p style="font-size: 13px; color: #991b1b; margin: 0; font-weight: bold;">Rejection Reason:</p>
           <p style="font-size: 13px; color: #7f1d1d; margin: 4px 0 0 0; font-style: italic;">
-            "${reason || 'The transaction reference number or screenshot did not match our accounts ledger.'}"
+            "${reason || 'The transaction reference number or screenshot did not match our records.'}"
           </p>
         </div>
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
@@ -3651,7 +3651,7 @@ app.post('/api/gemini/invoice', async (req, res) => {
   const getLocalInvoiceFallback = () => {
     const delivery = order.shippingMethod === 'express' ? '3 days via BlueDart express' : '5-7 business days';
     return {
-      greetingText: `Dear ${customerName}, we are absolutely thrilled to secure your order representing India's brilliant cottage craftsmen! Our local woodturners and master artisans are hand-inspecting and packing your ${itemNames} right now inside our Tamil Nadu workshop. Your support fuels genuine livelihoods.`,
+      greetingText: `Dear ${customerName}, thank you for your order! Our team is carefully packing your ${itemNames} with love and attention to detail. We hope you enjoy your ethnic wear from Radha Fashions!`,
       invoiceVerificationCode: `RADHA-CRN-${Math.floor(100000 + Math.random() * 900000)}`,
       estimatedDeliveryDate: `Approx. delivery in ${delivery}`,
     };

@@ -32,12 +32,12 @@ export function generateInvoicePDF(order: Order) {
   doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(22);
-  doc.text('M E R I S', marginX, currentY);
+  doc.text('RADHA FASHIONS', marginX, currentY);
 
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-  doc.text('BOUTIQUE COTTAGE CRAFTS', marginX, currentY + 4);
+  doc.text('BOUTIQUE & ETHNIC WEAR', marginX, currentY + 4);
 
   // INVOICE METADATA (Right-aligned in header block)
   doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
@@ -65,7 +65,7 @@ export function generateInvoicePDF(order: Order) {
   doc.setFontSize(10);
   doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
   doc.text('RECIPIENT DETAILS', marginX, currentY);
-  doc.text('ARTISAN DISPATCH FROM', 115, currentY);
+  doc.text('SHIPPED FROM', 115, currentY);
 
   currentY += 6;
   doc.setFont('Helvetica', 'normal');
@@ -83,7 +83,7 @@ export function generateInvoicePDF(order: Order) {
   doc.text(`Postal PIN: ${order.customerInfo.pincode}`, marginX, currentY + 15 + (wrappingAddress.length * 4.5));
 
   // Shop Seller details
-  doc.text('Radha Fashions Boutique & Studios', 115, currentY);
+  doc.text('Radha Fashions Boutique', 115, currentY);
   doc.text('KSVK School Rd, Hagadur', 115, currentY + 5);
   doc.text('Vinayakanagar, Whitefield', 115, currentY + 10);
   doc.text('Bengaluru, Karnataka 560066', 115, currentY + 15);
@@ -204,14 +204,14 @@ export function generateInvoicePDF(order: Order) {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(234, 88, 12);
-    doc.text('PREMIUM ARTISAN WRAP ACTIVE', marginX + 4, currentY + 5.5);
+    doc.text('PREMIUM GIFT WRAP', marginX + 4, currentY + 5.5);
     
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(30, 41, 59);
     const scrollText = order.giftMessage 
-      ? `Handwritten Calligraphy pulp scroll reads: "${order.giftMessage}"`
-      : "Wax-sealed banana fiber pouch with dried marigold buds.";
+      ? `Gift message: "${order.giftMessage}"`
+      : "Premium gift wrapping with love.";
     const wrappedLines = doc.splitTextToSize(scrollText, 162);
     doc.text(wrappedLines, marginX + 4, currentY + 11.5);
     currentY += 16;
@@ -231,12 +231,12 @@ export function generateInvoicePDF(order: Order) {
   doc.setFont('Helvetica', 'italic');
   doc.setFontSize(8.5);
   doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-  doc.text('Thank you for supporting sustainable indigenous Indian craftspersons.', 105, currentY + 7, { align: 'center' });
+  doc.text('Thank you for choosing Radha Fashions — your trusted boutique for curated ethnic fashion.', 105, currentY + 7, { align: 'center' });
   
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2]);
-  doc.text('This is a secure digitally certified voucher for your Radha Fashions active order ledger.', 105, currentY + 13, { align: 'center' });
+  doc.text('This is a digitally certified invoice for your Radha Fashions order.', 105, currentY + 13, { align: 'center' });
 
   // Save the PDF
   doc.save(`Invoice-RADHA-INV-${orderSlug}.pdf`);
