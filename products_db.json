@@ -1,5 +1,29 @@
 [
   {
+    "id": "prod_1787554803936_8fxn7uj",
+    "sku": "rf3",
+    "name": "test",
+    "category": "sarees",
+    "categorySlug": "sarees",
+    "price": 10,
+    "discountPrice": 10,
+    "stock": 10,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "test",
+    "description": "test",
+    "specifications": {},
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "rf",
+    "availability": "in-stock",
+    "weightKg": 0.5
+  },
+  {
     "id": "prod_1787144087627_mzhfl9p",
     "sku": "RF 2",
     "name": "Shirt for mens",

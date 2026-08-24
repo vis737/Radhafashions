@@ -1,5 +1,78 @@
 [
   {
+    "id": "ord-1787402068840",
+    "orderNumber": "MR-206884-497",
+    "customerInfo": {
+      "name": "Radha Fashion Designer",
+      "email": "radhanarayan0709@gmail.com",
+      "phone": "+919731153609",
+      "address": "toward Marathahalli to kr puram",
+      "pincode": "560037"
+    },
+    "items": [
+      {
+        "product": {
+          "id": "prod_1787073594012_dh2sene",
+          "sku": "RF-1",
+          "name": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
+          "brand": "Radha Fashions",
+          "isNew": true,
+          "price": 1000,
+          "stock": 3,
+          "images": [
+            "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/bc79cbcf-1fec-4bb6-93d6-4548199aa666.jpeg",
+            "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/1537fa30-c685-47e5-8356-3a26e9d6e435.jpeg",
+            "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/7da0f9c6-cbf4-4cd6-bc7a-bc5b58e01ba8.jpeg"
+          ],
+          "rating": 5,
+          "reviews": [],
+          "category": "jewellery",
+          "vendorId": null,
+          "weightKg": 0.5,
+          "variation": {
+            "type": "size",
+            "values": [
+              "2/4",
+              "2/6",
+              "2/8"
+            ]
+          },
+          "description": "TRADITIONAL TEMPLE JEWELLERY: A set of 2 bangles featuring intricate Nakshi-style gold-plated craftsmanship with an antique-gold finish.\nVIBRANT STONE EMBELLISHMENTS: Adorned with rich ruby-red and emerald-green stone accents that add a striking pop of colour.\nINTRICATE MOTIFS: Detailed floral and peacock motifs enhance the classic temple jewellery appeal of these bangles.\nIDEAL FOR SPECIAL OCCASIONS: Perfect for bridal wear, weddings, festivals, traditional ceremonies, and other celebratory events.\nVERSATILE ETHNIC PAIRING: Complements sarees, silk outfits, lehengas, and a wide range of traditional ethnic attire beautifully.",
+          "ratingCount": 1,
+          "availability": "in-stock",
+          "categorySlug": "jewellery",
+          "isBestseller": false,
+          "discountPrice": 650,
+          "specifications": {
+            "Weight": "0.5 kg"
+          },
+          "shortDescription": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone"
+        },
+        "quantity": 1,
+        "selectedVariation": {
+          "type": "size",
+          "value": "2/4"
+        }
+      }
+    ],
+    "shippingMethod": "standard",
+    "shippingCost": 138,
+    "tax": 117,
+    "discount": 0,
+    "subtotal": 650,
+    "total": 905,
+    "status": "pending",
+    "couponCode": null,
+    "date": "2026-08-22",
+    "paymentMethod": "UPI QR Payment",
+    "paymentStatus": "pending",
+    "giftWrappingRequested": false,
+    "giftWrappingType": "Generic",
+    "giftMessage": null,
+    "accountEmail": "radhanarayan0709@gmail.com",
+    "accountName": "Radha Fashion Designer"
+  },
+  {
     "id": "ord-1787144329102",
     "orderNumber": "MR-432910-365",
     "customerInfo": {
