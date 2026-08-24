@@ -226,7 +226,6 @@ export default function CheckoutPanel({
           name: 'Radha Fashions',
           description: 'Handcrafted Luxury Purchase',
           order_id: orderData.id,
-          redirect: false,
           prefill: {
             name,
             email,
@@ -289,6 +288,7 @@ export default function CheckoutPanel({
           },
         };
 
+        console.log('[Razorpay] Opening checkout with key:', keyId, 'amount:', orderData.amount);
         const rzp = new (window as any).Razorpay(options);
         rzp.open();
         // After Razorpay modal closes, listen for payment response
