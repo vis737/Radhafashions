@@ -63,6 +63,27 @@ export default function CheckoutPanel({
   
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod' | 'upi_qr'>('razorpay');
 
+  // Ensure Razorpay checkout script is loaded
+  const [razorpayReady, setRazorpayReady] = useState(!!(window as any).Razorpay);
+
+  useEffect(() => {
+    if ((window as any).Razorpay) {
+      setRazorpayReady(true);
+      return;
+    }
+    // Dynamically load the script if not already present
+    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => setRazorpayReady(true));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => setRazorpayReady(true);
+    script.onerror = () => console.error('[Razorpay] Failed to load checkout.js script');
+    document.head.appendChild(script);
+  }, []);
+
   useEffect(() => {
     if (!upiEnabled && paymentMethod === 'upi_qr') {
       setPaymentMethod('razorpay');
@@ -169,8 +190,8 @@ export default function CheckoutPanel({
 
     try {
       if (paymentMethod === 'razorpay') {
-        if (!(window as any).Razorpay) {
-          throw new Error('Razorpay checkout script is not loaded. Please refresh and try again.');
+        if (!(window as any).Razorpay || !razorpayReady) {
+          throw new Error('Razorpay checkout script is still loading. Please wait a moment and try again.');
         }
 
         const configRes = await fetch('/api/razorpay/config');
@@ -197,6 +218,7 @@ export default function CheckoutPanel({
 
         const orderData = await orderRes.json();
 
+        let paymentCompleted = false;
         const options = {
           key: keyId,
           amount: orderData.amount,
@@ -204,6 +226,7 @@ export default function CheckoutPanel({
           name: 'Radha Fashions',
           description: 'Handcrafted Luxury Purchase',
           order_id: orderData.id,
+          redirect: false,
           prefill: {
             name,
             email,
@@ -234,6 +257,7 @@ export default function CheckoutPanel({
               }
 
               // Payment verified — place the order
+              paymentCompleted = true;
               onPlaceOrder(
                 { name, email, phone, address, pincode },
                 'Razorpay Online Payment',
@@ -251,15 +275,24 @@ export default function CheckoutPanel({
           },
           modal: {
             ondismiss: () => {
+              if (paymentCompleted) return;
               setIsProcessing(false);
               setPaymentError('Payment was cancelled. Please try again.');
+            },
+          },
+          payment: {
+            failed: (response: any) => {
+              console.error('[Razorpay] Payment failed:', response?.error);
+              setIsProcessing(false);
+              setPaymentError(response?.error?.description || 'Payment failed. Please try again.');
             },
           },
         };
 
         const rzp = new (window as any).Razorpay(options);
         rzp.open();
-        setIsProcessing(false); // Stop spinner since Razorpay modal takes over
+        // After Razorpay modal closes, listen for payment response
+        setIsProcessing(false);
         return;
       }
 
@@ -916,6 +949,7 @@ export default function CheckoutPanel({
                     </div>
 
                     <button
+                      type="button"
                       onClick={handleCheckoutSubmit}
                       disabled={isProcessing}
                       className="w-full py-5 bg-gradient-to-tr from-pink-500 to-pink-400 hover:from-pink-600 text-gray-950 font-display font-bold text-sm tracking-widest uppercase rounded-2xl flex items-center justify-center gap-2 shadow-2xl shadow-pink-500/20 hover:scale-[1.01] transform active:scale-95 transition cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"

@@ -575,14 +575,14 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com https://checkout.razorpay.com; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://checkout.razorpay.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' data: https://fonts.gstatic.com; " +
     `img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com https://img.clerk.com ${supabaseHttps}; ` +
-    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com https://api.razorpay.com; ` +
+    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://api.razorpay.com; ` +
     "worker-src 'self' blob:; " +
-    "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://api.razorpay.com https://checkout.razorpay.com; " +
-    "form-action 'self' https://test.payu.in https://secure.payu.in; " +
+    "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://api.razorpay.com https://checkout.razorpay.com; " +
+    "form-action 'self' https://test.payu.in https://secure.payu.in https://api.razorpay.com https://checkout.razorpay.com; " +
     "object-src 'none'; " +
     "base-uri 'self';"
   );
