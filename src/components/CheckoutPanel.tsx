@@ -281,9 +281,9 @@ export default function CheckoutPanel({
           },
           payment: {
             failed: (response: any) => {
-              console.error('[Razorpay] Payment failed:', response?.error);
+              console.error('[Razorpay] Payment failed:', JSON.stringify(response?.error));
               setIsProcessing(false);
-              setPaymentError(response?.error?.description || 'Payment failed. Please try again.');
+              setPaymentError(`Payment failed: ${response?.error?.description || response?.error?.reason || 'Unknown error'}. Code: ${response?.error?.code || 'N/A'}`);
             },
           },
         };
