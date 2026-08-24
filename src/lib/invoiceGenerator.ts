@@ -84,9 +84,9 @@ export function generateInvoicePDF(order: Order) {
 
   // Shop Seller details
   doc.text('Radha Fashions Boutique & Studios', 115, currentY);
-  doc.text('5/339, Fathima Road, Azhagappapuram', 115, currentY + 5);
-  doc.text('Kanyakumari District, Tamil Nadu', 115, currentY + 10);
-  doc.text('PINCODE: 629401', 115, currentY + 15);
+  doc.text('KSVK School Rd, Hagadur', 115, currentY + 5);
+  doc.text('Vinayakanagar, Whitefield', 115, currentY + 10);
+  doc.text('Bengaluru, Karnataka 560066', 115, currentY + 15);
   doc.text('admin@radhafashions.com', 115, currentY + 20);
 
   // Increment Y past coordinates info

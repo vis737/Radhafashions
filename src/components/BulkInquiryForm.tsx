@@ -77,13 +77,13 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
             >
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-pink-500 font-bold block mb-1">
-                  Artisanal Sourcing Portal
+                  Bulk Order Portal
                 </span>
                 <h3 className="font-display font-black text-2xl uppercase tracking-tight text-gray-950 dark:text-white">
                   Bulk Return Gift Inquiry
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-1">
-                  Plan celebrations or corporate conferences with unique, hand-carved heritage craft pieces. Enter your desired quantities to initiate volume artisan slots.
+                  Plan celebrations or corporate gifting with curated ethnic wear and boutique accessories. Enter your desired quantities for bulk pricing.
                 </p>
               </div>
 

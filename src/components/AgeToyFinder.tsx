@@ -56,7 +56,7 @@ export default function AgeToyFinder({
               Age-Based Toy Finder
             </h3>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-sans mt-0.5">
-              Select an age segment to discover tailored developmental crafts.
+              Select an age segment to discover tailored fashion collections.
             </p>
           </div>
         </div>

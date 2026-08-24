@@ -108,7 +108,7 @@ export const DEFAULT_CMS: CMSConfig = {
   aboutText: 'Radha Fashions was born from a deep love of Indian heritage and craftsmanship. We curate handpicked ethnic wear — from silk sarees and embroidered lehengas to everyday kurtis and statement jewellery — sourced directly from master weavers and artisans across India. Every piece in our collection tells a story of tradition, artistry, and timeless beauty.',
   contactEmail: 'admin@radhafashions.com',
   contactPhone: '+91 97311 53609',
-  contactAddress: 'Radha Fashions, Tamil Nadu, India',
+  contactAddress: 'KSVK School Rd, Hagadur, Vinayakanagar, Whitefield, Bengaluru, Karnataka 560066',
   whatsappNumber: '+919731153609',
   instagramLink: 'https://instagram.com/radhafashionss',
   privacyPolicy: 'Your personal data (Name, Email, Address) is transmitted through fully secured channels. We use client-side local persistence for fast loading and never share your data with third parties.',

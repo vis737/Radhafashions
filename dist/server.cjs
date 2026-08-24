@@ -222,7 +222,7 @@ var DEFAULT_CMS = {
   aboutText: "Radha Fashions was born from a deep love of Indian heritage and craftsmanship. We curate handpicked ethnic wear \u2014 from silk sarees and embroidered lehengas to everyday kurtis and statement jewellery \u2014 sourced directly from master weavers and artisans across India. Every piece in our collection tells a story of tradition, artistry, and timeless beauty.",
   contactEmail: "admin@radhafashions.com",
   contactPhone: "+91 97311 53609",
-  contactAddress: "Radha Fashions, Tamil Nadu, India",
+  contactAddress: "KSVK School Rd, Hagadur, Vinayakanagar, Whitefield, Bengaluru, Karnataka 560066",
   whatsappNumber: "+919731153609",
   instagramLink: "https://instagram.com/radhafashionss",
   privacyPolicy: "Your personal data (Name, Email, Address) is transmitted through fully secured channels. We use client-side local persistence for fast loading and never share your data with third parties.",
@@ -1688,14 +1688,14 @@ async function sendBookingEmail(order) {
     <!-- Luxury Premium Header -->
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
       <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
     </div>
 
     <!-- Heartwarming Greeting -->
     <div style="padding: 32px 24px 20px 24px;">
       <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
-        Thank you for choosing <strong>Radha Fashions</strong>. We are thrilled to confirm that your artisanal booking is officially registered under our workshop ledger. Our master craftspeople are preparing your order right now inside our certified cottage works.
+        Thank you for choosing <strong>Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! Our team is carefully packing your ethnic wear with love and attention to detail.
       </p>
     </div>
 
@@ -1774,7 +1774,7 @@ async function sendBookingEmail(order) {
         Your dispatch tracking number is active. You can track this booking live in your Radha Fashions Dashboard anytime.
       </p>
       <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
-        Radha Fashions Studio Co. \u2022 Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Boutique \u2022 KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
 
@@ -1907,7 +1907,7 @@ async function sendAdminVendorNotificationEmail(order) {
     </div>
 
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
-      Radha Fashions Studio Co. Automated Merchant Dispatch Notification
+      Radha Fashions Boutique \u2014 Order Dispatch Notification
     </div>
 
   </div>
@@ -1955,7 +1955,7 @@ async function sendPaymentEmail(order, type, reason) {
     
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? "#10b981" : "#ef4444"};">
       <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
     </div>
 
     <div style="padding: 32px 24px 20px 24px;">
@@ -1965,7 +1965,7 @@ async function sendPaymentEmail(order, type, reason) {
           We are pleased to inform you that your UPI payment for order <strong>#${order.orderNumber}</strong> has been successfully verified!
         </p>
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
-          Your order has been moved to <strong>Processing</strong> status. Our master artisans have begun handcrafting your items. You will receive another notification once your package is dispatched.
+          Your order has been moved to <strong>Processing</strong> status. Our team is preparing your ethnic wear with care. You will receive another notification once your package is dispatched.
         </p>
       ` : `
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
@@ -1978,7 +1978,7 @@ async function sendPaymentEmail(order, type, reason) {
           </p>
         </div>
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
-          Please log into your account dashboard, check your transaction credentials, and resubmit the correct UPI reference number or payment receipt screenshot to resume processing of your artisanal package.
+          Please log into your account dashboard, check your transaction credentials, and resubmit the correct UPI reference number or payment receipt screenshot to resume processing of your order.
         </p>
       `}
     </div>
@@ -2011,7 +2011,7 @@ async function sendPaymentEmail(order, type, reason) {
         You can track your order status live in your Radha Fashions Dashboard at any time.
       </p>
       <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
-        Radha Fashions Studio Co. \u2022 Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Boutique \u2022 KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
 
@@ -2382,7 +2382,7 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden;">
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
       <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Handcrafted Toys & Premium Gifts</p>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Boutique & Ethnic Wear</p>
     </div>
     <div style="padding: 32px 24px;">
       <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">Thanks for choosing us, ${name}!</h2>
@@ -2390,7 +2390,7 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
         We are absolutely thrilled to welcome you to the Radha Fashions family! Your account has been securely created.
       </p>
       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 12px;">
-        Explore our curated collection of developmental craft toys, customized stencils, and premium handcrafted gifts. We hope you enjoy browsing and shopping our unique heritage crafts.
+        Explore our curated collection of silk sarees, designer lehengas, elegant kurtis, and handcrafted ethnic accessories. We hope you enjoy browsing and shopping our curated boutique collections.
       </p>
       <div style="text-align: center; margin-top: 24px;">
         <a href="${process.env.APP_URL || "http://localhost:3000"}" style="background-color: #f59e0b; color: #0f172a; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block;">Happy Shopping &rarr;</a>
@@ -2398,7 +2398,7 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
     </div>
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
       <p style="font-size: 11px; color: #94a3b8; margin: 0;">
-        Radha Fashions Studio Co. \u2022 Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Boutique \u2022 KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
   </div>

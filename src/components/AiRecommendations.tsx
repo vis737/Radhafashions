@@ -75,7 +75,7 @@ export default function AiRecommendations({
           <Sparkles className="w-5 h-5 animate-spin" />
           <span className="font-display font-medium tracking-wide text-xs uppercase">Consulting AI Concierge...</span>
         </div>
-        <p className="text-xs text-gray-200 font-mono animate-pulse">Polishing handcrafted shelves...</p>
+        <p className="text-xs text-gray-200 font-mono animate-pulse">Curating your personalized picks...</p>
       </div>
     );
   }

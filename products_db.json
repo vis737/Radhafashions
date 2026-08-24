@@ -1,29 +1,5 @@
 [
   {
-    "id": "prod_1787554803936_8fxn7uj",
-    "sku": "rf3",
-    "name": "test",
-    "category": "sarees",
-    "categorySlug": "sarees",
-    "price": 10,
-    "discountPrice": 10,
-    "stock": 10,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "test",
-    "description": "test",
-    "specifications": {},
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "rf",
-    "availability": "in-stock",
-    "weightKg": 0.5
-  },
-  {
     "id": "prod_1787144087627_mzhfl9p",
     "sku": "RF 2",
     "name": "Shirt for mens",
@@ -56,7 +32,36 @@
         "white",
         "pink"
       ]
-    }
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787554803936_8fxn7uj",
+    "sku": "rf3",
+    "name": "test",
+    "category": "sarees",
+    "categorySlug": "sarees",
+    "price": 10,
+    "discountPrice": 10,
+    "stock": 10,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "test",
+    "description": "test",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": false,
+    "isBestseller": false,
+    "brand": "rf",
+    "availability": "in-stock",
+    "vendorId": null,
+    "isTestProduct": false
   },
   {
     "id": "prod_1787073594012_dh2sene",
@@ -93,6 +98,34 @@
         "2/6",
         "2/8"
       ]
-    }
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "TEST-RF-001",
+    "sku": "TEST-10",
+    "name": "Test Product — ₹10 Checkout",
+    "category": "Dupattas",
+    "categorySlug": "dupattas",
+    "price": 8,
+    "stock": 999,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Test product for ₹10 Razorpay checkout. Free shipping.",
+    "description": "This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (18%) = ~₹10 total with free shipping.",
+    "specifications": {
+      "Weight": "0.05 kg"
+    },
+    "weightKg": 0.05,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "isTestProduct": true
   }
 ]

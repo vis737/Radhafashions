@@ -130,7 +130,7 @@ export default function CartDrawer({
                   <ShoppingCart className="w-8 h-8" />
                 </div>
                 <h4 className="font-display font-semibold text-xs text-gray-950 dark:text-white uppercase tracking-widest">Your Bag is Empty</h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-light max-w-xs">Return back to catalog and select handcrafted items for your cart.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-light max-w-xs">Browse our curated collections and add your favorite items to your bag.</p>
               </div>
             ) : (
               cartItems.map((item) => {

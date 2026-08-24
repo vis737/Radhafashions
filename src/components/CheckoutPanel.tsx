@@ -224,7 +224,7 @@ export default function CheckoutPanel({
           amount: orderData.amount,
           currency: orderData.currency,
           name: 'Radha Fashions',
-          description: 'Handcrafted Luxury Purchase',
+          description: 'Radha Fashions Boutique Purchase',
           order_id: orderData.id,
           prefill: {
             name,
@@ -472,7 +472,7 @@ export default function CheckoutPanel({
                         rows={3}
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        placeholder="5/339, Fathima Road..."
+                        placeholder="Enter your delivery address..."
                         className="w-full px-4 py-3 text-sm bg-gray-50 dark:bg-gray-950 text-gray-950 dark:text-white border border-gray-200 dark:border-gray-700/60 rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all duration-200 shadow-sm resize-none"
                       />
                     </div>
@@ -489,7 +489,7 @@ export default function CheckoutPanel({
                         <div className="text-left">
                           <span className="text-sm font-bold text-gray-800 dark:text-orange-300 flex items-center gap-2 uppercase tracking-wide">
                             <Gift className="w-4.5 h-4.5 text-orange-500" />
-                            Add Handcrafted Gift Wrap (Rs.100)
+                            Add Premium Gift Wrap (Rs.100)
                           </span>
                           <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Authentic wax-sealed banana fiber pouch with dried marigold buds.</p>
                         </div>

@@ -90,14 +90,14 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono font-bold tracking-widest uppercase">
             <Zap className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-bounce" />
-            Urgent Hourly Craft Flash Offer
+            Urgent Hourly Fashion Flash Offer
           </div>
 
           <h3 className="font-display font-black text-gray-900 dark:text-white text-xl sm:text-2xl uppercase tracking-wider">
-            Limited Artisan Slots Remaining
+            Limited Stock — Selling Fast!
           </h3>
           <p className="text-xs text-gray-600 dark:text-gray-400 max-w-lg leading-relaxed">
-            Our guild members have released limited back-stocks. Enjoy up to <span className="text-pink-400 font-bold">30% direct drop</span> automatically updated on raw materials while this stopwatch is active.
+            Our curated collections are running low on stock. Enjoy up to <span className="text-pink-400 font-bold">30% off</span> on select fashion items while this offer lasts.
           </p>
         </div>
 

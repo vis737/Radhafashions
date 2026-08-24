@@ -222,7 +222,7 @@ export default function ProductDetails({
               
               {product.categorySlug === 'toys' || product.category === 'Kids Toys' ? (
                 <>
-                  <h5 className="font-display font-medium text-xs text-gray-950 dark:text-white uppercase tracking-wider">Artisanal Toy Jamboree</h5>
+                  <h5 className="font-display font-medium text-xs text-gray-950 dark:text-white uppercase tracking-wider">Buy 2+ Items, Get 10% Off!</h5>
                   <p className="text-[11px] text-gray-500 leading-tight">
                     Gain a <span className="font-semibold text-pink-500">10% instant reward</span> on each when you add any 2 or more traditional Kids Toys to your bag!
                   </p>
@@ -316,8 +316,8 @@ export default function ProductDetails({
             <div className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-100 bg-gray-50/50">
               <Award className="w-5 h-5 text-pink-500 shrink-0" />
               <div className="text-left">
-                <h5 className="font-display font-medium text-xs text-gray-900 leading-none">Heritage Craft</h5>
-                <span className="text-[9px] text-gray-400">Authentic native design</span>
+                <h5 className="font-display font-medium text-xs text-gray-900 leading-none">Premium Quality</h5>
+                <span className="text-[9px] text-gray-400">Authentic ethnic design</span>
               </div>
             </div>
             <div className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-100 bg-gray-50/50">

@@ -97,7 +97,7 @@ const RadhaLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       fontWeight="bold"
       letterSpacing="2.5"
     >
-      E-SHOP
+      BOUTIQUE
     </text>
 
     {/* Horizontal divider lines */}
@@ -153,7 +153,7 @@ interface NavbarProps {
   allProducts: Product[];
   currentCategory: string;
   onSelectCategory: (categorySlug: string) => void;
-  onNavigate: (view: 'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin') => void;
+  onNavigate: (view: 'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'about') => void;
   onSelectProduct: (productId: string) => void;
   onSetProductsFilter: (filtered: Product[]) => void;
   onOpenCart: () => void;
@@ -268,7 +268,7 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md text-foreground font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
           
           {/* Mobile Menu Icon */}
           <button
@@ -301,8 +301,8 @@ export default function Navbar({
               />
             </span>
             <span className="flex flex-col leading-none">
-              <span className="font-display text-xl tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-2xl">Radha Fashions</span>
-              <span className="eyebrow mt-1">Boutique</span>
+              <span className="font-display text-lg sm:text-xl md:text-2xl tracking-tight text-foreground transition-colors group-hover:text-primary">Radha Fashions</span>
+              <span className="eyebrow mt-0.5 sm:mt-1 text-[8px] sm:text-[9px] md:text-[10px]">Boutique</span>
             </span>
           </div>
 
@@ -353,6 +353,13 @@ export default function Navbar({
                 )}
               </AnimatePresence>
             </div>
+
+            <button
+              onClick={() => { onNavigate('about'); clearSearch(); }}
+              className="text-xs font-bold tracking-wider uppercase text-muted-foreground hover:text-primary transition cursor-pointer"
+            >
+              About
+            </button>
           </nav>
 
           {/* AI-Integrated advanced Search Bar Container */}
@@ -425,7 +432,7 @@ export default function Navbar({
           </div>
 
           {/* Header Action Elements */}
-          <div className="flex items-center gap-2 sm:gap-4 select-none pr-1">
+          <div className="flex items-center gap-1 sm:gap-3 md:gap-4 select-none pr-0 sm:pr-1 shrink-0">
             {/* Wishlist triggers */}
             <button
               onClick={() => onNavigate('account')}
@@ -502,9 +509,9 @@ export default function Navbar({
             {/* Overlay background */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
+              animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
             />
             
@@ -512,27 +519,30 @@ export default function Navbar({
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="relative flex flex-col w-full max-w-xs bg-background h-full shadow-2xl p-6 overflow-y-auto space-y-6 z-10 text-left"
+              transition={{ type: 'spring', damping: 28, stiffness: 250 }}
+              className="relative flex flex-col w-[85%] max-w-sm bg-background h-full shadow-2xl z-10 text-left overflow-hidden"
             >
-              <div className="flex items-center justify-between">
-                <span className="font-display font-medium text-sm tracking-widest text-foreground uppercase">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-full bg-accent border border-border">
+              {/* Drawer Header */}
+              <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-border bg-background/95 backdrop-blur-sm">
+                <span className="font-display font-bold text-sm tracking-widest text-foreground uppercase">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full bg-accent border border-border hover:bg-pink-100 dark:hover:bg-pink-900/30 transition">
                   <X className="w-4 h-4 text-foreground" />
                 </button>
               </div>
 
-              {/* Mobile Categories lists */}
-              <div className="space-y-4">
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+                {/* Shop All */}
                 <button
                   onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                  className="block text-left w-full pb-2 border-b border-border text-sm font-semibold text-foreground"
+                  className="block text-left w-full pb-3 border-b border-border text-sm font-bold text-foreground hover:text-pink-500 transition"
                 >
-                  Shop All
+                  ✦ Shop All
                 </button>
 
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase">Categories</span>
+                {/* Categories */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase block mb-2">Categories</span>
                   {CATEGORIES.map((category, idx) => (
                     <motion.button
                       key={category.id}
@@ -544,21 +554,49 @@ export default function Navbar({
                         onNavigate('category');
                         setMobileMenuOpen(false);
                       }}
-                      className="block text-left w-full py-1.5 text-xs text-muted-foreground hover:text-primary font-medium"
+                      className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
                     >
                       {category.name}
                     </motion.button>
                   ))}
                 </div>
+
+                {/* Quick Links */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase block mb-2">Quick Links</span>
+                  <button
+                    onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
+                    className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                  >
+                    My Account & Orders
+                  </button>
+                  <button
+                    onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
+                    className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                  >
+                    Browse Collections
+                  </button>
+                  <button
+                    onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
+                    className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                  >
+                    About Us
+                  </button>
+                </div>
+
+                {/* Help Block */}
+                <div className="pt-4 border-t border-border space-y-2">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase">Need Help?</p>
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                    <HelpCircle className="w-4 h-4 text-pink-400" />
+                    +91 97311 53609
+                  </p>
+                </div>
               </div>
 
-              {/* Help Block information */}
-              <div className="pt-8 border-t border-border space-y-2">
-                <p className="text-[10px] font-mono text-muted-foreground uppercase">Assistance Contact</p>
-                <p className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <HelpCircle className="w-4 h-4 text-primary" />
-                  +91 97311 53609
-                </p>
+              {/* Drawer Footer */}
+              <div className="sticky bottom-0 px-5 py-3 border-t border-border bg-background/95 backdrop-blur-sm">
+                <p className="text-[9px] font-mono text-muted-foreground text-center">Radha Fashions Boutique · Bengaluru</p>
               </div>
             </motion.div>
           </div>

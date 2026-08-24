@@ -95,7 +95,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
           </div>
 
           <p className="text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
-            Congratulations, your order is being custom hand-oiled and packaged. Thank you for supporting indigenous, ethical craftsmanship.
+            Congratulations! Your order has been placed successfully. Thank you for choosing Radha Fashions — your trusted boutique for curated ethnic fashion.
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
               <p className="text-xs text-gray-500 font-mono animate-pulse">AI Concierge is penning your customized thank-you letter...</p>
             ) : (
               <p className="text-xs sm:text-sm text-gray-700 font-sans leading-relaxed italic font-light">
-                "{invoiceResponse?.greetingText || `Dear ${order.customerInfo.name}, thank you for supporting India's craftspersons! Our team is preparing your parcel with complete hand-finished checks.`}"
+                "{invoiceResponse?.greetingText || `Dear ${order.customerInfo.name}, thank you for choosing Radha Fashions! Our team is carefully packing your ethnic wear with love and attention to detail.`}"
               </p>
             )}
           </div>
@@ -136,9 +136,10 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
         <div id="invoice-printable-section" className="p-6 md:p-8 text-left bg-white font-sans space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-gray-100">
             <div className="space-y-1">
-              <span className="font-display font-bold text-lg tracking-wider text-gray-900">Radha Fashions <span className="text-pink-400">E-SHOP</span></span>
+              <span className="font-display font-bold text-lg tracking-wider text-gray-900">Radha Fashions <span className="text-pink-400">Boutique</span></span>
               <p className="text-[10px] text-gray-500 leading-relaxed font-light">
-                5/339, Fathima Road, Nager, Azhagappapuram, Tamil Nadu 629401<br />
+                KSVK School Rd, Hagadur, Vinayakanagar,<br />
+                Whitefield, Bengaluru, Karnataka 560066<br />
                 admin@radhafashions.com | +91 97311 53609
               </p>
             </div>

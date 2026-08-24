@@ -102,7 +102,7 @@ export default function AdminDashboard({
   // Notifications
   const [notifications, setNotifications] = useState<any[]>([
     { id: '1', text: 'New high-value order placed (Rs. 4,500)', type: 'order' },
-    { id: '2', text: 'Low stock warning: Handcrafted Wooden Tower (5 left)', type: 'stock' },
+    { id: '2', text: 'Low stock warning: Silk Saree Collection (5 left)', type: 'stock' },
     { id: '3', text: 'New customer signed up: Alok Sharma', type: 'customer' }
   ]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);

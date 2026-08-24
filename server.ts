@@ -1770,14 +1770,14 @@ async function sendBookingEmail(order: any) {
     <!-- Luxury Premium Header -->
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
       <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
     </div>
 
     <!-- Heartwarming Greeting -->
     <div style="padding: 32px 24px 20px 24px;">
       <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
-        Thank you for choosing <strong>Radha Fashions</strong>. We are thrilled to confirm that your artisanal booking is officially registered under our workshop ledger. Our master craftspeople are preparing your order right now inside our certified cottage works.
+        Thank you for choosing <strong>Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! Our team is carefully packing your ethnic wear with love and attention to detail.
       </p>
     </div>
 
@@ -1856,7 +1856,7 @@ async function sendBookingEmail(order: any) {
         Your dispatch tracking number is active. You can track this booking live in your Radha Fashions Dashboard anytime.
       </p>
       <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
-        Radha Fashions Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
 
@@ -2003,7 +2003,7 @@ async function sendAdminVendorNotificationEmail(order: any) {
     </div>
 
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
-      Radha Fashions Studio Co. Automated Merchant Dispatch Notification
+      Radha Fashions Boutique — Order Dispatch Notification
     </div>
 
   </div>
@@ -2060,7 +2060,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
     
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? '#10b981' : '#ef4444'};">
       <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Handcrafted Toys & Premium Gifts</p>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
     </div>
 
     <div style="padding: 32px 24px 20px 24px;">
@@ -2070,7 +2070,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
           We are pleased to inform you that your UPI payment for order <strong>#${order.orderNumber}</strong> has been successfully verified!
         </p>
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
-          Your order has been moved to <strong>Processing</strong> status. Our master artisans have begun handcrafting your items. You will receive another notification once your package is dispatched.
+          Your order has been moved to <strong>Processing</strong> status. Our team is preparing your ethnic wear with care. You will receive another notification once your package is dispatched.
         </p>
       ` : `
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
@@ -2083,7 +2083,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
           </p>
         </div>
         <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
-          Please log into your account dashboard, check your transaction credentials, and resubmit the correct UPI reference number or payment receipt screenshot to resume processing of your artisanal package.
+          Please log into your account dashboard, check your transaction credentials, and resubmit the correct UPI reference number or payment receipt screenshot to resume processing of your order.
         </p>
       `}
     </div>
@@ -2116,7 +2116,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
         You can track your order status live in your Radha Fashions Dashboard at any time.
       </p>
       <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
-        Radha Fashions Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
 
@@ -2175,20 +2175,20 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
   let badge = '';
   
   if (alertType === 'booking') {
-    message = `💚 *Radha Fashions ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nWe are absolutely delighted to confirm that your booking *#${order.orderNumber}* has been successfully secured in our workshop ledger! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹${order.total}*\nMethod: *${order.paymentMethod}*\nEst. Shipping: *${order.shippingMethod === 'express' ? 'BlueDart Express (2-3 Days)' : 'Standard Ground'}*\n\nOur master craftspeople are preparing your items. 🪵🧑‍🎨\n\n📍 *Track Live inside your Account Dashboard*:\n👉 ${trackLink}\n\nThank you for supporting traditional handmade toys and premium local gifts. 💚`;
+    message = `💖 *Radha Fashions Boutique* 💖\n\nHello *${customerName}*,\n\nWe are absolutely delighted to confirm that your order *#${order.orderNumber}* has been placed successfully! 🎉\n\n🛍️ *Package Details*:\nTotal Paid: *₹${order.total}*\nMethod: *${order.paymentMethod}*\nEst. Shipping: *${order.shippingMethod === 'express' ? 'BlueDart Express (2-3 Days)' : 'Standard Delivery'}*\n\nOur team is carefully packing your ethnic wear with love. ✨👗\n\n📍 *Track Live inside your Account Dashboard*:\n👉 ${trackLink}\n\nThank you for choosing Radha Fashions — your trusted boutique for curated ethnic fashion. 💖`;
     badge = 'BOOKING SECURED';
   } else if (alertType === 'status_update') {
     const statusTitles: Record<string, string> = {
-      'pending': 'Pending Workshop Clearance 🪵',
-      'processing': 'Being Handcrafted by Artisans 🪵🪓',
+      'pending': 'Order Received — Preparing for Dispatch 📋',
+      'processing': 'Being Packed with Care 📦✨',
       'shipped': 'Dispatched via Premium Logistics 🚚💨',
       'delivered': 'Delivered Safely to Your Doorstep 🏡🎁'
     };
     const currentStatusText = statusTitles[order.status] || order.status.toUpperCase();
-    message = `💚 *Radha Fashions ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nThere is a new dispatch update regarding your booking *#${order.orderNumber}*!\n\n📦 *Live Status*: *${currentStatusText}*\n\nYour artisanal package was updated in our ledger just now. Check full tracking coordinates live on our workshop map:\n👉 ${trackLink}\n\nLet us know if you need any support! ✨`;
+    message = `💖 *Radha Fashions Boutique* 💖\n\nHello *${customerName}*,\n\nThere is a new update regarding your order *#${order.orderNumber}*!\n\n📦 *Live Status*: *${currentStatusText}*\n\nYour order has been updated. Check full tracking details live:\n👉 ${trackLink}\n\nLet us know if you need any support! ✨`;
     badge = 'DISPATCH NOTICE';
   } else if (alertType === 'refund_requested') {
-    message = `💚 *Radha Fashions ARTISANAL STUDIO* 💚\n\nHello *${customerName}*,\n\nYour refund ticket for order *#${order.orderNumber}* has been securely registered with our customer care ledger.\n\n🎟️ *Refund Details*:\nItem: *${extraData?.itemName || 'Artisanal Product'}*\nReason: _"${extraData?.reason || 'No description provided'}"_ \nStatus: *Under Artisan Review* 🔍\n\nOur audit team will review and approve this within 48 business hours. We value your feedback immensely!\n\n👉 Track Ticket: ${trackLink}`;
+    message = `💖 *Radha Fashions Boutique* 💖\n\nHello *${customerName}*,\n\nYour refund request for order *#${order.orderNumber}* has been received.\n\n🎟️ *Refund Details*:\nItem: *${extraData?.itemName || 'Fashion Item'}*\nReason: _"${extraData?.reason || 'No description provided'}"_ \nStatus: *Under Review* 🔍\n\nOur team will review and respond within 48 business hours. We value your feedback!\n\n👉 Track Status: ${trackLink}`;
     badge = 'REFUND TICKET';
   }
 
@@ -2727,7 +2727,7 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden;">
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
       <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Handcrafted Toys & Premium Gifts</p>
+      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Boutique & Ethnic Wear</p>
     </div>
     <div style="padding: 32px 24px;">
       <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">Thanks for choosing us, ${name}!</h2>
@@ -2735,7 +2735,7 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
         We are absolutely thrilled to welcome you to the Radha Fashions family! Your account has been securely created.
       </p>
       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 12px;">
-        Explore our curated collection of developmental craft toys, customized stencils, and premium handcrafted gifts. We hope you enjoy browsing and shopping our unique heritage crafts.
+        Explore our curated collection of silk sarees, designer lehengas, elegant kurtis, and handcrafted ethnic accessories. We hope you enjoy browsing and shopping our curated boutique collections.
       </p>
       <div style="text-align: center; margin-top: 24px;">
         <a href="${process.env.APP_URL || 'http://localhost:3000'}" style="background-color: #f59e0b; color: #0f172a; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block;">Happy Shopping &rarr;</a>
@@ -2743,7 +2743,7 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     </div>
     <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
       <p style="font-size: 11px; color: #94a3b8; margin: 0;">
-        Radha Fashions Studio Co. • Handcrafted in Tamil Nadu Workshops, India
+        Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
   </div>

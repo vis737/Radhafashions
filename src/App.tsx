@@ -17,6 +17,7 @@ import AgeToyFinder from './components/AgeToyFinder';
 import { getAIRecommendations } from './utils/aiRecommender';
 import FlashSaleSection from './components/FlashSaleSection';
 import InstagramGallery from './components/InstagramGallery';
+import AboutPage from './components/AboutPage';
 import ExitIntentOffer from './components/ExitIntentOffer';
 
 // Mock Data imports
@@ -65,7 +66,7 @@ const staggerCardVariants = {
 
 export default function App() {
   // Router views
-  const [activeView, setActiveView] = useState<'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'ordersuccess'>('home');
+  const [activeView, setActiveView] = useState<'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'ordersuccess' | 'about'>('home');
 
   // Core mutable list states
   const [products, setProducts] = useState<Product[]>(() => {
@@ -927,7 +928,7 @@ export default function App() {
                   aria-hidden="true"
                 />
                 <div
-                  className="absolute inset-0 bg-gradient-to-r from-[#140c14]/82 via-[#1e1220]/62 to-[#2a1824]/38"
+                  className="absolute inset-0 bg-gradient-to-r from-[#140c14]/75 via-[#1e1220]/55 to-[#2a1824]/35 dark:from-[#140c14]/82 dark:via-[#1e1220]/62 dark:to-[#2a1824]/38"
                   aria-hidden="true"
                 />
                 <div
@@ -935,23 +936,23 @@ export default function App() {
                   aria-hidden="true"
                 />
                 <div
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent via-background/55 to-background"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-b from-transparent via-background/70 to-background"
                   aria-hidden="true"
                 />
-                <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 md:grid-cols-2 md:pb-10 md:pt-24">
+                <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-6 sm:gap-10 px-4 sm:px-6 py-10 sm:py-16 md:grid-cols-2 md:pb-10 md:pt-24">
                   <div className="text-left">
-                    <p className="text-[0.6875rem] uppercase tracking-[0.28em] text-white/80">
+                    <p className="text-[10px] sm:text-[0.6875rem] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-white/80">
                       New season · Collection 2026
                     </p>
-                    <h1 className="mt-5 font-display text-5xl leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-7xl">
+                    <h1 className="mt-4 sm:mt-5 font-display text-3xl sm:text-5xl leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-7xl">
                       Elegance,
                       <br />
                       tailored to you.
                     </h1>
-                    <p className="mt-6 max-w-md text-base leading-relaxed text-white/85 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+                    <p className="mt-4 sm:mt-6 max-w-md text-sm sm:text-base leading-relaxed text-white/85 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
                       A boutique of quietly romantic Indian ethnic wear — handpicked silk sarees, designer lehengas and curated jewelry made in small batches.
                     </p>
-                    <div className="mt-9 flex flex-wrap gap-3">
+                    <div className="mt-6 sm:mt-9 flex flex-wrap gap-2 sm:gap-3">
                       <button
                         onClick={() => {
                           const featuredCategoriesEl = document.getElementById('featured-categories');
@@ -959,24 +960,19 @@ export default function App() {
                             featuredCategoriesEl.scrollIntoView({ behavior: 'smooth' });
                           }
                         }}
-                        className="py-3 px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
+                        className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
                       >
                         Shop the collection
                       </button>
                       <button
-                        onClick={() => {
-                          const ourStoryEl = document.getElementById('our-story');
-                          if (ourStoryEl) {
-                            ourStoryEl.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                        className="py-3 px-6 rounded-sm border border-white/55 bg-black/15 hover:bg-white/15 text-white text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                        onClick={() => handleSwapView('about')}
+                        className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm border border-white/55 bg-black/15 hover:bg-white/15 text-white text-[10px] sm:text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
                       >
                         Our story
                       </button>
                     </div>
                   </div>
-                  <div className="relative">
+                  <div className="relative hidden sm:block">
                     <img
                       src="/hero-boutique.jpg"
                       alt="Model wearing a blush pink silk dress from the Pink Petal Boutique collection"
@@ -985,19 +981,6 @@ export default function App() {
                       className="w-full rounded-sm object-cover shadow-petal animate-fade-in ring-1 ring-white/25"
                     />
                   </div>
-                </div>
-
-                <div className="relative z-10 mx-auto grid max-w-7xl px-6 pb-10 pt-4 sm:grid-cols-3 sm:divide-x sm:divide-white/10 text-left">
-                  {[
-                    ["Small batch", "Limited runs, never mass produced"],
-                    ["Hand finished", "Each seam checked in our atelier"],
-                    ["Gift wrapped", "Every order arrives ribboned"],
-                  ].map(([title, copy]) => (
-                    <div key={title} className="py-6 sm:px-8 first:pl-0">
-                      <p className="font-display text-xl text-white">{title}</p>
-                      <p className="mt-1 text-sm text-white/70">{copy}</p>
-                    </div>
-                  ))}
                 </div>
               </section>
 
@@ -1126,8 +1109,7 @@ export default function App() {
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
-                      New Craft Arrivals
+                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">                       New Fashion Arrivals
                     </h3>
                     <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                   </div>
@@ -1216,35 +1198,44 @@ export default function App() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,100,138,0.18),transparent_30%)] pointer-events-none" />
                 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-pink-300 font-semibold block text-center">Reviews of the Radha Fashions Family</span>
-                  <h3 className="font-display font-medium text-xl sm:text-2xl text-center uppercase tracking-widest mt-2 mb-10 text-white">Loved by Families Worldwide</h3>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-pink-300 font-semibold block text-center">Why Shop With Us</span>
+                  <h3 className="font-display font-medium text-xl sm:text-2xl text-center uppercase tracking-widest mt-2 mb-10 text-white">The Radha Fashions Promise</h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {[
-                      { quote: "The wooden alignment pins on the kolam stencils make geometric floor dusting a complete dream. Absolute heirloom products!", author: "Sowmya Ramaswamy", loc: "Chennai" },
-                      { quote: "My grandchildren completely ditched digital tablets for the organic stacking wooden horses. Safe chemical-free smells are amazing.", author: "Kiran Mazumdar", loc: "Bangalore" },
-                      { quote: "Superb custom packaged bottles for our wedding return gift bags. Each bottle got custom praise. Outstanding client service support.", author: "Rohan Advani", loc: "Mumbai" }
-                    ].map((t, idx) => (
-                      <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-pink-400/40 transition flex flex-col justify-between">
-                        <div className="space-y-4">
-                          <div className="flex gap-1 text-amber-400">
-                            {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400" />)}
-                          </div>
-                          <p className="text-xs sm:text-sm text-gray-300 italic font-light leading-relaxed">"{t.quote}"</p>
-                        </div>
-                        <div className="pt-4 border-t border-white/5 mt-4 text-xs font-semibold text-pink-300 font-sans flex justify-between items-center">
-                          <span>{t.author}</span>
-                          <span className="text-[10px] text-gray-500 font-mono italic">{t.loc}</span>
-                        </div>
+                      { icon: '🪡', title: 'Handcrafted', desc: 'Every piece is curated and quality-checked by our in-house artisans before shipping.' },
+                      { icon: '🧵', title: 'Premium Fabrics', desc: 'Pure silk, cotton, and georgette sourced directly from master weavers across India.' },
+                      { icon: '✂️', title: 'Custom Stitching', desc: 'Get your outfits custom-stitched to your exact measurements by expert tailors.' },
+                      { icon: '🚚', title: 'Pan-India Delivery', desc: 'Free shipping on orders above ₹1,500. Delivered to your doorstep in 5–7 days.' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-pink-400/40 hover:bg-white/8 transition-all duration-300 text-center group">
+                        <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-2 font-display">{item.title}</h4>
+                        <p className="text-[11px] text-gray-400 leading-relaxed font-light">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Trust Stats */}
+                  <div className="flex flex-wrap justify-center gap-8 mt-10 pt-8 border-t border-white/10">
+                    {[
+                      { value: '5,000+', label: 'Happy Customers' },
+                      { value: '4.8★', label: 'Google Rating' },
+                      { value: '100%', label: 'Authentic Products' },
+                      { value: '7-Day', label: 'Easy Returns' },
+                    ].map((stat, idx) => (
+                      <div key={idx} className="text-center">
+                        <span className="text-lg sm:text-xl font-display font-black text-pink-300">{stat.value}</span>
+                        <span className="block text-[10px] text-gray-500 font-mono uppercase tracking-wider mt-1">{stat.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </section>
-              {/* Atelier / Our Story (adapted from Pink Petal Boutique) */}
+              {/* Our Story */}
               <section id="our-story" className="bg-petal mt-12 rounded-sm border border-border">
-                <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-                  <p className="eyebrow">Our atelier</p>
+                <div className="mx-auto max-w-3xl px-6 py-16 sm:py-20 text-center">
+                  <p className="eyebrow">Our Story</p>
                   <h2 className="mt-4 font-display text-4xl leading-tight md:text-5xl text-foreground">
                     Made slowly, in small rooms with good light.
                   </h2>
@@ -1365,7 +1356,7 @@ export default function App() {
                         <Heart className="w-6 h-6 animate-pulse" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs font-bold text-gray-900 dark:text-white">No Matching Crafts Found</p>
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">No Matching Products Found</p>
                         <p className="text-[10px] text-gray-400 font-sans max-w-xs mx-auto">
                           We couldn't discover any items matching your selected age groups or filter criteria. Try adjusting your selector.
                         </p>
@@ -1933,6 +1924,18 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* ================= VIEW: ABOUT ================= */}
+      {activeView === 'about' && (
+        <motion.div
+          key="aboutView"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <AboutPage />
+        </motion.div>
+      )}
+
       {/* Floating WhatsApp chat assis widget */}
       <WhatsAppChat />
 
@@ -1947,34 +1950,36 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-left">
           
           <div className="space-y-3">
-            <span className="font-display font-bold text-sm tracking-wider text-white uppercase">Radha Fashions <span className="text-pink-300">E-SHOP</span></span>
+            <span className="font-display font-bold text-sm tracking-wider text-white uppercase">Radha Fashions <span className="text-pink-300">Boutique</span></span>
             <p className="text-pink-200 dark:text-gray-400 leading-relaxed font-light">
-              We engineer raw Indian woodcraft catalogs into luxury family experiences. Authentic block stencil systems, certified organic beeswax safety parameters.
+              Curated ethnic fashion for the modern Indian woman. Sarees, lehengas, kurtis, and handcrafted accessories — sourced directly from master weavers across India.
             </p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Catalog Sections</h4>
+            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Shop Categories</h4>
             <div className="flex flex-col gap-1.5 font-light text-pink-200 dark:text-gray-400">
-              <button onClick={() => handleSelectCategoryGroup('toys')} className="text-left hover:text-pink-300 transition cursor-pointer">Family Learning Stuff</button>
-              <button onClick={() => handleSelectCategoryGroup('kolam')} className="text-left hover:text-pink-300 transition cursor-pointer">Indigenous Kolam Stencils</button>
-              <button onClick={() => handleSelectCategoryGroup('bottles')} className="text-left hover:text-pink-300 transition cursor-pointer">Gifts and Return Bottles</button>
+              <button onClick={() => handleSelectCategoryGroup('sarees')} className="text-left hover:text-pink-300 transition cursor-pointer">Sarees & Lehengas</button>
+              <button onClick={() => handleSelectCategoryGroup('kurtis')} className="text-left hover:text-pink-300 transition cursor-pointer">Kurtis & Salwar Suits</button>
+              <button onClick={() => handleSelectCategoryGroup('jewellery')} className="text-left hover:text-pink-300 transition cursor-pointer">Ethnic Jewellery & Bags</button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Administrative Links</h4>
+            <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Quick Links</h4>
             <div className="flex flex-col gap-1.5 font-light text-pink-200 dark:text-gray-400">
-              <button onClick={() => handleSwapView('account')} className="text-left hover:text-pink-300 transition cursor-pointer">Customer Account Login</button>
-              <button onClick={() => handleSwapView('home')} className="text-left hover:text-pink-300 transition cursor-pointer">Shopping Storefront Homepage</button>
+              <button onClick={() => handleSwapView('account')} className="text-left hover:text-pink-300 transition cursor-pointer">My Account & Orders</button>
+              <button onClick={() => handleSwapView('home')} className="text-left hover:text-pink-300 transition cursor-pointer">Browse Collections</button>
+              <button onClick={() => handleSwapView('about')} className="text-left hover:text-pink-300 transition cursor-pointer">About Us</button>
             </div>
           </div>
 
           <div className="space-y-3">
             <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Indian Headquarters</h4>
             <p className="text-pink-200 dark:text-gray-400 leading-relaxed font-light">
-              5/339, Fathima Road,<br />
-              nager, Azhagappapuram, Tamil Nadu 629401<br />
+              KSVK School Rd, Hagadur,<br />
+              Vinayakanagar, Whitefield,<br />
+              Bengaluru, Karnataka 560066<br />
               Contact Desk: admin@radhafashions.com
             </p>
           </div>
@@ -1983,7 +1988,7 @@ export default function App() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/5 pt-6 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-pink-300 dark:text-gray-500 text-[10px] font-mono tracking-wider">
           <span>(c) 2026 Radha Fashions - All Heritage Rights Reserved.</span>
-          <span className="text-pink-400/80">Crafted lovingly under Indian Wooden Toys safety standard rule (ISO 8124)</span>
+          <span className="text-pink-400/80">Crafted with love — Authentic Indian ethnic wear, curated for you</span>
         </div>
       </footer>
       )}
