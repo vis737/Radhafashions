@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles, Copy, Check, Upload, Image, FileText, QrCode, AlertCircle, Hash, User, Link, ChevronRight, Edit3 } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Lock, ArrowLeft, Landmark, Wallet, PhoneCall, CheckCircle, Gift, Sparkles, Copy, Check, Upload, Image, FileText, QrCode, AlertCircle, Hash, User, Link, ChevronRight, Edit3, Zap } from 'lucide-react';
 import { CartItem, CustomerInfo, Coupon, Order, formatSelectedVariation, getCartItemKey } from '../types';
 import { handleImageError } from '../utils/imageUtils';
 import { calculateCartTotals } from '../utils/premiumData';
@@ -61,14 +61,14 @@ export default function CheckoutPanel({
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [screenshotSourceType, setScreenshotSourceType] = useState<'upload' | 'url'>('upload');
   
-  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod' | 'upi_qr'>('upi_qr');
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod' | 'upi_qr'>('razorpay');
 
   useEffect(() => {
     if (!upiEnabled && paymentMethod === 'upi_qr') {
-      setPaymentMethod('payu');
+      setPaymentMethod('razorpay');
     }
     if (!codEnabled && paymentMethod === 'cod') {
-      setPaymentMethod('payu');
+      setPaymentMethod('razorpay');
     }
   }, [codEnabled, upiEnabled]);
   
@@ -168,52 +168,98 @@ export default function CheckoutPanel({
     setPaymentError('');
 
     try {
-      if (paymentMethod === 'payu') {
-        const orderNumber = 'MR-' + Date.now().toString().substring(6, 12) + '-' + Math.floor(100 + Math.random() * 900);
-        const payuPayload = preparePayUPaymentPayload(orderNumber, finalTotal, name, email, phone, pincode);
-        const hashResponse = await fetch('/api/payu/hash', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payuPayload)
-        });
-        const payuData = await hashResponse.json();
-
-        if (!hashResponse.ok || !payuData?.hash || !payuData?.actionUrl) {
-          throw new Error(payuData?.error || 'Unable to initialize PayU payment.');
+      if (paymentMethod === 'razorpay') {
+        if (!(window as any).Razorpay) {
+          throw new Error('Razorpay checkout script is not loaded. Please refresh and try again.');
         }
 
-        await Promise.resolve(onPlaceOrder(
-          { name, email, phone, address, pincode },
-          'PayU Secure Online Payment',
-          giftWrapped,
-          giftMessage,
-          giftTheme,
-          giftSender,
-          giftHidePrice,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          orderNumber,
-          undefined,
-          payuData.hash,
-          'initiated'
-        ));
+        const configRes = await fetch('/api/razorpay/config');
+        if (!configRes.ok) {
+          const err = await configRes.json();
+          throw new Error(err.error || 'Razorpay is not configured.');
+        }
+        const { keyId } = await configRes.json();
 
-        submitPayUForm(payuData.actionUrl, {
-          key: payuData.key,
-          txnid: payuData.txnid,
-          amount: payuData.amount,
-          productinfo: payuData.productinfo,
-          firstname: payuData.firstname,
-          email: payuData.email,
-          phone,
-          surl: payuData.surl,
-          furl: payuData.furl,
-          hash: payuData.hash,
-          udf1: payuPayload.udf1 || '',
-          udf2: payuPayload.udf2 || '',
+        const orderRes = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: finalTotal,
+            currency: 'INR',
+            receipt: `receipt_${Date.now()}`,
+          }),
         });
+
+        if (!orderRes.ok) {
+          const err = await orderRes.json();
+          throw new Error(err.error || 'Failed to create payment order.');
+        }
+
+        const orderData = await orderRes.json();
+
+        const options = {
+          key: keyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: 'Radha Fashions',
+          description: 'Handcrafted Luxury Purchase',
+          order_id: orderData.id,
+          prefill: {
+            name,
+            email,
+            contact: phone,
+          },
+          theme: { color: '#D4648A' },
+          handler: async (response: {
+            razorpay_order_id: string;
+            razorpay_payment_id: string;
+            razorpay_signature: string;
+          }) => {
+            try {
+              const verifyRes = await fetch('/api/razorpay/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+              if (!verifyData.verified) {
+                alert('Payment verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+                setIsProcessing(false);
+                return;
+              }
+
+              // Payment verified — place the order
+              onPlaceOrder(
+                { name, email, phone, address, pincode },
+                'Razorpay Online Payment',
+                giftWrapped,
+                giftMessage,
+                giftTheme,
+                giftSender,
+                giftHidePrice
+              );
+            } catch (verifyErr) {
+              console.error('[Razorpay] Verification error:', verifyErr);
+              alert('Payment was successful but verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+              setIsProcessing(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsProcessing(false);
+              setPaymentError('Payment was cancelled. Please try again.');
+            },
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+        setIsProcessing(false); // Stop spinner since Razorpay modal takes over
         return;
       }
 
@@ -511,19 +557,19 @@ export default function CheckoutPanel({
                 >
                   <div className="pt-6 space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* PayU Option - Coming Soon */}
+                      {/* Razorpay Option - Active */}
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setPaymentError('PayU Gateway is Coming Soon. Please use Instant UPI QR Payment below.')}
-                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-gray-950/40 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60"
+                          onClick={() => { setPaymentMethod('razorpay'); setPaymentError(''); }}
+                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'razorpay' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-400 dark:border-blue-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
                         >
-                          <ShieldCheck className="w-6 h-6 text-gray-400" />
-                          <span className="uppercase tracking-wider font-bold">PayU Secure Online</span>
-                          <span className="text-[10px] text-gray-400 font-normal">Cards, NetBanking, UPI</span>
+                          <Zap className="w-6 h-6 text-blue-500" />
+                          <span className="uppercase tracking-wider font-bold">Razorpay Online</span>
+                          <span className="text-[10px] text-gray-500 font-normal">Cards, UPI, NetBanking, Wallets</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-gray-50 dark:bg-gray-800 text-pink-400 border border-pink-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
-                          Coming Soon
+                        <div className="absolute -top-2.5 -right-2 bg-blue-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Recommended
                         </div>
                       </div>
 
@@ -555,7 +601,7 @@ export default function CheckoutPanel({
                           <span className="text-[10px] text-gray-500 font-normal">Instant QR Scan Payment</span>
                         </button>
                         <div className="absolute -top-2.5 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Active & Required
+                          <Check className="w-3 h-3" /> Also Available
                         </div>
                       </div>
                     </div>
@@ -563,17 +609,17 @@ export default function CheckoutPanel({
                     <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-xs text-emerald-900 dark:text-emerald-300 flex items-start gap-3">
                       <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
                       <p className="leading-relaxed font-light">
-                        <strong>Payments are securely processed through PayU. Cash on Delivery and manual UPI are available as backup routes for eligible orders.</strong>
+                        <strong>Payments are securely processed through Razorpay. Instant UPI QR is also available for manual verification.</strong>
                       </p>
                     </div>
 
-                    {paymentMethod === 'payu' && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-pink-50/40 dark:bg-pink-950/10 border border-pink-200 dark:border-pink-800/30 rounded-2xl space-y-2 text-xs text-gray-900 dark:text-pink-200">
-                        <div className="flex items-center gap-2 font-bold uppercase text-pink-600 dark:text-pink-400">
-                          <ShieldCheck className="w-4 h-4" /> PayU Secure Gateway
+                    {paymentMethod === 'razorpay' && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-blue-50/40 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-800/30 rounded-2xl space-y-2 text-xs text-gray-900 dark:text-blue-200">
+                        <div className="flex items-center gap-2 font-bold uppercase text-blue-600 dark:text-blue-400">
+                          <Zap className="w-4 h-4" /> Razorpay Secure Checkout
                         </div>
                         <p className="font-light">
-                          Clicking place order will redirect you to PayU for cards, netbanking, UPI, and wallet payments. Your order stays pending until PayU confirms the transaction.
+                          Clicking place order will open the Razorpay checkout popup for cards, UPI, netbanking, and wallet payments. Your order is confirmed instantly after successful payment.
                         </p>
                       </motion.div>
                     )}
@@ -739,7 +785,7 @@ export default function CheckoutPanel({
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-4">
                   <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-500/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-sm">
                     <CheckCircle className="w-5 h-5" />
-                    <span className="font-semibold uppercase tracking-wider text-xs">{paymentMethod === 'upi_qr' ? 'UPI QR Secure Payment' : 'Cash on Delivery'}</span>
+                    <span className="font-semibold uppercase tracking-wider text-xs">{paymentMethod === 'upi_qr' ? 'UPI QR Secure Payment' : paymentMethod === 'razorpay' ? 'Razorpay Online Payment' : 'Cash on Delivery'}</span>
                   </div>
                 </motion.div>
               )}

@@ -8,6 +8,7 @@ import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import multer from 'multer';
 import crypto from 'crypto';
+import Razorpay from 'razorpay';
 import { createClient } from '@supabase/supabase-js';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
@@ -574,13 +575,13 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com https://checkout.razorpay.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' data: https://fonts.gstatic.com; " +
     `img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com https://img.clerk.com ${supabaseHttps}; ` +
-    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com; ` +
+    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com https://api.razorpay.com; ` +
     "worker-src 'self' blob:; " +
-    "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com; " +
+    "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://api.razorpay.com https://checkout.razorpay.com; " +
     "form-action 'self' https://test.payu.in https://secure.payu.in; " +
     "object-src 'none'; " +
     "base-uri 'self';"
@@ -3747,6 +3748,86 @@ app.get('/api/newsletter', verifyAdminToken, async (req, res) => {
     res.json([]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch newsletter subscriptions' });
+  }
+});
+
+// --- Razorpay Payment Gateway Integration ---
+const getRazorpayClient = () => {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret || keyId.includes('YOUR_') || keySecret.includes('YOUR_')) {
+    return null;
+  }
+  try {
+    return new Razorpay({ key_id: keyId, key_secret: keySecret });
+  } catch (err) {
+    console.error('[Razorpay] Failed to initialize client:', err);
+    return null;
+  }
+};
+
+app.get('/api/razorpay/config', (req, res) => {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  if (!keyId || keyId.includes('YOUR_')) {
+    return res.status(503).json({ error: 'Razorpay is not configured.' });
+  }
+  res.json({ keyId });
+});
+
+app.post('/api/razorpay/create-order', rateLimiter(20, 15 * 60 * 1000), async (req, res) => {
+  const rzp = getRazorpayClient();
+  if (!rzp) {
+    return res.status(503).json({
+      error: 'Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your .env file.',
+    });
+  }
+
+  const { amount, currency = 'INR', receipt } = req.body;
+  if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    return res.status(400).json({ error: 'Valid amount in rupees is required.' });
+  }
+
+  try {
+    const order = await rzp.orders.create({
+      amount: Math.round(Number(amount) * 100), // Razorpay expects amount in paise
+      currency,
+      receipt: receipt || `receipt_${Date.now()}`,
+    });
+    console.log(`[Razorpay] Created order ${order.id} for Rs.${amount}`);
+    res.json(order);
+  } catch (err: any) {
+    console.error('[Razorpay] Order creation failed:', err?.error || err);
+    res.status(500).json({
+      error: 'Failed to create Razorpay order',
+      details: err?.error?.description,
+    });
+  }
+});
+
+app.post('/api/razorpay/verify-payment', rateLimiter(30, 15 * 60 * 1000), (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return res.status(400).json({ verified: false, error: 'Missing required payment fields.' });
+  }
+
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!secret) {
+    return res.status(503).json({ verified: false, error: 'Razorpay secret not configured.' });
+  }
+
+  const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
+
+  if (expectedSignature === razorpay_signature) {
+    console.log(`[Razorpay] Payment ${razorpay_payment_id} verified successfully.`);
+    res.json({ verified: true, payment_id: razorpay_payment_id });
+  } else {
+    console.warn(`[Razorpay] Signature mismatch for payment ${razorpay_payment_id}`);
+    res.status(400).json({ verified: false, error: 'Payment signature mismatch.' });
   }
 });
 

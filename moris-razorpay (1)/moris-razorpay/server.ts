@@ -435,7 +435,7 @@ function rateLimiter(limit: number, windowMs: number) {
 const getRazorpayClient = () => {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret || keyId === 'rzp_test_YOUR_KEY_ID') return null;
+  if (!keyId || !keySecret || keyId === 'YOUR_RAZORPAY_KEY_ID') return null;
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 };
 */

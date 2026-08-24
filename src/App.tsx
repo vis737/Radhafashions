@@ -539,6 +539,7 @@ export default function App() {
     const isUpiPayment = paymentMethod === 'UPI QR Payment';
     const isCodPayment = paymentMethod === 'Cash on Delivery' || paymentMethod === 'COD';
     const isPayUPayment = paymentMethod.toLowerCase().includes('payu');
+    const isRazorpayPayment = paymentMethod.toLowerCase().includes('razorpay');
 
     const newOrder: Order = {
       id: 'ord-' + Date.now(),
@@ -556,7 +557,7 @@ export default function App() {
       status: 'pending',
       paymentMethod,
       shippingMethod,
-      paymentStatus: isUpiPayment || isPayUPayment ? 'pending' : (isCodPayment ? 'unpaid' : 'paid'),
+      paymentStatus: isUpiPayment || isPayUPayment ? 'pending' : (isCodPayment ? 'unpaid' : (isRazorpayPayment ? 'paid' : 'paid')),
       codStatus: isCodPayment ? 'pending' : undefined,
       giftWrappingRequested: giftWrapped,
       giftMessage: giftMsg,

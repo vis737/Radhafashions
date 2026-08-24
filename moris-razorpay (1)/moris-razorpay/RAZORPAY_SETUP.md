@@ -26,9 +26,9 @@
 Copy `.env.example` to `.env` and fill in:
 
 ```env
-RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXXXXXXXX
+RAZORPAY_KEY_ID=your_razorpay_key_id_here
 RAZORPAY_KEY_SECRET=your_secret_key_here
-VITE_RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXXXXXXXX
+VITE_RAZORPAY_KEY_ID=your_razorpay_key_id_here
 ```
 
 > ⚠️ Never commit your `.env` file or expose `RAZORPAY_KEY_SECRET` to the frontend.
