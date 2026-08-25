@@ -974,8 +974,8 @@ export default function App() {
                   </div>
                   <div className="relative hidden sm:block">
                     <img
-                      src="/hero-boutique.jpg"
-                      alt="Model wearing a blush pink silk dress from the Pink Petal Boutique collection"
+                      src="/hero-boutique-new.png"
+                      alt="Radha Fashions Boutique — handpicked ethnic wear, designer lehengas and curated collections"
                       width={1600}
                       height={1104}
                       className="w-full rounded-sm object-cover shadow-petal animate-fade-in ring-1 ring-white/25"

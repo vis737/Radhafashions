@@ -766,7 +766,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
           <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 border-b border-pink-100 dark:border-pink-900/20 pb-2">Pricing & Inventory</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Price (Rs.) *</label>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Discount Price (Rs.)</label>
               <input
                 type="number"
                 value={product.price || 0}
@@ -776,7 +776,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Discount Price (Rs.)</label>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Price (Rs.) *</label>
               <input
                 type="number"
                 value={product.discountPrice || ''}
