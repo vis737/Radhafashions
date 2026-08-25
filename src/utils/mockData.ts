@@ -76,28 +76,28 @@ export const INITIAL_CAMPAIGNS: BannerCampaign[] = [
   {
     id: 'camp-1',
     imageUrl: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=1200&auto=format&fit=crop&q=80',
-    title: 'Warmth of Premium Handcrafted Toys',
-    description: 'Introduce your toddlers to safe, beautifully finished chemical-free timber stacking sets.',
-    ctaText: 'Shop Kids Toys',
-    linkCategory: 'toys',
+    title: 'New Season Saree Collection',
+    description: 'Explore our handpicked silk and chiffon sarees for every occasion.',
+    ctaText: 'Shop Sarees',
+    linkCategory: 'sarees',
     active: true
   },
   {
     id: 'camp-2',
     imageUrl: 'https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?w=1200&auto=format&fit=crop&q=80',
-    title: 'Dignified Wood Keepsake Gifts',
-    description: 'Explore stellar intricate storage boxes and house accessories custom engraved for your peers.',
-    ctaText: 'Explore Gifts',
-    linkCategory: 'wood-gifts',
+    title: 'Bridal Lehenga Edit',
+    description: 'Discover stunning embroidered lehengas perfect for your special day.',
+    ctaText: 'Shop Lehengas',
+    linkCategory: 'lehengas',
     active: true
   },
   {
     id: 'camp-3',
     imageUrl: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=1200&auto=format&fit=crop&q=80',
-    title: 'Sensory Gold-Foil Stationeries',
-    description: 'Unleash your creative mind with Smyth-sewn linen notebooks and raw heavy brass pencils.',
-    ctaText: 'Browse Stationeries',
-    linkCategory: 'stationeries',
+    title: 'Ethnic Jewellery Edit',
+    description: 'Complete your look with temple jewellery, kundan sets, and pearl accessories.',
+    ctaText: 'Shop Jewellery',
+    linkCategory: 'jewellery',
     active: true
   }
 ];

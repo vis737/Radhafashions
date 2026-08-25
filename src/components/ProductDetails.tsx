@@ -212,29 +212,17 @@ export default function ProductDetails({
             </div>
           </div>
 
-          {/* Interactive Bundle Suggestion Cards */}
-          {((product.categorySlug === 'toys' || product.category === 'Kids Toys') || (product.id === 'bag-1' || product.id === 'wood-1')) && (
+          {/* Bundle Offer */}
+          {(product.id === 'bag-1') && (
             <div className="p-4 rounded-2xl bg-pink-50/50 dark:bg-gray-900/60 border border-[#D4648A]/30 text-left space-y-2">
               <div className="flex items-center gap-1.5 text-pink-600 dark:text-pink-400 font-bold text-[10px] font-mono uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Recommended Bundle Offer Activated</span>
+                <span>Bundle Offer</span>
               </div>
-              
-              {product.categorySlug === 'toys' || product.category === 'Kids Toys' ? (
-                <>
-                  <h5 className="font-display font-medium text-xs text-gray-950 dark:text-white uppercase tracking-wider">Buy 2+ Items, Get 10% Off!</h5>
-                  <p className="text-[11px] text-gray-500 leading-tight">
-                    Gain a <span className="font-semibold text-pink-500">10% instant reward</span> on each when you add any 2 or more traditional Kids Toys to your bag!
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h5 className="font-display font-medium text-xs text-gray-950 dark:text-white uppercase tracking-wider">Boutique Carry & Keep Combo</h5>
-                  <p className="text-[11px] text-gray-500 leading-tight">
-                    Combine the Serena Vegan Carryall with our intricate Royal Keepsake chest for a flat <span className="font-semibold text-pink-500">Rs.100 refund voucher</span> during checkout!
-                  </p>
-                </>
-              )}
+              <h5 className="font-display font-medium text-xs text-gray-950 dark:text-white uppercase tracking-wider">Buy 2+ Items, Get 10% Off!</h5>
+              <p className="text-[11px] text-gray-500 leading-tight">
+                Add 2 or more items to your bag and get <span className="font-semibold text-pink-500">10% off</span> instantly!
+              </p>
             </div>
           )}
 

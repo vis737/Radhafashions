@@ -52,7 +52,7 @@ export default function VendorDashboard({
           Consolidated Vendor Hub
         </h3>
         <p className="text-xs text-gray-400 max-w-xl leading-relaxed">
-          Manage third-party micro-artisans, configure service fees, verify inventory pools, and act on corporate festival bulk return inquiries securely.
+          Manage third-party suppliers, configure service fees, verify inventory pools, and act on corporate bulk return inquiries securely.
         </p>
       </div>
 
@@ -66,7 +66,7 @@ export default function VendorDashboard({
               : 'border-transparent text-gray-400 hover:text-gray-900'
           }`}
         >
-          Active Guilds ({vendors.length})
+          Active Suppliers ({vendors.length})
         </button>
         <button
           onClick={() => setActiveTab('inquiries')}
@@ -100,7 +100,7 @@ export default function VendorDashboard({
           >
             {/* Vendor List Column */}
             <div className="lg:col-span-1 space-y-3">
-              <span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider font-bold">Registered Artisans</span>
+              <span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider font-bold">Registered Suppliers</span>
               <div className="space-y-2">
                 {vendors.map((vendor) => (
                   <button
@@ -167,7 +167,7 @@ export default function VendorDashboard({
                           className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-display font-bold text-[10px] uppercase tracking-wider rounded-lg transition shadow-sm flex items-center gap-1 cursor-pointer"
                         >
                           <CheckCircle className="w-3.5 h-3.5" />
-                          <span>Approve Guild</span>
+                          <span>Approve Supplier</span>
                         </button>
                       ) : (
                         <>
@@ -177,7 +177,7 @@ export default function VendorDashboard({
                               className="px-3.5 py-1.5 bg-red-500/10 text-red-600 hover:bg-red-500/20 border border-red-500/20 font-display font-bold text-[10px] uppercase tracking-wider rounded-lg transition flex items-center gap-1 cursor-pointer"
                             >
                               <Ban className="w-3.5 h-3.5" />
-                              <span>Suspend Guild</span>
+                              <span>Suspend Supplier</span>
                             </button>
                           ) : (
                             <button
@@ -185,7 +185,7 @@ export default function VendorDashboard({
                               className="px-3.5 py-1.5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20 font-display font-bold text-[10px] uppercase tracking-wider rounded-lg transition flex items-center gap-1 cursor-pointer"
                             >
                               <CheckCircle className="w-3.5 h-3.5" />
-                              <span>Activate Guild</span>
+                              <span>Activate Supplier</span>
                             </button>
                           )}
                         </>
@@ -261,7 +261,7 @@ export default function VendorDashboard({
                 </div>
               ) : (
                 <div className="h-full border border-dashed border-gray-200 rounded-3xl flex items-center justify-center p-8 text-gray-400">
-                  Select a registered studio guild to inspect its configurations.
+                  Select a registered supplier to inspect their configurations.
                 </div>
               )}
             </div>

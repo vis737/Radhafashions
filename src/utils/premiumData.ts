@@ -6,8 +6,8 @@ export const INITIAL_VENDORS: Vendor[] = [
     name: 'Bharath Nair',
     email: 'bharath@kanyakumariwood.in',
     phone: '+91 94432 10455',
-    storeName: 'Kanyakumari Wood Craftsmen Studios',
-    description: 'Generational teakwood and sheesham furniture carvers supplying chemical-free solid-wood goods.',
+    storeName: 'Kanchipuram Silk Weavers Cooperative',
+    description: 'Traditional silk saree weavers supplying pure Kanchipuram silk and cotton sarees.',
     approved: true,
     commissionRate: 12,
     status: 'active',
@@ -19,8 +19,8 @@ export const INITIAL_VENDORS: Vendor[] = [
     name: 'Meera Devi',
     email: 'meera@azhagappapuralooms.org',
     phone: '+91 93421 88402',
-    storeName: 'Azhagappapuram Female Loom Cooperatives',
-    description: 'Weaving hand-spun cotton yarns, organic jute slings, and vintage wool knit blankets to empower women artisans.',
+    storeName: 'Bengaluru Cotton Kurti House',
+    description: 'Manufacturing premium cotton kurtis, salwar suits, and fusion wear for modern Indian women.',
     approved: true,
     commissionRate: 8,
     status: 'active',
@@ -32,8 +32,8 @@ export const INITIAL_VENDORS: Vendor[] = [
     name: 'Thangavel Pandian',
     email: 'tpandian@rangoliacrylics.co.in',
     phone: '+91 98944 65633',
-    storeName: 'Pandian Precision Laser Engravings',
-    description: 'Laser-cutting acrylics and brass casting for Kolam boards, mandala trackers, and holy entrance panels.',
+    storeName: 'Jaipur Jewellery Exports',
+    description: 'Supplying kundan, temple, and oxidized silver jewellery sets for ethnic fashion retail.',
     approved: false, // For testing pending lists
     commissionRate: 15,
     status: 'pending',
@@ -44,14 +44,14 @@ export const INITIAL_VENDORS: Vendor[] = [
 
 export const INITIAL_BUNDLES: BundleOffer[] = [
   {
-    id: 'bundle-toys',
-    name: 'Artisanal Toy Jamboree',
+    id: 'bundle-sarees',
+    name: 'Saree Bundle Offer',
     bundleType: 'category-qty',
-    primaryTarget: 'Kids Toys',
+    primaryTarget: 'Sarees',
     quantityRequired: 2,
     discountType: 'percentage',
     discountValue: 10,
-    description: 'Purchase any 2 or more of our handcrafted sensory Kids Toys and enjoy 10% off automatically on those items!',
+    description: 'Purchase any 2 or more sarees and enjoy 10% off automatically!',
     active: true
   },
   {
@@ -87,9 +87,9 @@ export const SEASONAL_LANDINGS: Record<string, SeasonalDeal> = {
     themeColor: 'from-orange-600 via-amber-500 to-yellow-500',
     glowColor: 'rgba(217, 119, 6, 0.4)',
     badge: 'Festival of Lights Special',
-    discountSummary: 'Flat Rs.150 OFF + Premium Gift Wrapping Free on all Kolam Stencils & Brass products.',
-    productsToShow: ['kolam-1', 'wood-1', 'home-1'],
-    customGreeting: 'As you light oil deepams to welcome Lakshmi, let traditional artisanal stencils spread auspicious alignments across your threshold.'
+    discountSummary: 'Flat Rs.150 OFF + Premium Gift Wrapping Free on all Sarees & Ethnic Jewellery.',
+    productsToShow: ['sarees', 'jewellery', 'handbags'],
+    customGreeting: 'As you celebrate the festival of lights, illuminate your wardrobe with our festive ethnic wear collection.'
   },
   christmas: {
     title: 'Merry Forest Cabin Solstice',
@@ -98,9 +98,9 @@ export const SEASONAL_LANDINGS: Record<string, SeasonalDeal> = {
     themeColor: 'from-red-700 via-emerald-800 to-emerald-950',
     glowColor: 'rgba(16, 185, 129, 0.4)',
     badge: 'Yuletide Winter Warmth',
-    discountSummary: 'Free Pine-wood Keepsake Card + 10% Off on Snuggle Crochet Toys and Pine-wood Bookshelves.',
-    productsToShow: ['toy-2', 'wood-2', 'home-1'],
-    customGreeting: 'Gather under cozy light. This winter, support rural women weavers by sending organic-cotton companions to nieces and nephews.'
+    discountSummary: 'Free Gift Wrapping + 10% Off on Kurtis and Salwar Suits.',
+    productsToShow: ['kurtis', 'salwar', 'dupattas'],
+    customGreeting: 'Celebrate the festive season with our curated ethnic wear collection. Perfect gifts for loved ones.'
   },
   newyear: {
     title: 'New Horizons Creative Planners',
@@ -109,9 +109,9 @@ export const SEASONAL_LANDINGS: Record<string, SeasonalDeal> = {
     themeColor: 'from-slate-900 via-zinc-800 to-yellow-600',
     glowColor: 'rgba(234, 179, 8, 0.3)',
     badge: 'Year 2027 Awakening',
-    discountSummary: 'Buy selected Linens and receive custom initials hot-pressed in real gold leaf foil.',
-    productsToShow: ['stat-1', 'wood-1'],
-    customGreeting: 'A pristine page holds endless possibilities. Document daily goals on stout acid-proof sheets that endure generation to generation.'
+    discountSummary: 'Flat 20% Off on all Lehengas and Western Fusion Wear.',
+    productsToShow: ['lehengas', 'western', 'kurtis'],
+    customGreeting: 'Start the new year with a refreshed wardrobe. Explore our latest collection of designer lehengas and fusion wear.'
   },
   raksha: {
     title: 'Sacred Bond Rakhri Keepsakes',
@@ -120,9 +120,9 @@ export const SEASONAL_LANDINGS: Record<string, SeasonalDeal> = {
     themeColor: 'from-pink-600 via-indigo-600 to-purple-800',
     glowColor: 'rgba(168, 85, 247, 0.4)',
     badge: 'Raksha Bandhan Curation',
-    discountSummary: 'Complimentary handcrafted silk threads and wooden kumkum box with every Rosewood Chest.',
-    productsToShow: ['wood-1', 'toy-2'],
-    customGreeting: 'A promise of shield. Honor sibling memories by encasing keepsakes and protection threads inside genuine aromatherapy rosewood.'
+    discountSummary: 'Complimentary ethnic jewellery set with every saree purchase.',
+    productsToShow: ['sarees', 'jewellery', 'dupattas'],
+    customGreeting: 'Celebrate the bond of love. Gift your sister beautiful ethnic wear and jewellery from our curated collection.'
   },
   childrens: {
     title: 'Curious Minds Childrens Day Joy',
@@ -131,9 +131,9 @@ export const SEASONAL_LANDINGS: Record<string, SeasonalDeal> = {
     themeColor: 'from-blue-600 via-cyan-500 to-teal-400',
     glowColor: 'rgba(6, 182, 212, 0.4)',
     badge: 'Nurture & Play Special',
-    discountSummary: 'Buy Stacking Rings and get Abacus sliders for 20% off combined bundle discount.',
-    productsToShow: ['toy-1', 'learn-1', 'toy-2'],
-    customGreeting: 'Children deserve touchpoints that support creative discovery, fully free of harsh synthetic plastic coatings.'
+    discountSummary: 'Flat 15% Off on Kids Ethnic Wear and Nightwear collections.',
+    productsToShow: ['kurtis', 'nightwear', 'dupattas'],
+    customGreeting: 'Treat the little ones with our adorable ethnic wear collection. Comfortable, stylish, and perfect for festive occasions.'
   }
 };
 
@@ -153,15 +153,15 @@ export interface CartTotals {
 }
 
 const PRODUCT_WEIGHT_FALLBACKS_KG: Record<string, number> = {
+  sarees: 0.5,
+  lehengas: 1.2,
+  kurtis: 0.4,
+  salwar: 0.6,
+  dupattas: 0.2,
+  jewellery: 0.15,
   handbags: 0.8,
-  toys: 0.7,
-  learning: 0.75,
-  stationeries: 0.35,
-  entertainment: 1.2,
-  home: 0.65,
-  kolam: 0.45,
-  'wood-gifts': 1,
-  bottles: 0.9
+  nightwear: 0.3,
+  western: 0.5
 };
 
 const SHIPPING_HANDLING_SURCHARGE = 50;
@@ -383,26 +383,26 @@ export function calculateCartTotals(
     subtotal += price * item.quantity;
   });
 
-  // 2. Evaluate "Buy 2 Toys -> 10% Off" bundle
-  const toyItems = cartItems.filter(item => item.product.categorySlug === 'toys' || item.product.category === 'Kids Toys');
-  const toyCount = toyItems.reduce((acc, it) => acc + it.quantity, 0);
-  if (toyCount >= 2) {
-    let toySavings = 0;
-    toyItems.forEach(item => {
+  // 2. Evaluate "Buy 2 Sarees -> 10% Off" bundle
+  const sareeItems = cartItems.filter(item => item.product.categorySlug === 'sarees' || item.product.category === 'Sarees');
+  const sareeCount = sareeItems.reduce((acc, it) => acc + it.quantity, 0);
+  if (sareeCount >= 2) {
+    let sareeSavings = 0;
+    sareeItems.forEach(item => {
       const price = item.product.discountPrice || item.product.price;
-      toySavings += Math.round(price * item.quantity * 0.10);
+      sareeSavings += Math.round(price * item.quantity * 0.10);
     });
-    bundleDiscount += toySavings;
-    bundleAppliedNames.push('Artisanal Toy Jamboree (10% Off)');
+    bundleDiscount += sareeSavings;
+    bundleAppliedNames.push('Saree Bundle Offer (10% Off)');
   }
 
-  // 3. Evaluate "Handbag + Gift Item -> Rs.100 Off" bundle
+  // 3. Evaluate "Handbag + Accessories -> Rs.100 Off" bundle
   const hasHandbag = cartItems.some(item => item.product.categorySlug === 'handbags' || item.product.category === 'Handbags');
   const hasGiftItem = cartItems.some(
-    item => item.product.categorySlug === 'wood-gifts' || 
-            item.product.category === 'Wood Crafted Gifts' ||
-            item.product.categorySlug === 'home' ||
-            item.product.category === 'Home Gifts'
+    item => item.product.categorySlug === 'jewellery' ||
+            item.product.category === 'Ethnic Jewellery' ||
+            item.product.categorySlug === 'dupattas' ||
+            item.product.category === 'Dupattas'
   );
 
   if (hasHandbag && hasGiftItem) {

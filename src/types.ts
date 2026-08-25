@@ -240,8 +240,8 @@ export interface BundleOffer {
   id: string;
   name: string;
   bundleType: 'category-qty' | 'combo-fixed';
-  primaryTarget: string; // e.g. 'toys' or product ID
-  quantityRequired?: number; // e.g. 2 for "Buy 2 Toys"
+  primaryTarget: string; // e.g. 'sarees' or product ID
+  quantityRequired?: number; // e.g. 2 for "Buy 2 Sarees"
   discountType: 'percentage' | 'flat';
   discountValue: number; // e.g. 10 for 10%
   description: string;

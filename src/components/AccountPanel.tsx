@@ -488,8 +488,8 @@ export default function AccountPanel({
     } else if (order.status === 'processing') {
       logs.push({
         time: 'Today, 11:30 AM',
-        title: 'Artisan Quality Check Cleared',
-        description: 'Handcrafted premium items verified, packaged securely, and weight stamped in Meris ledger.',
+        title: 'Quality Check Cleared',
+        description: 'Items verified, packaged securely, and stamped for dispatch.',
         status: 'success'
       });
       logs.push({
@@ -508,14 +508,14 @@ export default function AccountPanel({
       logs.push({
         time: 'Yesterday, 04:30 PM',
         title: `Collected by ${courier}`,
-        description: `Successfully collected from Meris Studio warehouse (Tamil Nadu). Sorted and checked at main partner depot.`,
+        description: `Collected from our Bengaluru warehouse. Sorted and checked at partner depot.`,
         status: 'success'
       });
     } else if (order.status === 'delivered') {
       logs.push({
         time: 'Today, 03:40 PM',
         title: 'Delivered',
-        description: 'Artisanal item successfully handed over and signed by recipient customer.',
+        description: 'Item successfully delivered and signed by recipient.',
         status: 'success'
       });
       logs.push({

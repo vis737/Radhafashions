@@ -177,7 +177,7 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
               {/* Sourcing Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase font-semibold">Select Craft Piece *</label>
+                  <label className="text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase font-semibold">Select Product *</label>
                   <select
                     value={pName}
                     onChange={e => setPName(e.target.value)}
@@ -188,7 +188,7 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
                         {p.name} (Retail: Rs.{p.price})
                       </option>
                     ))}
-                    <option value="Other / Customized Design">Customized Handicraft Motif Request</option>
+                    <option value="Other / Customized Design">Customized Design Request</option>
                   </select>
                 </div>
 
@@ -271,7 +271,7 @@ export default function BulkInquiryForm({ products, onSubmitInquiry, onClose }: 
                   Bulk Inquiry Lodged Successfully
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
-                  Our guild master has logged your interest in <span className="font-semibold text-gray-950 dark:text-pink-400">{quantity}x {pName}</span> with a <span className="text-emerald-500 font-bold">{currentRate}% bulk discount</span> applied. We will contact you at <span className="font-semibold">{email}</span> within 4 business hours.
+                  Our team has logged your interest in <span className="font-semibold text-gray-950 dark:text-pink-400">{quantity}x {pName}</span> with a <span className="text-emerald-500 font-bold">{currentRate}% bulk discount</span> applied. We will contact you at <span className="font-semibold">{email}</span> within 4 business hours.
                 </p>
               </div>
 

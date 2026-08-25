@@ -208,7 +208,7 @@ export default function AdminBusinessAnalytics({ products }: AdminBusinessAnalyt
         {/* Top Performing */}
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm space-y-3">
           <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5">
-            <Award className="w-4 h-4 text-emerald-500" /> Best Performing Crafts
+            <Award className="w-4 h-4 text-emerald-500" /> Best Performing Categories
           </h4>
           <div className="space-y-2.5">
             {topProducts.map((p, idx) => (

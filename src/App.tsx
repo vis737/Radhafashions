@@ -808,20 +808,7 @@ export default function App() {
   const categoryProductsFiltered = products
     .filter((p) => p.categorySlug === currentCategorySlug)
     .filter((p) => (stockOnly ? p.stock > 0 : true))
-    .filter((p) => {
-      if (currentCategorySlug === 'toys') {
-        if (selectedAgeGroup && p.ageGroup !== selectedAgeGroup) {
-          return false;
-        }
-        if (selectedSkills.length > 0) {
-          const matchSkill = selectedSkills.some(skill => {
-            return p.skillType === skill || p.educationalType === skill || p.shortDescription?.toLowerCase().includes(skill.toLowerCase());
-          });
-          if (!matchSkill) return false;
-        }
-      }
-      return true;
-    })
+    .filter(() => true)
     .sort((a, b) => {
       if (sortOrder === 'rating') return b.rating - a.rating;
       if (sortOrder === 'price-asc') return a.price - b.price;
@@ -1078,12 +1065,12 @@ export default function App() {
                 <div className="flex justify-between items-end mb-6">
                   <div>
                     <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
-                      Heritage Best Sellers
+                      Best Sellers
                     </h3>
                     <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                   </div>
                   <button
-                    onClick={() => handleSelectCategoryGroup('toys')}
+                    onClick={() => handleSelectCategoryGroup('sarees')}
                     className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
                   >
                     View All <ChevronRight className="w-4 h-4" />
@@ -1203,7 +1190,7 @@ export default function App() {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {[
-                      { icon: '🪡', title: 'Handcrafted', desc: 'Every piece is curated and quality-checked by our in-house artisans before shipping.' },
+                      { icon: '🪡', title: 'Quality Checked', desc: 'Every piece is curated and quality-checked by our team before shipping to you.' },
                       { icon: '🧵', title: 'Premium Fabrics', desc: 'Pure silk, cotton, and georgette sourced directly from master weavers across India.' },
                       { icon: '✂️', title: 'Custom Stitching', desc: 'Get your outfits custom-stitched to your exact measurements by expert tailors.' },
                       { icon: '🚚', title: 'Pan-India Delivery', desc: 'Free shipping on orders above ₹1,500. Delivered to your doorstep in 5–7 days.' },
@@ -1240,12 +1227,12 @@ export default function App() {
                     Made slowly, in small rooms with good light.
                   </h2>
                   <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                    Radha Fashions began as a passion for heritage craftsmanship. Today every piece in our boutique still passes through the same standard of perfection — hand-selected silks, checked seams, and wrapped with love in tissue and ribbon.
+                    Radha Fashions began as a passion for Indian ethnic fashion. Today every piece in our boutique still passes through the same standard of perfection — hand-selected silks, checked seams, and wrapped with love.
                   </p>
                 </div>
               </section>
 
-              {/* Curated luxury artisanal Instagram handcraft gallery */}
+              {/* Product Gallery */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
                 <InstagramGallery />
               </div>
@@ -1309,24 +1296,7 @@ export default function App() {
                     </label>
                   </div>
 
-                  {currentCategorySlug === 'toys' && (
-                    <div className="border-t pt-4">
-                      <AgeToyFinder
-                        selectedAgeGroup={selectedAgeGroup}
-                        onSelectAgeGroup={setSelectedAgeGroup}
-                        selectedSkills={selectedSkills}
-                        onToggleSkill={(skill) => {
-                          setSelectedSkills(prev =>
-                            prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-                          );
-                        }}
-                        onClearFilters={() => {
-                          setSelectedAgeGroup('');
-                          setSelectedSkills([]);
-                        }}
-                      />
-                    </div>
-                  )}
+
                 </div>
 
                 {/* Right: Products catalog list */}
@@ -1952,7 +1922,7 @@ export default function App() {
           <div className="space-y-3">
             <span className="font-display font-bold text-sm tracking-wider text-white uppercase">Radha Fashions <span className="text-pink-300">Boutique</span></span>
             <p className="text-pink-200 dark:text-gray-400 leading-relaxed font-light">
-              Curated ethnic fashion for the modern Indian woman. Sarees, lehengas, kurtis, and handcrafted accessories — sourced directly from master weavers across India.
+              Curated ethnic fashion for the modern Indian woman. Sarees, lehengas, kurtis, and ethnic accessories — sourced directly from artisans and weavers across India.
             </p>
           </div>
 
@@ -1987,8 +1957,8 @@ export default function App() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/5 pt-6 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-pink-300 dark:text-gray-500 text-[10px] font-mono tracking-wider">
-          <span>(c) 2026 Radha Fashions - All Heritage Rights Reserved.</span>
-          <span className="text-pink-400/80">Crafted with love — Authentic Indian ethnic wear, curated for you</span>
+          <span>(c) 2026 Radha Fashions - All Rights Reserved.</span>
+          <span className="text-pink-400/80">Made with love — Authentic Indian ethnic wear, curated for you</span>
         </div>
       </footer>
       )}

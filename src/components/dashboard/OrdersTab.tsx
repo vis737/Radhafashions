@@ -256,7 +256,7 @@ export default function OrdersTab({ orders, setTrackingInput, setSearchedOrder, 
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 relative z-10">
                     {[
                       { key: 'pending', title: '1. Placed', desc: 'Secure order recorded', icon: Clipboard, color: 'text-pink-500' },
-                      { key: 'processing', title: '2. Polished', desc: 'Crafted & QA checked', icon: Clock, color: 'text-blue-500' },
+                      { key: 'processing', title: '2. Processing', desc: 'Packed & QA checked', icon: Clock, color: 'text-blue-500' },
                       { key: 'shipped', title: '3. Dispatched', desc: 'BlueDart air transit', icon: Truck, color: 'text-indigo-500' },
                       { key: 'delivered', title: '4. Arrived', desc: 'Successfully delivered', icon: Check, color: 'text-emerald-500' }
                     ].map((step, idx) => {

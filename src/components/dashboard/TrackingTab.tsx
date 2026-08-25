@@ -120,7 +120,7 @@ export default function TrackingTab({
     if (order.status === 'pending') {
       logs.push({ time: 'Just now', title: 'Awaiting Handoff Prep', description: `Merchant packing team is preparing items.`, status: 'pending' });
     } else if (order.status === 'processing') {
-      logs.push({ time: 'Today, 11:30 AM', title: 'Artisan Quality Check Cleared', description: 'Handcrafted items verified.', status: 'success' });
+      logs.push({ time: 'Today, 11:30 AM', title: 'Quality Check Cleared', description: 'Items verified and packed.', status: 'success' });
       logs.push({ time: 'Yesterday', title: 'Shipment Created', description: `Label queued.`, status: 'success' });
     } else if (order.status === 'shipped') {
       logs.push({ time: 'Today, 10:20 AM', title: 'In Transit', description: `Departed hub.`, status: 'active' });

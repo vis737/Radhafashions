@@ -51,16 +51,7 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
   // Filter 3 representative products to showcase in the flash sale
   useEffect(() => {
     if (products.length > 0) {
-      // Pick some popular items: e.g. Saddle Tote (bag-1), Keepsake box (wood-1), Gold thread (toy-2 if available)
-      const list = products.filter(
-        p => p.id === 'bag-1' || p.id === 'wood-1' || p.id === 'toy-2'
-      );
-      // Fallback
-      if (list.length === 0) {
-        setActiveProducts(products.slice(0, 3));
-      } else {
-        setActiveProducts(list);
-      }
+      setActiveProducts(products.slice(0, 3));
     }
   }, [products]);
 

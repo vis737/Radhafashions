@@ -117,7 +117,7 @@ const RadhaLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       EST 2025
     </text>
 
-    {/* Hand Craft sub-bullets inside */}
+    {/* Boutique sub-bullets inside */}
     <text
       x="100"
       y="151"
@@ -129,7 +129,7 @@ const RadhaLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
       letterSpacing="0.3"
       className="opacity-80"
     >
-      - Kids Toys - Gifts -
+      - Sarees - Lehengas -
     </text>
     <text
       x="100"
@@ -266,14 +266,14 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md text-foreground font-sans">
+    <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]/95 backdrop-blur-md text-gray-900 dark:text-white font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
           
           {/* Mobile Menu Icon */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 sm:hidden text-muted-foreground hover:text-primary border border-border/60 rounded-full hover:bg-accent"
+            className="p-2 sm:hidden text-gray-600 dark:text-gray-300 hover:text-pink-500 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-pink-50 dark:hover:bg-pink-950/30"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -520,13 +520,13 @@ export default function Navbar({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 250 }}
-              className="relative flex flex-col w-[85%] max-w-sm bg-background h-full shadow-2xl z-10 text-left overflow-hidden"
+              className="relative flex flex-col w-[85%] max-w-sm bg-white dark:bg-[#0a0a0a] h-full shadow-2xl z-10 text-left overflow-hidden"
             >
               {/* Drawer Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-border bg-background/95 backdrop-blur-sm">
-                <span className="font-display font-bold text-sm tracking-widest text-foreground uppercase">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full bg-accent border border-border hover:bg-pink-100 dark:hover:bg-pink-900/30 transition">
-                  <X className="w-4 h-4 text-foreground" />
+              <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
+                <span className="font-display font-bold text-sm tracking-widest text-gray-900 dark:text-white uppercase">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition">
+                  <X className="w-4 h-4 text-gray-900 dark:text-white" />
                 </button>
               </div>
 
@@ -535,14 +535,14 @@ export default function Navbar({
                 {/* Shop All */}
                 <button
                   onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                  className="block text-left w-full pb-3 border-b border-border text-sm font-bold text-foreground hover:text-pink-500 transition"
+                  className="block text-left w-full pb-3 border-b border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-900 dark:text-white hover:text-pink-500 transition"
                 >
                   ✦ Shop All
                 </button>
 
                 {/* Categories */}
                 <div className="space-y-1">
-                  <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase block mb-2">Categories</span>
+                  <span className="text-[10px] font-mono tracking-wider text-gray-500 dark:text-gray-400 uppercase block mb-2">Categories</span>
                   {CATEGORIES.map((category, idx) => (
                     <motion.button
                       key={category.id}
@@ -554,7 +554,7 @@ export default function Navbar({
                         onNavigate('category');
                         setMobileMenuOpen(false);
                       }}
-                      className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                      className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
                     >
                       {category.name}
                     </motion.button>
@@ -563,22 +563,22 @@ export default function Navbar({
 
                 {/* Quick Links */}
                 <div className="space-y-1">
-                  <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase block mb-2">Quick Links</span>
+                  <span className="text-[10px] font-mono tracking-wider text-gray-500 dark:text-gray-400 uppercase block mb-2">Quick Links</span>
                   <button
                     onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
-                    className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                    className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
                   >
                     My Account & Orders
                   </button>
                   <button
                     onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
-                    className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                    className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
                   >
                     Browse Collections
                   </button>
                   <button
                     onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
-                    className="block text-left w-full py-2.5 px-3 text-sm text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                    className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
                   >
                     About Us
                   </button>
@@ -586,8 +586,8 @@ export default function Navbar({
 
                 {/* Help Block */}
                 <div className="pt-4 border-t border-border space-y-2">
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase">Need Help?</p>
-                  <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400 uppercase">Need Help?</p>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <HelpCircle className="w-4 h-4 text-pink-400" />
                     +91 97311 53609
                   </p>
@@ -595,8 +595,8 @@ export default function Navbar({
               </div>
 
               {/* Drawer Footer */}
-              <div className="sticky bottom-0 px-5 py-3 border-t border-border bg-background/95 backdrop-blur-sm">
-                <p className="text-[9px] font-mono text-muted-foreground text-center">Radha Fashions Boutique · Bengaluru</p>
+              <div className="sticky bottom-0 px-5 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
+                <p className="text-[9px] font-mono text-gray-500 dark:text-gray-400 text-center">Radha Fashions Boutique · Bengaluru</p>
               </div>
             </motion.div>
           </div>

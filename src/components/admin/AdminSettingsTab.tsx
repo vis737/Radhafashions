@@ -214,7 +214,7 @@ export default function AdminSettingsTab({ cms, onUpdateCMS, onLogActivity, addT
           <SectionLabel title="Feature Toggles" />
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'AI Toy Concierge', field: 'aiConciergeEnabled' as keyof CMSConfig },
+              { label: 'AI Style Advisor', field: 'aiConciergeEnabled' as keyof CMSConfig },
               { label: 'Loyalty Rewards', field: 'rewardsEnabled' as keyof CMSConfig },
               { label: 'Cash on Delivery', field: 'codEnabled' as keyof CMSConfig },
               { label: 'UPI QR Payment', field: 'upiEnabled' as keyof CMSConfig },

@@ -189,7 +189,7 @@ export default function AdminLiveMonitor() {
           <div className="space-y-3 pt-2 text-xs">
             <div className="space-y-1.5">
               <div className="flex justify-between font-semibold">
-                <span>Kids Toys</span>
+                <span>Sarees & Lehengas</span>
                 <span>45%</span>
               </div>
               <div className="w-full bg-gray-150 dark:bg-gray-950 h-2 rounded-full overflow-hidden">
@@ -198,7 +198,7 @@ export default function AdminLiveMonitor() {
             </div>
             <div className="space-y-1.5">
               <div className="flex justify-between font-semibold">
-                <span>Wood Crafted Gifts</span>
+                <span>Kurtis & Salwar Suits</span>
                 <span>28%</span>
               </div>
               <div className="w-full bg-gray-150 dark:bg-gray-950 h-2 rounded-full overflow-hidden">

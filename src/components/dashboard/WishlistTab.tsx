@@ -11,16 +11,16 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
 
   const wishlistProductIds = wishlistProducts.map((p: any) => p.id).join(',');
   const shareUrl = `${window.location.origin}/?wishlist=${encodeURIComponent(wishlistProductIds)}`;
-  const shareText = `Check out my handcrafted wishlist on Radha Fashions! 🌟 ${shareUrl}`;
+  const shareText = `Check out my wishlist on Radha Fashions! 🌟 ${shareUrl}`;
 
   const downloadWishlistPdf = () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(22);
-    doc.text('M E R I S', 20, 20);
+    doc.text('RADHA FASHIONS', 20, 20);
     doc.setFontSize(10);
     doc.setTextColor(202, 138, 4);
-    doc.text('MY HANDCRAFTED WISHLIST COLLECTION', 20, 25);
+    doc.text('MY WISHLIST COLLECTION', 20, 25);
     doc.setDrawColor(226, 232, 240);
     doc.line(20, 28, 190, 28);
 
@@ -83,7 +83,7 @@ export default function WishlistTab({ wishlistProducts, onSelectProduct, onMoveT
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="space-y-1">
                 <span className="font-bold text-gray-950 dark:text-white block">Share My Collection</span>
-                <span className="text-[10px] text-gray-400">Share your handpicked crafts with friends or public visitors.</span>
+                <span className="text-[10px] text-gray-400">Share your favourite picks with friends or public visitors.</span>
               </div>
               <div className="flex bg-white dark:bg-gray-900 p-0.5 rounded-lg border border-gray-250 dark:border-gray-800 text-[10px]">
                 {['Public', 'Friends', 'Private'].map(priv => (

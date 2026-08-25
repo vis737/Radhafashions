@@ -75,7 +75,7 @@ export default function SupportTab({ orders, onRequestRefund }: any) {
               rows={3}
               value={returnReason}
               onChange={(e) => setReturnReason(e.target.value)}
-              placeholder="e.g., The wooden stacking dowel contains slight wood knot blemish..."
+              placeholder="e.g., The saree has a minor colour variation..."
               className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-pink-400 focus:outline-none"
             />
           </div>

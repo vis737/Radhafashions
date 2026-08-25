@@ -49,7 +49,7 @@ export default function ExitIntentOffer({ onApplyCoupon }: ExitIntentOfferProps)
       usageLimit: 100,
       usageCount: 2,
       minimumCartValue: 500,
-      description: 'Exclusive 15% discount for staying with our local artisans',
+      description: 'Exclusive 15% discount for staying with us',
       active: true
     };
     onApplyCoupon(stayPinkCoupon);
@@ -83,7 +83,7 @@ export default function ExitIntentOffer({ onApplyCoupon }: ExitIntentOfferProps)
             Wait! Before You Leave...
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 max-w-sm mx-auto leading-relaxed">
-            Our local artisans have woven an exclusive keepsake opportunity. Enjoy <span className="font-semibold text-pink-500 text-sm">15% off</span> your entire cart, standard packaging included.
+            We have an exclusive offer just for you. Enjoy <span className="font-semibold text-pink-500 text-sm">15% off</span> your entire cart, standard packaging included.
           </p>
 
           {/* Coupon Code Block */}

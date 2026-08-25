@@ -608,16 +608,6 @@ function ProductForm({ product, categories, onChange, addToast }: {
     onChange({ ...product, [field]: value });
   };
 
-  const updateToyParam = (field: string, value: any) => {
-    onChange({
-      ...product,
-      toyParameters: {
-        ...(product.toyParameters || {}),
-        [field]: value
-      }
-    });
-  };
-
   const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
@@ -964,7 +954,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
             type="text"
             value={product.shortDescription || ''}
             onChange={e => updateField('shortDescription', e.target.value)}
-            placeholder="Brief tagline for product cards (e.g., Handcrafted solid teak wood jewelry box)"
+            placeholder="Brief tagline for product cards (e.g., Pure silk Banarasi saree with zari border)"
             className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-2 px-3 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-pink-500"
           />
 
@@ -973,7 +963,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
             value={product.description || ''}
             onChange={e => updateField('description', e.target.value)}
             rows={4}
-            placeholder="Detailed description of materials, artisan history, usage, and dimensions..."
+            placeholder="Detailed description of fabric, design, care instructions, and dimensions..."
             className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-2 px-3 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-pink-500 custom-scrollbar"
             required
           ></textarea>
@@ -1100,54 +1090,6 @@ function ProductForm({ product, categories, onChange, addToast }: {
           </div>
         </div>
 
-        {/* Toy Parameters (Conditional) */}
-        {categories.find(c => c.id === product.category)?.name.toLowerCase().includes('toy') && (
-          <div className="space-y-4 md:col-span-2 p-4 bg-blue-500/5 rounded-xl border border-blue-500/20">
-            <h4 className="text-lg font-semibold text-blue-400 border-b border-blue-500/20 pb-2 flex items-center gap-2">
-              <Package className="w-5 h-5" /> Toy Specific Parameters
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Min Age</label>
-                <input
-                  type="number"
-                  value={product.toyParameters?.minAge || ''}
-                  onChange={e => updateToyParam('minAge', parseInt(e.target.value, 10))}
-                  className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-1.5 px-3 text-sm text-gray-800 dark:text-gray-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Max Age</label>
-                <input
-                  type="number"
-                  value={product.toyParameters?.maxAge || ''}
-                  onChange={e => updateToyParam('maxAge', parseInt(e.target.value, 10))}
-                  className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-1.5 px-3 text-sm text-gray-800 dark:text-gray-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Skill Type</label>
-                <input
-                  type="text"
-                  value={product.toyParameters?.skillType || ''}
-                  onChange={e => updateToyParam('skillType', e.target.value)}
-                  className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-1.5 px-3 text-sm text-gray-800 dark:text-gray-200"
-                  placeholder="e.g. Motor Skills"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Educational Type</label>
-                <input
-                  type="text"
-                  value={product.toyParameters?.educationalType || ''}
-                  onChange={e => updateToyParam('educationalType', e.target.value)}
-                  className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-1.5 px-3 text-sm text-gray-800 dark:text-gray-200"
-                  placeholder="e.g. STEM"
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* SEO */}
         <div className="space-y-4 md:col-span-2 border-t border-pink-100 dark:border-pink-900/20 pt-6">
