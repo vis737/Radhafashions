@@ -1689,8 +1689,8 @@ async function sendBookingEmail(order) {
     <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f9a8d4; position: relative; overflow: hidden;">
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/><circle cx=%2255%22 cy=%228%22 r=%222.5%22 fill=%22rgba(255,255,255,0.07)%22/><circle cx=%2225%22 cy=%2250%22 r=%222%22 fill=%22rgba(255,255,255,0.05)%22/></svg>'); opacity: 0.8;"></div>
       <div style="position: relative; z-index: 1;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; font-family: 'Space Grotesk', Arial, sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">\u{1F338} Radha Fashions</h1>
-        <p style="color: #fce7f3; margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+        <img src="https://radhafashions.in/radha-fashions-logo.png" alt="Radha Fashions" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; margin-bottom: 10px;" />
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; font-family: 'Space Grotesk', Arial, sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Radha Fashions</h1>
       </div>
     </div>
 
@@ -1698,7 +1698,7 @@ async function sendBookingEmail(order) {
     <div style="padding: 32px 24px 20px 24px;">
       <h2 style="font-size: 18px; color: #1f2937; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0;">
-        Thank you for choosing <strong style="color: #be185d;">Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! \u{1F389} Our team is carefully packing your ethnic wear with love and attention to detail. \u2728
+        Thank you for choosing <strong style="color: #be185d;">Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! \u{1F389} Our team is carefully packing your order with love and attention to detail. \u2728
       </p>
     </div>
 
@@ -1774,7 +1774,7 @@ async function sendBookingEmail(order) {
     <!-- \u{1F338} Cherry Blossom Footer -->
     <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 24px; text-align: center; position: relative;">
       <p style="font-size: 13px; color: #9d174d; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500;">
-        \u{1F338} Your order is being prepared with care \u{1F338}
+        Your order is being prepared with care
       </p>
       <p style="font-size: 12px; color: #6b7280; margin: 0 0 8px 0; line-height: 1.5;">
         Track your order anytime in your Radha Fashions Dashboard.
@@ -1916,7 +1916,7 @@ async function sendAdminVendorNotificationEmail(order) {
     </div>
 
     <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 16px; text-align: center; font-size: 11px; color: #9d174d; font-weight: 500;">
-      \u{1F338} Radha Fashions Boutique \u2014 Order Dispatch Notification
+      Radha Fashions Boutique \u2014 Order Dispatch Notification
     </div>
 
   </div>
@@ -1965,8 +1965,8 @@ async function sendPaymentEmail(order, type, reason) {
     <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? "#10b981" : "#f87171"}; position: relative; overflow: hidden;">
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/></svg>'); opacity: 0.8;"></div>
       <div style="position: relative; z-index: 1;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">\u{1F338} Radha Fashions</h1>
-        <p style="color: #fce7f3; margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+        <img src="https://radhafashions.in/radha-fashions-logo.png" alt="Radha Fashions" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; margin-bottom: 10px;" />
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Radha Fashions</h1>
       </div>
     </div>
 
@@ -1977,7 +1977,7 @@ async function sendPaymentEmail(order, type, reason) {
           \u2705 We are pleased to inform you that your UPI payment for order <strong style="color: #be185d;">#${order.orderNumber}</strong> has been successfully verified!
         </p>
         <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 12px 0 0 0;">
-          Your order has been moved to <strong style="color: #be185d;">Processing</strong> status. Our team is preparing your ethnic wear with care. \u2728
+          Your order has been moved to <strong style="color: #be185d;">Processing</strong> status. Our team is preparing your order with care. \u2728
         </p>
       ` : `
         <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0;">
@@ -2020,7 +2020,7 @@ async function sendPaymentEmail(order, type, reason) {
 
     <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 24px; text-align: center;">
       <p style="font-size: 13px; color: #9d174d; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500;">
-        \u{1F338} Track your order anytime in your Radha Fashions Dashboard \u{1F338}
+        Track your order anytime in your Radha Fashions Dashboard
       </p>
       <p style="font-size: 11px; color: #9d174d; margin: 0; font-family: monospace; font-weight: 500;">
         Radha Fashions Boutique \u2022 KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
@@ -2121,7 +2121,7 @@ function smtpEmailConfigured() {
   return true;
 }
 async function dispatchOtpEmail(email, code) {
-  const subject = "\u{1F338} Your Radha Fashions verification code";
+  const subject = "Your Radha Fashions verification code";
   const html = `
     <!DOCTYPE html>
     <html>
@@ -2131,8 +2131,8 @@ async function dispatchOtpEmail(email, code) {
         <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 28px 24px; text-align: center; border-bottom: 4px solid #f9a8d4; position: relative; overflow: hidden;">
           <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/></svg>'); opacity: 0.8;"></div>
           <div style="position: relative; z-index: 1;">
-            <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">\u{1F338} Radha Fashions</h2>
-            <p style="color: #fce7f3; margin: 4px 0 0 0; font-size: 10px; letter-spacing: 3px; text-transform: uppercase;">Verification Code</p>
+            <img src="https://radhafashions.in/radha-fashions-logo.png" alt="Radha Fashions" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; margin-bottom: 8px;" />
+            <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Radha Fashions</h2>
           </div>
         </div>
         <div style="padding: 28px 24px; text-align: center;">
@@ -2414,12 +2414,12 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
     <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f9a8d4; position: relative; overflow: hidden;">
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/><circle cx=%2255%22 cy=%228%22 r=%222.5%22 fill=%22rgba(255,255,255,0.07)%22/><circle cx=%2225%22 cy=%2250%22 r=%222%22 fill=%22rgba(255,255,255,0.05)%22/></svg>'); opacity: 0.8;"></div>
       <div style="position: relative; z-index: 1;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">\u{1F338} Radha Fashions</h1>
-        <p style="color: #fce7f3; margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+        <img src="https://radhafashions.in/radha-fashions-logo.png" alt="Radha Fashions" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; margin-bottom: 10px;" />
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Radha Fashions</h1>
       </div>
     </div>
     <div style="padding: 32px 24px;">
-      <h2 style="font-size: 18px; color: #1f2937; margin-top: 0;">Welcome to the family, ${name}! \u{1F338}</h2>
+      <h2 style="font-size: 18px; color: #1f2937; margin-top: 0;">Welcome to the family, ${name}!</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #4b5563;">
         We are absolutely thrilled to welcome you to <strong style="color: #be185d;">Radha Fashions</strong>! Your account has been securely created.
       </p>
@@ -2431,7 +2431,7 @@ app.post("/api/register-customer", rateLimiter(30, 15 * 60 * 1e3), async (req, r
       </div>
     </div>
     <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 24px; text-align: center;">
-      <p style="font-size: 13px; color: #9d174d; margin: 0 0 4px 0; font-weight: 500;">\u{1F338} Thank you for choosing Radha Fashions \u{1F338}</p>
+      <p style="font-size: 13px; color: #9d174d; margin: 0 0 4px 0; font-weight: 500;">Thank you for choosing Radha Fashions</p>
       <p style="font-size: 10px; color: #9d174d; margin: 0; font-family: monospace; font-weight: 500;">Radha Fashions Boutique \u2022 KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066</p>
     </div>
   </div>
@@ -3096,7 +3096,7 @@ app.post("/api/admin/test-email", verifyAdminToken, async (req, res) => {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 16px;">
         <div style="text-align: center; margin-bottom: 16px;">
-          <span style="font-size: 24px;">\u{1F338}</span>
+          <img src="https://radhafashions.in/radha-fashions-logo.png" alt="Radha Fashions" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
         </div>
         <h2 style="color: #be185d; margin-top: 0; text-align: center;">Live Email Dispatch Successful!</h2>
         <p style="color: #4b5563;">Your Radha Fashions server successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
@@ -3190,7 +3190,7 @@ app.post("/api/gemini/invoice", async (req, res) => {
   const getLocalInvoiceFallback = () => {
     const delivery = order.shippingMethod === "express" ? "3 days via BlueDart express" : "5-7 business days";
     return {
-      greetingText: `Dear ${customerName}, thank you for your order! Our team is carefully packing your ${itemNames} with love and attention to detail. We hope you enjoy your ethnic wear from Radha Fashions!`,
+      greetingText: `Dear ${customerName}, thank you for your order! Our team is carefully packing your ${itemNames} with love and attention to detail. We hope you enjoy your order from Radha Fashions!`,
       invoiceVerificationCode: `RADHA-CRN-${Math.floor(1e5 + Math.random() * 9e5)}`,
       estimatedDeliveryDate: `Approx. delivery in ${delivery}`
     };
