@@ -1733,15 +1733,15 @@ async function sendBookingEmail(order: any) {
           : 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=150&auto=format&fit=crop&q=80';
         
         itemsHtml += `
-          <tr style="border-bottom: 1px solid #f1f5f9;">
+          <tr style="border-bottom: 1px solid #fce7f3;">
             <td style="padding: 12px 8px; width: 60px;">
-              <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" />
+              <img src="${imageUrl}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid #fbcfe8;" />
             </td>
-            <td style="padding: 12px 8px; font-size: 13px; color: #0f172a; font-weight: 500;">
+            <td style="padding: 12px 8px; font-size: 13px; color: #1f2937; font-weight: 500;">
               ${productName}${variation}
-              <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Qty: ${qty} × ₹${price}</div>
+              <div style="font-size: 11px; color: #9d174d; font-family: monospace; margin-top: 2px;">Qty: ${qty} × ₹${price}</div>
             </td>
-            <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
+            <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #be185d;">
               ₹${price * qty}
             </td>
           </tr>
@@ -1764,42 +1764,45 @@ async function sendBookingEmail(order: any) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
-<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0; -webkit-font-smoothing: antialiased;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05);">
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #fdf2f8; margin: 0; padding: 20px 0; -webkit-font-smoothing: antialiased;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(219, 39, 119, 0.08);">
     
-    <!-- Luxury Premium Header -->
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
-      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+    <!-- 🌸 Cherry Blossom Header -->
+    <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f9a8d4; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/><circle cx=%2255%22 cy=%228%22 r=%222.5%22 fill=%22rgba(255,255,255,0.07)%22/><circle cx=%2225%22 cy=%2250%22 r=%222%22 fill=%22rgba(255,255,255,0.05)%22/></svg>'); opacity: 0.8;"></div>
+      <div style="position: relative; z-index: 1;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; font-family: 'Space Grotesk', Arial, sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🌸 Radha Fashions</h1>
+        <p style="color: #fce7f3; margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+      </div>
     </div>
 
     <!-- Heartwarming Greeting -->
     <div style="padding: 32px 24px 20px 24px;">
-      <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
-      <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
-        Thank you for choosing <strong>Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! Our team is carefully packing your ethnic wear with love and attention to detail.
+      <h2 style="font-size: 18px; color: #1f2937; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
+      <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0;">
+        Thank you for choosing <strong style="color: #be185d;">Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! 🎉 Our team is carefully packing your ethnic wear with love and attention to detail. ✨
       </p>
     </div>
 
     <!-- Booking Details Block -->
     <div style="padding: 0 24px;">
-      <div style="background-color: #f1f5f9; border-radius: 14px; padding: 18px; border: 1px dashed #cbd5e1;">
+      <div style="background-color: #fdf2f8; border-radius: 14px; padding: 18px; border: 1px dashed #f9a8d4;">
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace;">
           <tr>
-            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${orderNum}</td>
+            <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
+            <td style="color: #1f2937; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${orderNum}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">BOOKING DATE:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px;">${order.date || new Date().toLocaleDateString()}</td>
+            <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">BOOKING DATE:</td>
+            <td style="color: #1f2937; text-align: right; padding-bottom: 6px;">${order.date || new Date().toLocaleDateString()}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">PAYMENT GATEWAY:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px;">${order.paymentMethod} (${order.paymentStatus?.toUpperCase() || 'PAID'})</td>
+            <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">PAYMENT GATEWAY:</td>
+            <td style="color: #1f2937; text-align: right; padding-bottom: 6px;">${order.paymentMethod} (${order.paymentStatus?.toUpperCase() || 'PAID'})</td>
           </tr>
           <tr>
-            <td style="color: #64748b; font-weight: bold;">LOGISTICS MODE:</td>
-            <td style="color: #d97706; text-align: right; font-weight: bold;">${order.shippingMethod === 'express' ? 'BlueDart Air Express (2-3 Days)' : 'Standard Ground Delivery'}</td>
+            <td style="color: #9d174d; font-weight: bold;">LOGISTICS MODE:</td>
+            <td style="color: #be185d; text-align: right; font-weight: bold;">${order.shippingMethod === 'express' ? 'BlueDart Air Express (2-3 Days)' : 'Standard Ground Delivery'}</td>
           </tr>
         </table>
       </div>
@@ -1807,13 +1810,13 @@ async function sendBookingEmail(order: any) {
 
     <!-- Itemized List Table -->
     <div style="padding: 24px;">
-      <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-top: 0; margin-bottom: 12px; font-weight: 700;">Package Summary</h3>
+      <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #be185d; border-bottom: 2px solid #fbcfe8; padding-bottom: 8px; margin-top: 0; margin-bottom: 12px; font-weight: 700;">🛍️ Package Summary</h3>
       <table style="width: 100%; border-collapse: collapse; text-align: left;">
         <thead>
-          <tr style="border-bottom: 2px solid #e2e8f0;">
-            <th style="padding-bottom: 8px; font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; width: 60px;">Product</th>
-            <th style="padding-bottom: 8px; font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold;">Description</th>
-            <th style="padding-bottom: 8px; font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; text-align: right;">Amount</th>
+          <tr style="border-bottom: 2px solid #fbcfe8;">
+            <th style="padding-bottom: 8px; font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: bold; width: 60px;">Product</th>
+            <th style="padding-bottom: 8px; font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: bold;">Description</th>
+            <th style="padding-bottom: 8px; font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: bold; text-align: right;">Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -1822,40 +1825,43 @@ async function sendBookingEmail(order: any) {
       </table>
     </div>
 
-    <!-- Ledger Accounting Totals -->
+    <!-- Accounting Totals -->
     <div style="padding: 0 24px 24px 24px;">
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #475569;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #4b5563;">
         <tr>
-          <td style="padding: 6px 0; color: #64748b;">Subtotal:</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${subtotal}</td>
+          <td style="padding: 6px 0; color: #6b7280;">Subtotal:</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${subtotal}</td>
         </tr>
         ${discount > 0 ? `
         <tr>
-          <td style="padding: 6px 0; color: #10b981; font-weight: 500;">Campaign Promo Discount (${order.couponCode || 'PROMO'}):</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #10b981; font-weight: bold;">-₹${discount}</td>
+          <td style="padding: 6px 0; color: #059669; font-weight: 500;">Discount (${order.couponCode || 'PROMO'}):</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #059669; font-weight: bold;">-₹${discount}</td>
         </tr>
         ` : ''}
         <tr>
-          <td style="padding: 6px 0; color: #64748b;">Shipping Handlers Fee:</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${shippingCost}</td>
+          <td style="padding: 6px 0; color: #6b7280;">Shipping:</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${shippingCost}</td>
         </tr>
         <tr>
-          <td style="padding: 6px 0; color: #64748b;">Tax (Inclusive Goods & Services Tax):</td>
-          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #0f172a;">₹${tax}</td>
+          <td style="padding: 6px 0; color: #6b7280;">GST (18%):</td>
+          <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${tax}</td>
         </tr>
-        <tr style="border-top: 1px solid #e2e8f0;">
-          <td style="padding: 16px 0 0 0; font-size: 15px; font-weight: bold; color: #0f172a;">Total Invoice Paid:</td>
-          <td style="padding: 16px 0 0 0; text-align: right; font-size: 16px; font-weight: bold; color: #d97706; font-family: monospace;">₹${total}</td>
+        <tr style="border-top: 2px solid #fbcfe8;">
+          <td style="padding: 16px 0 0 0; font-size: 15px; font-weight: bold; color: #1f2937;">Total Paid:</td>
+          <td style="padding: 16px 0 0 0; text-align: right; font-size: 16px; font-weight: bold; color: #be185d; font-family: monospace;">₹${total}</td>
         </tr>
       </table>
     </div>
 
-    <!-- Premium Footer Note -->
-    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
-      <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0; line-height: 1.5;">
-        Your dispatch tracking number is active. You can track this booking live in your Radha Fashions Dashboard anytime.
+    <!-- 🌸 Cherry Blossom Footer -->
+    <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 24px; text-align: center; position: relative;">
+      <p style="font-size: 13px; color: #9d174d; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500;">
+        🌸 Your order is being prepared with care 🌸
       </p>
-      <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
+      <p style="font-size: 12px; color: #6b7280; margin: 0 0 8px 0; line-height: 1.5;">
+        Track your order anytime in your Radha Fashions Dashboard.
+      </p>
+      <p style="font-size: 11px; color: #9d174d; margin: 0; font-family: monospace; font-weight: 500;">
         Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
@@ -1937,12 +1943,12 @@ async function sendAdminVendorNotificationEmail(order: any) {
         const vendorId = productObj.vendorId || item.vendorId || 'Store Direct';
 
         itemsHtml += `
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 10px; font-size: 13px; color: #0f172a; font-weight: 500;">
+          <tr style="border-bottom: 1px solid #fce7f3;">
+            <td style="padding: 10px; font-size: 13px; color: #1f2937; font-weight: 500;">
               ${productName}${variation}
-              <div style="font-size: 11px; color: #64748b;">Listing / Vendor: ${vendorId} | Qty: ${qty} × ₹${price}</div>
+              <div style="font-size: 11px; color: #9d174d;">Vendor: ${vendorId} | Qty: ${qty} × ₹${price}</div>
             </td>
-            <td style="padding: 10px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #0f172a;">
+            <td style="padding: 10px; text-align: right; font-size: 13px; font-family: monospace; font-weight: bold; color: #be185d;">
               ₹${price * qty}
             </td>
           </tr>
@@ -1961,21 +1967,24 @@ async function sendAdminVendorNotificationEmail(order: any) {
   <meta charset="utf-8">
   <title>${subject}</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+<body style="font-family: Arial, sans-serif; background-color: #fdf2f8; margin: 0; padding: 20px 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(219, 39, 119, 0.1);">
     
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 24px; text-align: center; border-bottom: 4px solid #10b981;">
-      <h1 style="color: #10b981; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px;">NEW ORDER ALERT</h1>
-      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Radha Fashions Store & Listing Notification</p>
+    <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 24px; text-align: center; border-bottom: 4px solid #10b981; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/><circle cx=%2255%22 cy=%228%22 r=%222.5%22 fill=%22rgba(255,255,255,0.07)%22/></svg>'); opacity: 0.8;"></div>
+      <div style="position: relative; z-index: 1;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🛍️ NEW ORDER ALERT</h1>
+        <p style="color: #fce7f3; margin: 4px 0 0 0; font-size: 12px;">Radha Fashions Store Notification</p>
+      </div>
     </div>
 
     <div style="padding: 24px;">
-      <h2 style="font-size: 16px; color: #0f172a; margin-top: 0;">Order #${orderNum} has been placed!</h2>
-      <p style="font-size: 13px; color: #475569; margin: 0 0 16px 0;">A customer has purchased items from your catalog listings. Please review order details below for fulfillment.</p>
+      <h2 style="font-size: 16px; color: #1f2937; margin-top: 0;">Order #${orderNum} has been placed!</h2>
+      <p style="font-size: 13px; color: #4b5563; margin: 0 0 16px 0;">A customer has purchased items from your catalog. Please review order details below.</p>
       
       <!-- Customer Information -->
-      <div style="background-color: #f1f5f9; border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 12px; color: #334155;">
-        <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #0f172a; text-transform: uppercase;">Customer Details</h3>
+      <div style="background-color: #fdf2f8; border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 12px; color: #374151; border: 1px solid #fbcfe8;">
+        <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #be185d; text-transform: uppercase;">Customer Details</h3>
         <div><strong>Name:</strong> ${customerName}</div>
         <div><strong>Email:</strong> ${customerEmail}</div>
         <div><strong>Phone:</strong> ${customerPhone || 'N/A'}</div>
@@ -1984,10 +1993,10 @@ async function sendAdminVendorNotificationEmail(order: any) {
       </div>
 
       <!-- Item breakdown -->
-      <h3 style="font-size: 13px; color: #0f172a; text-transform: uppercase; margin-bottom: 8px;">Order Items</h3>
+      <h3 style="font-size: 13px; color: #be185d; text-transform: uppercase; margin-bottom: 8px;">Order Items</h3>
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
         <thead>
-          <tr style="border-bottom: 2px solid #e2e8f0; text-align: left; font-size: 11px; color: #64748b;">
+          <tr style="border-bottom: 2px solid #fbcfe8; text-align: left; font-size: 11px; color: #9d174d;">
             <th style="padding: 6px 10px;">Item / Listing</th>
             <th style="padding: 6px 10px; text-align: right;">Total</th>
           </tr>
@@ -1997,13 +2006,13 @@ async function sendAdminVendorNotificationEmail(order: any) {
         </tbody>
       </table>
 
-      <div style="text-align: right; font-size: 15px; font-weight: bold; color: #0f172a; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-        Grand Total: <span style="color: #d97706; font-family: monospace;">₹${total}</span>
+      <div style="text-align: right; font-size: 15px; font-weight: bold; color: #1f2937; padding-top: 8px; border-top: 1px solid #fbcfe8;">
+        Grand Total: <span style="color: #be185d; font-family: monospace;">₹${total}</span>
       </div>
     </div>
 
-    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
-      Radha Fashions Boutique — Order Dispatch Notification
+    <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 16px; text-align: center; font-size: 11px; color: #9d174d; font-weight: 500;">
+      🌸 Radha Fashions Boutique — Order Dispatch Notification
     </div>
 
   </div>
@@ -2055,67 +2064,70 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
-<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0; -webkit-font-smoothing: antialiased;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05);">
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #fdf2f8; margin: 0; padding: 20px 0; -webkit-font-smoothing: antialiased;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(219, 39, 119, 0.08);">
     
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? '#10b981' : '#ef4444'};">
-      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; font-family: 'Space Grotesk', Arial, sans-serif;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+    <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid ${isApproved ? '#10b981' : '#f87171'}; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/></svg>'); opacity: 0.8;"></div>
+      <div style="position: relative; z-index: 1;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🌸 Radha Fashions</h1>
+        <p style="color: #fce7f3; margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
+      </div>
     </div>
 
     <div style="padding: 32px 24px 20px 24px;">
-      <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
+      <h2 style="font-size: 18px; color: #1f2937; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
       ${isApproved ? `
-        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
-          We are pleased to inform you that your UPI payment for order <strong>#${order.orderNumber}</strong> has been successfully verified!
+        <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0;">
+          ✅ We are pleased to inform you that your UPI payment for order <strong style="color: #be185d;">#${order.orderNumber}</strong> has been successfully verified!
         </p>
-        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
-          Your order has been moved to <strong>Processing</strong> status. Our team is preparing your ethnic wear with care. You will receive another notification once your package is dispatched.
+        <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 12px 0 0 0;">
+          Your order has been moved to <strong style="color: #be185d;">Processing</strong> status. Our team is preparing your ethnic wear with care. ✨
         </p>
       ` : `
-        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
+        <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0;">
           We regret to inform you that we could not verify your UPI payment for order <strong>#${order.orderNumber}</strong>.
         </p>
-        <div style="background-color: #fef2f2; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #fee2e2;">
+        <div style="background-color: #fef2f2; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #fecaca;">
           <p style="font-size: 13px; color: #991b1b; margin: 0; font-weight: bold;">Rejection Reason:</p>
           <p style="font-size: 13px; color: #7f1d1d; margin: 4px 0 0 0; font-style: italic;">
             "${reason || 'The transaction reference number or screenshot did not match our records.'}"
           </p>
         </div>
-        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 12px 0 0 0;">
-          Please log into your account dashboard, check your transaction credentials, and resubmit the correct UPI reference number or payment receipt screenshot to resume processing of your order.
+        <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 12px 0 0 0;">
+          Please log into your account, check your transaction details, and resubmit the correct UPI reference number.
         </p>
       `}
     </div>
 
     <div style="padding: 0 24px 24px 24px;">
-      <div style="background-color: #f1f5f9; border-radius: 14px; padding: 18px; border: 1px dashed #cbd5e1;">
+      <div style="background-color: #fdf2f8; border-radius: 14px; padding: 18px; border: 1px dashed #f9a8d4;">
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace;">
           <tr>
-            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${order.orderNumber}</td>
+            <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">ORDER NUMBER:</td>
+            <td style="color: #1f2937; text-align: right; padding-bottom: 6px; font-weight: bold; font-size: 13px;">${order.orderNumber}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">TOTAL VALUE:</td>
-            <td style="color: #0f172a; text-align: right; padding-bottom: 6px; font-weight: bold;">₹${order.total}</td>
+            <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">TOTAL VALUE:</td>
+            <td style="color: #1f2937; text-align: right; padding-bottom: 6px; font-weight: bold;">₹${order.total}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding-bottom: 6px; font-weight: bold;">PAYMENT STATUS:</td>
-            <td style="color: ${isApproved ? '#10b981' : '#ef4444'}; text-align: right; padding-bottom: 6px; font-weight: bold;">${order.paymentStatus.toUpperCase()}</td>
+            <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">PAYMENT STATUS:</td>
+            <td style="color: ${isApproved ? '#059669' : '#dc2626'}; text-align: right; padding-bottom: 6px; font-weight: bold;">${order.paymentStatus.toUpperCase()}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; font-weight: bold;">CURRENT ORDER STATUS:</td>
-            <td style="color: #0f172a; text-align: right; font-weight: bold;">${order.status.toUpperCase()}</td>
+            <td style="color: #9d174d; font-weight: bold;">CURRENT ORDER STATUS:</td>
+            <td style="color: #1f2937; text-align: right; font-weight: bold;">${order.status.toUpperCase()}</td>
           </tr>
         </table>
       </div>
     </div>
 
-    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
-      <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0; line-height: 1.5;">
-        You can track your order status live in your Radha Fashions Dashboard at any time.
+    <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 24px; text-align: center;">
+      <p style="font-size: 13px; color: #9d174d; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500;">
+        🌸 Track your order anytime in your Radha Fashions Dashboard 🌸
       </p>
-      <p style="font-size: 11px; color: #94a3b8; margin: 0; font-family: monospace;">
+      <p style="font-size: 11px; color: #9d174d; margin: 0; font-family: monospace; font-weight: 500;">
         Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
       </p>
     </div>
@@ -2397,14 +2409,33 @@ function smtpEmailConfigured(): boolean {
 }
 
 async function dispatchOtpEmail(email: string, code: string): Promise<void> {
-  const subject = 'Your Radha Fashions verification code';
+  const subject = '🌸 Your Radha Fashions verification code';
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px;">
-      <h2 style="margin: 0 0 12px; color: #0f172a;">Radha Fashions verification code</h2>
-      <p style="color: #475569; font-size: 14px;">Use this code to sign in to your Radha Fashions account. It is valid for 5 minutes.</p>
-      <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #c5a021; padding: 18px 0;">${code}</div>
-      <p style="color: #64748b; font-size: 12px;">If you did not request this code, no action is needed.</p>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: 'Inter', Arial, sans-serif; background-color: #fdf2f8; margin: 0; padding: 20px 0;">
+      <div style="max-width: 480px; margin: 0 auto; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.08);">
+        <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 28px 24px; text-align: center; border-bottom: 4px solid #f9a8d4; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/></svg>'); opacity: 0.8;"></div>
+          <div style="position: relative; z-index: 1;">
+            <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🌸 Radha Fashions</h2>
+            <p style="color: #fce7f3; margin: 4px 0 0 0; font-size: 10px; letter-spacing: 3px; text-transform: uppercase;">Verification Code</p>
+          </div>
+        </div>
+        <div style="padding: 28px 24px; text-align: center;">
+          <p style="color: #4b5563; font-size: 14px; margin: 0 0 20px 0;">Use this code to sign in to your Radha Fashions account. Valid for 5 minutes.</p>
+          <div style="background-color: #fdf2f8; border: 2px dashed #f9a8d4; border-radius: 12px; padding: 16px 24px; margin: 0 auto; display: inline-block;">
+            <div style="font-size: 36px; letter-spacing: 10px; font-weight: 800; color: #be185d; font-family: monospace;">${code}</div>
+          </div>
+          <p style="color: #9d174d; font-size: 12px; margin: 20px 0 0 0; font-weight: 500;">If you did not request this code, no action is needed.</p>
+        </div>
+        <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 16px; text-align: center;">
+          <p style="font-size: 10px; color: #9d174d; margin: 0; font-family: monospace; font-weight: 500;">Radha Fashions Boutique • Bengaluru</p>
+        </div>
+      </div>
+    </body>
+    </html>
   `;
   await dispatchLiveEmail(email, subject, html);
 }
@@ -2723,28 +2754,30 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
   <meta charset="utf-8">
   <title>Welcome to Radha Fashions</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px 0;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden;">
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
-      <h1 style="color: #f59e0b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;">Radha Fashions</h1>
-      <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">Boutique & Ethnic Wear</p>
-    </div>
-    <div style="padding: 32px 24px;">
-      <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">Thanks for choosing us, ${name}!</h2>
-      <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-        We are absolutely thrilled to welcome you to the Radha Fashions family! Your account has been securely created.
-      </p>
-      <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 12px;">
-        Explore our curated collection of silk sarees, designer lehengas, elegant kurtis, and handcrafted ethnic accessories. We hope you enjoy browsing and shopping our curated boutique collections.
-      </p>
-      <div style="text-align: center; margin-top: 24px;">
-        <a href="${process.env.APP_URL || 'http://localhost:3000'}" style="background-color: #f59e0b; color: #0f172a; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block;">Happy Shopping &rarr;</a>
+<body style="font-family: 'Inter', Arial, sans-serif; background-color: #fdf2f8; padding: 20px 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(219, 39, 119, 0.08);">
+    <div style="background: linear-gradient(135deg, #9d174d 0%, #be185d 50%, #db2777 100%); padding: 36px 24px; text-align: center; border-bottom: 4px solid #f9a8d4; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2210%22 cy=%2210%22 r=%223%22 fill=%22rgba(255,255,255,0.08)%22/><circle cx=%2240%22 cy=%2235%22 r=%222%22 fill=%22rgba(255,255,255,0.06)%22/><circle cx=%2255%22 cy=%228%22 r=%222.5%22 fill=%22rgba(255,255,255,0.07)%22/><circle cx=%2225%22 cy=%2250%22 r=%222%22 fill=%22rgba(255,255,255,0.05)%22/></svg>'); opacity: 0.8;"></div>
+      <div style="position: relative; z-index: 1;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🌸 Radha Fashions</h1>
+        <p style="color: #fce7f3; margin: 8px 0 0 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;">Boutique & Ethnic Wear</p>
       </div>
     </div>
-    <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center;">
-      <p style="font-size: 11px; color: #94a3b8; margin: 0;">
-        Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066
+    <div style="padding: 32px 24px;">
+      <h2 style="font-size: 18px; color: #1f2937; margin-top: 0;">Welcome to the family, ${name}! 🌸</h2>
+      <p style="font-size: 14px; line-height: 1.6; color: #4b5563;">
+        We are absolutely thrilled to welcome you to <strong style="color: #be185d;">Radha Fashions</strong>! Your account has been securely created.
       </p>
+      <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin-top: 12px;">
+        Explore our curated collection of silk sarees, designer lehengas, elegant kurtis, and handcrafted ethnic accessories. We hope you enjoy browsing our boutique collections! ✨
+      </p>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="${process.env.APP_URL || 'http://localhost:3000'}" style="background: linear-gradient(135deg, #be185d 0%, #db2777 100%); color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 13px; display: inline-block; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3);">Happy Shopping 🛍️</a>
+      </div>
+    </div>
+    <div style="background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8; padding: 24px; text-align: center;">
+      <p style="font-size: 13px; color: #9d174d; margin: 0 0 4px 0; font-weight: 500;">🌸 Thank you for choosing Radha Fashions 🌸</p>
+      <p style="font-size: 10px; color: #9d174d; margin: 0; font-family: monospace; font-weight: 500;">Radha Fashions Boutique • KSVK School Rd, Whitefield, Bengaluru, Karnataka 560066</p>
     </div>
   </div>
 </body>
@@ -3545,10 +3578,13 @@ app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
     }
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-        <h2 style="color: #0f172a; margin-top: 0;">Live Email Dispatch Successful!</h2>
-        <p style="color: #475569;">Your server at <strong>https://radhafashions.com</strong> successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
-        <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Dispatched at ${new Date().toLocaleString()}</p>
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #fbcfe8; border-radius: 16px;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <span style="font-size: 24px;">🌸</span>
+        </div>
+        <h2 style="color: #be185d; margin-top: 0; text-align: center;">Live Email Dispatch Successful!</h2>
+        <p style="color: #4b5563;">Your Radha Fashions server successfully dispatched this test email to <strong>${targetEmail}</strong>.</p>
+        <p style="color: #9d174d; font-size: 12px; margin-bottom: 0; text-align: center;">Dispatched at ${new Date().toLocaleString()}</p>
       </div>
     `;
 
