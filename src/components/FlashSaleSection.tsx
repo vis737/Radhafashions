@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Timer, ShoppingBag, Zap } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowRight, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
 import { handleImageError } from '../utils/imageUtils';
 
@@ -11,163 +11,211 @@ interface FlashSaleSectionProps {
 }
 
 export default function FlashSaleSection({ products, onAddProductToCart, onSelectProduct }: FlashSaleSectionProps) {
-  // We'll set the initial sale timer to 2 hours, 14 minutes, 30 seconds from session storage or load time
-  const [timeLeft, setTimeLeft] = useState(8070); // in seconds
   const [activeProducts, setActiveProducts] = useState<Product[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    // Read or initiate target session countdown time to keep it ticking
-    const stored = sessionStorage.getItem('radha_flash_sale_end');
-    const now = Math.floor(Date.now() / 1000);
-    let targetEnd = now + 8070; // 2h 14m 30s in future
-
-    if (stored) {
-      const parsed = parseInt(stored);
-      if (parsed > now) {
-        targetEnd = parsed;
-      } else {
-        // Reset to another 2 hours if expired so the demo is always lively!
-        sessionStorage.setItem('radha_flash_sale_end', targetEnd.toString());
-      }
-    } else {
-      sessionStorage.setItem('radha_flash_sale_end', targetEnd.toString());
-    }
-
-    setTimeLeft(targetEnd - now);
-
-    const timer = setInterval(() => {
-      const secondsLeft = targetEnd - Math.floor(Date.now() / 1000);
-      if (secondsLeft <= 0) {
-        setTimeLeft(0);
-        clearInterval(timer);
-      } else {
-        setTimeLeft(secondsLeft);
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Filter 3 representative products to showcase in the flash sale
   useEffect(() => {
     if (products.length > 0) {
-      setActiveProducts(products.slice(0, 3));
+      setActiveProducts(products.slice(0, 6));
     }
   }, [products]);
 
-  // Format time helper
-  const formatTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  // Auto-rotate featured product every 5 seconds
+  useEffect(() => {
+    if (activeProducts.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % activeProducts.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [activeProducts.length]);
 
-    return {
-      hours: hours.toString().padStart(2, '0'),
-      minutes: minutes.toString().padStart(2, '0'),
-      seconds: seconds.toString().padStart(2, '0')
-    };
+  const toggleLike = (e: React.MouseEvent, productId: string) => {
+    e.stopPropagation();
+    setLikedProducts(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
   };
 
-  const { hours, minutes, seconds } = formatTime(timeLeft);
+  if (activeProducts.length === 0) return null;
 
-  if (timeLeft <= 0) return null; // Hide if expired
+  const featured = activeProducts[currentIndex];
 
   return (
-    <section className="bg-gray-50 dark:bg-gradient-to-tr dark:from-[#0F172A] dark:to-gray-950 border border-pink-200 dark:border-pink-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-left relative overflow-hidden select-none font-sans max-w-7xl mx-auto my-8 sm:my-12">
-      {/* Background Gold Ambient glow blur */}
-      <div className="absolute right-0 top-0 translate-y-[-20%] translate-x-[20%] w-96 h-96 bg-pink-400/5 rounded-full blur-[100px] pointer-events-none" />
+    <section className="bg-gradient-to-br from-white via-pink-50/30 to-rose-50/20 dark:from-[#0F172A] dark:via-gray-950 dark:to-[#0F172A] border border-pink-100/60 dark:border-pink-900/15 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 relative overflow-hidden select-none font-sans max-w-7xl mx-auto my-8 sm:my-12">
+      {/* Decorative background elements */}
+      <div className="absolute right-0 top-0 w-80 h-80 bg-pink-300/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute left-0 bottom-0 w-64 h-64 bg-rose-200/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pb-6 border-b border-pink-100 dark:border-pink-900/20">
+      {/* Section Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-pink-100/50 dark:border-pink-900/15">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono font-bold tracking-widest uppercase">
-            <Zap className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-bounce" />
-            Urgent Hourly Fashion Flash Offer
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100/60 dark:bg-pink-900/20 border border-pink-200/50 dark:border-pink-800/20 text-pink-600 dark:text-pink-400 text-[10px] font-mono font-bold tracking-widest uppercase">
+            <Star className="w-3 h-3 fill-pink-500 text-pink-500" />
+            Editor's Picks
           </div>
-
-          <h3 className="font-display font-black text-gray-900 dark:text-white text-xl sm:text-2xl uppercase tracking-wider">
-            Limited Stock — Selling Fast!
+          <h3 className="font-display font-black text-gray-900 dark:text-white text-xl sm:text-2xl tracking-tight">
+            Trending Now
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 max-w-lg leading-relaxed">
-            Our curated collections are running low on stock. Enjoy up to <span className="text-pink-400 font-bold">30% off</span> on select fashion items while this offer lasts.
+          <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md leading-relaxed">
+            Handpicked styles our fashion editors love this season. Discover what's trending in ethnic and boutique fashion.
           </p>
         </div>
 
-        {/* Stopwatch display */}
-        <div className="flex items-center gap-3 bg-white/65 dark:bg-gray-950/65 border border-pink-100 dark:border-pink-900/20 p-4 rounded-2xl max-w-sm">
-          <Timer className="w-5 h-5 text-pink-400 shrink-0" />
-          <div className="space-y-1">
-            <span className="text-[9px] font-mono tracking-widest uppercase text-gray-500 dark:text-gray-400 font-bold block">Expiring In</span>
-            <div className="flex gap-1.5 font-mono text-lg font-black text-gray-900 dark:text-white">
-              <span className="px-2 py-1 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/20 rounded-lg text-pink-400">{hours}</span>
-              <span className="text-pink-400 animate-pulse">:</span>
-              <span className="px-2 py-1 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/20 rounded-lg text-pink-400">{minutes}</span>
-              <span className="text-pink-400 animate-pulse">:</span>
-              <span className="px-2 py-1 bg-white dark:bg-gray-900 border border-pink-100 dark:border-pink-900/20 rounded-lg text-pink-400">{seconds}</span>
-            </div>
+        {/* Carousel Navigation */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrentIndex(prev => prev === 0 ? activeProducts.length - 1 : prev - 1)}
+            className="w-8 h-8 rounded-full border border-pink-200 dark:border-pink-800/30 flex items-center justify-center text-gray-400 hover:text-pink-500 hover:border-pink-400 transition"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div className="flex gap-1.5">
+            {activeProducts.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentIndex(i)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  i === currentIndex
+                    ? 'bg-pink-500 w-5'
+                    : 'bg-pink-200 dark:bg-pink-800/30 hover:bg-pink-300'
+                }`}
+              />
+            ))}
           </div>
+          <button
+            onClick={() => setCurrentIndex(prev => (prev + 1) % activeProducts.length)}
+            className="w-8 h-8 rounded-full border border-pink-200 dark:border-pink-800/30 flex items-center justify-center text-gray-400 hover:text-pink-500 hover:border-pink-400 transition"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Grid of flash products */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 pt-6">
-        {activeProducts.map(product => {
-          // Calculate direct 30% discount mockup
-          const flashPrice = Math.round(product.price * 0.70);
-          const percentSavings = 30;
-
-          return (
+      {/* Featured Product (Large) */}
+      <div className="pt-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={featured.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            {/* Large Image */}
             <div
-              key={product.id}
-              className="group p-4 bg-white/40 dark:bg-gray-900/40 hover:bg-white/80 dark:hover:bg-gray-900/80 border border-pink-100 dark:border-pink-900/20 hover:border-pink-500/40 rounded-2xl transition duration-300 flex gap-4 text-left cursor-pointer"
-              onClick={() => onSelectProduct(product.id)}
+              className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-pink-100/50 dark:border-pink-900/15 cursor-pointer group"
+              onClick={() => onSelectProduct(featured.id)}
             >
-              {/* Image with badge */}
-              <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-gray-950 shrink-0 border border-pink-100 dark:border-pink-900/20">
-                <img src={product.images && product.images[0] ? product.images[0] : ''} alt="" referrerPolicy="no-referrer" onError={(e) => handleImageError(e, product.category)} className="w-full h-full object-cover" />
-                <span className="absolute top-1 left-1 bg-rose-600 text-white text-[8px] font-bold px-1 rounded uppercase tracking-[0.5px]">
-                  -{percentSavings}%
+              <img
+                src={featured.images?.[0] || ''}
+                alt={featured.name}
+                referrerPolicy="no-referrer"
+                onError={(e) => handleImageError(e, featured.category)}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <span className="inline-block px-2 py-0.5 bg-white/90 dark:bg-gray-900/90 text-pink-600 text-[9px] font-mono font-bold uppercase tracking-widest rounded-full mb-2">
+                  {featured.category}
                 </span>
+                <h4 className="font-display font-black text-white text-lg sm:text-xl leading-tight">
+                  {featured.name}
+                </h4>
+              </div>
+              {/* Like button */}
+              <button
+                onClick={(e) => toggleLike(e, featured.id)}
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center justify-center transition hover:scale-110"
+              >
+                <Heart
+                  className={`w-4 h-4 transition ${
+                    likedProducts.has(featured.id)
+                      ? 'fill-rose-500 text-rose-500'
+                      : 'text-gray-400'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Product Info + Mini Grid */}
+            <div className="flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <span className="text-[10px] font-mono text-pink-500 uppercase tracking-widest font-bold">{featured.category}</span>
+                  <h4 className="font-display font-black text-gray-900 dark:text-white text-xl sm:text-2xl leading-tight">
+                    {featured.name}
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                    {featured.shortDescription || featured.description}
+                  </p>
+                </div>
+
+                {/* Price */}
+                <div className="flex items-baseline gap-3">
+                  <span className="text-2xl font-display font-black text-gray-950 dark:text-white">
+                    Rs.{featured.discountPrice || featured.price}
+                  </span>
+                  {featured.discountPrice && featured.discountPrice < featured.price && (
+                    <span className="text-sm text-gray-400 line-through font-mono">
+                      Rs.{featured.price}
+                    </span>
+                  )}
+                </div>
+
+                {/* Stars */}
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map(star => (
+                    <Star key={star} className={`w-3.5 h-3.5 ${star <= 4 ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700'}`} />
+                  ))}
+                  <span className="text-[10px] text-gray-400 ml-1 font-mono">4.0</span>
+                </div>
               </div>
 
-              {/* metadata */}
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <span className="text-[8px] font-mono text-pink-500 uppercase font-black block">{product.category}</span>
-                  <h4 className="font-display font-bold text-xs text-gray-900 dark:text-white line-clamp-1 mt-0.5 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
-                    {product.name}
-                  </h4>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-light line-clamp-1 mt-0.5">{product.shortDescription}</p>
-                </div>
+              {/* CTA Buttons */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => onAddProductToCart(featured)}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-display font-bold text-sm uppercase tracking-wider transition-all active:scale-[0.98]"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  Add to Bag
+                </button>
+                <button
+                  onClick={() => onSelectProduct(featured.id)}
+                  className="flex items-center justify-center gap-2 py-3 px-4 border border-pink-200 dark:border-pink-800/30 text-gray-700 dark:text-gray-300 hover:border-pink-400 hover:text-pink-500 rounded-xl font-display font-bold text-sm uppercase tracking-wider transition-all"
+                >
+                  View
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
 
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-bold text-gray-950 dark:text-white font-mono">Rs.{flashPrice}</span>
-                    <span className="text-[10px] text-gray-400 dark:text-gray-500 line-through font-mono">Rs.{product.price}</span>
-                  </div>
-
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      // Create a promo product copy with flash discount price
-                      const copy: Product = {
-                        ...product,
-                        discountPrice: flashPrice
-                      };
-                      onAddProductToCart(copy);
-                    }}
-                    className="p-1 px-2.5 rounded bg-pink-500 text-white hover:bg-pink-600 text-[10px] font-display font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+              {/* Mini Thumbnail Grid */}
+              <div className="flex gap-2 mt-6">
+                {activeProducts.filter(p => p.id !== featured.id).slice(0, 3).map((product) => (
+                  <div
+                    key={product.id}
+                    onClick={() => onSelectProduct(product.id)}
+                    className="flex-1 aspect-square rounded-xl overflow-hidden border border-pink-100/50 dark:border-pink-900/15 cursor-pointer hover:border-pink-400 transition group"
                   >
-                    <ShoppingBag className="w-3 h-3 text-white" />
-                    <span>Buy now</span>
-                  </button>
-                </div>
+                    <img
+                      src={product.images?.[0] || ''}
+                      alt={product.name}
+                      referrerPolicy="no-referrer"
+                      onError={(e) => handleImageError(e, product.category)}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-          );
-        })}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );
 }
-
-
