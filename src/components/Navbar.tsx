@@ -463,11 +463,12 @@ export default function Navbar({
 
             {/* Profile / Login */}
             {currentUser ? (
-              <div className="hidden sm:flex items-center gap-1 bg-primary-soft border border-primary/20 rounded-full p-1">
+              <div className="flex items-center gap-1 bg-primary-soft border border-primary/20 rounded-full p-1">
                 <button
                   onClick={() => onNavigate('account')}
-                  className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer pr-1"
+                  className="flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer pr-0.5 sm:pr-1"
                   title="View Account Profile"
+                  aria-label="Account Profile"
                 >
                   <div className="w-7 h-7 bg-primary rounded-full text-primary-foreground font-bold text-xs flex items-center justify-center">
                     {currentUser.name.charAt(0).toUpperCase()}
@@ -479,7 +480,7 @@ export default function Navbar({
                 </button>
                 <button
                   onClick={handleLogoutClick}
-                  className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition cursor-pointer"
+                  className="hidden sm:flex p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition cursor-pointer"
                   title="Log Out"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -488,8 +489,9 @@ export default function Navbar({
             ) : (
               <button
                 onClick={() => onNavigate('account')}
-                className="hidden sm:flex p-2 text-muted-foreground hover:text-primary hover:bg-accent transition rounded-full cursor-pointer"
+                className="flex p-2 text-muted-foreground hover:text-primary hover:bg-accent transition rounded-full cursor-pointer"
                 title="Account Login"
+                aria-label="Account Login"
               >
                 <User className="w-5 h-5" />
               </button>
@@ -532,23 +534,39 @@ export default function Navbar({
                 onClick={() => setMobileMenuOpen(false)}
               />
 
-              {/* Slide-in White Panel matching Image 2 */}
+              {/* Slide-in Boutique Themed Panel */}
               <motion.aside
                 key="mobile-panel"
                 initial={{ x: '-100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-                className="relative z-10 h-full w-[78%] max-w-[320px] flex flex-col bg-white text-gray-900 shadow-2xl overflow-hidden"
+                className="relative z-10 h-full w-[80%] max-w-[320px] flex flex-col bg-gradient-to-b from-[#fff8fa] via-white to-[#fff0f5] dark:from-[#1a0f1d] dark:via-[#130b15] dark:to-[#0c060d] text-foreground border-r border-pink-200/60 dark:border-pink-900/40 shadow-2xl overflow-hidden"
               >
-                {/* Header: "MENU" + Circular (X) close button */}
-                <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-                  <span className="font-bold text-sm sm:text-base tracking-[0.15em] uppercase text-gray-900 font-sans">
-                    MENU
-                  </span>
+                {/* Header: Boutique Branding + Close button */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-pink-100 dark:border-pink-950/50 shrink-0">
+                  <div
+                    onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
+                    className="flex items-center gap-2.5 cursor-pointer"
+                  >
+                    <img
+                      src="/radha-fashions-logo.png"
+                      alt="Radha Fashions"
+                      className="h-8 w-8 rounded-full object-cover ring-2 ring-pink-400/40"
+                    />
+                    <div className="text-left">
+                      <span className="font-display font-bold text-base tracking-wide text-foreground block leading-none">
+                        Radha Fashions
+                      </span>
+                      <span className="text-[8px] uppercase font-mono tracking-[0.24em] text-pink-500 dark:text-pink-400 font-semibold">
+                        Boutique
+                      </span>
+                    </div>
+                  </div>
+                  
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition cursor-pointer"
+                    className="w-8 h-8 rounded-full border border-pink-200 dark:border-pink-800 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary hover:bg-pink-50 dark:hover:bg-pink-950/40 transition cursor-pointer"
                     aria-label="Close menu"
                   >
                     <X className="w-4 h-4" />
@@ -556,25 +574,26 @@ export default function Navbar({
                 </div>
 
                 {/* Scrollable Menu Body */}
-                <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 no-scrollbar">
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 no-scrollbar">
                   
-                  {/* Shop All with border bottom */}
-                  <div className="pb-3 border-b border-gray-900">
+                  {/* Shop All */}
+                  <div className="pb-3 border-b border-pink-200/70 dark:border-pink-900/60">
                     <button
                       onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                      className="w-full text-left font-bold text-base text-gray-900 hover:text-pink-600 transition cursor-pointer"
+                      className="w-full text-left font-display font-bold text-lg text-foreground hover:text-primary transition cursor-pointer flex items-center justify-between"
                     >
-                      Shop All
+                      <span>Shop All Collections</span>
+                      <Sparkles className="w-4 h-4 text-pink-500" />
                     </button>
                   </div>
 
                   {/* CATEGORIES header & list */}
                   <div className="space-y-2.5 pt-1">
-                    <span className="text-[11px] font-mono tracking-[0.18em] text-gray-400 uppercase font-semibold block">
+                    <span className="text-[10px] font-mono tracking-[0.22em] text-pink-600 dark:text-pink-400 uppercase font-bold block">
                       CATEGORIES
                     </span>
                     
-                    <div className="space-y-3 pt-1">
+                    <div className="space-y-2 pt-1">
                       {CATEGORIES.map((category) => (
                         <button
                           key={category.id}
@@ -583,48 +602,52 @@ export default function Navbar({
                             onNavigate('category');
                             setMobileMenuOpen(false);
                           }}
-                          className="block text-left w-full text-[15px] font-medium text-gray-800 hover:text-pink-600 transition cursor-pointer"
+                          className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-foreground/90 hover:text-primary hover:translate-x-1 transition-all duration-200 cursor-pointer py-0.5"
                         >
-                          {category.name}
+                          <span className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
+                          <span>{category.name}</span>
                         </button>
                       ))}
                       
                       <button
                         onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
-                        className="block text-left w-full text-[15px] font-medium text-gray-800 hover:text-pink-600 transition cursor-pointer"
+                        className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-foreground/90 hover:text-primary hover:translate-x-1 transition-all duration-200 cursor-pointer py-0.5"
                       >
-                        About Us
+                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
+                        <span>About Our Boutique</span>
                       </button>
 
                       <button
                         onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
-                        className="block text-left w-full text-[15px] font-medium text-gray-800 hover:text-pink-600 transition cursor-pointer"
+                        className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-foreground/90 hover:text-primary hover:translate-x-1 transition-all duration-200 cursor-pointer py-0.5"
                       >
-                        My Account
+                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
+                        <span>My Account & Orders</span>
                       </button>
 
                       {currentUser && (
                         <button
                           onClick={() => { handleLogoutClick(); setMobileMenuOpen(false); }}
-                          className="block text-left w-full text-[15px] font-medium text-red-600 hover:text-red-700 transition cursor-pointer"
+                          className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-red-500 hover:text-red-600 transition cursor-pointer py-0.5 pt-1"
                         >
-                          Sign Out
+                          <LogOut className="w-3.5 h-3.5 shrink-0" />
+                          <span>Sign Out</span>
                         </button>
                       )}
                     </div>
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-gray-900 pt-3" />
+                  <div className="border-t border-pink-200/70 dark:border-pink-900/60 pt-3" />
 
                   {/* ASSISTANCE CONTACT */}
-                  <div className="space-y-2.5 pb-8">
-                    <span className="text-[11px] font-mono tracking-[0.18em] text-gray-400 uppercase font-semibold block">
+                  <div className="space-y-2 pb-6">
+                    <span className="text-[10px] font-mono tracking-[0.22em] text-pink-600 dark:text-pink-400 uppercase font-bold block">
                       ASSISTANCE CONTACT
                     </span>
                     <a
                       href="tel:+919731153609"
-                      className="flex items-center gap-2.5 text-[15px] font-semibold text-gray-900 hover:text-pink-600 transition"
+                      className="flex items-center gap-2.5 p-3 rounded-xl bg-pink-50/80 dark:bg-pink-950/30 border border-pink-200/60 dark:border-pink-900/40 text-[14px] font-semibold text-foreground hover:text-primary transition"
                     >
                       <span className="w-5 h-5 rounded-full border border-amber-500 text-amber-500 flex items-center justify-center text-xs font-bold font-serif shrink-0">
                         ?

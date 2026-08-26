@@ -949,20 +949,20 @@ export default function App() {
                   className="pointer-events-none absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-b from-transparent via-background/70 to-background"
                   aria-hidden="true"
                 />
-                <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-6 sm:gap-10 px-4 sm:px-6 py-10 sm:py-16 md:grid-cols-2 md:pb-10 md:pt-24">
+                <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-6 sm:gap-10 px-4 sm:px-6 py-8 sm:py-16 md:grid-cols-2 md:pb-10 md:pt-24">
                   <div className="text-left">
-                    <p className="text-[10px] sm:text-[0.6875rem] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-white/80">
+                    <p className="text-[10px] sm:text-[0.6875rem] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-pink-300 sm:text-white/80 font-mono font-semibold">
                       New season · Collection 2026
                     </p>
-                    <h1 className="mt-4 sm:mt-5 font-display text-3xl sm:text-5xl leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-7xl">
+                    <h1 className="mt-3 sm:mt-5 font-display text-3xl sm:text-5xl leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-7xl">
                       Elegance,
                       <br />
                       tailored to you.
                     </h1>
-                    <p className="mt-4 sm:mt-6 max-w-md text-sm sm:text-base leading-relaxed text-white/85 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+                    <p className="mt-3 sm:mt-6 max-w-md text-xs sm:text-base leading-relaxed text-white/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
                       A boutique of quietly romantic Indian ethnic wear — handpicked silk sarees, designer lehengas and curated jewelry made in small batches.
                     </p>
-                    <div className="mt-6 sm:mt-9 flex flex-wrap gap-2 sm:gap-3">
+                    <div className="mt-5 sm:mt-9 flex flex-wrap gap-2.5 sm:gap-3">
                       <button
                         onClick={() => {
                           const featuredCategoriesEl = document.getElementById('featured-categories');
@@ -976,19 +976,19 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => handleSwapView('about')}
-                        className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm border border-white/55 bg-black/15 hover:bg-white/15 text-white text-[10px] sm:text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                        className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm border border-white/55 bg-black/20 hover:bg-white/15 text-white text-[10px] sm:text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
                       >
                         Our story
                       </button>
                     </div>
                   </div>
-                  <div className="relative hidden sm:block">
+                  <div className="relative mt-2 sm:mt-0">
                     <img
                       src="/hero-boutique-new.png"
                       alt="Radha Fashions Boutique — handpicked ethnic wear, designer lehengas and curated collections"
                       width={1600}
                       height={1104}
-                      className="w-full rounded-sm object-cover shadow-petal animate-fade-in ring-1 ring-white/25"
+                      className="w-full rounded-xl sm:rounded-sm object-cover shadow-2xl ring-1 ring-white/20 animate-fade-in aspect-[16/10] sm:aspect-auto"
                     />
                   </div>
                 </div>
