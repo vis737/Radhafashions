@@ -520,83 +520,67 @@ export default function Navbar({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 250 }}
-              className="relative flex flex-col w-[85%] max-w-sm bg-white dark:bg-[#0a0a0a] h-full shadow-2xl z-[9999] text-left overflow-hidden"
+              className="relative flex flex-col w-[78%] max-w-sm bg-white dark:bg-[#0a0a0a] h-full shadow-2xl z-[9999] text-left overflow-hidden"
             >
               {/* Drawer Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
-                <span className="font-display font-bold text-sm tracking-widest text-gray-900 dark:text-white uppercase">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition">
-                  <X className="w-4 h-4 text-gray-900 dark:text-white" />
+              <div className="flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0a0a0a]">
+                <span className="text-[15px] font-bold text-gray-900 dark:text-white uppercase tracking-wide">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                  <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+              <div className="flex-1 overflow-y-auto">
                 {/* Shop All */}
                 <button
                   onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                  className="block text-left w-full pb-3 border-b border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-900 dark:text-white hover:text-pink-500 transition"
+                  className="block text-left w-full px-6 py-4 text-[15px] font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800"
                 >
-                  ✦ Shop All
+                  Shop All
                 </button>
 
                 {/* Categories */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono tracking-wider text-gray-500 dark:text-gray-400 uppercase block mb-2">Categories</span>
-                  {CATEGORIES.map((category, idx) => (
-                    <motion.button
+                <div className="px-6 pt-5 pb-2">
+                  <span className="text-[11px] font-mono tracking-[0.15em] text-gray-400 dark:text-gray-500 uppercase block mb-3">Categories</span>
+                  {CATEGORIES.map((category) => (
+                    <button
                       key={category.id}
-                      initial={{ opacity: 0, x: -15 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.04 + 0.08, duration: 0.2 }}
                       onClick={() => {
                         onSelectCategory(category.id);
                         onNavigate('category');
                         setMobileMenuOpen(false);
                       }}
-                      className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                      className="block text-left w-full py-3 text-[15px] text-gray-700 dark:text-gray-200 hover:text-pink-500 transition font-normal"
                     >
                       {category.name}
-                    </motion.button>
+                    </button>
                   ))}
-                </div>
-
-                {/* Quick Links */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono tracking-wider text-gray-500 dark:text-gray-400 uppercase block mb-2">Quick Links</span>
-                  <button
-                    onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
-                    className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
-                  >
-                    My Account & Orders
-                  </button>
-                  <button
-                    onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
-                    className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
-                  >
-                    Browse Collections
-                  </button>
                   <button
                     onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
-                    className="block text-left w-full py-2.5 px-3 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30 rounded-xl font-medium transition"
+                    className="block text-left w-full py-3 text-[15px] text-gray-700 dark:text-gray-200 hover:text-pink-500 transition font-normal"
                   >
                     About Us
                   </button>
+                  <button
+                    onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
+                    className="block text-left w-full py-3 text-[15px] text-gray-700 dark:text-gray-200 hover:text-pink-500 transition font-normal"
+                  >
+                    My Account
+                  </button>
                 </div>
 
-                {/* Help Block */}
-                <div className="pt-4 border-t border-border space-y-2">
-                  <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400 uppercase">Need Help?</p>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                {/* Separator */}
+                <div className="mx-6 border-t border-gray-200 dark:border-gray-800" />
+
+                {/* Assistance Contact */}
+                <div className="px-6 pt-5 pb-8">
+                  <p className="text-[11px] font-mono tracking-[0.15em] text-gray-400 dark:text-gray-500 uppercase mb-3">Assistance Contact</p>
+                  <p className="text-[15px] text-gray-700 dark:text-gray-200 flex items-center gap-2">
                     <HelpCircle className="w-4 h-4 text-pink-400" />
                     +91 97311 53609
                   </p>
                 </div>
-              </div>
-
-              {/* Drawer Footer */}
-              <div className="sticky bottom-0 px-5 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
-                <p className="text-[9px] font-mono text-gray-500 dark:text-gray-400 text-center">Radha Fashions Boutique · Bengaluru</p>
               </div>
             </motion.div>
           </div>
