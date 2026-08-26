@@ -14,7 +14,6 @@ import AdminDashboard from './components/AdminDashboard';
 import WhatsAppChat from './components/WhatsAppChat';
 import AiRecommendations from './components/AiRecommendations';
 import { getAIRecommendations } from './utils/aiRecommender';
-import InstagramGallery from './components/InstagramGallery';
 import AboutPage from './components/AboutPage';
 import ExitIntentOffer from './components/ExitIntentOffer';
 
@@ -1330,10 +1329,7 @@ export default function App() {
                 </div>
               </section>
 
-              {/* Product Gallery */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
-                <InstagramGallery />
-              </div>
+
             </motion.div>
           )}
 
