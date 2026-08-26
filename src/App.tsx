@@ -949,20 +949,58 @@ export default function App() {
                   className="pointer-events-none absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-b from-transparent via-background/70 to-background"
                   aria-hidden="true"
                 />
-                <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-6 sm:gap-10 px-4 sm:px-6 py-8 sm:py-16 md:grid-cols-2 md:pb-10 md:pt-24">
-                  <div className="text-left">
-                    <p className="text-[10px] sm:text-[0.6875rem] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-pink-300 sm:text-white/80 font-mono font-semibold">
-                      New season · Collection 2026
-                    </p>
-                    <h1 className="mt-3 sm:mt-5 font-display text-3xl sm:text-5xl leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-7xl">
-                      Elegance,
-                      <br />
-                      tailored to you.
-                    </h1>
-                    <p className="mt-3 sm:mt-6 max-w-md text-xs sm:text-base leading-relaxed text-white/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
-                      A boutique of quietly romantic Indian ethnic wear — handpicked silk sarees, designer lehengas and curated jewelry made in small batches.
-                    </p>
-                    <div className="mt-5 sm:mt-9 flex flex-wrap gap-2.5 sm:gap-3">
+                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-12 md:py-24">
+                  <div className="grid grid-cols-12 md:grid-cols-2 items-center gap-3 sm:gap-6 md:gap-12">
+                    
+                    {/* Text block (7 cols on mobile, 1 col on md) */}
+                    <div className="col-span-7 md:col-span-1 text-left flex flex-col justify-center">
+                      <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.28em] text-pink-300 md:text-white/80 font-mono font-semibold">
+                        New season · Collection 2026
+                      </p>
+                      <h1 className="mt-1.5 sm:mt-3 md:mt-5 font-display text-xl sm:text-4xl md:text-6xl lg:text-7xl leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)]">
+                        Elegance,
+                        <br />
+                        tailored to you.
+                      </h1>
+                      <p className="mt-2 sm:mt-4 md:mt-6 text-[11px] sm:text-sm md:text-base leading-relaxed text-white/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)] line-clamp-3 sm:line-clamp-none">
+                        A boutique of quietly romantic Indian ethnic wear — handpicked silk sarees, designer lehengas and curated jewelry made in small batches.
+                      </p>
+                      
+                      {/* Desktop buttons */}
+                      <div className="hidden md:flex mt-8 flex-wrap gap-3">
+                        <button
+                          onClick={() => {
+                            const featuredCategoriesEl = document.getElementById('featured-categories');
+                            if (featuredCategoriesEl) {
+                              featuredCategoriesEl.scrollIntoView({ behavior: 'smooth' });
+                            }
+                          }}
+                          className="py-3 px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
+                        >
+                          Shop the collection
+                        </button>
+                        <button
+                          onClick={() => handleSwapView('about')}
+                          className="py-3 px-6 rounded-sm border border-white/55 bg-black/20 hover:bg-white/15 text-white text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                        >
+                          Our story
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Image block (5 cols on mobile in marked spot, 1 col on md) */}
+                    <div className="col-span-5 md:col-span-1 relative flex items-center justify-center">
+                      <img
+                        src="/hero-boutique-new.png"
+                        alt="Radha Fashions Boutique — handpicked ethnic wear, designer lehengas and curated collections"
+                        width={1600}
+                        height={1104}
+                        className="w-full rounded-xl sm:rounded-2xl md:rounded-sm object-cover shadow-2xl ring-1 ring-white/20 animate-fade-in aspect-[4/5] sm:aspect-[4/4] md:aspect-auto max-h-[220px] sm:max-h-[300px] md:max-h-none"
+                      />
+                    </div>
+
+                    {/* Mobile buttons spanning full width below side-by-side row */}
+                    <div className="col-span-12 flex md:hidden mt-2 sm:mt-4 gap-2.5 w-full">
                       <button
                         onClick={() => {
                           const featuredCategoriesEl = document.getElementById('featured-categories');
@@ -970,26 +1008,18 @@ export default function App() {
                             featuredCategoriesEl.scrollIntoView({ behavior: 'smooth' });
                           }
                         }}
-                        className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
+                        className="flex-1 py-2.5 px-3 rounded-lg bg-primary-gradient text-primary-foreground hover:opacity-90 text-[11px] font-bold uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-petal text-center"
                       >
-                        Shop the collection
+                        Shop Collection
                       </button>
                       <button
                         onClick={() => handleSwapView('about')}
-                        className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm border border-white/55 bg-black/20 hover:bg-white/15 text-white text-[10px] sm:text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                        className="flex-1 py-2.5 px-3 rounded-lg border border-white/55 bg-black/25 hover:bg-white/15 text-white text-[11px] font-medium uppercase tracking-wider transition cursor-pointer active:scale-95 text-center"
                       >
-                        Our story
+                        Our Story
                       </button>
                     </div>
-                  </div>
-                  <div className="relative mt-2 sm:mt-0">
-                    <img
-                      src="/hero-boutique-new.png"
-                      alt="Radha Fashions Boutique — handpicked ethnic wear, designer lehengas and curated collections"
-                      width={1600}
-                      height={1104}
-                      className="w-full rounded-xl sm:rounded-sm object-cover shadow-2xl ring-1 ring-white/20 animate-fade-in aspect-[16/10] sm:aspect-auto"
-                    />
+
                   </div>
                 </div>
               </section>
