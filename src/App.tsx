@@ -14,7 +14,6 @@ import AdminDashboard from './components/AdminDashboard';
 import WhatsAppChat from './components/WhatsAppChat';
 import AiRecommendations from './components/AiRecommendations';
 import { getAIRecommendations } from './utils/aiRecommender';
-import FlashSaleSection from './components/FlashSaleSection';
 import InstagramGallery from './components/InstagramGallery';
 import AboutPage from './components/AboutPage';
 import ExitIntentOffer from './components/ExitIntentOffer';
@@ -1109,14 +1108,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Urgency-driven promotional Flash Sale Countdown section */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <FlashSaleSection
-                  products={products}
-                  onAddProductToCart={handleAddProductToCart}
-                  onSelectProduct={handleViewProductDetails}
-                />
-              </div>
 
               {/* Dynamic Featured Category Grid Shelf */}
               <section id="featured-categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
