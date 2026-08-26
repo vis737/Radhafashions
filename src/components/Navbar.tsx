@@ -184,6 +184,7 @@ export default function Navbar({
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileMenuChangedByHistoryRef = useRef(false);
 
   const { isSignedIn: isClerkSignedIn } = useUser();
   const { signOut: clerkSignOut } = useClerk();
@@ -266,10 +267,32 @@ export default function Navbar({
     onSetProductsFilter(allProducts);
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+
+    const currentState = window.history.state as Record<string, unknown> | null;
+    if (currentState?.radhaFashionsMobileMenu) {
+      window.history.replaceState(
+        { ...currentState, radhaFashionsMobileMenu: false },
+        '',
+        window.location.href
+      );
+    }
+  };
+
   // Lock body scroll when mobile menu drawer is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
+      if (mobileMenuChangedByHistoryRef.current) {
+        mobileMenuChangedByHistoryRef.current = false;
+      } else {
+        window.history.pushState(
+          { ...(window.history.state as Record<string, unknown> | null), radhaFashionsMobileMenu: true },
+          '',
+          window.location.href
+        );
+      }
     } else {
       document.body.style.overflow = '';
     }
@@ -277,6 +300,18 @@ export default function Navbar({
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
+
+  // The first browser Back / Android edge swipe closes the drawer. A second
+  // one then follows the storefront page history managed by App.
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state as Record<string, unknown> | null;
+      mobileMenuChangedByHistoryRef.current = true;
+      setMobileMenuOpen(Boolean(state?.radhaFashionsMobileMenu));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]/95 backdrop-blur-md text-gray-900 dark:text-white font-sans">
@@ -355,7 +390,6 @@ export default function Navbar({
                         transition={{ delay: idx * 0.04, duration: 0.2 }}
                         onClick={() => {
                           onSelectCategory(category.id);
-                          onNavigate('category');
                           setCategoryDropdownOpen(false);
                         }}
                         className="w-full text-left px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-primary rounded-lg transition"
@@ -414,7 +448,6 @@ export default function Navbar({
                       <button
                         onClick={() => {
                           onSelectCategory(suggestedSlug);
-                          onNavigate('category');
                           setSearchFocused(false);
                         }}
                         className="mt-2 text-[11px] font-semibold text-primary hover:text-primary-deep flex items-center gap-1"
@@ -531,7 +564,7 @@ export default function Navbar({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               />
 
               {/* Slide-in Boutique Themed Panel */}
@@ -546,7 +579,7 @@ export default function Navbar({
                 {/* Header: Boutique Branding + Close button */}
                 <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-pink-100 dark:border-pink-950/50 shrink-0">
                   <div
-                    onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
+                    onClick={() => { closeMobileMenu(); onNavigate('home'); clearSearch(); }}
                     className="flex items-center gap-2.5 cursor-pointer"
                   >
                     <img
@@ -565,7 +598,7 @@ export default function Navbar({
                   </div>
                   
                   <button
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
                     className="w-8 h-8 rounded-full border border-pink-200 dark:border-pink-800 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary hover:bg-pink-50 dark:hover:bg-pink-950/40 transition cursor-pointer"
                     aria-label="Close menu"
                   >
@@ -579,7 +612,7 @@ export default function Navbar({
                   {/* Shop All */}
                   <div className="pb-3 border-b border-pink-200/70 dark:border-pink-900/60">
                     <button
-                      onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
+                      onClick={() => { closeMobileMenu(); onNavigate('home'); clearSearch(); }}
                       className="w-full text-left font-display font-bold text-lg text-foreground hover:text-primary transition cursor-pointer flex items-center justify-between"
                     >
                       <span>Shop All Collections</span>
@@ -598,9 +631,8 @@ export default function Navbar({
                         <button
                           key={category.id}
                           onClick={() => {
+                            closeMobileMenu();
                             onSelectCategory(category.id);
-                            onNavigate('category');
-                            setMobileMenuOpen(false);
                           }}
                           className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-foreground/90 hover:text-primary hover:translate-x-1 transition-all duration-200 cursor-pointer py-0.5"
                         >
@@ -610,7 +642,7 @@ export default function Navbar({
                       ))}
                       
                       <button
-                        onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
+                        onClick={() => { closeMobileMenu(); onNavigate('about'); }}
                         className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-foreground/90 hover:text-primary hover:translate-x-1 transition-all duration-200 cursor-pointer py-0.5"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
@@ -618,7 +650,7 @@ export default function Navbar({
                       </button>
 
                       <button
-                        onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
+                        onClick={() => { closeMobileMenu(); onNavigate('account'); }}
                         className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-foreground/90 hover:text-primary hover:translate-x-1 transition-all duration-200 cursor-pointer py-0.5"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
@@ -627,7 +659,7 @@ export default function Navbar({
 
                       {currentUser && (
                         <button
-                          onClick={() => { handleLogoutClick(); setMobileMenuOpen(false); }}
+                          onClick={() => { closeMobileMenu(); handleLogoutClick(); }}
                           className="flex items-center gap-2.5 text-left w-full font-display text-[16px] font-semibold text-red-500 hover:text-red-600 transition cursor-pointer py-0.5 pt-1"
                         >
                           <LogOut className="w-3.5 h-3.5 shrink-0" />

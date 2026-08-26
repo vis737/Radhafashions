@@ -38,6 +38,16 @@ import { calculateCartTotals } from './utils/premiumData';
 
 import { Product, CartItem, Coupon, Order, CustomerInfo, ActivityLog, CMSConfig, Review, BannerCampaign, SelectedVariation, getCartItemKey } from './types';
 
+type AppView = 'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'ordersuccess' | 'about';
+
+type StorefrontHistoryState = {
+  radhaFashions?: {
+    view: AppView;
+    categorySlug?: string;
+    productId?: string;
+  };
+};
+
 // Framer Motion staggered grid entrance variants
 const staggersContainerVariants = {
   hidden: { opacity: 0 },
@@ -65,7 +75,7 @@ const staggerCardVariants = {
 
 export default function App() {
   // Router views
-  const [activeView, setActiveView] = useState<'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'ordersuccess' | 'about'>('home');
+  const [activeView, setActiveView] = useState<AppView>('home');
 
   // Core mutable list states
   const [products, setProducts] = useState<Product[]>(() => {
@@ -157,6 +167,44 @@ export default function App() {
   // Login gate state
   const [showLoginGate, setShowLoginGate] = useState(false);
   const [pendingCheckout, setPendingCheckout] = useState(false);
+
+  // Keep React's screen state in the browser history. This gives mobile back
+  // buttons and edge-swipe gestures an in-app destination instead of exiting
+  // the storefront from a product, category, checkout, or account screen.
+  useEffect(() => {
+    const restoreViewFromHistory = (state: StorefrontHistoryState | null) => {
+      const route = state?.radhaFashions;
+      if (!route) {
+        setActiveView('home');
+        setCurrentCategorySlug('');
+        setCurrentProductId('');
+        return;
+      }
+
+      setActiveView(route.view);
+      setCurrentCategorySlug(route.categorySlug || '');
+      setCurrentProductId(route.productId || '');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    };
+
+    const initialState = window.history.state as StorefrontHistoryState | null;
+    if (initialState?.radhaFashions) {
+      restoreViewFromHistory(initialState);
+    } else {
+      window.history.replaceState(
+        { ...initialState, radhaFashions: { view: 'home' } } satisfies StorefrontHistoryState,
+        '',
+        window.location.href
+      );
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      restoreViewFromHistory(event.state as StorefrontHistoryState | null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -384,9 +432,25 @@ export default function App() {
 
 
   // Scroll back up on swapping screens layout
-  const handleSwapView = (view: typeof activeView) => {
+  const handleSwapView = (view: AppView, routeState: Pick<NonNullable<StorefrontHistoryState['radhaFashions']>, 'categorySlug' | 'productId'> = {}) => {
     setActiveView(view);
+    window.history.pushState(
+      {
+        ...(window.history.state as StorefrontHistoryState | null),
+        radhaFashions: {
+          view,
+          categorySlug: routeState.categorySlug ?? (view === 'category' ? currentCategorySlug : undefined),
+          productId: routeState.productId ?? (view === 'product' ? currentProductId : undefined)
+        }
+      } satisfies StorefrontHistoryState,
+      '',
+      window.location.href
+    );
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateBack = () => {
+    window.history.back();
   };
 
   // Log activity helpers
@@ -405,7 +469,7 @@ export default function App() {
   const handleAddProductToCart = (product: Product, selectedVariation?: SelectedVariation, quantity = 1) => {
     if (product.variation?.values?.length && !selectedVariation) {
       setCurrentProductId(product.id);
-      handleSwapView('product');
+      handleSwapView('product', { productId: product.id });
       alert(`Please choose a ${product.variation.type === 'color' ? 'colour' : 'size'} before adding this product to your bag.`);
       return;
     }
@@ -466,7 +530,7 @@ export default function App() {
       return updated;
     });
     setCurrentProductId(productId);
-    handleSwapView('product');
+    handleSwapView('product', { productId });
   };
 
   // Quick buy trigger (adds and redirects to checkout) - requires login
@@ -660,7 +724,7 @@ export default function App() {
   // Active Category lists selection
   const handleSelectCategoryGroup = (slug: string) => {
     setCurrentCategorySlug(slug);
-    handleSwapView('category');
+    handleSwapView('category', { categorySlug: slug });
   };
 
   // Moderation state togglers
@@ -949,25 +1013,27 @@ export default function App() {
                   className="pointer-events-none absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-b from-transparent via-background/70 to-background"
                   aria-hidden="true"
                 />
-                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-12 md:py-24">
-                  <div className="grid grid-cols-12 md:grid-cols-2 items-center gap-3 sm:gap-6 md:gap-12">
+                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-16 md:py-24">
+                  <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-6 sm:gap-10 md:gap-12">
                     
-                    {/* Text block (7 cols on mobile, 1 col on md) */}
-                    <div className="col-span-7 md:col-span-1 text-left flex flex-col justify-center">
-                      <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.28em] text-pink-300 md:text-white/80 font-mono font-semibold">
+                    {/* Text and Actions */}
+                    <div className="text-left space-y-3.5 sm:space-y-6">
+                      <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] sm:tracking-[0.28em] text-pink-300 md:text-white/80 font-mono font-semibold">
                         New season · Collection 2026
                       </p>
-                      <h1 className="mt-1.5 sm:mt-3 md:mt-5 font-display text-xl sm:text-4xl md:text-6xl lg:text-7xl leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)]">
+                      
+                      <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)]">
                         Elegance,
                         <br />
                         tailored to you.
                       </h1>
-                      <p className="mt-2 sm:mt-4 md:mt-6 text-[11px] sm:text-sm md:text-base leading-relaxed text-white/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)] line-clamp-3 sm:line-clamp-none">
+                      
+                      <p className="max-w-md text-xs sm:text-base leading-relaxed text-white/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
                         A boutique of quietly romantic Indian ethnic wear — handpicked silk sarees, designer lehengas and curated jewelry made in small batches.
                       </p>
                       
-                      {/* Desktop buttons */}
-                      <div className="hidden md:flex mt-8 flex-wrap gap-3">
+                      {/* Action buttons */}
+                      <div className="flex flex-wrap gap-2.5 sm:gap-3.5 pt-1 sm:pt-2">
                         <button
                           onClick={() => {
                             const featuredCategoriesEl = document.getElementById('featured-categories');
@@ -975,49 +1041,28 @@ export default function App() {
                               featuredCategoriesEl.scrollIntoView({ behavior: 'smooth' });
                             }
                           }}
-                          className="py-3 px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
+                          className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm bg-primary-gradient text-primary-foreground hover:opacity-90 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition cursor-pointer active:scale-95 shadow-petal"
                         >
                           Shop the collection
                         </button>
                         <button
                           onClick={() => handleSwapView('about')}
-                          className="py-3 px-6 rounded-sm border border-white/55 bg-black/20 hover:bg-white/15 text-white text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
+                          className="py-2.5 sm:py-3 px-5 sm:px-6 rounded-sm border border-white/55 bg-black/20 hover:bg-white/15 text-white text-[10px] sm:text-xs font-medium uppercase tracking-wider transition cursor-pointer active:scale-95"
                         >
                           Our story
                         </button>
                       </div>
                     </div>
 
-                    {/* Image block (5 cols on mobile in marked spot, 1 col on md) */}
-                    <div className="col-span-5 md:col-span-1 relative flex items-center justify-center">
+                    {/* Full boutique showcase image card */}
+                    <div className="relative pt-2 sm:pt-0">
                       <img
                         src="/hero-boutique-new.png"
                         alt="Radha Fashions Boutique — handpicked ethnic wear, designer lehengas and curated collections"
                         width={1600}
                         height={1104}
-                        className="w-full rounded-xl sm:rounded-2xl md:rounded-sm object-cover shadow-2xl ring-1 ring-white/20 animate-fade-in aspect-[4/5] sm:aspect-[4/4] md:aspect-auto max-h-[220px] sm:max-h-[300px] md:max-h-none"
+                        className="w-full rounded-2xl md:rounded-sm object-cover shadow-2xl ring-1 ring-white/20 animate-fade-in aspect-[16/10] sm:aspect-auto"
                       />
-                    </div>
-
-                    {/* Mobile buttons spanning full width below side-by-side row */}
-                    <div className="col-span-12 flex md:hidden mt-2 sm:mt-4 gap-2.5 w-full">
-                      <button
-                        onClick={() => {
-                          const featuredCategoriesEl = document.getElementById('featured-categories');
-                          if (featuredCategoriesEl) {
-                            featuredCategoriesEl.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                        className="flex-1 py-2.5 px-3 rounded-lg bg-primary-gradient text-primary-foreground hover:opacity-90 text-[11px] font-bold uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-petal text-center"
-                      >
-                        Shop Collection
-                      </button>
-                      <button
-                        onClick={() => handleSwapView('about')}
-                        className="flex-1 py-2.5 px-3 rounded-lg border border-white/55 bg-black/25 hover:bg-white/15 text-white text-[11px] font-medium uppercase tracking-wider transition cursor-pointer active:scale-95 text-center"
-                      >
-                        Our Story
-                      </button>
                     </div>
 
                   </div>
@@ -1457,7 +1502,7 @@ export default function App() {
               <ProductDetails
                 product={activeProductModel}
                 relatedProducts={relatedProductsList}
-                onBack={() => handleSwapView('home')}
+                onBack={handleNavigateBack}
                 isWishlisted={wishlistIds.includes(activeProductModel.id)}
                 onToggleWishlist={handleToggleProductWishlist}
                 onAddToCart={handleAddProductToCart}
@@ -1482,7 +1527,7 @@ export default function App() {
                   shippingMethod={shippingMethod}
                   activeCoupon={activeCoupon}
                   currentUser={currentUser}
-                  onBackToCart={() => { setCartOpen(true); handleSwapView('home'); }}
+                  onBackToCart={() => { setCartOpen(true); handleNavigateBack(); }}
                   onPlaceOrder={handlePlaceSecureOrder}
                   codEnabled={cms.codEnabled !== false}
                   upiEnabled={cms.upiEnabled !== false}
