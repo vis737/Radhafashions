@@ -869,23 +869,18 @@ app.post('/api/upload-image', verifyAdminToken, upload.single('image'), async (r
 // --- PRODUCTS ENDPOINTS ---
 app.get('/api/catalog/products', async (req, res) => {
   try {
-    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
-    // Build a quick lookup map from local products by id for image fallback
-    const localProdsMap: Record<string, any> = {};
-    if (Array.isArray(localProds)) {
-      localProds.forEach((lp: any) => { if (lp && lp.id) localProdsMap[lp.id] = lp; });
-    }
+    // Supabase is the single source of truth when configured
     if (supabase) {
       const { data, error } = await supabase.from('products').select('*');
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
+        if (data.length === 0) {
+          // Supabase has the table but it's empty — this is the truth (all products were deleted)
+          return res.json([]);
+        }
         const mapped = data.map(p => {
-          // Use Supabase images if present, else fall back to local JSON images, else placeholder
-          const localMatch = localProdsMap[p.id];
           const images = (Array.isArray(p.images) && p.images.length > 0)
             ? p.images
-            : (localMatch && Array.isArray(localMatch.images) && localMatch.images.length > 0)
-              ? localMatch.images
-              : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'];
+            : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'];
           return {
             id: p.id,
             sku: p.sku || `SKU-${p.id}`,
@@ -908,21 +903,23 @@ app.get('/api/catalog/products', async (req, res) => {
             brand: p.brand || 'Radha Fashions',
             availability: p.availability || 'in-stock',
             vendorId: p.vendor_id || null,
-            variation: p.variation || localMatch?.variation || undefined
+            variation: p.variation || undefined
           };
         });
-
-        // Merge any local products from localProds that aren't yet in Supabase
-        const supabaseIds = new Set(mapped.map(m => m.id));
-        const localOnly = Array.isArray(localProds) ? localProds.filter((lp: any) => lp && lp.id && !supabaseIds.has(lp.id)) : [];
-        const merged = [...mapped, ...localOnly];
-        return res.json(merged);
+        return res.json(mapped);
       }
-      console.warn('Supabase products empty or error, serving full local products catalog:', error);
+      console.warn('Supabase products query failed, falling back to local:', error);
     }
+    // Fallback: only when Supabase is NOT configured, use local JSON file
+    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     res.json(localProds);
   } catch (err) {
-    res.json(readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS));
+    // On error, try local file only if Supabase is not available
+    if (!supabase) {
+      res.json(readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS));
+    } else {
+      res.json([]);
+    }
   }
 });
 
@@ -1045,6 +1042,7 @@ app.get('/api/catalog/coupons', async (req, res) => {
     if (supabase) {
       const { data, error } = await supabase.from('coupons').select('*');
       if (!error && data) {
+        if (data.length === 0) return res.json([]);
         const mapped = data.map(c => ({
           code: c.code,
           type: c.type,
@@ -1062,7 +1060,11 @@ app.get('/api/catalog/coupons', async (req, res) => {
     }
     res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
   } catch (err) {
-    res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
+    if (!supabase) {
+      res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
+    } else {
+      res.json([]);
+    }
   }
 });
 
@@ -1145,33 +1147,32 @@ app.delete('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
 // --- CAMPAIGNS ENDPOINTS ---
 app.get('/api/catalog/campaigns', async (req, res) => {
   try {
-    const localCampaigns = readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS);
+    // Supabase is the single source of truth when configured
     if (supabase) {
       const { data, error } = await supabase.from('campaigns').select('*');
-      if (!error && data && data.length > 0) {
-        // Build local lookup for imageUrl fallback
-        const localMap: Record<string, any> = {};
-        if (Array.isArray(localCampaigns)) {
-          localCampaigns.forEach((lc: any) => { if (lc && lc.id) localMap[lc.id] = lc; });
-        }
+      if (!error && data) {
+        if (data.length === 0) return res.json([]);
         const mapped = data.map(c => ({
           id: c.id,
-          imageUrl: c.image_url || (localMap[c.id] && localMap[c.id].imageUrl) || '',
+          imageUrl: c.image_url || '',
           title: c.title,
           description: c.description,
           ctaText: c.cta_text,
           linkCategory: c.link_category,
           active: c.active
         }));
-        // Only use Supabase data if at least one campaign has an image
-        if (mapped.some(c => c.imageUrl)) {
-          return res.json(mapped);
-        }
+        return res.json(mapped);
       }
+      console.warn('Supabase campaigns query failed, falling back to local:', error);
     }
-    res.json(localCampaigns);
-  } catch (err) {
+    // Fallback: only when Supabase is NOT configured, use local JSON file
     res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
+  } catch (err) {
+    if (!supabase) {
+      res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
+    } else {
+      res.json([]);
+    }
   }
 });
 
@@ -1247,9 +1248,14 @@ const INITIAL_CATEGORIES_DATA = [
 
 app.get('/api/catalog/categories', async (req, res) => {
   try {
+    // Supabase is the single source of truth when configured
     if (supabase) {
       const { data, error } = await supabase.from('categories').select('*').order('name');
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
+        if (data.length === 0) {
+          // Supabase has the table but it's empty — this is the truth (all categories were deleted)
+          return res.json([]);
+        }
         const mapped = data.map((c: any) => ({
           id: c.id,
           name: c.name,
@@ -1259,10 +1265,16 @@ app.get('/api/catalog/categories', async (req, res) => {
         }));
         return res.json(mapped);
       }
+      console.warn('Supabase categories query failed, falling back to local:', error);
     }
+    // Fallback: only when Supabase is NOT configured, use local JSON file
     res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
   } catch (err) {
-    res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
+    if (!supabase) {
+      res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
+    } else {
+      res.json([]);
+    }
   }
 });
 
