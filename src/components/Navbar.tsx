@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { Search, ShoppingCart, Heart, User, Key, Sparkles, LogIn, Menu, X, HelpCircle, ChevronDown, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -265,6 +266,18 @@ export default function Navbar({
     onSetProductsFilter(allProducts);
   };
 
+  // Lock body scroll when mobile menu drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]/95 backdrop-blur-md text-gray-900 dark:text-white font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -503,160 +516,130 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* ========== MOBILE MENU DRAWER ========== */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            {/* Dark backdrop */}
-            <motion.div
-              key="mobile-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
-              onClick={() => setMobileMenuOpen(false)}
-            />
+      {/* ========== MOBILE MENU DRAWER (RENDERED VIA PORTAL TO BODY) ========== */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <div className="fixed inset-0 z-[999999] flex font-sans">
+              {/* Dark backdrop */}
+              <motion.div
+                key="mobile-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+                onClick={() => setMobileMenuOpen(false)}
+              />
 
-            {/* Slide-in panel */}
-            <motion.aside
-              key="mobile-panel"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 260 }}
-              className="fixed top-0 left-0 z-[9999] h-full w-4/5 max-w-[320px] flex flex-col bg-white dark:bg-[#0d0d0d] shadow-2xl overflow-hidden"
-            >
-              {/* Panel Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
-                <button
-                  className="flex items-center gap-2.5"
-                  onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                >
-                  <img
-                    src="/radha-fashions-logo.png"
-                    alt="Radha Fashions"
-                    className="h-9 w-9 rounded-full object-cover ring-2 ring-pink-200 dark:ring-pink-800/50"
-                  />
-                  <div className="text-left">
-                    <p className="font-display text-[15px] font-semibold text-gray-900 dark:text-white leading-none">Radha Fashions</p>
-                    <p className="text-[9px] tracking-[0.2em] uppercase text-pink-400 font-mono mt-0.5">Boutique</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-pink-100 dark:hover:bg-pink-950/40 hover:text-pink-500 transition"
-                  aria-label="Close menu"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Mobile Search */}
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search collections..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="w-full pl-9 pr-9 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-full text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-pink-400 dark:focus:border-pink-500 transition"
-                  />
-                  {searchInput && (
-                    <button
-                      onClick={clearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Scrollable Menu Body */}
-              <div className="flex-1 overflow-y-auto py-3">
-
-                {/* Shop All */}
-                <div className="px-3 mb-1">
+              {/* Slide-in White Panel matching Image 2 */}
+              <motion.aside
+                key="mobile-panel"
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+                className="relative z-10 h-full w-[78%] max-w-[320px] flex flex-col bg-white text-gray-900 shadow-2xl overflow-hidden"
+              >
+                {/* Header: "MENU" + Circular (X) close button */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
+                  <span className="font-bold text-sm sm:text-base tracking-[0.15em] uppercase text-gray-900 font-sans">
+                    MENU
+                  </span>
                   <button
-                    onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
-                    className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-left font-semibold text-gray-900 dark:text-white hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-500 transition text-[15px]"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition cursor-pointer"
+                    aria-label="Close menu"
                   >
-                    <Sparkles className="w-4 h-4 text-pink-400 shrink-0" />
-                    Shop All
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Categories */}
-                <div className="px-3">
-                  <p className="px-4 pt-3 pb-1 text-[10px] font-mono tracking-[0.18em] text-gray-400 dark:text-gray-500 uppercase">
-                    Categories
-                  </p>
-                  <div className="space-y-0.5">
-                    {CATEGORIES.map((category) => (
+                {/* Scrollable Menu Body */}
+                <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 no-scrollbar">
+                  
+                  {/* Shop All with border bottom */}
+                  <div className="pb-3 border-b border-gray-900">
+                    <button
+                      onClick={() => { onNavigate('home'); clearSearch(); setMobileMenuOpen(false); }}
+                      className="w-full text-left font-bold text-base text-gray-900 hover:text-pink-600 transition cursor-pointer"
+                    >
+                      Shop All
+                    </button>
+                  </div>
+
+                  {/* CATEGORIES header & list */}
+                  <div className="space-y-2.5 pt-1">
+                    <span className="text-[11px] font-mono tracking-[0.18em] text-gray-400 uppercase font-semibold block">
+                      CATEGORIES
+                    </span>
+                    
+                    <div className="space-y-3 pt-1">
+                      {CATEGORIES.map((category) => (
+                        <button
+                          key={category.id}
+                          onClick={() => {
+                            onSelectCategory(category.id);
+                            onNavigate('category');
+                            setMobileMenuOpen(false);
+                          }}
+                          className="block text-left w-full text-[15px] font-medium text-gray-800 hover:text-pink-600 transition cursor-pointer"
+                        >
+                          {category.name}
+                        </button>
+                      ))}
+                      
                       <button
-                        key={category.id}
-                        onClick={() => {
-                          onSelectCategory(category.id);
-                          onNavigate('category');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left text-[14px] font-medium text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-500 transition"
+                        onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
+                        className="block text-left w-full text-[15px] font-medium text-gray-800 hover:text-pink-600 transition cursor-pointer"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-pink-300 dark:bg-pink-600 shrink-0 mt-px" />
-                        {category.name}
+                        About Us
                       </button>
-                    ))}
+
+                      <button
+                        onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
+                        className="block text-left w-full text-[15px] font-medium text-gray-800 hover:text-pink-600 transition cursor-pointer"
+                      >
+                        My Account
+                      </button>
+
+                      {currentUser && (
+                        <button
+                          onClick={() => { handleLogoutClick(); setMobileMenuOpen(false); }}
+                          className="block text-left w-full text-[15px] font-medium text-red-600 hover:text-red-700 transition cursor-pointer"
+                        >
+                          Sign Out
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Divider */}
-                <div className="mx-5 my-3 border-t border-gray-100 dark:border-gray-800" />
+                  {/* Divider */}
+                  <div className="border-t border-gray-900 pt-3" />
 
-                {/* Secondary links */}
-                <div className="px-3 space-y-0.5">
-                  <button
-                    onClick={() => { onNavigate('about'); setMobileMenuOpen(false); }}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left text-[14px] font-medium text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-500 transition"
-                  >
-                    <HelpCircle className="w-4 h-4 text-pink-400 shrink-0" />
-                    About Us
-                  </button>
-                  <button
-                    onClick={() => { onNavigate('account'); setMobileMenuOpen(false); }}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left text-[14px] font-medium text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-500 transition"
-                  >
-                    <User className="w-4 h-4 text-pink-400 shrink-0" />
-                    My Account
-                  </button>
-                  {currentUser && (
-                    <button
-                      onClick={() => { handleLogoutClick(); setMobileMenuOpen(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left text-[14px] font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition"
+                  {/* ASSISTANCE CONTACT */}
+                  <div className="space-y-2.5 pb-8">
+                    <span className="text-[11px] font-mono tracking-[0.18em] text-gray-400 uppercase font-semibold block">
+                      ASSISTANCE CONTACT
+                    </span>
+                    <a
+                      href="tel:+919731153609"
+                      className="flex items-center gap-2.5 text-[15px] font-semibold text-gray-900 hover:text-pink-600 transition"
                     >
-                      <LogOut className="w-4 h-4 shrink-0" />
-                      Sign Out
-                    </button>
-                  )}
-                </div>
-              </div>
+                      <span className="w-5 h-5 rounded-full border border-amber-500 text-amber-500 flex items-center justify-center text-xs font-bold font-serif shrink-0">
+                        ?
+                      </span>
+                      <span>+91 97311 53609</span>
+                    </a>
+                  </div>
 
-              {/* Panel Footer */}
-              <div className="shrink-0 px-5 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/30">
-                <p className="text-[10px] font-mono tracking-[0.15em] text-gray-400 dark:text-gray-500 uppercase mb-2">Need Assistance?</p>
-                <a
-                  href="tel:+919731153609"
-                  className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-pink-500 transition"
-                >
-                  <HelpCircle className="w-4 h-4 text-pink-400 shrink-0" />
-                  +91 97311 53609
-                </a>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+                </div>
+              </motion.aside>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </header>
   );
 }
