@@ -1239,6 +1239,68 @@ app.post("/api/catalog/cms", verifyAdminToken, async (req, res) => {
     res.status(500).json({ error: "Failed to sync CMS layout" });
   }
 });
+var CATEGORIES_FILE_PATH = import_path.default.join(LOCAL_DATA_DIR, "categories_db.json");
+var INITIAL_CATEGORIES_DATA = [
+  { id: "sarees", name: "Sarees", description: "Exquisite silk, chiffon, and cotton sarees for every occasion.", imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop", enabled: true },
+  { id: "lehengas", name: "Lehengas", description: "Bridal and designer lehengas with intricate embroidery.", imageUrl: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=600&auto=format&fit=crop", enabled: true },
+  { id: "kurtis", name: "Kurtis", description: "Casual and party-wear kurtis in trendy designs.", imageUrl: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop", enabled: true },
+  { id: "jewellery", name: "Ethnic Jewellery", description: "Traditional and contemporary ethnic jewellery collections.", imageUrl: "https://images.unsplash.com/photo-1515562141589-67f0d727b750?w=600&auto=format&fit=crop", enabled: true },
+  { id: "handbags", name: "Handbags", description: "Designer potli bags, clutches, and ethnic handbags.", imageUrl: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop", enabled: true },
+  { id: "dupattas", name: "Dupattas", description: "Embroidered and printed dupattas to complete your outfit.", imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop", enabled: true },
+  { id: "blouses", name: "Blouses", description: "Designer and customized blouses for sarees and lehengas.", imageUrl: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop", enabled: true },
+  { id: "salwar", name: "Salwar Suits", description: "Classic and modern salwar suits for daily and festive wear.", imageUrl: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=600&auto=format&fit=crop", enabled: true },
+  { id: "kids-ethnic", name: "Kids Ethnic Wear", description: "Adorable ethnic outfits for kids and toddlers.", imageUrl: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=600&auto=format&fit=crop", enabled: true }
+];
+app.get("/api/catalog/categories", async (req, res) => {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.from("categories").select("*").order("name");
+      if (!error && data && data.length > 0) {
+        const mapped = data.map((c) => ({
+          id: c.id,
+          name: c.name,
+          description: c.description || "",
+          imageUrl: c.image_url || "",
+          enabled: c.enabled !== false
+        }));
+        return res.json(mapped);
+      }
+    }
+    res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
+  } catch (err) {
+    res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
+  }
+});
+app.post("/api/catalog/categories", verifyAdminToken, async (req, res) => {
+  try {
+    const categories = req.body;
+    if (!Array.isArray(categories)) {
+      return res.status(400).json({ error: "Body must be an array of categories." });
+    }
+    writeLocalJsonDb(CATEGORIES_FILE_PATH, categories);
+    if (supabase) {
+      const mapped = categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description || "",
+        image_url: c.imageUrl || "",
+        enabled: c.enabled !== false
+      }));
+      const { error: subErr } = await supabase.from("categories").upsert(mapped);
+      if (subErr) {
+        console.error("Supabase categories upsert error:", subErr);
+        return res.status(500).json({ error: "Failed to sync categories to database." });
+      }
+      const currentIds = categories.map((c) => c.id).filter(Boolean);
+      if (currentIds.length > 0) {
+        await supabase.from("categories").delete().not("id", "in", `(${currentIds.join(",")})`);
+      }
+    }
+    res.json({ success: true, message: "Categories synced successfully." });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to sync categories." });
+  }
+});
 var getGeminiClient = () => {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key === "MY_GEMINI_API_KEY") {

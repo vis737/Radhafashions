@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Plus, Edit2, Trash2, X, Image as ImageIcon, BarChart2, Tag, CheckCircle } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, X, Image as ImageIcon, BarChart2, Tag, CheckCircle, UploadCloud } from 'lucide-react';
 import { Product } from '../../types';
 
 interface Category {
@@ -16,6 +16,7 @@ interface AdminCategoriesTabProps {
   products: Product[];
   onLogActivity: (action: string, details: string) => void;
   addToast: (text: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
+  onUpdateCategories?: (categories: Category[]) => void;
 }
 
 export default function AdminCategoriesTab({
@@ -23,6 +24,7 @@ export default function AdminCategoriesTab({
   products,
   onLogActivity,
   addToast,
+  onUpdateCategories,
 }: AdminCategoriesTabProps) {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,6 +40,54 @@ export default function AdminCategoriesTab({
   const [editCatName, setEditCatName] = useState('');
   const [editCatImage, setEditCatImage] = useState('');
   const [editCatDesc, setEditCatDesc] = useState('');
+
+  // Image upload state
+  const [isDraggingNew, setIsDraggingNew] = useState(false);
+  const [isDraggingEdit, setIsDraggingEdit] = useState(false);
+  const [isUploadingNew, setIsUploadingNew] = useState(false);
+  const [isUploadingEdit, setIsUploadingEdit] = useState(false);
+  const newFileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadCategoryImage = async (file: File): Promise<string | null> => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch('/api/upload-image', { method: 'POST', body: formData, credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) return data.url;
+      }
+    } catch {}
+    // Fallback to base64
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileDrop = async (files: File[], target: 'new' | 'edit') => {
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      addToast('Please drop image files only.', 'error');
+      return;
+    }
+    if (target === 'new') {
+      setIsUploadingNew(true);
+      const url = await uploadCategoryImage(imageFiles[0]);
+      if (url) setNewCatImage(url);
+      setIsUploadingNew(false);
+      setIsDraggingNew(false);
+    } else {
+      setIsUploadingEdit(true);
+      const url = await uploadCategoryImage(imageFiles[0]);
+      if (url) setEditCatImage(url);
+      setIsUploadingEdit(false);
+      setIsDraggingEdit(false);
+    }
+  };
 
   const getProductCountForCategory = (cat: Category) => {
     return products.filter(p => p.category === cat.name || p.category === cat.id).length;
@@ -58,7 +108,9 @@ export default function AdminCategoriesTab({
       enabled: true,
     };
 
-    setCategories([...categories, newCat]);
+    const updated = [...categories, newCat];
+    setCategories(updated);
+    onUpdateCategories?.(updated);
     addToast(`Category "${newCat.name}" created`, 'success');
     onLogActivity('CREATE_CATEGORY', `Created category ${newCat.name}`);
     
@@ -75,16 +127,20 @@ export default function AdminCategoriesTab({
     }
     
     if (window.confirm(`Are you sure you want to delete the category "${cat.name}"?`)) {
-      setCategories(categories.filter(c => c.id !== cat.id));
+      const updated = categories.filter(c => c.id !== cat.id);
+      setCategories(updated);
+      onUpdateCategories?.(updated);
       addToast(`Category "${cat.name}" deleted`, 'info');
       onLogActivity('DELETE_CATEGORY', `Deleted category ${cat.name}`);
     }
   };
 
   const handleToggleCategory = (cat: Category) => {
-    setCategories(categories.map(c => 
+    const updated = categories.map(c => 
       c.id === cat.id ? { ...c, enabled: !c.enabled } : c
-    ));
+    );
+    setCategories(updated);
+    onUpdateCategories?.(updated);
     const action = !cat.enabled ? 'Enabled' : 'Disabled';
     addToast(`${action} category "${cat.name}"`, 'success');
     onLogActivity('TOGGLE_CATEGORY', `${action} category ${cat.name}`);
@@ -106,11 +162,13 @@ export default function AdminCategoriesTab({
       return;
     }
 
-    setCategories(categories.map(c => 
+    const updated = categories.map(c => 
       c.id === editingCategory.id 
         ? { ...c, name: editCatName.trim(), imageUrl: editCatImage.trim(), description: editCatDesc.trim() } 
         : c
-    ));
+    );
+    setCategories(updated);
+    onUpdateCategories?.(updated);
     
     addToast(`Category "${editCatName}" updated`, 'success');
     onLogActivity('UPDATE_CATEGORY', `Updated category ${editCatName}`);
@@ -187,21 +245,43 @@ export default function AdminCategoriesTab({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Image URL *</label>
-                <input
-                  type="url"
-                  value={newCatImage}
-                  onChange={(e) => setNewCatImage(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all"
-                  placeholder="https://..."
-                  required
-                />
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category Image *</label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-4 text-center transition-all relative ${
+                    isDraggingNew ? 'border-[#D4648A] bg-pink-50/50 dark:bg-pink-950/20' : 'border-pink-200/50 dark:border-pink-900/30 hover:border-pink-400/60'
+                  }`}
+                  onDragEnter={(e) => { e.preventDefault(); if (!isUploadingNew) setIsDraggingNew(true); }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDraggingNew(false); }}
+                  onDrop={(e) => { e.preventDefault(); handleFileDrop(Array.from(e.dataTransfer.files), 'new'); }}
+                >
+                  <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    onChange={(e) => { if (e.target.files) handleFileDrop(Array.from(e.target.files), 'new'); e.target.value = ''; }}
+                    disabled={isUploadingNew} ref={newFileInputRef} />
+                  {isUploadingNew ? (
+                    <div className="flex flex-col items-center gap-2 py-2">
+                      <div className="w-6 h-6 border-2 border-[#D4648A] border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs text-gray-500">Uploading...</span>
+                    </div>
+                  ) : isDraggingNew ? (
+                    <div className="flex flex-col items-center gap-2 py-2 text-[#D4648A]">
+                      <UploadCloud className="w-6 h-6 animate-bounce" />
+                      <span className="text-xs font-bold">Drop here</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 py-2 pointer-events-none">
+                      <UploadCloud className="w-6 h-6 text-[#D4648A]/60" />
+                      <p className="text-xs font-medium text-gray-500">Drag & drop or <span className="text-[#D4648A] font-bold">Browse</span></p>
+                    </div>
+                  )}
+                </div>
+                {/* URL fallback input */}
+                <input type="url" value={newCatImage} onChange={(e) => setNewCatImage(e.target.value)}
+                  className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-3 py-2 text-xs text-gray-600 dark:text-gray-400 focus:outline-none focus:border-[#D4648A] mt-2"
+                  placeholder="Or paste image URL here..." />
                 {newCatImage && (
                   <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-pink-200/50 dark:border-pink-900/30 group">
                     <img src={newCatImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-xs font-semibold">Image Preview</span>
-                    </div>
                   </div>
                 )}
               </div>
@@ -346,14 +426,39 @@ export default function AdminCategoriesTab({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Image URL *</label>
-                  <input
-                    type="url"
-                    value={editCatImage}
-                    onChange={(e) => setEditCatImage(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4648A] focus:ring-1 focus:ring-[#D4648A] transition-all"
-                    required
-                  />
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category Image *</label>
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 text-center transition-all relative ${
+                      isDraggingEdit ? 'border-[#D4648A] bg-pink-50/50 dark:bg-pink-950/20' : 'border-pink-200/50 dark:border-pink-900/30 hover:border-pink-400/60'
+                    }`}
+                    onDragEnter={(e) => { e.preventDefault(); if (!isUploadingEdit) setIsDraggingEdit(true); }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDragLeave={(e) => { e.preventDefault(); setIsDraggingEdit(false); }}
+                    onDrop={(e) => { e.preventDefault(); handleFileDrop(Array.from(e.dataTransfer.files), 'edit'); }}
+                  >
+                    <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      onChange={(e) => { if (e.target.files) handleFileDrop(Array.from(e.target.files), 'edit'); e.target.value = ''; }}
+                      disabled={isUploadingEdit} ref={editFileInputRef} />
+                    {isUploadingEdit ? (
+                      <div className="flex flex-col items-center gap-2 py-2">
+                        <div className="w-6 h-6 border-2 border-[#D4648A] border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs text-gray-500">Uploading...</span>
+                      </div>
+                    ) : isDraggingEdit ? (
+                      <div className="flex flex-col items-center gap-2 py-2 text-[#D4648A]">
+                        <UploadCloud className="w-6 h-6 animate-bounce" />
+                        <span className="text-xs font-bold">Drop here</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 py-2 pointer-events-none">
+                        <UploadCloud className="w-6 h-6 text-[#D4648A]/60" />
+                        <p className="text-xs font-medium text-gray-500">Drag & drop or <span className="text-[#D4648A] font-bold">Browse</span></p>
+                      </div>
+                    )}
+                  </div>
+                  <input type="url" value={editCatImage} onChange={(e) => setEditCatImage(e.target.value)}
+                    className="w-full bg-white dark:bg-gray-900 border border-pink-200/50 dark:border-pink-900/30 rounded-xl px-3 py-2 text-xs text-gray-600 dark:text-gray-400 focus:outline-none focus:border-[#D4648A] mt-2"
+                    placeholder="Or paste image URL here..." />
                   {editCatImage && (
                     <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-pink-200/50 dark:border-pink-900/30">
                       <img src={editCatImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />

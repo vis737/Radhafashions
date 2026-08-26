@@ -77,6 +77,7 @@ export default function App() {
   const [activeView, setActiveView] = useState<AppView>('home');
 
   // Core mutable list states
+  const [categories, setCategories] = useState<{id: string; name: string; description: string; imageUrl: string; enabled?: boolean}[]>(CATEGORIES as any[]);
   const [products, setProducts] = useState<Product[]>(() => {
     const db = getStoredDb();
     return db.products || INITIAL_PRODUCTS;
@@ -133,7 +134,7 @@ export default function App() {
     if (initP && initP.images && initP.images[0]) {
       return initP.images[0];
     }
-    const cat = CATEGORIES.find(c => c.id === p.categorySlug || c.name?.toLowerCase() === p.category?.toLowerCase());
+    const cat = categories.find(c => c.id === p.categorySlug || c.name?.toLowerCase() === p.category?.toLowerCase());
     if (cat && cat.imageUrl) return cat.imageUrl;
     return 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&auto=format&fit=crop&q=80';
   };
@@ -312,11 +313,12 @@ export default function App() {
   useEffect(() => {
     const loadCatalogFromBackend = async () => {
       try {
-        const [prodsRes, coupsRes, campsRes, cmsRes, sessionRes] = await Promise.all([
+        const [prodsRes, coupsRes, campsRes, cmsRes, catsRes, sessionRes] = await Promise.all([
           fetch('/api/catalog/products', { cache: 'no-store' }),
           fetch('/api/catalog/coupons', { cache: 'no-store' }),
           fetch('/api/catalog/campaigns', { cache: 'no-store' }),
           fetch('/api/catalog/cms', { cache: 'no-store' }),
+          fetch('/api/catalog/categories', { cache: 'no-store' }),
           fetch('/api/admin/session', { cache: 'no-store', credentials: 'include' }).catch(() => null)
         ]);
         
@@ -341,6 +343,12 @@ export default function App() {
         if (cmsRes && cmsRes.ok) {
           const cmsData = await cmsRes.json();
           setCms(cmsData);
+        }
+        if (catsRes && catsRes.ok) {
+          const catsData = await catsRes.json();
+          if (Array.isArray(catsData) && catsData.length > 0) {
+            setCategories(catsData);
+          }
         }
         if (sessionRes && sessionRes.ok) {
           const sessionData = await sessionRes.json();
@@ -866,7 +874,7 @@ export default function App() {
     (p) => p.categorySlug === activeProductModel.categorySlug && p.id !== activeProductModel.id
   );
 
-  const activeCategoryObject = CATEGORIES.find((c) => c.id === currentCategorySlug);
+  const activeCategoryObject = categories.find((c) => c.id === currentCategorySlug);
 
   // SEO: Dynamically update page title based on active view
   useEffect(() => {
@@ -1119,7 +1127,7 @@ export default function App() {
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
-                  {(CATEGORIES as any[]).map((category) => (
+                  {categories.map((category) => (
                     <div
                       key={category.id}
                       onClick={() => handleSelectCategoryGroup(category.id)}
@@ -1376,7 +1384,7 @@ export default function App() {
                   <div>
                     <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Category Selector</h3>
                     <div className="flex flex-col gap-1 text-xs">
-                      {CATEGORIES.map((category, idx) => (
+                      {categories.map((category, idx) => (
                         <motion.button
                           key={category.id}
                           initial={{ opacity: 0, x: -12 }}
@@ -1745,6 +1753,15 @@ export default function App() {
                  onEditReview={handleEditReviewContent}
                  onUpdateCampaigns={(camp) => setCampaigns(camp)}
                  onUpdateCMS={(cM) => setCms(cM)}
+                categories={categories}
+                onUpdateCategories={(cats) => {
+                  setCategories(cats);
+                  fetch('/api/catalog/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cats)
+                  }).catch(err => console.error('Categories sync error:', err));
+                }}
                 onLogActivity={handleLogActivity}
                 autoAuthenticated={adminBypassed}
                 onLogoutAdmin={async () => {

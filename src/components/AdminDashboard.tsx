@@ -6,7 +6,6 @@ import {
   CreditCard
 } from 'lucide-react';
 import { Product, Coupon, BannerCampaign, CMSConfig, Order, ActivityLog, Review } from '../types';
-import { CATEGORIES as INITIAL_CATEGORIES } from '../utils/mockData';
 import { jsPDF } from 'jspdf';
 import ToastNotification, { ToastMessage } from './ToastNotification';
 
@@ -51,6 +50,8 @@ interface AdminDashboardProps {
   onDeleteReview?: (productId: string, reviewId: string) => void;
   onAddReview?: (productId: string, review: Omit<Review, 'id'>) => void;
   onEditReview?: (productId: string, reviewId: string, updated: Partial<Review>) => void;
+  categories?: Array<{id: string; name: string; description: string; imageUrl: string; enabled?: boolean}>;
+  onUpdateCategories?: (categories: Array<{id: string; name: string; description: string; imageUrl: string; enabled?: boolean}>) => void;
   onLogActivity: (action: string, details: string) => void;
   autoAuthenticated?: boolean;
   onLogoutAdmin?: () => void;
@@ -80,10 +81,13 @@ export default function AdminDashboard({
   onDeleteReview,
   onAddReview,
   onEditReview,
+  categories: propCategories,
+  onUpdateCategories,
   onLogActivity,
   autoAuthenticated = false,
   onLogoutAdmin
 }: AdminDashboardProps) {
+  const categories = propCategories || [];
 
   // Authentication Gate
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -107,8 +111,7 @@ export default function AdminDashboard({
   ]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  // Categories local state
-  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
+  // Categories now managed via props from App.tsx (persisted to server)
 
   const addToast = (text: string, type: ToastMessage['type'] = 'success') => {
     const id = Math.random().toString();
@@ -487,6 +490,7 @@ export default function AdminDashboard({
                 products={products}
                 onLogActivity={onLogActivity}
                 addToast={addToast}
+                onUpdateCategories={onUpdateCategories}
               />
             )}
 
