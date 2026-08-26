@@ -109,6 +109,7 @@ export default function App() {
   const [stockOnly, setStockOnly] = useState(false);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Active home carousel index
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
@@ -1007,7 +1008,7 @@ export default function App() {
                     <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{searchResultsList.length} shown</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                     {searchResultsList.map((product) => (
                       <ProductCard
                         key={product.id}
@@ -1044,19 +1045,19 @@ export default function App() {
 
               {/* Dynamic Featured Category Grid Shelf */}
               <section id="featured-categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
-                <div className="mb-6">
-                  <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
+                <div className="mb-4 sm:mb-6">
+                  <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
                     Featured Collection Categories
                   </h3>
-                  <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
+                  <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
                   {(CATEGORIES as any[]).map((category) => (
                     <div
                       key={category.id}
                       onClick={() => handleSelectCategoryGroup(category.id)}
-                      className="group relative h-40 sm:h-44 rounded-2xl overflow-hidden bg-white dark:bg-gray-950 border border-gray-100/10 cursor-pointer select-none shadow-sm hover:shadow-xl hover:border-pink-500/25 transition-all duration-300"
+                      className="group relative h-36 sm:h-44 rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-gray-950 border border-gray-100/10 cursor-pointer select-none shadow-sm hover:shadow-xl hover:border-pink-500/25 transition-all duration-300"
                     >
                       <img
                         src={category.imageUrl}
@@ -1066,14 +1067,14 @@ export default function App() {
                       />
                       
                       {/* Premium glassmorphic gradient footer label */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/40 to-transparent flex flex-col justify-end p-4">
-                        <span className="text-[9px] font-mono text-pink-400 uppercase tracking-widest mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          Explore Collection
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/40 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                        <span className="text-[8px] sm:text-[9px] font-mono text-pink-400 uppercase tracking-widest mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          Explore
                         </span>
                         <h4 className="font-display font-semibold text-xs sm:text-sm text-white tracking-wide leading-none group-hover:text-pink-300 transition duration-300">
                           {category.name}
                         </h4>
-                        <p className="text-[9px] text-gray-300 font-sans mt-2 line-clamp-1 font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <p className="text-[8px] sm:text-[9px] text-gray-300 font-sans mt-1.5 line-clamp-1 font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           {category.description}
                         </p>
                       </div>
@@ -1084,12 +1085,12 @@ export default function App() {
 
               {/* Best Sellers showcase lists */}
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
-                <div className="flex justify-between items-end mb-6">
+                <div className="flex justify-between items-end mb-4 sm:mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">
+                    <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
                       Best Sellers
                     </h3>
-                    <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
+                    <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
                   </div>
                   <button
                     onClick={() => handleSelectCategoryGroup('sarees')}
@@ -1099,7 +1100,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
                   {bestSellersList.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -1116,11 +1117,12 @@ export default function App() {
 
               {/* New Arrivals Section */}
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
-                <div className="flex justify-between items-end mb-6">
+                <div className="flex justify-between items-end mb-4 sm:mb-6">
                   <div>
-                    <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white">                       New Fashion Arrivals
+                    <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
+                      New Fashion Arrivals
                     </h3>
-                    <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
+                    <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
                   </div>
                   <button
                     onClick={() => handleSelectCategoryGroup('lehengas')}
@@ -1130,7 +1132,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
                   {newArrivalsList.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -1163,7 +1165,7 @@ export default function App() {
                       <h4 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-50 flex items-center gap-1.5 border-b border-gray-150 dark:border-gray-800 pb-2">
                         <Sparkles className="w-3.5 h-3.5 text-pink-500" /> {title}
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 animate-fade-in">
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 animate-fade-in">
                         {list.map(p => (
                           <ProductCard
                             key={p.id}
@@ -1183,7 +1185,7 @@ export default function App() {
                 return (
                   <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left space-y-8 py-8 border-t border-gray-100 dark:border-gray-800">
                     <div>
-                      <h3 className="font-sans font-bold text-lg uppercase tracking-wider text-gray-800 dark:text-white flex items-center gap-2">
+                      <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-pink-500" /> AI Personalized Recommendations
                       </h3>
                       <p className="text-xs text-gray-400 dark:text-gray-500 font-sans mt-1">
@@ -1203,30 +1205,30 @@ export default function App() {
               })()}
 
               {/* Professional testimonials review widgets */}
-              <section className="bg-pink-900 dark:bg-gray-950 text-white py-16 text-left select-none relative overflow-hidden border-t border-b border-pink-400/20">
+              <section className="bg-pink-900 dark:bg-gray-950 text-white py-12 sm:py-16 text-left select-none relative overflow-hidden border-t border-b border-pink-400/20">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,100,138,0.18),transparent_30%)] pointer-events-none" />
                 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-pink-300 font-semibold block text-center">Why Shop With Us</span>
-                  <h3 className="font-display font-medium text-xl sm:text-2xl text-center uppercase tracking-widest mt-2 mb-10 text-white">The Radha Fashions Promise</h3>
+                  <h3 className="font-display font-medium text-lg sm:text-2xl text-center uppercase tracking-widest mt-2 mb-8 sm:mb-10 text-white">The Radha Fashions Promise</h3>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
                     {[
                       { icon: '🪡', title: 'Quality Checked', desc: 'Every piece is curated and quality-checked by our team before shipping to you.' },
                       { icon: '🧵', title: 'Premium Fabrics', desc: 'Pure silk, cotton, and georgette sourced directly from master weavers across India.' },
                       { icon: '✂️', title: 'Custom Stitching', desc: 'Get your outfits custom-stitched to your exact measurements by expert tailors.' },
                       { icon: '🚚', title: 'Pan-India Delivery', desc: 'Free shipping on orders above ₹1,500. Delivered to your doorstep in 5–7 days.' },
                     ].map((item, idx) => (
-                      <div key={idx} className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-pink-400/40 hover:bg-white/8 transition-all duration-300 text-center group">
-                        <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
-                        <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-2 font-display">{item.title}</h4>
-                        <p className="text-[11px] text-gray-400 leading-relaxed font-light">{item.desc}</p>
+                      <div key={idx} className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 hover:border-pink-400/40 hover:bg-white/8 transition-all duration-300 text-center group">
+                        <div className="text-2xl sm:text-3xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-1 sm:mb-2 font-display">{item.title}</h4>
+                        <p className="text-[10px] sm:text-[11px] text-gray-400 leading-relaxed font-light">{item.desc}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Trust Stats */}
-                  <div className="flex flex-wrap justify-center gap-8 mt-10 pt-8 border-t border-white/10">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-4 sm:gap-8 mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-white/10">
                     {[
                       { value: '5,000+', label: 'Happy Customers' },
                       { value: '4.8★', label: 'Google Rating' },
@@ -1234,21 +1236,21 @@ export default function App() {
                       { value: '7-Day', label: 'Easy Returns' },
                     ].map((stat, idx) => (
                       <div key={idx} className="text-center">
-                        <span className="text-lg sm:text-xl font-display font-black text-pink-300">{stat.value}</span>
-                        <span className="block text-[10px] text-gray-500 font-mono uppercase tracking-wider mt-1">{stat.label}</span>
+                        <span className="text-base sm:text-xl font-display font-black text-pink-300">{stat.value}</span>
+                        <span className="block text-[9px] sm:text-[10px] text-gray-400 font-mono uppercase tracking-wider mt-0.5 sm:mt-1">{stat.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </section>
               {/* Our Story */}
-              <section id="our-story" className="bg-petal mt-12 rounded-sm border border-border">
-                <div className="mx-auto max-w-3xl px-6 py-16 sm:py-20 text-center">
+              <section id="our-story" className="bg-petal mt-8 sm:mt-12 rounded-sm border border-border">
+                <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12 sm:py-16 md:py-20 text-center">
                   <p className="eyebrow">Our Story</p>
-                  <h2 className="mt-4 font-display text-4xl leading-tight md:text-5xl text-foreground">
+                  <h2 className="mt-3 sm:mt-4 font-display text-2xl sm:text-4xl md:text-5xl leading-tight text-foreground">
                     Made slowly, in small rooms with good light.
                   </h2>
-                  <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                  <p className="mx-auto mt-4 sm:mt-6 max-w-xl text-xs sm:text-sm leading-relaxed text-muted-foreground">
                     Radha Fashions began as a passion for Indian ethnic fashion. Today every piece in our boutique still passes through the same standard of perfection — hand-selected silks, checked seams, and wrapped with love.
                   </p>
                 </div>
@@ -1268,12 +1270,43 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+              className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Mobile Filter & Sort Toggle Bar */}
+              <div className="lg:hidden flex items-center justify-between mb-4 gap-2.5">
+                <button
+                  onClick={() => setMobileFiltersOpen((f) => !f)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:border-pink-400 hover:text-pink-500 transition cursor-pointer shadow-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                  </svg>
+                  <span>{mobileFiltersOpen ? 'Hide Filters' : 'Filters & Categories'}</span>
+                </button>
+
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as any)}
+                  className="px-3 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-900 text-gray-700 dark:text-white focus:outline-none focus:border-pink-400 shadow-xs"
+                >
+                  <option value="rating">Sort: Rating</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                 
-                {/* Left: Filters Panel (Desktop) */}
-                <div className="bg-white dark:bg-gray-900 border rounded-3xl p-6 h-fit text-left space-y-6">
+                {/* Left: Filters Panel (Collapsible on Mobile, always on Desktop) */}
+                <div className={`bg-white dark:bg-gray-900 border rounded-2xl sm:rounded-3xl p-4 sm:p-6 h-fit text-left space-y-4 sm:space-y-6 ${mobileFiltersOpen ? 'block' : 'hidden'} lg:block`}>
                   <div>
                     <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Category Selector</h3>
                     <div className="flex flex-col gap-1 text-xs">
@@ -1283,7 +1316,10 @@ export default function App() {
                           initial={{ opacity: 0, x: -12 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.04, duration: 0.25, ease: "easeOut" }}
-                          onClick={() => handleSelectCategoryGroup(category.id)}
+                          onClick={() => {
+                            handleSelectCategoryGroup(category.id);
+                            setMobileFiltersOpen(false);
+                          }}
                           className={`w-full text-left py-2 px-2.5 rounded-lg transition font-semibold ${currentCategorySlug === category.id ? 'bg-pink-500/10 text-pink-600 font-bold border-l-4 border-pink-500' : 'text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-950'}`}
                         >
                           {category.name}
@@ -1292,7 +1328,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="border-t pt-4">
+                  <div className="border-t pt-4 hidden lg:block">
                     <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Sort Order Catalog</h3>
                     <select
                       value={sortOrder}
@@ -1301,31 +1337,29 @@ export default function App() {
                     >
                       <option value="rating">Sort by Rating Stars</option>
                       <option value="price-asc">Price: Low to High</option>
-<option value="price-desc">Price: High to Low</option>
+                      <option value="price-desc">Price: High to Low</option>
                     </select>
                   </div>
 
                   <div className="border-t pt-4">
                     <h3 className="font-display font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-gray-100 mb-2">Availability Filters</h3>
-                    <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={stockOnly}
                         onChange={(e) => setStockOnly(e.target.checked)}
-                        className="text-pink-500 focus:ring-pink-400"
+                        className="text-pink-500 focus:ring-pink-400 rounded"
                       />
                       <span>In-Stock Items Only</span>
                     </label>
                   </div>
-
-
                 </div>
 
                 {/* Right: Products catalog list */}
-                <div className="lg:col-span-3 space-y-6">
+                <div className="lg:col-span-3 space-y-4 sm:space-y-6">
                   {/* Category banner description card */}
                   {activeCategoryObject && (
-                    <div className="relative h-44 sm:h-52 rounded-3xl overflow-hidden text-left border border-pink-400/10 shadow-lg select-none">
+                    <div className="relative h-36 sm:h-52 rounded-2xl sm:rounded-3xl overflow-hidden text-left border border-pink-400/10 shadow-lg select-none">
                       <img 
                         src={activeCategoryObject.imageUrl} 
                         alt={activeCategoryObject.name}
@@ -1333,24 +1367,24 @@ export default function App() {
                         className="absolute inset-0 w-full h-full object-cover" 
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/75 to-transparent" />
-                      <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-10 space-y-1.5 z-10 max-w-xl">
-                        <span className="text-[9px] font-mono tracking-widest text-pink-400 font-semibold uppercase">Collection Category</span>
-                        <h2 className="font-display font-bold text-lg sm:text-2xl text-white uppercase leading-none">{activeCategoryObject.name}</h2>
-                        <p className="text-[11px] text-gray-200 leading-normal font-light">{activeCategoryObject.description}</p>
+                      <div className="absolute inset-0 flex flex-col justify-center p-4 sm:p-6 md:p-10 space-y-1 sm:space-y-1.5 z-10 max-w-xl">
+                        <span className="text-[8px] sm:text-[9px] font-mono tracking-widest text-pink-400 font-semibold uppercase">Collection Category</span>
+                        <h2 className="font-display font-bold text-base sm:text-2xl text-white uppercase leading-none">{activeCategoryObject.name}</h2>
+                        <p className="text-[10px] sm:text-[11px] text-gray-200 leading-normal font-light line-clamp-2 sm:line-clamp-none">{activeCategoryObject.description}</p>
                       </div>
                     </div>
                   )}
 
                   {/* dynamic list of products */}
                   {categoryProductsFiltered.length === 0 ? (
-                    <div className="p-16 text-center bg-white dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-3xl space-y-4">
+                    <div className="p-10 sm:p-16 text-center bg-white dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl sm:rounded-3xl space-y-4">
                       <div className="w-12 h-12 bg-pink-500/15 rounded-full flex items-center justify-center mx-auto text-pink-500">
                         <Heart className="w-6 h-6 animate-pulse" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-xs font-bold text-gray-900 dark:text-white">No Matching Products Found</p>
                         <p className="text-[10px] text-gray-400 font-sans max-w-xs mx-auto">
-                          We couldn't discover any items matching your selected age groups or filter criteria. Try adjusting your selector.
+                          We couldn't discover any items matching your selected criteria. Try adjusting your filter.
                         </p>
                       </div>
                     </div>
@@ -1360,7 +1394,7 @@ export default function App() {
                       variants={staggersContainerVariants}
                       initial="hidden"
                       animate="show"
-                      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+                      className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6"
                     >
                       {categoryProductsFiltered.map((p) => (
                         <ProductCard
@@ -1851,51 +1885,51 @@ export default function App() {
       {/* Quick view overlay card modal popup */}
       <AnimatePresence>
         {quickViewProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative text-left"
+              className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl w-full max-w-lg sm:max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative text-left"
             >
               <button
                 onClick={() => setQuickViewProduct(null)}
-                className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-gray-950 bg-gray-50 border border-gray-100 rounded-full cursor-pointer focus:outline-none"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-2 text-gray-400 hover:text-gray-950 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-full cursor-pointer focus:outline-none"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6">
-                <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 border">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
+                <div className="aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
                   <img src={quickViewProduct.images[0]} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                 </div>
                 
-                <div className="flex flex-col justify-between space-y-4">
+                <div className="flex flex-col justify-between space-y-3 sm:space-y-4">
                   <div className="space-y-1 text-left">
-                    <span className="text-[10px] font-mono text-pink-500 uppercase font-semibold">{quickViewProduct.category}</span>
-                    <h3 className="font-display font-medium text-gray-900 dark:text-gray-100 leading-snug">{quickViewProduct.name}</h3>
-                    <p className="text-[10px] text-gray-400 font-mono">SKU: {quickViewProduct.sku}</p>
-                    <p className="text-xs text-gray-600 font-light mt-2 line-clamp-3">{quickViewProduct.shortDescription}</p>
+                    <span className="text-[9px] sm:text-[10px] font-mono text-pink-500 uppercase font-semibold">{quickViewProduct.category}</span>
+                    <h3 className="font-display font-medium text-base sm:text-lg text-gray-900 dark:text-gray-100 leading-snug">{quickViewProduct.name}</h3>
+                    <p className="text-[9px] sm:text-[10px] text-gray-400 font-mono">SKU: {quickViewProduct.sku}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-light mt-1.5 line-clamp-3">{quickViewProduct.shortDescription}</p>
                   </div>
 
-                  <div className="flex items-baseline gap-2 pb-2">
-                    <span className="text-lg font-bold text-gray-900 dark:text-white font-sans">
+                  <div className="flex items-baseline gap-2 pb-1 sm:pb-2">
+                    <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-sans">
                       Rs.{quickViewProduct.discountPrice || quickViewProduct.price}
                     </span>
                     {quickViewProduct.discountPrice && (
-                      <span className="text-[10px] text-gray-400 line-through font-mono">
+                      <span className="text-[10px] sm:text-xs text-gray-400 line-through font-mono">
                         Rs.{quickViewProduct.price}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex gap-2.5">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => {
                         handleAddProductToCart(quickViewProduct);
                         setQuickViewProduct(null);
                       }}
-                      className="flex-1 py-2 px-4 bg-pink-600 text-white rounded-xl text-xs font-semibold uppercase hover:bg-pink-700 hover:text-white transition cursor-pointer"
+                      className="flex-1 py-2.5 px-3 bg-pink-600 text-white rounded-xl text-xs font-semibold uppercase hover:bg-pink-700 hover:text-white transition cursor-pointer active:scale-95"
                     >
                       Add Bag
                     </button>
@@ -1904,7 +1938,7 @@ export default function App() {
                         handleViewProductDetails(quickViewProduct.id);
                         setQuickViewProduct(null);
                       }}
-                      className="py-2 px-4 border border-gray-200 rounded-xl text-xs text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                      className="py-2.5 px-3 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer"
                     >
                       Full Details
                     </button>

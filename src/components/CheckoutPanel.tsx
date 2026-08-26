@@ -357,7 +357,7 @@ export default function CheckoutPanel({
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans relative">
+    <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 font-sans relative">
       
       {/* Loading Overlay */}
       <AnimatePresence>
@@ -378,17 +378,17 @@ export default function CheckoutPanel({
       {/* Return triggers */}
       <button
         onClick={onBackToCart}
-        className="mb-8 py-2.5 px-5 rounded-2xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800 font-display font-medium text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 transition"
+        className="mb-6 sm:mb-8 py-2 sm:py-2.5 px-4 sm:px-5 rounded-2xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800 font-display font-medium text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 transition"
       >
         <ArrowLeft className="w-4 h-4 text-pink-500" />
         <span>Return To Cart Summary</span>
       </button>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         
         {/* Step 1: Delivery Address */}
-        <div className={`bg-white dark:bg-gray-900/90 rounded-3xl border ${activeStep === 1 ? 'border-pink-400/50 shadow-xl dark:shadow-pink-900/10' : 'border-gray-100 dark:border-gray-800 shadow-sm'} overflow-hidden transition-all duration-300`}>
-          <div className="p-6 sm:p-8">
+        <div className={`bg-white dark:bg-gray-900/90 rounded-2xl sm:rounded-3xl border ${activeStep === 1 ? 'border-pink-400/50 shadow-xl dark:shadow-pink-900/10' : 'border-gray-100 dark:border-gray-800 shadow-sm'} overflow-hidden transition-all duration-300`}>
+          <div className="p-4 sm:p-8">
             <StepHeader step={1} title="Delivery Address & Details" icon={Truck} />
             
             <AnimatePresence initial={false}>

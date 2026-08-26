@@ -866,22 +866,33 @@ export default function AccountPanel({
 
   // --- Render Logged-In User Dashboard ---
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 font-sans">
       
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-8 items-start">
         
         {/* Left Side Navigation panel Menu */}
-        <div className="md:col-span-3 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6 text-left text-black">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white font-bold font-display text-lg shadow-md">
-              {currentUser.name.charAt(0).toUpperCase()}
+        <div className="md:col-span-3 bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4 sm:space-y-6 text-left text-black dark:text-white">
+          <div className="flex items-center justify-between md:justify-start gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black dark:bg-pink-600 flex items-center justify-center text-white font-bold font-display text-base sm:text-lg shadow-md shrink-0">
+                {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-display font-semibold text-xs text-black dark:text-white tracking-wide truncate">{currentUser.name}</h3>
+                <span className="text-[9px] font-mono text-neutral-600 dark:text-neutral-400 truncate block">{currentUser.email}</span>
+              </div>
             </div>
-            <div>
-              <h3 className="font-display font-semibold text-xs text-black tracking-wide">{currentUser.name}</h3>
-              <span className="text-[9px] font-mono text-neutral-800">{currentUser.email}</span>
-            </div>
+
+            <button
+              onClick={handleUserLogout}
+              className="md:hidden p-2 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 transition cursor-pointer shrink-0"
+              title="Log Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-          <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-4 font-sans">
+
+          <div className="flex flex-row overflow-x-auto no-scrollbar md:flex-col gap-1.5 border-t border-gray-100 dark:border-gray-800 pt-3 sm:pt-4 font-sans -mx-1 px-1 sm:mx-0 sm:px-0">
             {([
               { id: 'profile', label: 'My Profile', icon: MapPin },
               { id: 'orders', label: 'Purchase Ledger', icon: Clipboard, badge: orders.length },
@@ -894,14 +905,14 @@ export default function AccountPanel({
                 <button
                   key={tab.id}
                   onClick={() => setSubTab(tab.id)}
-                  className={`py-2.5 px-3.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition cursor-pointer ${subTab === tab.id ? 'bg-rose-50 text-black border-l-4 border-pink-500 font-bold' : 'text-black hover:bg-gray-50'}`}
+                  className={`py-2 sm:py-2.5 px-3 sm:px-3.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between whitespace-nowrap md:whitespace-normal gap-2 transition cursor-pointer shrink-0 md:shrink ${subTab === tab.id ? 'bg-rose-50 dark:bg-rose-950/30 text-black dark:text-pink-300 border-l-4 border-pink-500 font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                 >
-                  <span className="flex items-center gap-2">
-                    <TabIcon className="w-4 h-4 text-black" />
+                  <span className="flex items-center gap-1.5 sm:gap-2">
+                    <TabIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black dark:text-pink-400" />
                     {tab.label}
                   </span>
                   {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className="px-2 py-0.5 rounded-lg bg-gray-100 text-[10px] text-gray-600 font-bold font-mono">
+                    <span className="px-1.5 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-400 font-bold font-mono">
                       {tab.badge}
                     </span>
                   )}
@@ -912,7 +923,7 @@ export default function AccountPanel({
 
           <button
             onClick={handleUserLogout}
-            className="w-full py-2.5 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 font-display font-medium text-xs uppercase tracking-widest transition cursor-pointer text-center flex items-center justify-center gap-2"
+            className="hidden md:flex w-full py-2.5 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 font-display font-medium text-xs uppercase tracking-widest transition cursor-pointer text-center items-center justify-center gap-2"
           >
             <LogOut className="w-4 h-4" />
             <span>Logout Profile</span>
@@ -920,7 +931,7 @@ export default function AccountPanel({
         </div>
 
         {/* Right Columns details routers */}
-        <div className="md:col-span-9 bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_10px_40px_rgb(0,0,0,0.015)] text-left min-h-[24rem]">
+        <div className="md:col-span-9 bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-100 dark:border-gray-800 shadow-[0_10px_40px_rgb(0,0,0,0.015)] text-left min-h-[24rem]">
           <AnimatePresence mode="wait">
             {subTab === 'profile' && (
               <ProfileTab

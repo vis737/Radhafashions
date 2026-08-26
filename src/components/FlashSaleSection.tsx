@@ -73,7 +73,7 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
   if (timeLeft <= 0) return null; // Hide if expired
 
   return (
-    <section className="bg-gray-50 dark:bg-gradient-to-tr dark:from-[#0F172A] dark:to-gray-950 border border-pink-200 dark:border-pink-900/20 rounded-3xl p-6 md:p-8 text-left relative overflow-hidden select-none font-sans max-w-7xl mx-auto my-12">
+    <section className="bg-gray-50 dark:bg-gradient-to-tr dark:from-[#0F172A] dark:to-gray-950 border border-pink-200 dark:border-pink-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-left relative overflow-hidden select-none font-sans max-w-7xl mx-auto my-8 sm:my-12">
       {/* Background Gold Ambient glow blur */}
       <div className="absolute right-0 top-0 translate-y-[-20%] translate-x-[20%] w-96 h-96 bg-pink-400/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -109,7 +109,7 @@ export default function FlashSaleSection({ products, onAddProductToCart, onSelec
       </div>
 
       {/* Grid of flash products */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 pt-6">
         {activeProducts.map(product => {
           // Calculate direct 30% discount mockup
           const flashPrice = Math.round(product.price * 0.70);

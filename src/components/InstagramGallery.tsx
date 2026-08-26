@@ -120,7 +120,7 @@ export default function InstagramGallery() {
       {/* Carousel Container */}
       <div className="relative rounded-3xl overflow-hidden bg-gray-900 dark:bg-black border border-gray-200 dark:border-gray-800 shadow-xl group">
         {/* Main Image */}
-        <div className="relative aspect-[16/7] sm:aspect-[16/6] overflow-hidden">
+        <div className="relative aspect-[4/3] sm:aspect-[16/7] md:aspect-[16/6] overflow-hidden">
           <AnimatePresence custom={direction} mode="wait">
             <motion.div
               key={current}
@@ -138,13 +138,13 @@ export default function InstagramGallery() {
                 draggable={false}
               />
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
               {/* Label */}
-              <div className="absolute bottom-4 left-6 sm:bottom-6 sm:left-8">
-                <span className="text-white text-xl sm:text-3xl font-display font-black tracking-wide drop-shadow-lg">
+              <div className="absolute bottom-3 left-4 sm:bottom-6 sm:left-8">
+                <span className="text-white text-lg sm:text-3xl font-display font-black tracking-wide drop-shadow-lg">
                   {CAROUSEL_IMAGES[current].label}
                 </span>
-                <div className="w-12 h-0.5 bg-[#D4648A] mt-2 rounded" />
+                <div className="w-10 sm:w-12 h-0.5 bg-[#D4648A] mt-1.5 sm:mt-2 rounded" />
               </div>
             </motion.div>
           </AnimatePresence>
@@ -152,15 +152,17 @@ export default function InstagramGallery() {
           {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#D4648A] cursor-pointer"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#D4648A] cursor-pointer"
+            aria-label="Previous image"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#D4648A] cursor-pointer"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#D4648A] cursor-pointer"
+            aria-label="Next image"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Play/Pause */}

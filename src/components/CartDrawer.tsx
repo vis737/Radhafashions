@@ -103,16 +103,16 @@ export default function CartDrawer({
       {/* Black backdrop with fade animation */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
 
-      <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="absolute inset-y-0 right-0 w-full sm:max-w-md flex">
         <motion.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'tween', duration: 0.3 }}
-          className="w-screen max-w-md bg-white h-full flex flex-col shadow-2xl relative"
+          className="w-full bg-white h-full flex flex-col shadow-2xl relative"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-pink-500" />
               <h3 className="font-display font-medium text-sm tracking-widest text-gray-950 uppercase">Your Shopping Bag</h3>
@@ -123,7 +123,7 @@ export default function CartDrawer({
           </div>
 
           {/* Cart items list */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-3 sm:space-y-4 no-scrollbar">
             {cartItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-3">
                 <div className="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-500 rounded-full flex items-center justify-center">
@@ -197,7 +197,7 @@ export default function CartDrawer({
 
           {/* Pricing breakdowns overlay */}
           {cartItems.length > 0 && (
-            <div className="border-t-2 border-gray-200 dark:border-gray-800 p-6 bg-gray-50 dark:bg-gray-950 dark:bg-gray-900/90 space-y-4 relative">
+            <div className="border-t-2 border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-4 sm:py-5 bg-gray-50 dark:bg-gray-950 dark:bg-gray-900/90 space-y-4 relative">
               {/* Floating Confetti Particle Burst Layer */}
               <div className="absolute inset-x-0 bottom-full h-0 pointer-events-none overflow-visible flex items-center justify-center">
                 {particles.map((p) => (
