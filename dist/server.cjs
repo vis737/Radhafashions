@@ -142,7 +142,7 @@ var INITIAL_PRODUCTS = [
     ratingCount: 1,
     images: ["https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop"],
     shortDescription: "Test product for \u20B910 Razorpay checkout. Free shipping.",
-    description: "This is a test product for verifying Razorpay payment integration. Price is \u20B98 + GST (18%) = ~\u20B910 total with free shipping.",
+    description: "This is a test product for verifying Razorpay payment integration. Price is \u20B98 + GST (2%) = ~\u20B99 total with free shipping.",
     specifications: { Weight: "0.05 kg" },
     reviews: [],
     isNew: true,
@@ -611,9 +611,9 @@ var app = (0, import_express.default)();
 app.set("trust proxy", true);
 app.get("/health", (req, res) => res.status(200).send("OK"));
 var PORT = Number(process.env.PORT || 3e3);
-var JWT_SECRET = process.env.JWT_SECRET || "a3f9d2c1e8b74605af319de27c64f8a1b952e0d47618c3f290ab5e86d41379fc";
+var JWT_SECRET = process.env.JWT_SECRET || import_crypto.default.randomBytes(64).toString("hex");
 if (!process.env.JWT_SECRET) {
-  console.warn("\u26A0\uFE0F WARNING: JWT_SECRET not set in environment. Using fallback secret.");
+  console.warn("\u26A0\uFE0F WARNING: JWT_SECRET not set \u2014 a random secret was generated for this session. Tokens will NOT survive restarts. Set JWT_SECRET in your .env for production.");
 }
 var ALLOWED_ORIGIN = process.env.APP_URL || "http://localhost:3000";
 var adminConfigPath = import_path.default.join(process.cwd(), "admin_config.json");
@@ -627,11 +627,11 @@ function readAdminConfig() {
   }
   const defaultPass = process.env.ADMIN_PASSWORD;
   if (!defaultPass) {
-    console.warn("\u26A0\uFE0F  WARNING: ADMIN_PASSWORD env var is not set. Set it in your .env file.");
+    console.warn("\u26A0\uFE0F  WARNING: ADMIN_PASSWORD env var is not set. Generating a random password for this session.");
   }
   return {
     username: process.env.ADMIN_USERNAME || "admin",
-    password: defaultPass || "radha@123"
+    password: defaultPass || import_crypto.default.randomBytes(20).toString("base64url")
   };
 }
 function writeAdminConfig(config) {
@@ -688,8 +688,10 @@ app.use((req, res, next) => {
 });
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (!origin || origin === ALLOWED_ORIGIN) {
-    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  if (!origin) {
+    res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+  } else if (origin === ALLOWED_ORIGIN) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -1761,7 +1763,7 @@ async function sendBookingEmail(order) {
           <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">\u20B9${shippingCost}</td>
         </tr>
         <tr>
-          <td style="padding: 6px 0; color: #6b7280;">GST (18%):</td>
+          <td style="padding: 6px 0; color: #6b7280;">GST (2%):</td>
           <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">\u20B9${tax}</td>
         </tr>
         <tr style="border-top: 2px solid #fbcfe8;">
@@ -2177,7 +2179,7 @@ app.post("/api/send-otp", rateLimiter(30, 15 * 60 * 1e3), async (req, res) => {
         });
       }
     }
-    const code = Math.floor(1e3 + Math.random() * 9e3).toString();
+    const code = import_crypto.default.randomInt(1e3, 1e4).toString();
     const windowStartAt = existing && now - existing.windowStartAt < 60 * 60 * 1e3 ? existing.windowStartAt : now;
     db[email] = {
       code,
@@ -2879,7 +2881,7 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
 });
 app.post("/api/orders/:orderNumber/status", verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const { status, codStatus, paymentStatus } = req.body;
     if (!status && !codStatus && !paymentStatus) {
       return res.status(400).json({ error: "Status, COD status, or payment status is required." });
@@ -2903,7 +2905,7 @@ app.post("/api/orders/:orderNumber/status", verifyAdminToken, async (req, res) =
 });
 app.put("/api/orders/:orderNumber", verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const updatedOrder = req.body;
     const dbOrders = readOrdersDb();
     const index = dbOrders.findIndex(
@@ -2971,7 +2973,7 @@ app.put("/api/orders/:orderNumber", verifyAdminToken, async (req, res) => {
 });
 app.delete("/api/orders/:orderNumber", verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const dbOrders = readOrdersDb();
     const filtered = dbOrders.filter(
       (o) => o.orderNumber.toUpperCase() !== orderNum && o.id.toUpperCase() !== orderNum

@@ -160,7 +160,7 @@ export function generateInvoicePDF(order: Order) {
   currentY += 5.5;
 
   // Tax
-  doc.text('Estimated CGST & SGST (18%):', calcLabelX, currentY, { align: 'right' });
+  doc.text('Estimated CGST & SGST (2%):', calcLabelX, currentY, { align: 'right' });
   doc.text(`INR ${order.tax.toLocaleString('en-IN')}`, calcValueX, currentY, { align: 'right' });
   currentY += 5.5;
 

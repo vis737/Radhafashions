@@ -887,7 +887,7 @@ export default function CheckoutPanel({
                         </div>
                       )}
                       <div className="flex justify-between text-gray-200 text-sm">
-                        <span>GST (18%)</span>
+                        <span>GST (2%)</span>
                         <span>Rs.{gstTax}</span>
                       </div>
                       <div className="flex justify-between text-gray-200 text-sm">

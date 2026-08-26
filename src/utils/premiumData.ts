@@ -164,7 +164,7 @@ const PRODUCT_WEIGHT_FALLBACKS_KG: Record<string, number> = {
   western: 0.5
 };
 
-const SHIPPING_HANDLING_SURCHARGE = 50;
+const SHIPPING_HANDLING_SURCHARGE = 15;
 
 function addShippingHandlingSurcharge(cost: number): number {
   return cost > 0 ? cost + SHIPPING_HANDLING_SURCHARGE : cost;
@@ -230,8 +230,8 @@ function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile
   if (pin.length !== 6) {
     return {
       zone: 'Enter pincode for exact rate',
-      baseHalfKgRate: 80,
-      additionalHalfKgRate: 52,
+      baseHalfKgRate: 40,
+      additionalHalfKgRate: 35,
       remoteSurcharge: 0
     };
   }
@@ -243,8 +243,8 @@ function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile
   if (prefix3 >= 600 && prefix3 <= 609) {
     return {
       zone: 'Chennai Metro Local',
-      baseHalfKgRate: 58 + lastMileAdjustment,
-      additionalHalfKgRate: 38,
+      baseHalfKgRate: 30 + lastMileAdjustment,
+      additionalHalfKgRate: 30,
       remoteSurcharge: 0
     };
   }
@@ -252,17 +252,17 @@ function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile
   if (prefix2 >= 60 && prefix2 <= 64) {
     return {
       zone: 'Tamil Nadu Local',
-      baseHalfKgRate: 62 + lastMileAdjustment,
-      additionalHalfKgRate: 40,
-      remoteSurcharge: prefix3 >= 643 ? 15 : 0
+      baseHalfKgRate: 35 + lastMileAdjustment,
+      additionalHalfKgRate: 32,
+      remoteSurcharge: prefix3 >= 643 ? 8 : 0
     };
   }
 
   if (prefix2 >= 56 && prefix2 <= 59) {
     return {
       zone: prefix3 === 560 ? 'Bengaluru Metro' : 'Karnataka',
-      baseHalfKgRate: (prefix3 === 560 ? 74 : 82) + lastMileAdjustment,
-      additionalHalfKgRate: prefix3 === 560 ? 48 : 54,
+      baseHalfKgRate: (prefix3 === 560 ? 30 : 35) + lastMileAdjustment,
+      additionalHalfKgRate: prefix3 === 560 ? 30 : 35,
       remoteSurcharge: 0
     };
   }
@@ -270,8 +270,8 @@ function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile
   if (prefix2 >= 50 && prefix2 <= 53) {
     return {
       zone: prefix3 === 500 ? 'Hyderabad Metro' : 'Telangana / Andhra',
-      baseHalfKgRate: (prefix3 === 500 ? 78 : 88) + lastMileAdjustment,
-      additionalHalfKgRate: prefix3 === 500 ? 50 : 58,
+      baseHalfKgRate: (prefix3 === 500 ? 30 : 40) + lastMileAdjustment,
+      additionalHalfKgRate: prefix3 === 500 ? 30 : 38,
       remoteSurcharge: 0
     };
   }
@@ -279,26 +279,26 @@ function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile
   if (prefix2 >= 67 && prefix2 <= 69) {
     return {
       zone: 'Kerala',
-      baseHalfKgRate: 92 + lastMileAdjustment,
-      additionalHalfKgRate: 60,
-      remoteSurcharge: prefix3 >= 685 ? 18 : 0
+      baseHalfKgRate: 40 + lastMileAdjustment,
+      additionalHalfKgRate: 42,
+      remoteSurcharge: prefix3 >= 685 ? 10 : 0
     };
   }
 
   if ((prefix2 >= 78 && prefix2 <= 79) || [194, 744].includes(prefix3)) {
     return {
       zone: 'Remote / Special Route',
-      baseHalfKgRate: 168 + lastMileAdjustment,
-      additionalHalfKgRate: 108,
-      remoteSurcharge: [194, 744].includes(prefix3) ? 45 : 30
+      baseHalfKgRate: 60 + lastMileAdjustment,
+      additionalHalfKgRate: 65,
+      remoteSurcharge: [194, 744].includes(prefix3) ? 25 : 15
     };
   }
 
   if ((prefix2 >= 36 && prefix2 <= 49) || (prefix2 >= 30 && prefix2 <= 34)) {
     return {
       zone: 'West / Central India',
-      baseHalfKgRate: 108 + lastMileAdjustment,
-      additionalHalfKgRate: 70,
+      baseHalfKgRate: 50 + lastMileAdjustment,
+      additionalHalfKgRate: 50,
       remoteSurcharge: 0
     };
   }
@@ -306,26 +306,26 @@ function getShippingRateProfileFromPincode(pincode?: string): PincodeRateProfile
   if ((prefix2 >= 11 && prefix2 <= 24) || (prefix2 >= 25 && prefix2 <= 29)) {
     return {
       zone: 'North India',
-      baseHalfKgRate: 118 + lastMileAdjustment,
-      additionalHalfKgRate: 78,
-      remoteSurcharge: [171, 172, 173, 174, 175, 176, 177].includes(prefix3) ? 25 : 0
+      baseHalfKgRate: 55 + lastMileAdjustment,
+      additionalHalfKgRate: 55,
+      remoteSurcharge: [171, 172, 173, 174, 175, 176, 177].includes(prefix3) ? 12 : 0
     };
   }
 
   if (prefix2 >= 70 && prefix2 <= 77) {
     return {
       zone: prefix3 === 700 ? 'Kolkata Metro' : 'East India',
-      baseHalfKgRate: (prefix3 === 700 ? 115 : 132) + lastMileAdjustment,
-      additionalHalfKgRate: prefix3 === 700 ? 76 : 86,
+      baseHalfKgRate: (prefix3 === 700 ? 50 : 60) + lastMileAdjustment,
+      additionalHalfKgRate: prefix3 === 700 ? 50 : 60,
       remoteSurcharge: 0
     };
   }
 
   return {
     zone: 'Rest of India',
-    baseHalfKgRate: 138 + lastMileAdjustment,
-    additionalHalfKgRate: 90,
-    remoteSurcharge: 10
+    baseHalfKgRate: 55 + lastMileAdjustment,
+    additionalHalfKgRate: 60,
+    remoteSurcharge: 8
   };
 }
 
@@ -345,7 +345,7 @@ function calculateLocalShippingCost(
   const zone = rateProfile.zone;
 
   if (pin.length !== 6) {
-    const fallbackCost = shippingMethod === 'express' ? 180 : subtotal > 1500 ? 0 : 80;
+    const fallbackCost = shippingMethod === 'express' ? 95 : subtotal > 1500 ? 0 : 45;
     return { cost: addShippingHandlingSurcharge(fallbackCost), billableWeightKg, zone };
   }
 
@@ -357,7 +357,7 @@ function calculateLocalShippingCost(
 
   if (shippingMethod === 'express') {
     return {
-      cost: addShippingHandlingSurcharge(Math.round(standardCost * 1.45 + 40)),
+      cost: addShippingHandlingSurcharge(Math.round(standardCost * 1.30 + 25)),
       billableWeightKg,
       zone
     };
@@ -426,9 +426,9 @@ export function calculateCartTotals(
   // 5. Gift wrapping cost (+ Rs.100 for premium wraps)
   const giftWrappingCost = giftWrappingRequested ? 100 : 0;
 
-  // 6. Tax (18% rules on adjusted net)
+  // 6. Tax (2% GST on adjusted net)
   const taxableAmount = Math.max(0, adjustedSubtotal - couponDiscount);
-  const tax = Math.round(taxableAmount * 0.18);
+  const tax = Math.round(taxableAmount * 0.02);
 
   // 7. Local shipping logic: billable weight slab + destination pincode zone
   // Older carts can contain a cached copy of the test product without the

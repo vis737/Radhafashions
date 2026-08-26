@@ -218,7 +218,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
                 </div>
               )}
               <div className="flex justify-between text-gray-500">
-                <span>GST Tax (18% rules)</span>
+                <span>GST Tax (2%)</span>
                 <span className="font-mono">Rs.{order.tax}</span>
               </div>
               <div className="flex justify-between text-gray-500">

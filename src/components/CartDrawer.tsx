@@ -318,7 +318,7 @@ export default function CartDrawer({
                   </div>
                 )}
                 <div className="flex justify-between items-center text-gray-950 dark:text-gray-100 font-semibold">
-                  <span className="text-gray-800 dark:text-gray-200 font-bold">GST / Tax (18% inclusive rule)</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-bold">GST / Tax (2%)</span>
                   <span className="font-mono text-sm font-extrabold text-gray-950 dark:text-white">Rs.{gstTax}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-950 dark:text-gray-100 font-semibold pb-2 border-b-2 border-gray-200 dark:border-gray-800">

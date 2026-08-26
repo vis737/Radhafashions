@@ -451,9 +451,9 @@ app.set('trust proxy', true);
 app.get('/health', (req, res) => res.status(200).send('OK'));
 const PORT = Number(process.env.PORT || 3000);
 
-const JWT_SECRET = process.env.JWT_SECRET || 'a3f9d2c1e8b74605af319de27c64f8a1b952e0d47618c3f290ab5e86d41379fc';
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 if (!process.env.JWT_SECRET) {
-  console.warn('⚠️ WARNING: JWT_SECRET not set in environment. Using fallback secret.');
+  console.warn('⚠️ WARNING: JWT_SECRET not set — a random secret was generated for this session. Tokens will NOT survive restarts. Set JWT_SECRET in your .env for production.');
 }
 
 const ALLOWED_ORIGIN = process.env.APP_URL || 'http://localhost:3000';
@@ -470,11 +470,11 @@ function readAdminConfig() {
   }
   const defaultPass = process.env.ADMIN_PASSWORD;
   if (!defaultPass) {
-    console.warn('⚠️  WARNING: ADMIN_PASSWORD env var is not set. Set it in your .env file.');
+    console.warn('⚠️  WARNING: ADMIN_PASSWORD env var is not set. Generating a random password for this session.');
   }
   return {
     username: process.env.ADMIN_USERNAME || 'admin',
-    password: defaultPass || 'radha@123'
+    password: defaultPass || crypto.randomBytes(20).toString('base64url')
   };
 }
 
@@ -543,8 +543,11 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   // Allow if origin matches APP_URL, or if no origin (same-domain / server-to-server request)
-  if (!origin || origin === ALLOWED_ORIGIN) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  if (!origin) {
+    // No origin header = same-origin or server-to-server — use configured origin instead of wildcard
+    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  } else if (origin === ALLOWED_ORIGIN) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -1843,7 +1846,7 @@ async function sendBookingEmail(order: any) {
           <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${shippingCost}</td>
         </tr>
         <tr>
-          <td style="padding: 6px 0; color: #6b7280;">GST (18%):</td>
+          <td style="padding: 6px 0; color: #6b7280;">GST (2%):</td>
           <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${tax}</td>
         </tr>
         <tr style="border-top: 2px solid #fbcfe8;">
@@ -2469,7 +2472,7 @@ app.post('/api/send-otp', rateLimiter(30, 15 * 60 * 1000), async (req, res) => {
       }
     }
 
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const code = crypto.randomInt(1000, 10000).toString();
     const windowStartAt =
       existing && now - existing.windowStartAt < 60 * 60 * 1000
         ? existing.windowStartAt
@@ -3321,7 +3324,7 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
 
 app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const { status, codStatus, paymentStatus } = req.body;
 
     if (!status && !codStatus && !paymentStatus) {
@@ -3359,7 +3362,7 @@ app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) =
 
 app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const updatedOrder = req.body;
 
     const dbOrders = readOrdersDb();
@@ -3436,7 +3439,7 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
 
 app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = req.params.orderNumber.trim().toUpperCase();
+    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const dbOrders = readOrdersDb();
     const filtered = dbOrders.filter(
       o => o.orderNumber.toUpperCase() !== orderNum && o.id.toUpperCase() !== orderNum

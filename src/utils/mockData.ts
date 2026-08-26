@@ -25,7 +25,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ratingCount: 1,
     images: ['https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop'],
     shortDescription: 'Test product for ₹10 Razorpay checkout. Free shipping.',
-    description: 'This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (18%) = ~₹10 total with free shipping.',
+    description: 'This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (2%) = ~₹9 total with free shipping.',
     specifications: { Weight: '0.05 kg' },
     reviews: [],
     isNew: true,
