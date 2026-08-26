@@ -76,24 +76,14 @@ export default function App() {
   // Router views
   const [activeView, setActiveView] = useState<AppView>('home');
 
-  // Core mutable list states
-  const [categories, setCategories] = useState<{id: string; name: string; description: string; imageUrl: string; enabled?: boolean}[]>(CATEGORIES as any[]);
-  const [products, setProducts] = useState<Product[]>(() => {
-    const db = getStoredDb();
-    return db.products || INITIAL_PRODUCTS;
-  });
-  const [coupons, setCoupons] = useState<Coupon[]>(() => {
-    const db = getStoredDb();
-    return db.coupons || INITIAL_COUPONS;
-  });
-  const [campaigns, setCampaigns] = useState<BannerCampaign[]>(() => {
-    const db = getStoredDb();
-    return db.campaigns || INITIAL_CAMPAIGNS;
-  });
-  const [cms, setCms] = useState<CMSConfig>(() => {
-    const db = getStoredDb();
-    return db.cms || INITIAL_CMS;
-  });
+  // Core mutable list states — always start empty; the API fetch populates them.
+  // Starting from localStorage caused deleted products/categories to reappear
+  // after every deploy because stale local data was synced back to Supabase.
+  const [categories, setCategories] = useState<{id: string; name: string; description: string; imageUrl: string; enabled?: boolean}[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [campaigns, setCampaigns] = useState<BannerCampaign[]>([]);
+  const [cms, setCms] = useState<CMSConfig>({ headline: '', subheadline: '', aboutText: '', contactEmail: '', contactPhone: '', contactAddress: '', whatsappNumber: '', instagramLink: '', privacyPolicy: '', termsConditions: '' });
   
   // Persisted cart, wishlist, and orders indices
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -388,51 +378,13 @@ export default function App() {
   }, []);
 
   // Save products, coupons, campaigns, cms changes back to local storage and sync to backend server database
+  // Save to localStorage for offline fallback only — NEVER sync catalog back to
+  // the server automatically.  The admin panel's explicit save buttons handle
+  // writing to Supabase.  The old auto-sync pushed stale localStorage data back
+  // to Supabase after every deploy, causing deleted products/categories to reappear.
   useEffect(() => {
     saveStoredDb({ products, coupons, campaigns, cms });
-    
-    if (!isCatalogLoadedRef.current || !adminBypassed) return;
-
-    const syncCatalogToBackend = async () => {
-      try {
-        const adminToken = localStorage.getItem('adminToken') || '';
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (adminToken) {
-          headers['Authorization'] = `Bearer ${adminToken}`;
-        }
-        await Promise.all([
-          fetch('/api/catalog/products', {
-            method: 'POST',
-            headers,
-            credentials: 'include',
-            body: JSON.stringify(products)
-          }),
-          fetch('/api/catalog/coupons', {
-            method: 'POST',
-            headers,
-            credentials: 'include',
-            body: JSON.stringify(coupons)
-          }),
-          fetch('/api/catalog/campaigns', {
-            method: 'POST',
-            headers,
-            credentials: 'include',
-            body: JSON.stringify(campaigns)
-          }),
-          fetch('/api/catalog/cms', {
-            method: 'POST',
-            headers,
-            credentials: 'include',
-            body: JSON.stringify(cms)
-          })
-        ]);
-      } catch (err) {
-        console.error('Failed to sync catalog changes to backend:', err);
-      }
-    };
-
-    syncCatalogToBackend();
-  }, [products, coupons, campaigns, cms, adminBypassed]);
+  }, [products, coupons, campaigns, cms]);
 
   // Pick hero products whenever catalog finishes loading or updating
   useEffect(() => {

@@ -377,18 +377,20 @@ function writeLocalJsonDb(filePath: string, data: any) {
  * Querying IDs first works for string/UUID identifiers and also supports an
  * intentionally empty catalog, unlike a `not in (...)` filter.
  */
-async function removeRowsMissingFromSnapshot(table: 'products' | 'categories', currentIds: string[]) {
+async function removeRowsMissingFromSnapshot(table: 'products' | 'categories' | 'coupons' | 'campaigns', currentIds: string[]) {
   if (!supabase) return;
-  const { data: existingRows, error: readError } = await supabase.from(table).select('id');
+  // coupons use 'code' as identifier; everything else uses 'id'
+  const idColumn = table === 'coupons' ? 'code' : 'id';
+  const { data: existingRows, error: readError } = await supabase.from(table).select(idColumn);
   if (readError) throw readError;
 
   const currentIdSet = new Set(currentIds.map(String));
   const idsToDelete = (existingRows || [])
-    .map((row: { id: string }) => String(row.id))
+    .map((row: Record<string, string>) => String(row[idColumn]))
     .filter(id => !currentIdSet.has(id));
 
   if (idsToDelete.length === 0) return;
-  const { error: deleteError } = await supabase.from(table).delete().in('id', idsToDelete);
+  const { error: deleteError } = await supabase.from(table).delete().in(idColumn, idsToDelete);
   if (deleteError) throw deleteError;
 }
 
@@ -1069,15 +1071,13 @@ app.get('/api/catalog/coupons', async (req, res) => {
         }));
         return res.json(mapped);
       }
-      console.warn('Supabase coupons fetch error, fallback to local JSON:', error);
+      console.warn('Supabase coupons fetch error:', error);
+      return res.status(503).json({ error: 'Coupon catalog is temporarily unavailable.' });
     }
-    res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
+    // Supabase not configured — return empty, do not seed with INITIAL data
+    res.json([]);
   } catch (err) {
-    if (!supabase) {
-      res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
-    } else {
-      res.json([]);
-    }
+    res.status(503).json({ error: 'Coupon catalog is temporarily unavailable.' });
   }
 });
 
@@ -1107,6 +1107,9 @@ app.post('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
         console.error('Supabase coupons upsert failed:', error);
         return res.status(500).json({ error: 'Supabase coupons upsert failed' });
       }
+      // Remove coupons deleted by the administrator
+      const currentCodes = couponsList.map((c: any) => c.code).filter(Boolean);
+      await removeRowsMissingFromSnapshot('coupons', currentCodes);
     }
     res.json({ success: true, message: 'Coupons synchronized.' });
   } catch (err) {
@@ -1176,16 +1179,13 @@ app.get('/api/catalog/campaigns', async (req, res) => {
         }));
         return res.json(mapped);
       }
-      console.warn('Supabase campaigns query failed, falling back to local:', error);
+      console.warn('Supabase campaigns query failed:', error);
+      return res.status(503).json({ error: 'Campaign catalog is temporarily unavailable.' });
     }
-    // Fallback: only when Supabase is NOT configured, use local JSON file
-    res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
+    // Supabase not configured — return empty, do not seed with INITIAL data
+    res.json([]);
   } catch (err) {
-    if (!supabase) {
-      res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
-    } else {
-      res.json([]);
-    }
+    res.status(503).json({ error: 'Campaign catalog is temporarily unavailable.' });
   }
 });
 
@@ -1209,6 +1209,9 @@ app.post('/api/catalog/campaigns', verifyAdminToken, async (req, res) => {
         active: c.active
       }));
       await supabase.from('campaigns').upsert(mapped);
+      // Remove campaigns deleted by the administrator
+      const currentCampIds = campaignsList.map((c: any) => c.id).filter(Boolean);
+      await removeRowsMissingFromSnapshot('campaigns', currentCampIds);
     }
     res.json({ success: true });
   } catch (err) {
@@ -1225,9 +1228,10 @@ app.get('/api/catalog/cms', async (req, res) => {
         return res.json(data.value);
       }
     }
-    res.json(readLocalJsonDb(CMS_FILE_PATH, INITIAL_CMS));
+    // Supabase not configured or query failed — return sensible defaults without local file
+    res.json(INITIAL_CMS);
   } catch (err) {
-    res.json(readLocalJsonDb(CMS_FILE_PATH, INITIAL_CMS));
+    res.json(INITIAL_CMS);
   }
 });
 

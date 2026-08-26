@@ -537,12 +537,13 @@ function writeLocalJsonDb(filePath, data) {
 }
 async function removeRowsMissingFromSnapshot(table, currentIds) {
   if (!supabase) return;
-  const { data: existingRows, error: readError } = await supabase.from(table).select("id");
+  const idColumn = table === "coupons" ? "code" : "id";
+  const { data: existingRows, error: readError } = await supabase.from(table).select(idColumn);
   if (readError) throw readError;
   const currentIdSet = new Set(currentIds.map(String));
-  const idsToDelete = (existingRows || []).map((row) => String(row.id)).filter((id) => !currentIdSet.has(id));
+  const idsToDelete = (existingRows || []).map((row) => String(row[idColumn])).filter((id) => !currentIdSet.has(id));
   if (idsToDelete.length === 0) return;
-  const { error: deleteError } = await supabase.from(table).delete().in("id", idsToDelete);
+  const { error: deleteError } = await supabase.from(table).delete().in(idColumn, idsToDelete);
   if (deleteError) throw deleteError;
 }
 function parseProductWeightKg(product) {
@@ -1074,15 +1075,12 @@ app.get("/api/catalog/coupons", async (req, res) => {
         }));
         return res.json(mapped);
       }
-      console.warn("Supabase coupons fetch error, fallback to local JSON:", error);
+      console.warn("Supabase coupons fetch error:", error);
+      return res.status(503).json({ error: "Coupon catalog is temporarily unavailable." });
     }
-    res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
+    res.json([]);
   } catch (err) {
-    if (!supabase) {
-      res.json(readLocalJsonDb(COUPONS_FILE_PATH, INITIAL_COUPONS));
-    } else {
-      res.json([]);
-    }
+    res.status(503).json({ error: "Coupon catalog is temporarily unavailable." });
   }
 });
 app.post("/api/catalog/coupons", verifyAdminToken, async (req, res) => {
@@ -1109,6 +1107,8 @@ app.post("/api/catalog/coupons", verifyAdminToken, async (req, res) => {
         console.error("Supabase coupons upsert failed:", error);
         return res.status(500).json({ error: "Supabase coupons upsert failed" });
       }
+      const currentCodes = couponsList.map((c) => c.code).filter(Boolean);
+      await removeRowsMissingFromSnapshot("coupons", currentCodes);
     }
     res.json({ success: true, message: "Coupons synchronized." });
   } catch (err) {
@@ -1168,15 +1168,12 @@ app.get("/api/catalog/campaigns", async (req, res) => {
         }));
         return res.json(mapped);
       }
-      console.warn("Supabase campaigns query failed, falling back to local:", error);
+      console.warn("Supabase campaigns query failed:", error);
+      return res.status(503).json({ error: "Campaign catalog is temporarily unavailable." });
     }
-    res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
+    res.json([]);
   } catch (err) {
-    if (!supabase) {
-      res.json(readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS));
-    } else {
-      res.json([]);
-    }
+    res.status(503).json({ error: "Campaign catalog is temporarily unavailable." });
   }
 });
 app.post("/api/catalog/campaigns", verifyAdminToken, async (req, res) => {
@@ -1197,6 +1194,8 @@ app.post("/api/catalog/campaigns", verifyAdminToken, async (req, res) => {
         active: c.active
       }));
       await supabase.from("campaigns").upsert(mapped);
+      const currentCampIds = campaignsList.map((c) => c.id).filter(Boolean);
+      await removeRowsMissingFromSnapshot("campaigns", currentCampIds);
     }
     res.json({ success: true });
   } catch (err) {
@@ -1211,9 +1210,9 @@ app.get("/api/catalog/cms", async (req, res) => {
         return res.json(data.value);
       }
     }
-    res.json(readLocalJsonDb(CMS_FILE_PATH, INITIAL_CMS));
+    res.json(INITIAL_CMS);
   } catch (err) {
-    res.json(readLocalJsonDb(CMS_FILE_PATH, INITIAL_CMS));
+    res.json(INITIAL_CMS);
   }
 });
 app.post("/api/catalog/cms", verifyAdminToken, async (req, res) => {

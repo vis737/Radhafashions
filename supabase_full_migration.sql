@@ -51,7 +51,20 @@ CREATE TABLE IF NOT EXISTS public.coupons (
 );
 
 -- ---------------------------------------------------------------------------
--- 3. CAMPAIGNS TABLE & COLUMNS
+-- 3. CATEGORIES TABLE & COLUMNS
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.categories (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  image_url TEXT DEFAULT '',
+  enabled BOOLEAN DEFAULT true,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ---------------------------------------------------------------------------
+-- 4. CAMPAIGNS TABLE & COLUMNS
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.campaigns (
   id TEXT PRIMARY KEY,
@@ -158,6 +171,7 @@ CREATE INDEX IF NOT EXISTS idx_newsletter_email ON public.newsletter(email);
 -- ---------------------------------------------------------------------------
 -- ROW LEVEL SECURITY (RLS) & UNRESTRICTED ACCESS POLICIES
 -- ---------------------------------------------------------------------------
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.campaigns ENABLE ROW LEVEL SECURITY;
@@ -170,6 +184,11 @@ ALTER TABLE public.newsletter ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
+  -- Categories policy
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'Allow all categories') THEN
+    CREATE POLICY "Allow all categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
   -- Products policy
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow all products') THEN
     CREATE POLICY "Allow all products" ON public.products FOR ALL USING (true) WITH CHECK (true);
