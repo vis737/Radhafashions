@@ -505,13 +505,13 @@ export default function Navbar({
       {/* --- Mobile Menu Drawer --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 flex sm:hidden">
+          <div className="fixed inset-0 z-[9998] flex sm:hidden">
             {/* Overlay background */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]"
               onClick={() => setMobileMenuOpen(false)}
             />
             
@@ -520,7 +520,7 @@ export default function Navbar({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 250 }}
-              className="relative flex flex-col w-[85%] max-w-sm bg-white dark:bg-[#0a0a0a] h-full shadow-2xl z-10 text-left overflow-hidden"
+              className="relative flex flex-col w-[85%] max-w-sm bg-white dark:bg-[#0a0a0a] h-full shadow-2xl z-[9999] text-left overflow-hidden"
             >
               {/* Drawer Header */}
               <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">

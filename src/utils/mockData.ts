@@ -106,7 +106,7 @@ export const DEFAULT_CMS: CMSConfig = {
   headline: 'Timeless Ethnic Elegance, Crafted With Love',
   subheadline: 'Discover exquisite sarees, lehengas, kurtis and curated ethnic collections — woven with tradition, worn with pride.',
   aboutText: 'Radha Fashions was born from a deep love of Indian heritage and craftsmanship. We curate handpicked ethnic wear — from silk sarees and embroidered lehengas to everyday kurtis and statement jewellery — sourced directly from master weavers and artisans across India. Every piece in our collection tells a story of tradition, artistry, and timeless beauty.',
-  contactEmail: 'admin@radhafashions.com',
+  contactEmail: 'admin@radhafashions.in',
   contactPhone: '+91 97311 53609',
   contactAddress: 'KSVK School Rd, Hagadur, Vinayakanagar, Whitefield, Bengaluru, Karnataka 560066',
   whatsappNumber: '+919731153609',

@@ -99,7 +99,7 @@ export default function CartDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden font-sans">
+    <div className="fixed inset-0 z-[9998] overflow-hidden font-sans">
       {/* Black backdrop with fade animation */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
 

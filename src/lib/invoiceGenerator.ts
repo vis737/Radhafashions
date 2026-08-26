@@ -87,7 +87,7 @@ export function generateInvoicePDF(order: Order) {
   doc.text('KSVK School Rd, Hagadur', 115, currentY + 5);
   doc.text('Vinayakanagar, Whitefield', 115, currentY + 10);
   doc.text('Bengaluru, Karnataka 560066', 115, currentY + 15);
-  doc.text('admin@radhafashions.com', 115, currentY + 20);
+  doc.text('admin@radhafashions.in', 115, currentY + 20);
 
   // Increment Y past coordinates info
   const addressBlockHeight = 15 + (wrappingAddress.length * 4.5);

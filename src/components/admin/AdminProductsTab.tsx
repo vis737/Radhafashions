@@ -396,9 +396,9 @@ export default function AdminProductsTab({
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-col">
-                        <span className="text-gray-800 dark:text-gray-200 font-medium">Rs. {product.price}</span>
+                        <span className="text-gray-800 dark:text-gray-200 font-medium">Rs. {product.discountPrice || product.price}</span>
                         {product.discountPrice ? (
-                          <span className="text-xs text-pink-500 line-through opacity-70">Rs. {product.discountPrice}</span>
+                          <span className="text-xs text-gray-400 line-through opacity-70">Rs. {product.price}</span>
                         ) : null}
                       </div>
                     </td>
@@ -756,7 +756,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
           <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 border-b border-pink-100 dark:border-pink-900/20 pb-2">Pricing & Inventory</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Discount Price (Rs.)</label>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Price (Rs.) *</label>
               <input
                 type="number"
                 value={product.price || 0}
@@ -766,7 +766,7 @@ function ProductForm({ product, categories, onChange, addToast }: {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Price (Rs.) *</label>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Discount Price (Rs.)</label>
               <input
                 type="number"
                 value={product.discountPrice || ''}

@@ -94,13 +94,13 @@ export default function InstagramGallery() {
       x: 0,
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
     },
     exit: (dir: number) => ({
       x: dir > 0 ? -300 : 300,
       opacity: 0,
       scale: 0.95,
-      transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+      transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
     }),
   };
 

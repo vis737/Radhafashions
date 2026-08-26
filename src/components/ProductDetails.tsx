@@ -53,6 +53,55 @@ export default function ProductDetails({
     ? { type: variation.type, value: selectedVariationValue }
     : undefined;
 
+  // SEO: Update page title, meta tags, and inject product structured data
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = `${product.name} | Radha Fashions Boutique — Rs.${product.discountPrice || product.price}`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const prevDesc = metaDesc?.getAttribute('content');
+    if (metaDesc) metaDesc.setAttribute('content', `${product.shortDescription || product.name}. Shop at Radha Fashions Boutique — Rs.${product.discountPrice || product.price}. Free shipping across India.`);
+    // Inject product structured data
+    const displayPrice = product.discountPrice || product.price;
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      'name': product.name,
+      'description': product.shortDescription || product.description || product.name,
+      'image': product.images || [],
+      'sku': product.sku || '',
+      'brand': { '@type': 'Brand', 'name': product.brand || 'Radha Fashions' },
+      'offers': {
+        '@type': 'Offer',
+        'url': `https://radhafashions.in/product/${product.id}`,
+        'priceCurrency': 'INR',
+        'price': displayPrice,
+        'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'itemCondition': 'https://schema.org/NewCondition',
+        'seller': { '@type': 'Organization', 'name': 'Radha Fashions Boutique' }
+      },
+      'aggregateRating': product.rating ? {
+        '@type': 'AggregateRating',
+        'ratingValue': product.rating,
+        'reviewCount': product.ratingCount || 1,
+        'bestRating': 5
+      } : undefined
+    };
+    const scriptEl = document.createElement('script');
+    scriptEl.type = 'application/ld+json';
+    scriptEl.id = 'product-schema';
+    scriptEl.textContent = JSON.stringify(schema);
+    // Remove old product schema if exists
+    const oldSchema = document.getElementById('product-schema');
+    if (oldSchema) oldSchema.remove();
+    document.head.appendChild(scriptEl);
+    return () => {
+      document.title = prevTitle;
+      if (metaDesc && prevDesc) metaDesc.setAttribute('content', prevDesc);
+      const el = document.getElementById('product-schema');
+      if (el) el.remove();
+    };
+  }, [product]);
+
   const handleShare = () => {
     setShared(true);
     navigator.clipboard.writeText(window.location.href);
@@ -183,7 +232,7 @@ export default function ProductDetails({
               <span className="text-gray-200">|</span>
               <div className="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
                 <Check className="w-4 h-4 bg-emerald-50 text-emerald-500 p-0.5 rounded-full" />
-                <span>100% Chef Certified Wood Safe</span>
+                <span>100% Quality Checked</span>
               </div>
             </div>
           </div>

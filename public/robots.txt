@@ -1,0 +1,27 @@
+# Radha Fashions Boutique - Robots.txt
+# https://radhafashions.in
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /account
+
+# Allow search engines to index all product and category pages
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://radhafashions.in/sitemap.xml
+
+# Crawl-delay (optional, respected by Bing and others)
+Crawl-delay: 1

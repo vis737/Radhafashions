@@ -13,7 +13,6 @@ import AccountPanel from './components/AccountPanel';
 import AdminDashboard from './components/AdminDashboard';
 import WhatsAppChat from './components/WhatsAppChat';
 import AiRecommendations from './components/AiRecommendations';
-import AgeToyFinder from './components/AgeToyFinder';
 import { getAIRecommendations } from './utils/aiRecommender';
 import FlashSaleSection from './components/FlashSaleSection';
 import InstagramGallery from './components/InstagramGallery';
@@ -257,8 +256,7 @@ export default function App() {
       orders: orders,
       recentlyViewed: recentlyViewedIds,
       currentUser: currentUser
-    });
-  }, [cartItems, wishlistIds, orders, recentlyViewedIds, currentUser]);
+    });  }, [cartItems, wishlistIds, orders, recentlyViewedIds, currentUser]);
 
   const isCatalogLoadedRef = useRef(false);
 
@@ -805,10 +803,34 @@ export default function App() {
   );
 
   const activeCategoryObject = CATEGORIES.find((c) => c.id === currentCategorySlug);
+
+  // SEO: Dynamically update page title based on active view
+  useEffect(() => {
+    const categoryNames: Record<string, string> = {
+      sarees: 'Sarees', lehengas: 'Lehengas & Skirts', kurtis: 'Kurtis & Kurtas',
+      salwar: 'Salwar Suits', dupattas: 'Dupattas & Stoles', jewellery: 'Ethnic Jewellery',
+      handbags: 'Potli & Clutch Bags', nightwear: 'Nightwear & Loungewear', western: 'Fusion & Western'
+    };
+    const viewTitles: Record<string, string> = {
+      home: 'Radha Fashions Boutique | Designer Sarees, Lehengas, Kurtis & Ethnic Wear Online | Bengaluru',
+      about: 'About Radha Fashions Boutique | Our Story, Services & Courses | Bengaluru',
+      checkout: 'Checkout | Radha Fashions Boutique — Secure Payment',
+      ordersuccess: 'Order Confirmed! | Radha Fashions Boutique',
+      account: 'My Account & Orders | Radha Fashions Boutique',
+      cart: 'Shopping Cart | Radha Fashions Boutique',
+      category: `${categoryNames[currentCategorySlug] || 'Collection'} | Radha Fashions Boutique — Shop Online`,
+    };
+    if (activeView === 'product' && currentProductId) {
+      const prod = products.find(p => p.id === currentProductId);
+      if (prod) document.title = `${prod.name} | Radha Fashions Boutique`;
+    } else {
+      document.title = viewTitles[activeView] || viewTitles.home;
+    }
+  }, [activeView, currentProductId, products, currentCategorySlug]);
+
   const categoryProductsFiltered = products
     .filter((p) => p.categorySlug === currentCategorySlug)
     .filter((p) => (stockOnly ? p.stock > 0 : true))
-    .filter(() => true)
     .sort((a, b) => {
       if (sortOrder === 'rating') return b.rating - a.rating;
       if (sortOrder === 'price-asc') return a.price - b.price;
@@ -1101,7 +1123,7 @@ export default function App() {
                     <div className="w-10 h-0.5 bg-pink-500 mt-2 rounded"></div>
                   </div>
                   <button
-                    onClick={() => handleSelectCategoryGroup('kolam')}
+                    onClick={() => handleSelectCategoryGroup('lehengas')}
                     className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
                   >
                     View Arrivals <ChevronRight className="w-4 h-4" />
@@ -1950,7 +1972,7 @@ export default function App() {
               KSVK School Rd, Hagadur,<br />
               Vinayakanagar, Whitefield,<br />
               Bengaluru, Karnataka 560066<br />
-              Contact Desk: admin@radhafashions.com
+              Contact Desk: admin@radhafashions.in
             </p>
           </div>
 

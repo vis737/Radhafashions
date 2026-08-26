@@ -496,7 +496,7 @@ export default function TrackingTab({
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
               <div>
                 <p className="font-bold">Purchase Cancelled</p>
-                <p>This transaction sequence is aborted. Check email details or request inquiry via admin@radhafashions.com.</p>
+                <p>This transaction sequence is aborted. Check email details or request inquiry via admin@radhafashions.in.</p>
               </div>
             </div>
           )}

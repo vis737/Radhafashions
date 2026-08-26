@@ -5,7 +5,7 @@ import { Heart, Scissors, GraduationCap, Crown, Sparkles, Star, ShoppingBag, Use
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
 };
 
 const stagger = {

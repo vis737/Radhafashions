@@ -491,7 +491,7 @@ export default function CheckoutPanel({
                             <Gift className="w-4.5 h-4.5 text-orange-500" />
                             Add Premium Gift Wrap (Rs.100)
                           </span>
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Authentic wax-sealed banana fiber pouch with dried marigold buds.</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Premium gift wrapping with a decorative box and ribbon.</p>
                         </div>
                       </label>
 

@@ -140,7 +140,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
               <p className="text-[10px] text-gray-500 leading-relaxed font-light">
                 KSVK School Rd, Hagadur, Vinayakanagar,<br />
                 Whitefield, Bengaluru, Karnataka 560066<br />
-                admin@radhafashions.com | +91 97311 53609
+                admin@radhafashions.in | +91 97311 53609
               </p>
             </div>
             <div className="sm:text-right text-xs text-gray-500 space-y-0.5">

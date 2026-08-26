@@ -312,7 +312,7 @@ async function syncProductsFromSupabase() {
         const localMapped = localOnly.map((p: any) => ({
           id: p.id,
           sku: p.sku || `SKU-${p.id}`,
-          name: p.name || 'Handcrafted Product',
+          name: p.name || 'Radha Fashions Product',
           category: p.category || 'Handbags',
           category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, '-') || 'handbags',
           price: p.price,
@@ -886,7 +886,7 @@ app.get('/api/catalog/products', async (req, res) => {
           return {
             id: p.id,
             sku: p.sku || `SKU-${p.id}`,
-            name: p.name || 'Handcrafted Product',
+            name: p.name || 'Radha Fashions Product',
             category: p.category || 'Handbags',
             categorySlug: p.category_slug || 'handbags',
             price: Number(p.price || 999),
@@ -941,7 +941,7 @@ app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb'
         const mapped = productsList.map(p => ({
           id: p.id,
           sku: p.sku || `SKU-${p.id}`,
-          name: p.name || 'Handcrafted Product',
+          name: p.name || 'Radha Fashions Product',
           category: p.category || 'Handbags',
           category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, '-') || 'handbags',
           price: p.price,
@@ -1294,8 +1294,8 @@ app.post('/api/gemini/recommendations', rateLimiter(20, 60 * 1000), async (req, 
   // Simple fallbacks if client is unavailable
   if (!ai) {
     const fallbacks = {
-      conciergeCommentary: 'We noticed your fine interest in our handcrafted selections. To complement your lifestyle, our personal concierge highly suggests looking at our signature hand-foliaged journals and carved rosewood storage solutions, both reflecting the highest standards of our 2025 heritage roots.',
-      recommendedProductIds: ['stat-1', 'wood-1', 'home-1'].filter(id => !recentlyViewedIds?.includes(id)),
+      conciergeCommentary: 'We noticed your interest in our curated collections. Our personal concierge suggests exploring our signature silk sarees and designer lehengas — both reflecting the finest Indian fashion traditions.',
+      recommendedProductIds: []
     };
     return res.json(fallbacks);
   }
@@ -1305,7 +1305,7 @@ app.post('/api/gemini/recommendations', rateLimiter(20, 60 * 1000), async (req, 
     const viewedContext = allProducts?.filter((p: any) => recentlyViewedIds?.includes(p.id))?.map((p: any) => p.name).join(', ') || 'None';
     const catalogSummary = allProducts?.map((p: any) => `ID: ${p.id}, Sku: ${p.sku}, Name: ${p.name}, Price: ₹${p.price}, Category: ${p.category}`).join('\n') || '';
 
-    const systemPrompt = `You are the Virtual Boutique Concierge at "Radha Fashions", an ultra-premium, family-friendly e-commerce store sharing handcrafted gifts, toys, stencils, and leather bags.
+    const systemPrompt = `You are the Virtual Boutique Concierge at "Radha Fashions", an elegant fashion boutique e-commerce store specializing in designer sarees, lehengas, kurtis, ethnic accessories, and curated jewelry.
 Analyze user's shopping context and recommend EXACTLY 3 complementary products from the store catalogue. Write a luxurious, friendly, high-society commentary (1-2 sentences) about why these are perfect additions, matching their style.
 
 Strict Requirements:
@@ -1353,8 +1353,8 @@ Generate the recommendations JSON strictly adhering to the schema.`;
     console.log('AI Concierge recommendations offline fallback matching applied.');
     const fallbackData = {
       fallback: true,
-      conciergeCommentary: 'Our AI concierge is polishing the virtual shelves! In the meantime, we suggest reviewing our Gold-Foil Journal and Laser-Cut Kolam Stencils for matching your exquisite setup.',
-      recommendedProductIds: ['stat-1', 'kolam-1', 'wood-1'],
+      conciergeCommentary: 'Our AI concierge is curating personalized picks! In the meantime, we suggest exploring our latest saree and lehenga collections for your exquisite style.',
+      recommendedProductIds: [],
     };
     res.json(fallbackData);
   }
@@ -1371,23 +1371,23 @@ app.post('/api/gemini/search', rateLimiter(20, 60 * 1000), async (req, res) => {
     const qLower = query?.toLowerCase() || '';
     let slug = '';
     let responseText = `We are searching our premium vaults for "${query}".`;
-    if (qLower.includes('toy') || qLower.includes('kid') || qLower.includes('child')) {
-      slug = 'toys';
-      responseText = 'We recommend exploring our Kids Toys section; our handcrafted stacking toys make magnificent presents.';
-    } else if (qLower.includes('wood') || qLower.includes('box') || qLower.includes('gift')) {
-      slug = 'wood-gifts';
-      responseText = 'Discover our carved Wood Crafts section, fully loaded with antique rosewood lockboxes and honeycomb bookshelves.';
-    } else if (qLower.includes('bag') || qLower.includes('purse') || qLower.includes('tote')) {
-      slug = 'handbags';
-      responseText = 'Browse sustainable, top-tier handbags, vintage wrist bags, and handwoven luxury pouches.';
-    } else if (qLower.includes('kolam') || qLower.includes('stencil') || qLower.includes('rangoli') || qLower.includes('festive')) {
-      slug = 'kolam';
-      responseText = 'Prepare for festive celebrations with our laser-cut acrylic Kolam stencils and mandala templates.';
+    if (qLower.includes('saree') || qLower.includes('silk') || qLower.includes('sari')) {
+      slug = 'sarees';
+      responseText = 'Explore our stunning collection of silk sarees, Banarasi weaves, and designer drapes — perfect for every occasion.';
+    } else if (qLower.includes('lehenga') || qLower.includes('bridal') || qLower.includes('wedding')) {
+      slug = 'lehengas';
+      responseText = 'Discover our bridal lehengas and designer outfits, crafted for your special celebrations.';
+    } else if (qLower.includes('kurti') || qLower.includes('salwar') || qLower.includes('suit')) {
+      slug = 'kurtis';
+      responseText = 'Browse our elegant kurtis and salwar suits — comfortable ethnic wear for daily and festive wear.';
+    } else if (qLower.includes('jewel') || qLower.includes('bangle') || qLower.includes('accessory') || qLower.includes('accessories')) {
+      slug = 'jewellery';
+      responseText = 'Complete your look with our curated jewelry collection — bangles, necklaces, earrings, and more.';
     }
 
     return {
       suggestedCategorySlug: slug,
-      aiSuggestions: ['wooden stacking', 'crochet bunny', 'rosewood box', 'gold notebook'].filter(x => x.includes(qLower) || qLower.length <= 2).slice(0, 3),
+      aiSuggestions: ['silk saree', 'designer lehenga', 'ethnic kurti', 'gold jewelry'].filter(x => x.includes(qLower) || qLower.length <= 2).slice(0, 3),
       smartQueryResponse: responseText,
     };
   };
@@ -1534,7 +1534,7 @@ function createSmtpTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.SMTP_USER || 'admin@radhafashions.com';
+  const user = process.env.SMTP_USER || 'admin@radhafashions.in';
   const pass = process.env.SMTP_PASS || 'lljl hfcn geye rdlt';
 
   return nodemailer.createTransport({
@@ -1553,11 +1553,11 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   const recipient = sanitizeEmail(to);
   if (!recipient) return false;
 
-  // 1. Try Resend HTTP REST API (Primary for Cloud / Custom Domain admin@radhafashions.com - Port 443)
+  // 1. Try Resend HTTP REST API (Primary for Cloud / Custom Domain admin@radhafashions.in - Port 443)
   if (isConfigured(process.env.RESEND_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
-      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.com').trim();
+      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.in').trim();
       let fromFormatted = rawFrom;
       if (rawFrom.includes('onboarding@resend.dev')) {
         fromFormatted = 'onboarding@resend.dev';
@@ -1593,7 +1593,7 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   if (isConfigured(process.env.BREVO_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
-      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.com').trim();
+      const fromEmail = (process.env.BREVO_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.in').trim();
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -1623,7 +1623,7 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
   try {
     const transporter = createSmtpTransporter();
     const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'admin@radhafashions.com';
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'admin@radhafashions.in';
 
     await transporter.sendMail({
       from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
@@ -1722,7 +1722,7 @@ async function sendBookingEmail(order: any) {
     if (order.items && Array.isArray(order.items)) {
       order.items.forEach((item: any) => {
         const productObj = item.product || item;
-        const productName = productObj.name || 'Handcrafted Gift';
+        const productName = productObj.name || 'Radha Fashions Gift';
         const variation = item.selectedVariation?.value
           ? ` (${item.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${item.selectedVariation.value})`
           : '';
@@ -1927,14 +1927,14 @@ async function sendAdminVendorNotificationEmail(order: any) {
     const customerAddress = sanitizeString(order.customerInfo?.address || '', 300);
     const customerPincode = sanitizeString(order.customerInfo?.pincode || '', 10);
 
-    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || 'admin@radhafashions.com');
+    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || 'admin@radhafashions.in');
     const subject = `New Order Received - Radha Fashions (#${orderNum})`;
 
     let itemsHtml = '';
     if (order.items && Array.isArray(order.items)) {
       order.items.forEach((item: any) => {
         const productObj = item.product || item;
-        const productName = productObj.name || 'Handcrafted Product';
+        const productName = productObj.name || 'Radha Fashions Product';
         const variation = item.selectedVariation?.value
           ? ` (${item.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${item.selectedVariation.value})`
           : '';
@@ -3503,7 +3503,7 @@ app.get('/api/admin/live-activity', verifyAdminToken, (req, res) => {
   const activeSessionsList = Object.values(liveSessions).filter(s => s.lastActive > cutoff);
   res.json({
     sessions: activeSessionsList.length > 0 ? activeSessionsList : [
-      { ip: '192.168.1.102', type: 'guest', activePage: '/category/toys', cartTotal: 899, durationSeconds: 45, lastActive: Date.now() },
+      { ip: '192.168.1.102', type: 'guest', activePage: '/category/sarees', cartTotal: 1499, durationSeconds: 45, lastActive: Date.now() },
       { ip: '157.23.44.11', type: 'user', name: 'Alok S.', activePage: '/checkout', cartTotal: 1648, durationSeconds: 320, lastActive: Date.now() }
     ],
     alerts: liveAlerts.slice(0, 10),
@@ -3603,31 +3603,51 @@ app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
 });
 
 app.get('/sitemap.xml', async (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=3600');
   try {
     const products = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const today = new Date().toISOString().split('T')[0];
+    const categories = ['sarees', 'lehengas', 'kurtis', 'salwar', 'dupattas', 'jewellery', 'handbags', 'nightwear', 'western'];
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://radhafashions.com/</loc>
+    <loc>https://radhafashions.in/</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://radhafashions.com/category/toys</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+    <loc>https://radhafashions.in/about</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+    categories.forEach((cat) => {
+      xml += `
   <url>
-    <loc>https://radhafashions.com/category/wood-gifts</loc>
+    <loc>https://radhafashions.in/category/${cat}</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`;
+    });
     products.forEach((p: any) => {
+      const lastMod = p.updatedAt || p.date || today;
       xml += `
   <url>
-    <loc>https://radhafashions.com/product/${p.id}</loc>
+    <loc>https://radhafashions.in/product/${p.id}</loc>
+    <lastmod>${lastMod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.7</priority>`;
+      if (p.images && p.images[0]) {
+        xml += `
+    <image:image>
+      <image:loc>${p.images[0]}</image:loc>
+      <image:title>${(p.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</image:title>
+    </image:image>`;
+      }
+      xml += `
   </url>`;
     });
     xml += `
@@ -3641,10 +3661,28 @@ app.get('/sitemap.xml', async (req, res) => {
 
 app.get('/robots.txt', (req, res) => {
   res.header('Content-Type', 'text/plain');
-  res.status(200).send(`User-agent: *
+  res.status(200).send(`# Radha Fashions Boutique - Robots.txt
+# https://radhafashions.in
+
+User-agent: *
 Allow: /
-Disallow: /api/admin/
-Sitemap: https://radhafashions.com/sitemap.xml
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /account
+
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+
+Sitemap: https://radhafashions.in/sitemap.xml
 `);
 });
 
@@ -3837,6 +3875,45 @@ const getRazorpayClient = () => {
     return null;
   }
 };
+
+// Product Structured Data for Google Rich Results
+app.get('/api/product-schema/:productId', (req, res) => {
+  try {
+    const products = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const product = products.find((p: any) => p.id === req.params.productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    const displayPrice = product.discountPrice || product.price;
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      'name': product.name,
+      'description': product.shortDescription || product.description || product.name,
+      'image': product.images || [],
+      'sku': product.sku || '',
+      'brand': { '@type': 'Brand', 'name': product.brand || 'Radha Fashions' },
+      'offers': {
+        '@type': 'Offer',
+        'url': `https://radhafashions.in/product/${product.id}`,
+        'priceCurrency': 'INR',
+        'price': displayPrice,
+        'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'itemCondition': 'https://schema.org/NewCondition',
+        'seller': { '@type': 'Organization', 'name': 'Radha Fashions Boutique' }
+      },
+      'aggregateRating': product.rating ? {
+        '@type': 'AggregateRating',
+        'ratingValue': product.rating,
+        'reviewCount': product.ratingCount || 1,
+        'bestRating': 5
+      } : undefined
+    };
+    res.json(schema);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate product schema' });
+  }
+});
 
 app.get('/api/razorpay/config', (req, res) => {
   const keyId = process.env.RAZORPAY_KEY_ID;
