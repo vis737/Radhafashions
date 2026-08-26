@@ -246,15 +246,19 @@ try {
 }
 import_dotenv.default.config();
 var supabaseUrl = process.env.SUPABASE_URL;
-var supabaseKey = process.env.SUPABASE_KEY;
+var supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 var isSupabaseConfigured = () => {
   return supabaseUrl && supabaseKey && supabaseUrl.trim() !== "" && supabaseKey.trim() !== "" && !supabaseUrl.includes("YOUR_SUPABASE_") && !supabaseKey.includes("YOUR_SUPABASE_");
 };
 var supabase = isSupabaseConfigured() ? (0, import_supabase_js.createClient)(supabaseUrl, supabaseKey) : null;
+var shouldRequireSupabase = process.env.REQUIRE_SUPABASE === "true" || process.env.NODE_ENV === "production";
 if (supabase) {
   console.log("\u25C7 Supabase connected successfully as main database.");
 } else {
   console.log("\u25C7 Supabase credentials missing/default. Using offline fallback JSON database.");
+  if (shouldRequireSupabase) {
+    console.error("\u2A2F Supabase is required for this deployment. Set SUPABASE_URL and SUPABASE_KEY in Railway.");
+  }
 }
 async function seedSupabaseDatabase() {
   if (!supabase) return;
@@ -449,109 +453,45 @@ async function syncCustomersFromSupabase() {
 async function syncProductsFromSupabase() {
   if (!supabase) return;
   try {
-    const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     const { data, error } = await supabase.from("products").select("*");
-    if (!error && data && data.length > 0) {
-      const mapped = data.map((p) => {
-        const localMatch = localProds.find((localProduct) => localProduct?.id === p.id);
-        return {
-          id: p.id,
-          sku: p.sku,
-          name: p.name,
-          category: p.category || "Handbags",
-          categorySlug: p.category_slug || "handbags",
-          price: Number(p.price || 999),
-          discountPrice: p.discount_price ? Number(p.discount_price) : void 0,
-          stock: p.stock !== void 0 ? Number(p.stock) : 10,
-          rating: p.rating ? Number(p.rating) : 4.8,
-          ratingCount: p.rating_count ? Number(p.rating_count) : 50,
-          images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"],
-          shortDescription: p.short_description || "",
-          description: p.description || "",
-          specifications: p.specifications || {},
-          weightKg: parseProductWeightKg(p),
-          reviews: Array.isArray(p.reviews) ? p.reviews : [],
-          isNew: Boolean(p.is_new),
-          isBestseller: Boolean(p.is_bestseller),
-          brand: p.brand || "Radha Fashions",
-          availability: p.availability || "in-stock",
-          vendorId: p.vendor_id || null,
-          variation: p.variation || localMatch?.variation || void 0,
-          isTestProduct: p.id === "TEST-RF-001"
-        };
-      });
-      const supabaseIds = new Set(mapped.map((m) => m.id));
-      const localOnly = localProds.filter((lp) => lp && lp.id && !supabaseIds.has(lp.id));
-      const merged = [...mapped, ...localOnly];
-      if (localOnly.length > 0) {
-        const localMapped = localOnly.map((p) => ({
-          id: p.id,
-          sku: p.sku || `SKU-${p.id}`,
-          name: p.name || "Radha Fashions Product",
-          category: p.category || "Handbags",
-          category_slug: p.categorySlug || p.category?.toLowerCase().replace(/\s+/g, "-") || "handbags",
-          price: p.price,
-          discount_price: p.discountPrice || null,
-          stock: p.stock !== void 0 ? p.stock : 10,
-          rating: p.rating || 5,
-          rating_count: p.ratingCount || 1,
-          images: p.images || [],
-          short_description: p.shortDescription || p.name || "",
-          description: p.description || p.name || "",
-          specifications: p.specifications || {},
-          reviews: p.reviews || [],
-          is_new: p.isNew || false,
-          is_bestseller: p.isBestseller || false,
-          brand: p.brand || "Radha Fashions",
-          availability: p.availability || "in-stock",
-          vendor_id: p.vendorId || null,
-          variation: p.variation || null
-        }));
-        await supabase.from("products").upsert(localMapped);
-      }
-      writeLocalJsonDb(PRODUCTS_FILE_PATH, merged);
-      console.log(`\u25C7 Synced ${merged.length} products (Supabase + local) to catalog.`);
+    if (!error && data) {
+      const mapped = data.map((p) => ({
+        id: p.id,
+        sku: p.sku,
+        name: p.name,
+        category: p.category || "Handbags",
+        categorySlug: p.category_slug || "handbags",
+        price: Number(p.price || 999),
+        discountPrice: p.discount_price ? Number(p.discount_price) : void 0,
+        stock: p.stock !== void 0 ? Number(p.stock) : 10,
+        rating: p.rating ? Number(p.rating) : 4.8,
+        ratingCount: p.rating_count ? Number(p.rating_count) : 50,
+        images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"],
+        shortDescription: p.short_description || "",
+        description: p.description || "",
+        specifications: p.specifications || {},
+        weightKg: parseProductWeightKg(p),
+        reviews: Array.isArray(p.reviews) ? p.reviews : [],
+        isNew: Boolean(p.is_new),
+        isBestseller: Boolean(p.is_bestseller),
+        brand: p.brand || "Radha Fashions",
+        availability: p.availability || "in-stock",
+        vendorId: p.vendor_id || null,
+        variation: p.variation || void 0,
+        isTestProduct: p.id === "TEST-RF-001"
+      }));
+      writeLocalJsonDb(PRODUCTS_FILE_PATH, mapped);
+      console.log(`\u25C7 Cached ${mapped.length} products from Supabase.`);
+    } else {
+      console.error("Failed to read products from Supabase on startup:", error);
     }
   } catch (err) {
     console.error("Failed to sync products from Supabase on startup:", err);
   }
 }
-async function upsertTestProduct() {
-  if (!supabase) return;
-  try {
-    const testProd = INITIAL_PRODUCTS.find((p) => p.isTestProduct);
-    if (!testProd) return;
-    await supabase.from("products").upsert({
-      id: testProd.id,
-      sku: testProd.sku,
-      name: testProd.name,
-      category: testProd.category,
-      category_slug: testProd.categorySlug,
-      price: testProd.price,
-      discount_price: null,
-      stock: testProd.stock,
-      rating: testProd.rating,
-      rating_count: testProd.ratingCount,
-      images: testProd.images,
-      short_description: testProd.shortDescription,
-      description: testProd.description,
-      specifications: testProd.specifications,
-      reviews: [],
-      is_new: true,
-      is_bestseller: false,
-      brand: testProd.brand,
-      availability: "in-stock",
-      vendor_id: null,
-      variation: null
-    }, { onConflict: "id" });
-    console.log("\u2726 Upserted test product TEST-RF-001 (\u20B910 checkout).");
-  } catch (err) {
-    console.error("Failed to upsert test product:", err);
-  }
-}
 if (supabase) {
-  seedSupabaseDatabase().then(() => {
-    upsertTestProduct();
+  const boot = process.env.SEED_SUPABASE_DATA === "true" ? seedSupabaseDatabase() : Promise.resolve();
+  boot.then(() => {
     syncProductsFromSupabase();
     syncOrdersFromSupabase();
     syncAdminConfigFromSupabase();
@@ -595,6 +535,16 @@ function writeLocalJsonDb(filePath, data) {
     console.error(`Error writing database to ${filePath}:`, error);
   }
 }
+async function removeRowsMissingFromSnapshot(table, currentIds) {
+  if (!supabase) return;
+  const { data: existingRows, error: readError } = await supabase.from(table).select("id");
+  if (readError) throw readError;
+  const currentIdSet = new Set(currentIds.map(String));
+  const idsToDelete = (existingRows || []).map((row) => String(row.id)).filter((id) => !currentIdSet.has(id));
+  if (idsToDelete.length === 0) return;
+  const { error: deleteError } = await supabase.from(table).delete().in("id", idsToDelete);
+  if (deleteError) throw deleteError;
+}
 function parseProductWeightKg(product) {
   if (typeof product?.weightKg === "number" && Number.isFinite(product.weightKg) && product.weightKg > 0) {
     return product.weightKg;
@@ -609,8 +559,46 @@ function parseProductWeightKg(product) {
 }
 var app = (0, import_express.default)();
 app.set("trust proxy", true);
-app.get("/health", (req, res) => res.status(200).send("OK"));
+app.get("/health", (req, res) => {
+  if (shouldRequireSupabase && !supabase) {
+    return res.status(503).send("Supabase configuration is required.");
+  }
+  res.status(200).send("OK");
+});
 var PORT = Number(process.env.PORT || 3e3);
+var catalogStreamClients = /* @__PURE__ */ new Set();
+var notifyCatalogChanged = (table) => {
+  const message = `event: catalog-change
+data: ${JSON.stringify({ table })}
+
+`;
+  for (const client of catalogStreamClients) {
+    try {
+      client.write(message);
+    } catch {
+      catalogStreamClients.delete(client);
+    }
+  }
+};
+if (supabase) {
+  supabase.channel("railway-catalog-sync").on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => notifyCatalogChanged("products")).on("postgres_changes", { event: "*", schema: "public", table: "categories" }, () => notifyCatalogChanged("categories")).subscribe((status) => console.log(`[Catalog realtime] ${status}`));
+}
+app.get("/api/catalog/stream", (req, res) => {
+  res.status(200).set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no"
+  });
+  res.flushHeaders();
+  res.write("event: connected\ndata: {}\n\n");
+  catalogStreamClients.add(res);
+  const heartbeat = setInterval(() => res.write(": keepalive\n\n"), 25e3);
+  req.on("close", () => {
+    clearInterval(heartbeat);
+    catalogStreamClients.delete(res);
+  });
+});
 var JWT_SECRET = process.env.JWT_SECRET || import_crypto.default.randomBytes(64).toString("hex");
 if (!process.env.JWT_SECRET) {
   console.warn("\u26A0\uFE0F WARNING: JWT_SECRET not set \u2014 a random secret was generated for this session. Tokens will NOT survive restarts. Set JWT_SECRET in your .env for production.");
@@ -954,15 +942,19 @@ app.get("/api/catalog/products", async (req, res) => {
         });
         return res.json(mapped);
       }
-      console.warn("Supabase products query failed, falling back to local:", error);
+      console.error("Supabase products query failed:", error);
+      return res.status(503).json({ error: "Product catalog is temporarily unavailable." });
+    }
+    if (shouldRequireSupabase) {
+      return res.status(503).json({ error: "Product catalog database is not configured." });
     }
     const localProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
     res.json(localProds);
   } catch (err) {
-    if (!supabase) {
+    if (!supabase && !shouldRequireSupabase) {
       res.json(readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS));
     } else {
-      res.json([]);
+      res.status(503).json({ error: "Product catalog is temporarily unavailable." });
     }
   }
 });
@@ -975,7 +967,6 @@ app.post("/api/catalog/products", verifyAdminToken, import_express.default.json(
     if (productsList.length > 500) {
       return res.status(400).json({ error: "Too many products in a single request (max 500)." });
     }
-    writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
     if (supabase) {
       try {
         const mapped = productsList.map((p) => ({
@@ -1001,26 +992,25 @@ app.post("/api/catalog/products", verifyAdminToken, import_express.default.json(
           vendor_id: p.vendorId || null,
           variation: p.variation || null
         }));
-        const { error: subErr } = await supabase.from("products").upsert(mapped);
-        if (subErr) {
-          console.error("Supabase products upsert notice:", subErr);
-          return res.status(500).json({ error: "Supabase products upsert failed. Product catalog was not durably saved." });
-        } else {
-          console.log(`Successfully synchronized ${mapped.length} products to Supabase.`);
-        }
-        const currentIds = productsList.map((p) => p.id).filter(Boolean);
-        if (currentIds.length > 0) {
-          const idListStr = currentIds.join(",");
-          const { error: delErr } = await supabase.from("products").delete().not("id", "in", `(${idListStr})`);
-          if (delErr) {
-            console.warn("Supabase products cleanup notice:", delErr);
+        if (mapped.length > 0) {
+          const { error: subErr } = await supabase.from("products").upsert(mapped);
+          if (subErr) {
+            console.error("Supabase products upsert error:", subErr);
+            return res.status(500).json({ error: "Supabase products upsert failed. Product catalog was not durably saved." });
           }
         }
+        const currentIds = productsList.map((p) => p.id).filter(Boolean);
+        await removeRowsMissingFromSnapshot("products", currentIds);
+        console.log(`Successfully synchronized ${mapped.length} products to Supabase.`);
       } catch (subErr) {
-        console.warn("Supabase products upsert notice (local saved):", subErr);
+        console.error("Supabase products sync failed:", subErr);
         return res.status(500).json({ error: "Supabase products sync failed. Product catalog was not durably saved." });
       }
     }
+    if (shouldRequireSupabase && !supabase) {
+      return res.status(503).json({ error: "Product catalog database is not configured." });
+    }
+    writeLocalJsonDb(PRODUCTS_FILE_PATH, productsList);
     res.json({ success: true, message: "Products catalog synchronized successfully." });
   } catch (err) {
     res.status(500).json({ error: "Failed to synchronize products catalog" });
@@ -1267,14 +1257,18 @@ app.get("/api/catalog/categories", async (req, res) => {
         }));
         return res.json(mapped);
       }
-      console.warn("Supabase categories query failed, falling back to local:", error);
+      console.error("Supabase categories query failed:", error);
+      return res.status(503).json({ error: "Category catalog is temporarily unavailable." });
+    }
+    if (shouldRequireSupabase) {
+      return res.status(503).json({ error: "Category catalog database is not configured." });
     }
     res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
   } catch (err) {
-    if (!supabase) {
+    if (!supabase && !shouldRequireSupabase) {
       res.json(readLocalJsonDb(CATEGORIES_FILE_PATH, INITIAL_CATEGORIES_DATA));
     } else {
-      res.json([]);
+      res.status(503).json({ error: "Category catalog is temporarily unavailable." });
     }
   }
 });
@@ -1284,7 +1278,6 @@ app.post("/api/catalog/categories", verifyAdminToken, async (req, res) => {
     if (!Array.isArray(categories)) {
       return res.status(400).json({ error: "Body must be an array of categories." });
     }
-    writeLocalJsonDb(CATEGORIES_FILE_PATH, categories);
     if (supabase) {
       const mapped = categories.map((c) => ({
         id: c.id,
@@ -1293,16 +1286,20 @@ app.post("/api/catalog/categories", verifyAdminToken, async (req, res) => {
         image_url: c.imageUrl || "",
         enabled: c.enabled !== false
       }));
-      const { error: subErr } = await supabase.from("categories").upsert(mapped);
-      if (subErr) {
-        console.error("Supabase categories upsert error:", subErr);
-        return res.status(500).json({ error: "Failed to sync categories to database." });
+      if (mapped.length > 0) {
+        const { error: subErr } = await supabase.from("categories").upsert(mapped);
+        if (subErr) {
+          console.error("Supabase categories upsert error:", subErr);
+          return res.status(500).json({ error: "Failed to sync categories to database." });
+        }
       }
       const currentIds = categories.map((c) => c.id).filter(Boolean);
-      if (currentIds.length > 0) {
-        await supabase.from("categories").delete().not("id", "in", `(${currentIds.join(",")})`);
-      }
+      await removeRowsMissingFromSnapshot("categories", currentIds);
     }
+    if (shouldRequireSupabase && !supabase) {
+      return res.status(503).json({ error: "Category catalog database is not configured." });
+    }
+    writeLocalJsonDb(CATEGORIES_FILE_PATH, categories);
     res.json({ success: true, message: "Categories synced successfully." });
   } catch (err) {
     res.status(500).json({ error: "Failed to sync categories." });

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
-import { MapPin } from 'lucide-react';
+import toast from 'react-hot-toast';
 import MembershipDashboard from '../MembershipDashboard';
 
 interface ProfileTabProps {
@@ -183,7 +183,7 @@ export default function ProfileTab({
               type="button"
               onClick={() => {
                 setIsEditingAddress(false);
-                import('react-hot-toast').then(t => t.default.success("Shipping address updated successfully in your session database!"));
+                toast.success("Shipping address updated successfully in your session database!");
               }}
               className="px-4 py-2 bg-gray-950 hover:bg-[#D4648A] text-white hover:text-gray-950 font-bold rounded-lg uppercase tracking-wide cursor-pointer transition text-[10px] text-center"
             >

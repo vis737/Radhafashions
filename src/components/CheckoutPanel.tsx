@@ -622,19 +622,19 @@ export default function CheckoutPanel({
                         </div>
                       </div>
 
-                      {/* Instant UPI QR - Active */}
+                      {/* Instant UPI QR - Coming Soon */}
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => { setPaymentMethod('upi_qr'); setPaymentError(''); }}
-                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
+                          onClick={() => setPaymentError('Instant UPI QR Payment is Coming Soon. Please use Razorpay to pay securely.')}
+                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-gray-950/40 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60"
                         >
-                          <QrCode className="w-6 h-6 text-emerald-500" />
+                          <QrCode className="w-6 h-6 text-gray-400" />
                           <span className="uppercase tracking-wider font-bold">Instant UPI QR</span>
-                          <span className="text-[10px] text-gray-500 font-normal">Instant QR Scan Payment</span>
+                          <span className="text-[10px] text-gray-400 font-normal">Instant QR Scan Payment</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Also Available
+                        <div className="absolute -top-2.5 -right-2 bg-gray-50 dark:bg-gray-800 text-amber-400 border border-amber-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
+                          Coming Soon
                         </div>
                       </div>
                     </div>
@@ -642,7 +642,7 @@ export default function CheckoutPanel({
                     <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-xs text-emerald-900 dark:text-emerald-300 flex items-start gap-3">
                       <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
                       <p className="leading-relaxed font-light">
-                        <strong>Payments are securely processed through Razorpay. Instant UPI QR is also available for manual verification.</strong>
+                        <strong>Payments are securely processed through Razorpay. UPI QR payment is coming soon.</strong>
                       </p>
                     </div>
 

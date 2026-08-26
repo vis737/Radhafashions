@@ -160,21 +160,10 @@ export const getStoredDb = () => {
     if (productsJson) {
       try {
         const storedProducts: any[] = JSON.parse(productsJson);
-        if (Array.isArray(storedProducts) && storedProducts.length > 0) {
-          const storedMap = new Map(storedProducts.map(p => [String(p.id), p]));
-          
-          mergedProducts = INITIAL_PRODUCTS.map(initialProduct => {
-            const storedProduct = storedMap.get(String(initialProduct.id));
-            if (storedProduct) {
-              return sanitizeProduct({ ...initialProduct, ...storedProduct });
-            }
-            return sanitizeProduct(initialProduct);
-          });
-
-          // Preserve custom products added via Admin Panel
-          const initialIds = new Set(INITIAL_PRODUCTS.map(p => String(p.id)));
-          const customProducts = storedProducts.filter(p => !initialIds.has(String(p.id))).map(sanitizeProduct);
-          mergedProducts = [...mergedProducts, ...customProducts];
+        if (Array.isArray(storedProducts)) {
+          // A saved catalog is an exact cached server snapshot. Do not merge in
+          // INITIAL_PRODUCTS: doing so makes removed products reappear locally.
+          mergedProducts = storedProducts.map(sanitizeProduct);
         }
       } catch (parseErr) {
         console.error('Error parsing stored products, falling back to INITIAL_PRODUCTS', parseErr);
@@ -293,5 +282,4 @@ export const saveToStorage = (state: { cart: any[]; wishlist: string[]; orders: 
     console.error('Error writing state indexes:', err);
   }
 };
-
 

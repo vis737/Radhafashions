@@ -1,166 +1,5 @@
 [
   {
-    "id": "prod_1787659636321_1p5go99",
-    "sku": "jw-5",
-    "name": "Black & Gold Royal Stone Bangle Set",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 600,
-    "stock": 5,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/800bb21b-429c-4461-aaaf-f37bea18c650.jpg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/a51e685b-d152-48d7-b584-42952deb0608.jpg"
-    ],
-    "shortDescription": "Give your traditional look a bold and elegant finish with this beautiful black bangle set. Featuring glossy black bangles paired with ornate gold-tone stone bangles, this combination creates a striking contrast. The colorful stone accents and traditional detailing make it perfect for pairing with sarees, ethnic outfits, and festive wear.",
-    "description": "🖤 Glossy black bangles\n💛 Rich gold-tone detailing\n💚💗 Colorful stone accents\n👑 Traditional-inspired design\n✨ Perfect for festive & ethnic styling",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "variation": {
-      "type": "size",
-      "values": [
-        "2/4",
-        "2/6",
-        "2/8"
-      ]
-    },
-    "isTestProduct": false
-  },
-  {
-    "id": "prod_1787659127536_wllz6kb",
-    "sku": "jw-2",
-    "name": "Elegant Pink Radiance CZ Necklace & Earring Set",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 650,
-    "stock": 4,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/4e05ca60-beec-4cc1-a0d4-98a44ba4879b.jpg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/7f18ed9f-5904-4c98-98f0-74a5dec0aa92.jpg"
-    ],
-    "shortDescription": "Add a touch of timeless sparkle to your look with this elegant necklace and matching earrings set. Featuring brilliant white CZ stones, delicate gold-tone detailing, and a beautiful pink-stone centerpiece, this set creates a graceful and luxurious appearance. Perfect for weddings, festive occasions, parties, and special celebrations.",
-    "description": "Highlights:\n\n✨ Sparkling CZ stone detailing\n💖 Beautiful pink centerpiece\n🌟 Elegant gold-tone finish\n👑 Matching necklace & earrings\n🎉 Perfect for festive and wedding wear",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
-  },
-  {
-    "id": "prod_1787659281714_m5bushn",
-    "sku": "jw-3",
-    "name": "Royal Emerald Glow Pearl Pendant Necklace Set",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 650,
-    "stock": 4,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/edacb965-b622-4776-8f56-764c2feb410e.jpg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/eea8e7f1-1f88-4ba9-aca2-74e253104256.jpg"
-    ],
-    "shortDescription": "Make a statement with this stunning traditional-inspired necklace set, beautifully designed with green and pink stones, intricate gold-tone work, and elegant pearl drops. The statement pendant adds a rich royal touch, while the matching earrings complete the look beautifully. Ideal for weddings, traditional outfits, festivals, and special occasions.",
-    "description": "Highlights:\n\n💚 Green & pink stone combination\n🤍 Elegant pearl drop detailing\n👑 Royal traditional design\n✨ Matching earrings included\n💃 Perfect with sarees, lehengas & ethnic wear",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
-  },
-  {
-    "id": "prod_1787073594012_dh2sene",
-    "sku": "RF-1",
-    "name": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 650,
-    "stock": 3,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/bc79cbcf-1fec-4bb6-93d6-4548199aa666.jpeg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/1537fa30-c685-47e5-8356-3a26e9d6e435.jpeg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/7da0f9c6-cbf4-4cd6-bc7a-bc5b58e01ba8.jpeg"
-    ],
-    "shortDescription": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
-    "description": "TRADITIONAL TEMPLE JEWELLERY: A set of 2 bangles featuring intricate Nakshi-style gold-plated craftsmanship with an antique-gold finish.\nVIBRANT STONE EMBELLISHMENTS: Adorned with rich ruby-red and emerald-green stone accents that add a striking pop of colour.\nINTRICATE MOTIFS: Detailed floral and peacock motifs enhance the classic temple jewellery appeal of these bangles.\nIDEAL FOR SPECIAL OCCASIONS: Perfect for bridal wear, weddings, festivals, traditional ceremonies, and other celebratory events.\nVERSATILE ETHNIC PAIRING: Complements sarees, silk outfits, lehengas, and a wide range of traditional ethnic attire beautifully.",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "variation": {
-      "type": "size",
-      "values": [
-        "2/4",
-        "2/6",
-        "2/8"
-      ]
-    },
-    "isTestProduct": false
-  },
-  {
-    "id": "prod_1787659472635_r5mwacy",
-    "sku": "jw-4",
-    "name": "Emerald Teardrop Elegance CZ Necklace & Earrings",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 650,
-    "stock": 5,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/4a8a9cac-d8ce-4845-bc47-1e1f7bb28fab.jpg"
-    ],
-    "shortDescription": "Graceful, sophisticated, and effortlessly beautiful — this necklace set features a striking green teardrop centerpiece surrounded by sparkling CZ stones. The delicate gold-tone chain and matching teardrop earrings create a refined look that works beautifully for both festive and special occasions. ",
-    "description": "💚 Eye-catching green teardrop stones\n✨ Sparkling CZ stone border\n🌟 Elegant gold-tone finish\n💎 Matching earrings\n🌸 Perfect for festive, party & occasion wear",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
-  },
-  {
     "id": "prod_1787144087627_mzhfl9p",
     "sku": "RF 2",
     "name": "Shirt for mens",
@@ -225,6 +64,167 @@
     "isTestProduct": false
   },
   {
+    "id": "prod_1787659127536_wllz6kb",
+    "sku": "jw-2",
+    "name": "Elegant Pink Radiance CZ Necklace & Earring Set",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 650,
+    "stock": 4,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/4e05ca60-beec-4cc1-a0d4-98a44ba4879b.jpg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/7f18ed9f-5904-4c98-98f0-74a5dec0aa92.jpg"
+    ],
+    "shortDescription": "Add a touch of timeless sparkle to your look with this elegant necklace and matching earrings set. Featuring brilliant white CZ stones, delicate gold-tone detailing, and a beautiful pink-stone centerpiece, this set creates a graceful and luxurious appearance. Perfect for weddings, festive occasions, parties, and special celebrations.",
+    "description": "Highlights:\n\n✨ Sparkling CZ stone detailing\n💖 Beautiful pink centerpiece\n🌟 Elegant gold-tone finish\n👑 Matching necklace & earrings\n🎉 Perfect for festive and wedding wear",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787659636321_1p5go99",
+    "sku": "jw-5",
+    "name": "Black & Gold Royal Stone Bangle Set",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 600,
+    "stock": 5,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/800bb21b-429c-4461-aaaf-f37bea18c650.jpg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/a51e685b-d152-48d7-b584-42952deb0608.jpg"
+    ],
+    "shortDescription": "Give your traditional look a bold and elegant finish with this beautiful black bangle set. Featuring glossy black bangles paired with ornate gold-tone stone bangles, this combination creates a striking contrast. The colorful stone accents and traditional detailing make it perfect for pairing with sarees, ethnic outfits, and festive wear.",
+    "description": "🖤 Glossy black bangles\n💛 Rich gold-tone detailing\n💚💗 Colorful stone accents\n👑 Traditional-inspired design\n✨ Perfect for festive & ethnic styling",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variation": {
+      "type": "size",
+      "values": [
+        "2/4",
+        "2/6",
+        "2/8"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787659281714_m5bushn",
+    "sku": "jw-3",
+    "name": "Royal Emerald Glow Pearl Pendant Necklace Set",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 650,
+    "stock": 4,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/edacb965-b622-4776-8f56-764c2feb410e.jpg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/eea8e7f1-1f88-4ba9-aca2-74e253104256.jpg"
+    ],
+    "shortDescription": "Make a statement with this stunning traditional-inspired necklace set, beautifully designed with green and pink stones, intricate gold-tone work, and elegant pearl drops. The statement pendant adds a rich royal touch, while the matching earrings complete the look beautifully. Ideal for weddings, traditional outfits, festivals, and special occasions.",
+    "description": "Highlights:\n\n💚 Green & pink stone combination\n🤍 Elegant pearl drop detailing\n👑 Royal traditional design\n✨ Matching earrings included\n💃 Perfect with sarees, lehengas & ethnic wear",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787659472635_r5mwacy",
+    "sku": "jw-4",
+    "name": "Emerald Teardrop Elegance CZ Necklace & Earrings",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 650,
+    "stock": 5,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/4a8a9cac-d8ce-4845-bc47-1e1f7bb28fab.jpg"
+    ],
+    "shortDescription": "Graceful, sophisticated, and effortlessly beautiful — this necklace set features a striking green teardrop centerpiece surrounded by sparkling CZ stones. The delicate gold-tone chain and matching teardrop earrings create a refined look that works beautifully for both festive and special occasions. ",
+    "description": "💚 Eye-catching green teardrop stones\n✨ Sparkling CZ stone border\n🌟 Elegant gold-tone finish\n💎 Matching earrings\n🌸 Perfect for festive, party & occasion wear",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787073594012_dh2sene",
+    "sku": "jw-1",
+    "name": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 650,
+    "stock": 3,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/bc79cbcf-1fec-4bb6-93d6-4548199aa666.jpeg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/1537fa30-c685-47e5-8356-3a26e9d6e435.jpeg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/7da0f9c6-cbf4-4cd6-bc7a-bc5b58e01ba8.jpeg"
+    ],
+    "shortDescription": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
+    "description": "TRADITIONAL TEMPLE JEWELLERY: A set of 2 bangles featuring intricate Nakshi-style gold-plated craftsmanship with an antique-gold finish.\nVIBRANT STONE EMBELLISHMENTS: Adorned with rich ruby-red and emerald-green stone accents that add a striking pop of colour.\nINTRICATE MOTIFS: Detailed floral and peacock motifs enhance the classic temple jewellery appeal of these bangles.\nIDEAL FOR SPECIAL OCCASIONS: Perfect for bridal wear, weddings, festivals, traditional ceremonies, and other celebratory events.\nVERSATILE ETHNIC PAIRING: Complements sarees, silk outfits, lehengas, and a wide range of traditional ethnic attire beautifully.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variation": {
+      "type": "size",
+      "values": [
+        "2/4",
+        "2/6",
+        "2/8"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
     "id": "TEST-RF-001",
     "sku": "TEST-10",
     "name": "Test Product — ₹10 Checkout",
@@ -238,7 +238,7 @@
       "https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop"
     ],
     "shortDescription": "Test product for ₹10 Razorpay checkout. Free shipping.",
-    "description": "This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (18%) = ~₹10 total with free shipping.",
+    "description": "This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (2%) = ~₹9 total with free shipping.",
     "specifications": {
       "Weight": "0.05 kg"
     },

@@ -1,21 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ArrowRight, Truck, ShieldCheck, Heart, Award, ArrowUp, Star, Trash2, Eye, Mail, Info, Send, ChevronRight, ChevronLeft, Smartphone, RefreshCw, Layers, X, Key } from 'lucide-react';
 
 // Subcomponents import
 import Navbar from './components/Navbar';
 import ProductCard from './components/ProductCard';
-import ProductDetails from './components/ProductDetails';
 import CartDrawer from './components/CartDrawer';
-import CheckoutPanel from './components/CheckoutPanel';
-import OrderSuccessModal from './components/OrderSuccessModal';
-import AccountPanel from './components/AccountPanel';
-import AdminDashboard from './components/AdminDashboard';
 import WhatsAppChat from './components/WhatsAppChat';
 import AiRecommendations from './components/AiRecommendations';
 import { getAIRecommendations } from './utils/aiRecommender';
 import AboutPage from './components/AboutPage';
 import ExitIntentOffer from './components/ExitIntentOffer';
+
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const ProductDetails = lazy(() => import('./components/ProductDetails'));
+const CheckoutPanel = lazy(() => import('./components/CheckoutPanel'));
+const OrderSuccessModal = lazy(() => import('./components/OrderSuccessModal'));
+const AccountPanel = lazy(() => import('./components/AccountPanel'));
 
 // Mock Data imports
 import {
@@ -323,19 +324,19 @@ export default function App() {
         
         if (prodsRes && prodsRes.ok) {
           const prods = await prodsRes.json();
-          if (Array.isArray(prods) && prods.length > 0) {
+          if (Array.isArray(prods)) {
             setProducts(prods);
           }
         }
         if (coupsRes && coupsRes.ok) {
           const coups = await coupsRes.json();
-          if (Array.isArray(coups) && coups.length > 0) {
+          if (Array.isArray(coups)) {
             setCoupons(coups);
           }
         }
         if (campsRes && campsRes.ok) {
           const camps = await campsRes.json();
-          if (Array.isArray(camps) && camps.length > 0) {
+          if (Array.isArray(camps)) {
             setCampaigns(camps);
           }
         }
@@ -345,7 +346,7 @@ export default function App() {
         }
         if (catsRes && catsRes.ok) {
           const catsData = await catsRes.json();
-          if (Array.isArray(catsData) && catsData.length > 0) {
+          if (Array.isArray(catsData)) {
             setCategories(catsData);
           }
         }
@@ -355,13 +356,35 @@ export default function App() {
             setAdminBypassed(true);
           }
         }
+        // Do not allow a stale browser cache to be written back as a catalog
+        // update unless the authoritative product and category reads succeeded.
+        isCatalogLoadedRef.current = Boolean(prodsRes?.ok && catsRes?.ok);
       } catch (err) {
+        isCatalogLoadedRef.current = false;
         console.error('Failed to fetch catalog from backend:', err);
-      } finally {
-        isCatalogLoadedRef.current = true;
       }
     };
     loadCatalogFromBackend();
+
+    // Keep every open storefront aligned with the current Supabase catalog.
+    // The API uses no-store responses, so a deployment cannot serve a stale
+    // product/category snapshot from a browser or proxy cache.
+    const refreshTimer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') loadCatalogFromBackend();
+    }, 20_000);
+    const refreshOnFocus = () => loadCatalogFromBackend();
+    window.addEventListener('focus', refreshOnFocus);
+
+    // Supabase changes are relayed through the backend as an SSE notification.
+    // Polling above remains as a safe fallback if a proxy closes the stream.
+    const catalogStream = new EventSource('/api/catalog/stream');
+    catalogStream.addEventListener('catalog-change', loadCatalogFromBackend);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+      window.removeEventListener('focus', refreshOnFocus);
+      catalogStream.close();
+    };
   }, []);
 
   // Save products, coupons, campaigns, cms changes back to local storage and sync to backend server database
@@ -869,9 +892,11 @@ export default function App() {
   // --- DERIVED RENDER PARAMS ---
   const activeProductModel = products.find((p) => p.id === currentProductId) || products[0];
 
-  const relatedProductsList = products.filter(
-    (p) => p.categorySlug === activeProductModel.categorySlug && p.id !== activeProductModel.id
-  );
+  const relatedProductsList = activeProductModel
+    ? products.filter(
+      (p) => p.categorySlug === activeProductModel.categorySlug && p.id !== activeProductModel.id
+    )
+    : [];
 
   const activeCategoryObject = categories.find((c) => c.id === currentCategorySlug);
 
@@ -1487,13 +1512,14 @@ export default function App() {
           )}
 
           {/* ================= VIEW: PRODUCT DETAILS SHEET ================= */}
-          {activeView === 'product' && (
+          {activeView === 'product' && activeProductModel && (
             <motion.div
               key="productView"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
+              <Suspense fallback={<div className="min-h-[40vh] grid place-items-center text-sm text-gray-500">Loading product…</div>}>
               <ProductDetails
                 product={activeProductModel}
                 relatedProducts={relatedProductsList}
@@ -1505,6 +1531,7 @@ export default function App() {
                 onSelectProduct={handleViewProductDetails}
                 onAddReview={handleAddNewUserReview}
               />
+              </Suspense>
             </motion.div>
           )}
 
@@ -1517,6 +1544,7 @@ export default function App() {
               exit={{ opacity: 0 }}
             >
               {currentUser ? (
+                <Suspense fallback={<div className="min-h-[40vh] grid place-items-center text-sm text-gray-500">Loading checkout…</div>}>
                 <CheckoutPanel
                   cartItems={cartItems}
                   shippingMethod={shippingMethod}
@@ -1525,8 +1553,9 @@ export default function App() {
                   onBackToCart={() => { setCartOpen(true); handleNavigateBack(); }}
                   onPlaceOrder={handlePlaceSecureOrder}
                   codEnabled={cms.codEnabled !== false}
-                  upiEnabled={cms.upiEnabled !== false}
+                  upiEnabled={false}
                 />
+                </Suspense>
               ) : (
                 <div className="max-w-xl mx-auto px-4 py-16 text-center">
                   <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm space-y-4">
@@ -1629,6 +1658,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
+              <Suspense fallback={<div className="min-h-[40vh] grid place-items-center text-sm text-gray-500">Loading admin workspace…</div>}>
               <AdminDashboard
                 products={products}
                 coupons={coupons}
@@ -1775,6 +1805,7 @@ export default function App() {
                   handleSwapView('home');
                 }}
               />
+              </Suspense>
             </motion.div>
           )}
 
