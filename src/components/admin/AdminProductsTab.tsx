@@ -883,11 +883,22 @@ function ProductForm({ product, categories, onChange, addToast }: {
           </div>
 
           {imageMode === 'upload' ? (
-            <div className="border-2 border-dashed border-pink-200/50 dark:border-pink-900/30 rounded-xl p-6 text-center hover:border-pink-500/50 transition-colors bg-white/50 dark:bg-gray-950/50 relative">
+            <div
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition-all bg-white/50 dark:bg-gray-950/50 relative ${
+                isDraggingImages
+                  ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 scale-[1.02] shadow-lg shadow-pink-500/10'
+                  : 'border-pink-200/50 dark:border-pink-900/30 hover:border-pink-400/60'
+              }`}
+              onDragEnter={(e) => { e.preventDefault(); if (!isUploading) setIsDraggingImages(true); }}
+              onDragOver={(e) => { e.preventDefault(); }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDraggingImages(false); }}
+              onDrop={handleImageDrop}
+            >
               <input 
                 type="file" 
                 accept="image/*" 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                multiple
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 onChange={handleFileUpload}
                 disabled={isUploading}
                 ref={fileInputRef}
@@ -897,11 +908,24 @@ function ProductForm({ product, categories, onChange, addToast }: {
                   <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-sm">Uploading...</span>
                 </div>
+              ) : isDraggingImages ? (
+                <div className="flex flex-col items-center gap-2 text-pink-500">
+                  <UploadCloud className="w-10 h-10 animate-bounce" />
+                  <p className="text-sm font-bold">Drop images here</p>
+                </div>
               ) : (
-                <div className="flex flex-col items-center gap-2 text-gray-500 dark:text-gray-400 pointer-events-none">
-                  <UploadCloud className="w-8 h-8 text-pink-500/80" />
-                  <p className="text-sm font-medium">Click or drag image to upload</p>
-                  <p className="text-xs opacity-60">PNG, JPG up to 5MB</p>
+                <div className="flex flex-col items-center gap-3 text-gray-500 dark:text-gray-400 pointer-events-none">
+                  <div className="w-14 h-14 rounded-2xl bg-pink-100/60 dark:bg-pink-900/20 flex items-center justify-center">
+                    <UploadCloud className="w-7 h-7 text-pink-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Drag & drop images here</p>
+                    <p className="text-xs opacity-60 mt-0.5">or</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg uppercase tracking-wider">
+                    Browse Files
+                  </span>
+                  <p className="text-[10px] opacity-50">PNG, JPG, WebP — up to 10MB each</p>
                 </div>
               )}
             </div>
