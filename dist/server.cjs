@@ -1701,7 +1701,7 @@ app.get("/api/orders/:orderNumber", rateLimiter(20, 15 * 60 * 1e3), (req, res) =
     res.status(500).json({ error: "Failed to fetch tracking data" });
   }
 });
-async function sendBookingEmail(order) {
+async function sendBookingEmail(order, emailType = "confirmation") {
   try {
     const recipientEmail = sanitizeEmail(order.customerInfo?.email || order.accountEmail || order.email);
     if (!recipientEmail) {
@@ -1710,7 +1710,8 @@ async function sendBookingEmail(order) {
     }
     const customerName = sanitizeString(order.customerInfo?.name || order.accountName || order.name || "Valued Customer", 100);
     const orderNum = order.orderNumber || order.id || "ORDER";
-    const subject = `Order Confirmation - Radha Fashions (#${orderNum})`;
+    const isReceived = emailType === "received";
+    const subject = isReceived ? `Order Received - Radha Fashions (#${orderNum})` : `Order Confirmed - Radha Fashions (#${orderNum})`;
     let itemsHtml = "";
     if (order.items && Array.isArray(order.items)) {
       order.items.forEach((item) => {
@@ -1765,7 +1766,7 @@ async function sendBookingEmail(order) {
     <div style="padding: 32px 24px 20px 24px;">
       <h2 style="font-size: 18px; color: #1f2937; margin-top: 0; margin-bottom: 12px; font-weight: 600;">Dear ${customerName},</h2>
       <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0;">
-        Thank you for choosing <strong style="color: #be185d;">Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been placed successfully! \u{1F389} Our team is carefully packing your order with love and attention to detail. \u2728
+        ${isReceived ? `Thank you for choosing <strong style="color: #be185d;">Radha Fashions</strong>. We have <strong>received your order</strong> <strong>#${orderNum}</strong> and it is now awaiting payment verification. \u23F3 Our team will review your UPI payment and send you a confirmation once approved. \u2728` : `Thank you for choosing <strong style="color: #be185d;">Radha Fashions</strong>. We are thrilled to confirm that your order <strong>#${orderNum}</strong> has been <strong>confirmed</strong>! \u{1F389} Our team is carefully packing your order with love and attention to detail. \u2728`}
       </p>
     </div>
 
@@ -1783,7 +1784,7 @@ async function sendBookingEmail(order) {
           </tr>
           <tr>
             <td style="color: #9d174d; padding-bottom: 6px; font-weight: bold;">PAYMENT GATEWAY:</td>
-            <td style="color: #1f2937; text-align: right; padding-bottom: 6px;">${order.paymentMethod} (${order.paymentStatus?.toUpperCase() || "PAID"})</td>
+            <td style="color: #1f2937; text-align: right; padding-bottom: 6px;">${order.paymentMethod} (${isReceived ? "PENDING VERIFICATION" : order.paymentStatus?.toUpperCase() || "PAID"})</td>
           </tr>
           <tr>
             <td style="color: #9d174d; font-weight: bold;">LOGISTICS MODE:</td>
@@ -1904,7 +1905,7 @@ async function sendAdminVendorNotificationEmail(order) {
     const customerPhone = sanitizeString(order.customerInfo?.phone || "", 30);
     const customerAddress = sanitizeString(order.customerInfo?.address || "", 300);
     const customerPincode = sanitizeString(order.customerInfo?.pincode || "", 10);
-    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SMTP_USER || process.env.BREVO_FROM_EMAIL || "admin@radhafashions.in");
+    const adminEmail = sanitizeEmail(process.env.ADMIN_NOTIFICATION_EMAIL || "radhanarayan0709@gmail.com");
     const subject = `New Order Received - Radha Fashions (#${orderNum})`;
     let itemsHtml = "";
     if (order.items && Array.isArray(order.items)) {
@@ -2783,7 +2784,7 @@ async function applyPayUResult(payload, fallbackStatus) {
   writeOrdersDb(dbOrders);
   if (previousPaymentStatus === "pending" && paid) {
     try {
-      await sendBookingEmail(dbOrders[index]);
+      await sendBookingEmail(dbOrders[index], "confirmation");
       await sendAdminVendorNotificationEmail(dbOrders[index]);
       await sendSMSAlert(dbOrders[index]);
     } catch (notifyErr) {
@@ -2926,11 +2927,13 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
     }
     writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
+    const isUpiQr = newOrder.paymentMethod?.toLowerCase().includes("upi");
+    const emailType = isUpiQr ? "received" : "confirmation";
     (async () => {
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          await sendBookingEmail(newOrder);
-          console.log(`[Order Service] Dispatched order confirmation email for #${newOrder.orderNumber} (attempt ${attempt})`);
+          await sendBookingEmail(newOrder, emailType);
+          console.log(`[Order Service] Dispatched '${emailType}' email for #${newOrder.orderNumber} (attempt ${attempt})`);
           break;
         } catch (emailErr) {
           console.error(`[Order Service] Email attempt ${attempt} failed for #${newOrder.orderNumber}:`, emailErr);
@@ -3020,18 +3023,32 @@ app.put("/api/orders/:orderNumber", verifyAdminToken, async (req, res) => {
         });
       }
       if (oldPaymentStatus === "pending" && newPaymentStatus === "paid") {
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            await sendBookingEmail(dbOrders[index], "confirmation");
+            console.log(`[Order Service] Approval confirmation email sent for #${orderNum} (attempt ${attempt})`);
+            break;
+          } catch (emailErr) {
+            console.error(`[Order Service] Approval email attempt ${attempt} failed for #${orderNum}:`, emailErr);
+            if (attempt < 3) await new Promise((r) => setTimeout(r, 2e3 * attempt));
+          }
+        }
         try {
-          await sendBookingEmail(dbOrders[index]);
           await sendAdminVendorNotificationEmail(dbOrders[index]);
           await sendSMSAlert(dbOrders[index]);
-        } catch (emailErr) {
-          console.error("Failed to send booking confirmation email:", emailErr);
+        } catch (notifyErr) {
+          console.error("Failed to send admin notification:", notifyErr);
         }
       } else if (oldPaymentStatus === "pending" && newPaymentStatus === "rejected") {
-        try {
-          await sendPaymentEmail(dbOrders[index], "rejected", dbOrders[index].upiRejectionReason);
-        } catch (emailErr) {
-          console.error("Failed to send payment rejection email:", emailErr);
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            await sendPaymentEmail(dbOrders[index], "rejected", dbOrders[index].upiRejectionReason);
+            console.log(`[Order Service] Rejection email sent for #${orderNum} (attempt ${attempt})`);
+            break;
+          } catch (emailErr) {
+            console.error(`[Order Service] Rejection email attempt ${attempt} failed for #${orderNum}:`, emailErr);
+            if (attempt < 3) await new Promise((r) => setTimeout(r, 2e3 * attempt));
+          }
         }
       }
       res.json({ success: true, order: dbOrders[index] });
@@ -3567,6 +3584,40 @@ if (!process.env.VERCEL) {
           }
         });
         console.log("\u25C7 Vite dev module not found, serving static fallback from dist/.");
+      }
+    }
+    if (supabase) {
+      try {
+        const { data: existing } = await supabase.from("products").select("id").eq("id", "TEST-RF-001").single();
+        if (!existing) {
+          const { error } = await supabase.from("products").upsert({
+            id: "TEST-RF-001",
+            sku: "TEST-10",
+            name: "Test Product \u2014 \u20B910 Trial Order",
+            category: "kurtis",
+            category_slug: "kurtis",
+            price: 10,
+            discount_price: 10,
+            stock: 999,
+            rating: 5,
+            rating_count: 1,
+            images: ["https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop"],
+            short_description: "Test product for verifying checkout. \u20B910 with free shipping and free GST.",
+            description: "Test product to verify checkout and payment flow. Price \u20B910, free shipping, zero GST. Use to test Razorpay and UPI QR payments.",
+            specifications: { Weight: "0.1 kg", Material: "Test", Origin: "India" },
+            reviews: [],
+            is_new: true,
+            is_bestseller: false,
+            brand: "Radha Fashions",
+            availability: "In Stock",
+            vendor_id: "admin",
+            variation: null
+          });
+          if (error) console.error("[Seed] Failed to insert test product:", error);
+          else console.log("[Seed] Test product (TEST-RF-001) added to Supabase.");
+        }
+      } catch (seedErr) {
+        console.error("[Seed] Test product seed error:", seedErr);
       }
     }
     app.listen(PORT, "0.0.0.0", () => {
