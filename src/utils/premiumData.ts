@@ -426,16 +426,16 @@ export function calculateCartTotals(
   // 5. Gift wrapping cost (+ Rs.100 for premium wraps)
   const giftWrappingCost = giftWrappingRequested ? 100 : 0;
 
-  // 6. Tax (2% GST on adjusted net)
+  // 6. Tax (2% GST on adjusted net) — exempt for test products
   const taxableAmount = Math.max(0, adjustedSubtotal - couponDiscount);
-  const tax = Math.round(taxableAmount * 0.02);
+  const allTestProducts = cartItems.length > 0 && cartItems.every(({ product }) =>
+    product.isTestProduct || product.id === 'TEST-RF-001' || product.sku === 'TEST-10'
+  );
+  const tax = allTestProducts ? 0 : Math.round(taxableAmount * 0.02);
 
   // 7. Local shipping logic: billable weight slab + destination pincode zone
   // Older carts can contain a cached copy of the test product without the
   // isTestProduct flag. Keep its checkout shipping-free using its stable ID/SKU.
-  const allTestProducts = cartItems.length > 0 && cartItems.every(({ product }) =>
-    product.isTestProduct || product.id === 'TEST-RF-001' || product.sku === 'TEST-10'
-  );
   const shippingWeightKg = getCartShipmentWeightKg(cartItems);
   const shippingQuote = allTestProducts
     ? { cost: 0, billableWeightKg: 0, zone: 'Test — Free Shipping' }

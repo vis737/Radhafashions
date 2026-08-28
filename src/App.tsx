@@ -1113,6 +1113,8 @@ export default function App() {
                         src={category.imageUrl}
                         alt={category.name}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-60 group-hover:scale-105 transition duration-500"
                       />
                       
@@ -1411,6 +1413,8 @@ export default function App() {
                         src={activeCategoryObject.imageUrl} 
                         alt={activeCategoryObject.name}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                         className="absolute inset-0 w-full h-full object-cover" 
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/75 to-transparent" />

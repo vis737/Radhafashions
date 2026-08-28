@@ -2926,11 +2926,18 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
     }
     writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
-    sendBookingEmail(newOrder).then(() => {
-      console.log(`[Order Service] Dispatched order confirmation email for #${newOrder.orderNumber}`);
-    }).catch((emailErr) => {
-      console.error("Failed to dispatch order booking confirmation email:", emailErr);
-    });
+    (async () => {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await sendBookingEmail(newOrder);
+          console.log(`[Order Service] Dispatched order confirmation email for #${newOrder.orderNumber} (attempt ${attempt})`);
+          break;
+        } catch (emailErr) {
+          console.error(`[Order Service] Email attempt ${attempt} failed for #${newOrder.orderNumber}:`, emailErr);
+          if (attempt < 3) await new Promise((r) => setTimeout(r, 2e3 * attempt));
+        }
+      }
+    })();
     sendAdminVendorNotificationEmail(newOrder).then(() => {
       console.log(`[Order Service] Dispatched admin/vendor order notification email for #${newOrder.orderNumber}`);
     }).catch((vendorErr) => {

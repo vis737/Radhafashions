@@ -90,6 +90,8 @@ export default function ProductCard({
           src={getProductPrimaryImage(product)}
           alt={product.name}
           referrerPolicy="no-referrer"
+          loading="lazy"
+          decoding="async"
           onError={(e) => handleImageError(e, product.category)}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
