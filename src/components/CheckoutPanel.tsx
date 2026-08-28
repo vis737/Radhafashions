@@ -622,19 +622,19 @@ export default function CheckoutPanel({
                         </div>
                       </div>
 
-                      {/* Instant UPI QR - Coming Soon */}
+                      {/* Instant UPI QR - Active */}
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setPaymentError('Instant UPI QR Payment is Coming Soon. Please use Razorpay to pay securely.')}
-                          className="w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border bg-gray-50/50 dark:bg-gray-950/40 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60"
+                          onClick={() => { setPaymentMethod('upi_qr'); setPaymentError(''); }}
+                          className={`w-full py-4 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center gap-2 transition-all border cursor-pointer ${paymentMethod === 'upi_qr' ? 'bg-pink-50 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400 border-pink-400 dark:border-pink-500 shadow-md scale-[1.02]' : 'bg-transparent border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
                         >
-                          <QrCode className="w-6 h-6 text-gray-400" />
+                          <QrCode className="w-6 h-6 text-pink-500" />
                           <span className="uppercase tracking-wider font-bold">Instant UPI QR</span>
-                          <span className="text-[10px] text-gray-400 font-normal">Instant QR Scan Payment</span>
+                          <span className="text-[10px] text-gray-500 font-normal">Scan & Pay Directly</span>
                         </button>
-                        <div className="absolute -top-2.5 -right-2 bg-gray-50 dark:bg-gray-800 text-amber-400 border border-amber-400/40 text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-widest">
-                          Coming Soon
+                        <div className="absolute -top-2.5 -right-2 bg-pink-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Quick Pay
                         </div>
                       </div>
                     </div>
@@ -642,7 +642,7 @@ export default function CheckoutPanel({
                     <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-xs text-emerald-900 dark:text-emerald-300 flex items-start gap-3">
                       <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
                       <p className="leading-relaxed font-light">
-                        <strong>Payments are securely processed through Razorpay. UPI QR payment is coming soon.</strong>
+                        <strong>Payments are securely processed through Razorpay or Instant UPI QR.</strong> Choose your preferred payment method above.
                       </p>
                     </div>
 
@@ -678,50 +678,50 @@ export default function CheckoutPanel({
                     {/* UPI UI Block */}
                     {paymentMethod === 'upi_qr' && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                        <div className="w-full bg-gray-950 border border-[#D4648A]/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-center space-y-6">
+                        <div className="w-full bg-gradient-to-b from-pink-50/80 to-white dark:from-gray-950 dark:to-gray-900 border border-pink-200/60 dark:border-pink-500/20 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-center space-y-6">
                           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4648A] to-transparent animate-pulse" />
                           
-                          <div className="flex justify-between items-center w-full pb-4 border-b border-white/10">
+                          <div className="flex justify-between items-center w-full pb-4 border-b border-pink-100 dark:border-white/10">
                             <div className="flex items-center gap-2.5">
                               <Lock className="w-5 h-5 text-[#D4648A]" />
-                              <span className="text-xs font-display font-bold tracking-widest text-white uppercase">Radha Fashions PAY SECURE</span>
+                              <span className="text-xs font-display font-bold tracking-widest text-gray-900 dark:text-white uppercase">Radha Fashions — Pay Secure</span>
                             </div>
                           </div>
 
                           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-                            <div className="p-4 bg-white rounded-3xl border border-gray-100 shadow-xl">
-                              <img src="/upi_qr_payment.jpg" alt="Scan to pay" className="w-40 h-40 object-contain" />
+                            <div className="rounded-3xl overflow-hidden shadow-xl border border-pink-100 dark:border-pink-500/20">
+                              <img src="/qr-payment.png" alt="Scan UPI QR to pay" className="w-52 h-52 object-cover" />
                             </div>
                             <div className="flex flex-col space-y-3 text-left w-full md:w-auto">
-                              <span className="text-xs font-bold text-gray-400 tracking-widest uppercase">Scan via any UPI App</span>
-                              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                              <span className="text-xs font-bold text-pink-600 dark:text-pink-400 tracking-widest uppercase">Scan via any UPI App</span>
+                              <div className="bg-pink-50/60 dark:bg-white/5 border border-pink-100 dark:border-white/10 rounded-2xl p-5 space-y-3">
                                 <div className="flex justify-between items-center gap-8">
-                                  <span className="text-gray-400 text-xs">Amount:</span>
-                                  <span className="text-xl font-bold text-white font-mono">₹{finalTotal}</span>
+                                  <span className="text-gray-500 dark:text-gray-400 text-xs">Amount:</span>
+                                  <span className="text-xl font-bold text-gray-900 dark:text-white font-mono">₹{finalTotal}</span>
                                 </div>
                                 <div className="flex justify-between items-center gap-8">
-                                  <span className="text-gray-400 text-xs">Merchant:</span>
-                                  <span className="text-[#D4648A] font-medium">Radha Fashions</span>
+                                  <span className="text-gray-500 dark:text-gray-400 text-xs">Merchant:</span>
+                                  <span className="text-[#D4648A] font-semibold">Radha Fashions</span>
                                 </div>
                               </div>
                             </div>
                           </div>
                           
                           {showConfirmationForm ? (
-                            <div className="text-left space-y-4 mt-6 pt-6 border-t border-white/10">
-                              <h4 className="text-white font-display uppercase tracking-wider text-sm flex items-center gap-2">
-                                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Enter Transaction Details
+                            <div className="text-left space-y-4 mt-6 pt-6 border-t border-pink-100 dark:border-white/10">
+                              <h4 className="text-gray-900 dark:text-white font-display uppercase tracking-wider text-sm flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4 text-emerald-500" /> Enter Transaction Details
                               </h4>
 
                               {/* UPI Payment App Dropdown Selection */}
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Wallet className="w-3.5 h-3.5 text-pink-400" /> Select Payment App Used <span className="text-red-500">*</span>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
+                                  <Wallet className="w-3.5 h-3.5 text-pink-500" /> Select Payment App Used <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                   value={paymentApp}
                                   onChange={(e) => setPaymentApp(e.target.value)}
-                                  className="w-full px-4 py-3 text-sm bg-gray-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all font-sans cursor-pointer"
+                                  className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-900 border border-pink-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all font-sans cursor-pointer"
                                 >
                                   <option value="Google Pay">Google Pay (GPay)</option>
                                   <option value="PhonePe">PhonePe</option>
@@ -736,8 +736,8 @@ export default function CheckoutPanel({
 
                               {/* UPI Transaction Ref ID */}
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Hash className="w-3.5 h-3.5 text-pink-400" /> UPI Transaction ID / Ref No. <span className="text-red-500">*</span>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
+                                  <Hash className="w-3.5 h-3.5 text-pink-500" /> UPI Transaction ID / Ref No. <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -745,21 +745,21 @@ export default function CheckoutPanel({
                                   value={upiTxnId}
                                   onChange={(e) => setUpiTxnId(e.target.value)}
                                   placeholder="12-digit transaction index / ref number"
-                                  className="w-full px-4 py-3 text-sm bg-gray-900 border border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all shadow-inner font-mono placeholder-gray-500"
+                                  className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-900 border border-pink-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 focus:outline-none transition-all shadow-inner font-mono placeholder-gray-400"
                                 />
                               </div>
 
                               {/* Payment Receipt Screenshot Upload Dropdown / File Selector */}
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
-                                  <Upload className="w-3.5 h-3.5 text-pink-400" /> Upload Payment Receipt Screenshot (Mandatory) <span className="text-red-500">*</span>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2 font-mono flex items-center gap-1.5">
+                                  <Upload className="w-3.5 h-3.5 text-pink-500" /> Upload Payment Receipt Screenshot (Mandatory) <span className="text-red-500">*</span>
                                 </label>
                                 {upiScreenshot ? (
-                                  <div className="relative p-3 bg-gray-900 border border-emerald-500/40 rounded-2xl flex items-center justify-between">
+                                  <div className="relative p-3 bg-white dark:bg-gray-900 border border-emerald-300 dark:border-emerald-500/40 rounded-2xl flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                      <img src={upiScreenshot} alt="Receipt Preview" className="w-12 h-12 object-cover rounded-xl border border-white/20" />
+                                      <img src={upiScreenshot} alt="Receipt Preview" className="w-12 h-12 object-cover rounded-xl border border-pink-100 dark:border-white/20" />
                                       <div>
-                                        <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                                           <Check className="w-3.5 h-3.5" /> Screenshot Uploaded
                                         </span>
                                         <span className="text-[10px] text-gray-400 block">Ready for admin verification</span>
@@ -768,18 +768,18 @@ export default function CheckoutPanel({
                                     <button
                                       type="button"
                                       onClick={() => setUpiScreenshot('')}
-                                      className="px-3 py-1.5 text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-xl border border-rose-500/40 transition cursor-pointer"
+                                      className="px-3 py-1.5 text-xs bg-rose-100 hover:bg-rose-200 dark:bg-rose-500/20 dark:hover:bg-rose-500/30 text-rose-600 dark:text-rose-300 rounded-xl border border-rose-200 dark:border-rose-500/40 transition cursor-pointer"
                                     >
                                       Remove
                                     </button>
                                   </div>
                                 ) : (
-                                  <label className="flex flex-col items-center justify-center p-4 bg-gray-900/80 hover:bg-gray-900 border-2 border-dashed border-white/20 hover:border-pink-400/60 rounded-2xl cursor-pointer transition-all group">
-                                    <div className="flex items-center gap-2 text-xs text-gray-300 group-hover:text-pink-300">
-                                      <Image className="w-4 h-4 text-pink-400" />
+                                  <label className="flex flex-col items-center justify-center p-4 bg-pink-50/50 dark:bg-gray-900/80 hover:bg-pink-50 dark:hover:bg-gray-900 border-2 border-dashed border-pink-200 dark:border-white/20 hover:border-pink-400/60 rounded-2xl cursor-pointer transition-all group">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-300 group-hover:text-pink-600 dark:group-hover:text-pink-300">
+                                      <Image className="w-4 h-4 text-pink-500" />
                                       <span>Click to upload payment screenshot / receipt image</span>
                                     </div>
-                                    <span className="text-[10px] text-gray-500 mt-1">PNG, JPG, WEBP up to 8MB</span>
+                                    <span className="text-[10px] text-gray-400 mt-1">PNG, JPG, WEBP up to 8MB</span>
                                     <input
                                       type="file"
                                       accept="image/*"
@@ -794,9 +794,9 @@ export default function CheckoutPanel({
                             <button
                               type="button"
                               onClick={() => setShowConfirmationForm(true)}
-                              className="w-full py-4 bg-[#D4648A] hover:bg-[#B3901E] text-gray-950 font-display font-bold text-sm uppercase tracking-widest rounded-2xl transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform duration-150"
+                              className="w-full py-4 bg-[#D4648A] hover:bg-[#c25377] text-white font-display font-bold text-sm uppercase tracking-widest rounded-2xl transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform duration-150"
                             >
-                              <CheckCircle className="w-5 h-5 text-gray-950" />
+                              <CheckCircle className="w-5 h-5" />
                               <span>I have completed the payment</span>
                             </button>
                           )}

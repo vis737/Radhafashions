@@ -1,69 +1,5 @@
 [
   {
-    "id": "prod_1787144087627_mzhfl9p",
-    "sku": "RF 2",
-    "name": "Shirt for mens",
-    "category": "western",
-    "categorySlug": "western",
-    "price": 500,
-    "discountPrice": 450,
-    "stock": 9,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-19/670f15c4-5aee-46e1-aaef-9d14f342ec5d.jpg"
-    ],
-    "shortDescription": "Shirt for mens",
-    "description": "Shirt for mens",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "radha fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "variation": {
-      "type": "color",
-      "values": [
-        "blue",
-        "white",
-        "pink"
-      ]
-    },
-    "isTestProduct": false
-  },
-  {
-    "id": "prod_1787554803936_8fxn7uj",
-    "sku": "rf3",
-    "name": "test",
-    "category": "sarees",
-    "categorySlug": "sarees",
-    "price": 10,
-    "discountPrice": 10,
-    "stock": 10,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "test",
-    "description": "test",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": false,
-    "isBestseller": false,
-    "brand": "rf",
-    "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
-  },
-  {
     "id": "prod_1787659127536_wllz6kb",
     "sku": "jw-2",
     "name": "Elegant Pink Radiance CZ Necklace & Earring Set",
@@ -90,6 +26,44 @@
     "brand": "Radha Fashions",
     "availability": "in-stock",
     "vendorId": null,
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787073594012_dh2sene",
+    "sku": "jw-1",
+    "name": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 650,
+    "stock": 3,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/bc79cbcf-1fec-4bb6-93d6-4548199aa666.jpeg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/1537fa30-c685-47e5-8356-3a26e9d6e435.jpeg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/7da0f9c6-cbf4-4cd6-bc7a-bc5b58e01ba8.jpeg"
+    ],
+    "shortDescription": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
+    "description": "TRADITIONAL TEMPLE JEWELLERY: A set of 2 bangles featuring intricate Nakshi-style gold-plated craftsmanship with an antique-gold finish.\nVIBRANT STONE EMBELLISHMENTS: Adorned with rich ruby-red and emerald-green stone accents that add a striking pop of colour.\nINTRICATE MOTIFS: Detailed floral and peacock motifs enhance the classic temple jewellery appeal of these bangles.\nIDEAL FOR SPECIAL OCCASIONS: Perfect for bridal wear, weddings, festivals, traditional ceremonies, and other celebratory events.\nVERSATILE ETHNIC PAIRING: Complements sarees, silk outfits, lehengas, and a wide range of traditional ethnic attire beautifully.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variation": {
+      "type": "size",
+      "values": [
+        "2/4",
+        "2/6",
+        "2/8"
+      ]
+    },
     "isTestProduct": false
   },
   {
@@ -185,70 +159,5 @@
     "availability": "in-stock",
     "vendorId": null,
     "isTestProduct": false
-  },
-  {
-    "id": "prod_1787073594012_dh2sene",
-    "sku": "jw-1",
-    "name": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 650,
-    "stock": 3,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/bc79cbcf-1fec-4bb6-93d6-4548199aa666.jpeg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/1537fa30-c685-47e5-8356-3a26e9d6e435.jpeg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-18/7da0f9c6-cbf4-4cd6-bc7a-bc5b58e01ba8.jpeg"
-    ],
-    "shortDescription": "Traditional Gold-Toned Temple Bangles with Ruby and Emerald Stone",
-    "description": "TRADITIONAL TEMPLE JEWELLERY: A set of 2 bangles featuring intricate Nakshi-style gold-plated craftsmanship with an antique-gold finish.\nVIBRANT STONE EMBELLISHMENTS: Adorned with rich ruby-red and emerald-green stone accents that add a striking pop of colour.\nINTRICATE MOTIFS: Detailed floral and peacock motifs enhance the classic temple jewellery appeal of these bangles.\nIDEAL FOR SPECIAL OCCASIONS: Perfect for bridal wear, weddings, festivals, traditional ceremonies, and other celebratory events.\nVERSATILE ETHNIC PAIRING: Complements sarees, silk outfits, lehengas, and a wide range of traditional ethnic attire beautifully.",
-    "specifications": {
-      "Weight": "0.5 kg"
-    },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "variation": {
-      "type": "size",
-      "values": [
-        "2/4",
-        "2/6",
-        "2/8"
-      ]
-    },
-    "isTestProduct": false
-  },
-  {
-    "id": "TEST-RF-001",
-    "sku": "TEST-10",
-    "name": "Test Product — ₹10 Checkout",
-    "category": "Dupattas",
-    "categorySlug": "dupattas",
-    "price": 8,
-    "stock": 999,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://images.unsplash.com/photo-1580657018950-c7f7d6a6d990?w=600&auto=format&fit=crop"
-    ],
-    "shortDescription": "Test product for ₹10 Razorpay checkout. Free shipping.",
-    "description": "This is a test product for verifying Razorpay payment integration. Price is ₹8 + GST (2%) = ~₹9 total with free shipping.",
-    "specifications": {
-      "Weight": "0.05 kg"
-    },
-    "weightKg": 0.05,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": true
   }
 ]

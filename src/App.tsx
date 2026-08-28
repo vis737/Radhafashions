@@ -1505,7 +1505,7 @@ export default function App() {
                   onBackToCart={() => { setCartOpen(true); handleNavigateBack(); }}
                   onPlaceOrder={handlePlaceSecureOrder}
                   codEnabled={cms.codEnabled !== false}
-                  upiEnabled={false}
+                  upiEnabled={cms.upiEnabled !== false}
                 />
                 </Suspense>
               ) : (
