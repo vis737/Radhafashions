@@ -1887,14 +1887,15 @@ async function sendBookingEmail(order, emailType = "confirmation") {
     }
     const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
     if (sent) {
-      console.log(`[Order Service] Order confirmation email delivered to ${recipientEmail} for #${orderNum}`);
+      console.log(`[Order Service] ${isReceived ? "Order received" : "Order confirmation"} email delivered to ${recipientEmail} for #${orderNum}`);
     } else {
-      console.warn(`[Order Service] Failed to send order confirmation email to ${recipientEmail} for #${orderNum}`);
+      console.warn(`[Email Service] dispatchLiveEmail returned false for ${recipientEmail} (#${orderNum}) \u2014 retrying...`);
+      throw new Error(`Email dispatch failed for ${recipientEmail}`);
     }
     return newEmailRecord;
   } catch (err) {
     console.error("[Order Service] Exception in sendBookingEmail:", err);
-    return null;
+    throw err;
   }
 }
 async function sendAdminVendorNotificationEmail(order) {
@@ -1992,7 +1993,10 @@ async function sendAdminVendorNotificationEmail(order) {
 </html>
     `;
     if (adminEmail) {
-      await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      const sent = await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      if (!sent) {
+        throw new Error(`Admin notification email dispatch failed for ${adminEmail} (#${orderNum})`);
+      }
       console.log(`[Order Service] Dispatched store order alert notification to admin ${adminEmail} for #${orderNum}`);
     }
     const vendorEmails = /* @__PURE__ */ new Set();
@@ -2126,7 +2130,10 @@ async function sendPaymentEmail(order, type, reason) {
   } else {
     console.log(`[Email Service] Supabase not configured \u2014 payment email log skipped for ${recipientEmail}.`);
   }
-  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+  const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+  if (!sent) {
+    throw new Error(`Payment email dispatch failed for ${recipientEmail} (#${order.orderNumber})`);
+  }
   return newEmailRecord;
 }
 async function sendSMSAlert(order) {
@@ -2941,11 +2948,18 @@ app.post("/api/orders", rateLimiter(10, 15 * 60 * 1e3), async (req, res) => {
         }
       }
     })();
-    sendAdminVendorNotificationEmail(newOrder).then(() => {
-      console.log(`[Order Service] Dispatched admin/vendor order notification email for #${newOrder.orderNumber}`);
-    }).catch((vendorErr) => {
-      console.error("Failed to dispatch admin/vendor order notification email:", vendorErr);
-    });
+    (async () => {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await sendAdminVendorNotificationEmail(newOrder);
+          console.log(`[Order Service] Admin notification email sent for #${newOrder.orderNumber} (attempt ${attempt})`);
+          break;
+        } catch (adminErr) {
+          console.error(`[Order Service] Admin email attempt ${attempt} failed for #${newOrder.orderNumber}:`, adminErr);
+          if (attempt < 3) await new Promise((r) => setTimeout(r, 2e3 * attempt));
+        }
+      }
+    })();
     sendSMSAlert(newOrder).catch((smsErr) => {
       console.error("Failed to dispatch order booking confirmation SMS:", smsErr);
     });

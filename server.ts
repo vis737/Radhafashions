@@ -2017,15 +2017,18 @@ async function sendBookingEmail(order: any, emailType: 'received' | 'confirmatio
     // Dispatch live email via REST API (Resend / Brevo) or SMTP
     const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
     if (sent) {
-      console.log(`[Order Service] Order confirmation email delivered to ${recipientEmail} for #${orderNum}`);
+      console.log(`[Order Service] ${isReceived ? 'Order received' : 'Order confirmation'} email delivered to ${recipientEmail} for #${orderNum}`);
     } else {
-      console.warn(`[Order Service] Failed to send order confirmation email to ${recipientEmail} for #${orderNum}`);
+      console.warn(`[Email Service] dispatchLiveEmail returned false for ${recipientEmail} (#${orderNum}) — retrying...`);
+      // Return null with a flag so caller knows to retry
+      throw new Error(`Email dispatch failed for ${recipientEmail}`);
     }
 
     return newEmailRecord;
   } catch (err) {
     console.error('[Order Service] Exception in sendBookingEmail:', err);
-    return null;
+    // Re-throw so the outer retry loop can catch and retry
+    throw err;
   }
 }
 
@@ -2133,7 +2136,10 @@ async function sendAdminVendorNotificationEmail(order: any) {
 
     // Send to Store Admin
     if (adminEmail) {
-      await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      const sent = await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      if (!sent) {
+        throw new Error(`Admin notification email dispatch failed for ${adminEmail} (#${orderNum})`);
+      }
       console.log(`[Order Service] Dispatched store order alert notification to admin ${adminEmail} for #${orderNum}`);
     }
 
@@ -2279,7 +2285,10 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
   }
 
   // Dispatch live email via REST API (Resend / Brevo) or SMTP
-  await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+  const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+  if (!sent) {
+    throw new Error(`Payment email dispatch failed for ${recipientEmail} (#${order.orderNumber})`);
+  }
 
   return newEmailRecord;
 }
@@ -3423,11 +3432,19 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       }
     })();
 
-    sendAdminVendorNotificationEmail(newOrder).then(() => {
-      console.log(`[Order Service] Dispatched admin/vendor order notification email for #${newOrder.orderNumber}`);
-    }).catch(vendorErr => {
-      console.error('Failed to dispatch admin/vendor order notification email:', vendorErr);
-    });
+    // Retry admin notification email up to 3 times
+    (async () => {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await sendAdminVendorNotificationEmail(newOrder);
+          console.log(`[Order Service] Admin notification email sent for #${newOrder.orderNumber} (attempt ${attempt})`);
+          break;
+        } catch (adminErr) {
+          console.error(`[Order Service] Admin email attempt ${attempt} failed for #${newOrder.orderNumber}:`, adminErr);
+          if (attempt < 3) await new Promise(r => setTimeout(r, 2000 * attempt));
+        }
+      }
+    })();
 
     // Dispatch booking confirmation SMS asynchronously in background
     sendSMSAlert(newOrder).catch(smsErr => {
