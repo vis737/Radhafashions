@@ -18,6 +18,7 @@ import SecurityTab from './dashboard/SecurityTab';
 import DOMPurify from 'dompurify';
 import { generateInvoicePDF } from '../lib/invoiceGenerator';
 import { evaluatePasswordStrength } from '../utils/passwordValidator';
+import { isClerkEnabled } from '../lib/clerk';
 
 interface AccountPanelProps {
   wishlistProducts: Product[];
@@ -33,6 +34,12 @@ interface AccountPanelProps {
   onResubmitUpiDetails?: (orderId: string, txnId: string, screenshot: string) => void;
   products: Product[];
   rewardsEnabled?: boolean;
+}
+
+interface ClerkAccountState {
+  user: any;
+  isSignedIn: boolean;
+  signOut?: () => Promise<unknown>;
 }
 
 const glassFieldClass =
@@ -87,7 +94,7 @@ const AppleMark = () => (
 const socialButtonClass =
   'w-full h-11 rounded-md bg-white text-black text-[13px] font-semibold border border-[#d4d4d4] flex items-center justify-center gap-2 hover:bg-neutral-50 transition cursor-pointer disabled:opacity-60';
 
-const ClerkSocialButtons = () => {
+const ClerkSocialButtonsContent = () => {
   const { signIn, isLoaded } = useSignIn();
 
   const continueWith = (strategy: 'oauth_google' | 'oauth_apple') => {
@@ -120,7 +127,9 @@ const ClerkSocialButtons = () => {
   );
 };
 
-export default function AccountPanel({
+const ClerkSocialButtons = () => isClerkEnabled ? <ClerkSocialButtonsContent /> : null;
+
+function AccountPanelContent({
   wishlistProducts,
   orders,
   coupons,
@@ -133,11 +142,10 @@ export default function AccountPanel({
   onSelectProduct,
   onResubmitUpiDetails,
   products,
-  rewardsEnabled = true
-}: AccountPanelProps) {
-  // Clerk authentication state & hooks
-  const { user: clerkUser, isSignedIn: isClerkSignedIn } = useUser();
-  const { signOut: clerkSignOut } = useClerk();
+  rewardsEnabled = true,
+  clerkState = { user: null, isSignedIn: false }
+}: AccountPanelProps & { clerkState?: ClerkAccountState }) {
+  const { user: clerkUser, isSignedIn: isClerkSignedIn, signOut: clerkSignOut } = clerkState;
 
   const handleUserLogout = async () => {
     try {
@@ -1009,4 +1017,15 @@ export default function AccountPanel({
       </div>
     </div>
   );
+}
+
+function ClerkAccountPanel(props: AccountPanelProps) {
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+
+  return <AccountPanelContent {...props} clerkState={{ user, isSignedIn: Boolean(isSignedIn), signOut }} />;
+}
+
+export default function AccountPanel(props: AccountPanelProps) {
+  return isClerkEnabled ? <ClerkAccountPanel {...props} /> : <AccountPanelContent {...props} />;
 }

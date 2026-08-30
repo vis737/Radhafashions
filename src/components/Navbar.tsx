@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CartItem, Product } from '../types';
 import { CATEGORIES } from '../utils/mockData';
 import ThemeSwitcher from './ThemeSwitcher';
+import { isClerkEnabled } from '../lib/clerk';
 
 const RadhaLogo = ({ className = "w-10 h-10" }: { className?: string }) => (
   <svg
@@ -162,7 +163,12 @@ interface NavbarProps {
   onLogout: () => void;
 }
 
-export default function Navbar({
+interface ClerkNavbarState {
+  isSignedIn: boolean;
+  signOut?: () => Promise<unknown>;
+}
+
+function NavbarContent({
   cartItems,
   wishlistIds,
   allProducts,
@@ -173,8 +179,9 @@ export default function Navbar({
   onSetProductsFilter,
   onOpenCart,
   currentUser,
-  onLogout
-}: NavbarProps) {
+  onLogout,
+  clerkState = { isSignedIn: false }
+}: NavbarProps & { clerkState?: ClerkNavbarState }) {
   const [searchInput, setSearchInput] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -186,8 +193,7 @@ export default function Navbar({
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileMenuChangedByHistoryRef = useRef(false);
 
-  const { isSignedIn: isClerkSignedIn } = useUser();
-  const { signOut: clerkSignOut } = useClerk();
+  const { isSignedIn: isClerkSignedIn, signOut: clerkSignOut } = clerkState;
 
   const handleLogoutClick = async () => {
     try {
@@ -697,4 +703,15 @@ export default function Navbar({
       )}
     </header>
   );
+}
+
+function ClerkNavbar(props: NavbarProps) {
+  const { isSignedIn } = useUser();
+  const { signOut } = useClerk();
+
+  return <NavbarContent {...props} clerkState={{ isSignedIn: Boolean(isSignedIn), signOut }} />;
+}
+
+export default function Navbar(props: NavbarProps) {
+  return isClerkEnabled ? <ClerkNavbar {...props} /> : <NavbarContent {...props} />;
 }

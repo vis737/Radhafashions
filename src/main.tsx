@@ -4,22 +4,24 @@ import { AuthenticateWithRedirectCallback, ClerkProvider } from '@clerk/clerk-re
 import { dark } from '@clerk/themes';
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
+import { clerkPublishableKey, isClerkEnabled } from './lib/clerk.ts';
 import './index.css';
-
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_ZGlzdGluY3QtYW1vZWJhLTUzLmNsZXJrLmFjY291bnRzLmRldiQ';
 
 function RootApp() {
   if (window.location.pathname === '/sso-callback') {
-    return <AuthenticateWithRedirectCallback />;
+    return isClerkEnabled ? <AuthenticateWithRedirectCallback /> : <App />;
   }
   return <App />;
 }
 
+const app = <RootApp />;
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <ClerkProvider
-        publishableKey={PUBLISHABLE_KEY}
+      {isClerkEnabled ? (
+        <ClerkProvider
+        publishableKey={clerkPublishableKey}
         afterSignOutUrl="/"
         signInFallbackRedirectUrl="/"
         signUpFallbackRedirectUrl="/"
@@ -47,8 +49,9 @@ createRoot(document.getElementById('root')!).render(
           }
         }}
       >
-        <RootApp />
-      </ClerkProvider>
+          {app}
+        </ClerkProvider>
+      ) : app}
     </ErrorBoundary>
   </StrictMode>,
 );

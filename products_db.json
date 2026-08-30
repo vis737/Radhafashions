@@ -25,7 +25,8 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "vendorId": null
+    "vendorId": null,
+    "isTestProduct": false
   },
   {
     "id": "prod_1787073594012_dh2sene",
@@ -62,7 +63,8 @@
         "2/6",
         "2/8"
       ]
-    }
+    },
+    "isTestProduct": false
   },
   {
     "id": "prod_1787659636321_1p5go99",
@@ -98,7 +100,8 @@
         "2/6",
         "2/8"
       ]
-    }
+    },
+    "isTestProduct": false
   },
   {
     "id": "TEST-RF-001",
@@ -127,7 +130,8 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "In Stock",
-    "vendorId": "admin"
+    "vendorId": "admin",
+    "isTestProduct": true
   },
   {
     "id": "prod_1787659281714_m5bushn",
@@ -155,7 +159,8 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "vendorId": null
+    "vendorId": null,
+    "isTestProduct": false
   },
   {
     "id": "prod_1788088589034_exxzybm",
@@ -179,24 +184,14 @@
     "specifications": {
       "Weight": "0.5 kg"
     },
+    "weightKg": 0.5,
     "reviews": [],
-    "variations": {
-      "color": [
-        "Purple",
-        "blue",
-        "green"
-      ],
-      "size": [
-        "L",
-        "XL",
-        "XXL"
-      ]
-    },
     "isNew": true,
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "weightKg": 0.5
+    "vendorId": null,
+    "isTestProduct": false
   },
   {
     "id": "prod_1787659472635_r5mwacy",
@@ -223,6 +218,7 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "vendorId": null
+    "vendorId": null,
+    "isTestProduct": false
   }
 ]
