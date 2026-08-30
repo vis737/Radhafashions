@@ -92,6 +92,9 @@ export interface ProductVariations {
 export interface SelectedVariation {
   color?: string;
   size?: string;
+  /** Legacy fields — accepted in stored data but normalized on read. */
+  type?: VariationType;
+  value?: string;
 }
 
 export interface CartItem {
@@ -115,9 +118,21 @@ export const getEffectiveVariations = (product: Product): ProductVariations | un
   return undefined;
 };
 
+/** Normalize a selectedVariation that may be old {type,value} or new {color,size} into the new format. */
+export const normalizeSelectedVariation = (sv: SelectedVariation | undefined): { color?: string; size?: string } | undefined => {
+  if (!sv) return undefined;
+  // Already new format?
+  if (sv.color || sv.size) return { color: sv.color || undefined, size: sv.size || undefined };
+  // Legacy format: { type: 'color' | 'size', value: string }
+  if (sv.type && sv.value) {
+    return sv.type === 'color' ? { color: sv.value } : { size: sv.value };
+  }
+  return undefined;
+};
+
 /** Build a stable cart key from the selected color + size combination. */
 export const getCartItemKey = (item: Pick<CartItem, 'product' | 'selectedVariation'>) => {
-  const sv = item.selectedVariation;
+  const sv = normalizeSelectedVariation(item.selectedVariation);
   const color = sv?.color || '';
   const size = sv?.size || '';
   return `${item.product.id}::${color}::${size}`;
@@ -125,7 +140,7 @@ export const getCartItemKey = (item: Pick<CartItem, 'product' | 'selectedVariati
 
 /** Human-readable label for a selected variation (e.g. "(Color: Red, Size: L)"). */
 export const formatSelectedVariation = (item: Pick<CartItem, 'selectedVariation'>) => {
-  const sv = item.selectedVariation;
+  const sv = normalizeSelectedVariation(item.selectedVariation);
   if (!sv) return '';
   const parts: string[] = [];
   if (sv.color) parts.push(`Color: ${sv.color}`);
