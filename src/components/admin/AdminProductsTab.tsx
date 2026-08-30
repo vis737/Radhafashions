@@ -6,7 +6,7 @@ import {
   Link as LinkIcon, ChevronLeft, ChevronRight, X,
   Check, CheckCircle
 } from 'lucide-react';
-import { Product } from '../../types';
+import { Product, ProductVariations, getEffectiveVariations } from '../../types';
 import { getProductWeightKg } from '../../utils/premiumData';
 
 export interface AdminProductsTabProps {
@@ -381,11 +381,18 @@ export default function AdminProductsTab({
                         <div>
                           <p className="font-medium text-gray-800 dark:text-gray-200">{product.name}</p>
                           <p className="text-xs text-gray-400 dark:text-gray-500">{categories.find(c => c.id === product.category)?.name || product.category}</p>
-                          {product.variation?.values?.length ? (
-                            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-pink-600">
-                              {product.variation.type}: {product.variation.values.join(', ')}
-                            </p>
-                          ) : null}
+                          {(() => {
+                            const eff = getEffectiveVariations(product);
+                            if (!eff) return null;
+                            const tags: string[] = [];
+                            if (eff.color?.length) tags.push(`Color: ${eff.color.join(', ')}`);
+                            if (eff.size?.length) tags.push(`Size: ${eff.size.join(', ')}`);
+                            return tags.length ? (
+                              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-pink-600">
+                                {tags.join(' | ')}
+                              </p>
+                            ) : null;
+                          })()}
                         </div>
                       </div>
                     </td>
@@ -546,17 +553,17 @@ export default function AdminProductsTab({
                       description: String(editingProduct.description || editingProduct.name || ''),
                       specifications: editingProduct.specifications || {},
                       reviews: editingProduct.reviews || [],
-                      variation: editingProduct.variation?.values
-                        ?.map(value => value.trim())
-                        .filter((value, index, values) => value && values.indexOf(value) === index)
-                        .length
-                        ? {
-                            type: editingProduct.variation.type,
-                            values: editingProduct.variation.values
-                              .map(value => value.trim())
-                              .filter((value, index, values) => value && values.indexOf(value) === index)
-                          }
-                        : undefined,
+                      variations: (() => {
+                        const colorValues = editingProduct.variations?.color
+                          ?.map(v => v.trim())
+                          .filter((v, i, a) => v && a.indexOf(v) === i);
+                        const sizeValues = editingProduct.variations?.size
+                          ?.map(v => v.trim())
+                          .filter((v, i, a) => v && a.indexOf(v) === i);
+                        const hasColor = colorValues && colorValues.length > 0;
+                        const hasSize = sizeValues && sizeValues.length > 0;
+                        return hasColor || hasSize ? { color: hasColor ? colorValues : undefined, size: hasSize ? sizeValues : undefined } : undefined;
+                      })(),
                       isNew: Boolean(editingProduct.isNew),
                       isBestseller: Boolean(editingProduct.isBestseller),
                       brand: String(editingProduct.brand || 'Radha Fashions'),
@@ -811,53 +818,97 @@ function ProductForm({ product, categories, onChange, addToast }: {
           </div>
         </div>
 
-        {/* Customer variations */}
+        {/* Customer variations — Color + Size simultaneously */}
         <div className="space-y-4 md:col-span-2">
           <h4 className="font-display text-xl font-semibold tracking-wide text-gray-900 dark:text-gray-100 border-b border-amber-200/70 dark:border-amber-200/20 pb-2">Product Variations</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-amber-200/70 dark:border-amber-200/20 bg-gradient-to-br from-amber-50/70 via-white to-pink-50/50 dark:from-amber-950/20 dark:via-gray-950/40 dark:to-pink-950/20 p-4 shadow-sm">
+          <div className="rounded-xl border border-amber-200/70 dark:border-amber-200/20 bg-gradient-to-br from-amber-50/70 via-white to-pink-50/50 dark:from-amber-950/20 dark:via-gray-950/40 dark:to-pink-950/20 p-4 shadow-sm space-y-4">
+            {/* Colors */}
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Variation type</label>
-              <select
-                value={product.variation?.type || 'none'}
-                onChange={e => {
-                  const type = e.target.value;
-                  updateField('variation', type === 'none'
-                    ? undefined
-                    : {
-                        type: type as 'color' | 'size',
-                        values: product.variation?.type === type ? product.variation.values : []
-                      });
-                }}
-                className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-2 px-3 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-pink-500"
-              >
-                <option value="none">No variations</option>
-                <option value="color">Color</option>
-                <option value="size">Size</option>
-              </select>
-            </div>
-
-            {product.variation && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  {product.variation.type === 'color' ? 'Colors' : 'Sizes'}
-                </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                <input
+                  type="checkbox"
+                  checked={!!product.variations?.color?.length}
+                  onChange={e => {
+                    const current = product.variations || {};
+                    updateField('variations', e.target.checked
+                      ? { ...current, color: current.color || [] }
+                      : { ...current, color: undefined });
+                  }}
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-950 text-pink-500 focus:ring-pink-500"
+                />
+                Enable Color Variation
+              </label>
+              {product.variations?.color && (
                 <input
                   type="text"
-                  value={product.variation.values.join(', ')}
-                  onChange={e => updateField('variation', {
-                    ...product.variation!,
-                    values: e.target.value.split(/[\n,]/).map(value => value.trim()).filter(Boolean)
+                  value={product.variations.color.join(', ')}
+                  onChange={e => updateField('variations', {
+                    ...product.variations!,
+                    color: e.target.value.split(/[\n,]/).map(v => v.trim()).filter(Boolean)
                   })}
-                  placeholder={product.variation.type === 'color' ? 'Lightblue, Pink, White' : '2/4, 2/6, 2/8, 2/10'}
-                  className="w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-2 px-3 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-pink-500"
+                  placeholder="Red, Blue, Green, Rose Gold"
+                  className="mt-2 w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-2 px-3 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-pink-500"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {product.variation.type === 'size'
-                    ? 'For bangles, enter size codes exactly as 2/4, 2/6, 2/8, etc. Separate each value with a comma.'
-                    : 'Enter each color separated by a comma.'}
-                </p>
-              </div>
-            )}
+              )}
+              {product.variations?.color && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter each color separated by a comma.</p>
+              )}
+            </div>
+
+            {/* Sizes */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                <input
+                  type="checkbox"
+                  checked={!!product.variations?.size?.length}
+                  onChange={e => {
+                    const current = product.variations || {};
+                    updateField('variations', e.target.checked
+                      ? { ...current, size: current.size || [] }
+                      : { ...current, size: undefined });
+                  }}
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-950 text-pink-500 focus:ring-pink-500"
+                />
+                Enable Size Variation
+              </label>
+              {product.variations?.size && (
+                <>
+                  <input
+                    type="text"
+                    value={product.variations.size.join(', ')}
+                    onChange={e => updateField('variations', {
+                      ...product.variations!,
+                      size: e.target.value.split(/[\n,]/).map(v => v.trim()).filter(Boolean)
+                    })}
+                    placeholder="S, M, L, XL, XXL, 2/4, 2/6, 2/8"
+                    className="mt-2 w-full bg-white dark:bg-gray-950 border border-pink-200/50 dark:border-pink-900/30 rounded-lg py-2 px-3 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-pink-500"
+                  />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {['S', 'M', 'L', 'XL', 'XXL', '2/4', '2/6', '2/8', '2/10'].map(preset => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          const current = [...(product.variations?.size || [])];
+                          if (!current.includes(preset)) {
+                            updateField('variations', {
+                              ...product.variations!,
+                              size: [...current, preset]
+                            });
+                          }
+                        }}
+                        className="text-xs px-2 py-0.5 rounded-md bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-pink-400 border border-pink-200/50 dark:border-pink-900/30 transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              {product.variations?.size && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Accepts letters, numbers, and special characters (e.g. L, XL, XXL, 2/4, 2/6, 2/8). Separate each value with a comma.</p>
+              )}
+            </div>
           </div>
         </div>
 

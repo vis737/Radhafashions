@@ -66,22 +66,32 @@ export interface Product {
   };
   seoTitle?: string;
   seoDescription?: string;
-  /** One customer-selectable option configured by the administrator. */
+  /** Legacy single variation (kept for backward compatibility). */
   variation?: ProductVariation;
+  /** Multiple customer-selectable variations (color + size simultaneously). */
+  variations?: ProductVariations;
   /** Internal flag — test products get free shipping and are capped at ₹10 total */
   isTestProduct?: boolean;
 }
 
 export type VariationType = 'color' | 'size';
 
+/** Legacy single variation (one type at a time). Kept for backward compatibility. */
 export interface ProductVariation {
   type: VariationType;
   values: string[];
 }
 
+/** New: supports both color and size simultaneously. */
+export interface ProductVariations {
+  color?: string[];
+  size?: string[];
+}
+
+/** A customer's chosen combination of color + size. Either field is optional. */
 export interface SelectedVariation {
-  type: VariationType;
-  value: string;
+  color?: string;
+  size?: string;
 }
 
 export interface CartItem {
@@ -91,13 +101,42 @@ export interface CartItem {
   selectedVariation?: SelectedVariation;
 }
 
-export const getCartItemKey = (item: Pick<CartItem, 'product' | 'selectedVariation'>) =>
-  `${item.product.id}::${item.selectedVariation?.type || ''}::${item.selectedVariation?.value || ''}`;
+/** Normalize any variation shape (legacy single or new multi) into ProductVariations. */
+export const getEffectiveVariations = (product: Product): ProductVariations | undefined => {
+  // New multi-variation field takes precedence
+  if (product.variations) {
+    const { color, size } = product.variations;
+    if ((color && color.length > 0) || (size && size.length > 0)) return product.variations;
+  }
+  // Fall back to legacy single variation
+  if (product.variation?.values?.length) {
+    return { [product.variation.type]: product.variation.values };
+  }
+  return undefined;
+};
 
+/** Build a stable cart key from the selected color + size combination. */
+export const getCartItemKey = (item: Pick<CartItem, 'product' | 'selectedVariation'>) => {
+  const sv = item.selectedVariation;
+  const color = sv?.color || '';
+  const size = sv?.size || '';
+  return `${item.product.id}::${color}::${size}`;
+};
+
+/** Human-readable label for a selected variation (e.g. "(Color: Red, Size: L)"). */
 export const formatSelectedVariation = (item: Pick<CartItem, 'selectedVariation'>) => {
-  if (!item.selectedVariation?.value) return '';
-  const label = item.selectedVariation.type === 'color' ? 'Color' : 'Size';
-  return `(${label}: ${item.selectedVariation.value})`;
+  const sv = item.selectedVariation;
+  if (!sv) return '';
+  const parts: string[] = [];
+  if (sv.color) parts.push(`Color: ${sv.color}`);
+  if (sv.size) parts.push(`Size: ${sv.size}`);
+  return parts.length ? `(${parts.join(', ')})` : '';
+};
+
+/** Check if a product has any variation configured (new or legacy). */
+export const hasVariations = (product: Product): boolean => {
+  const v = getEffectiveVariations(product);
+  return !!(v && ((v.color && v.color.length > 0) || (v.size && v.size.length > 0)));
 };
 
 export interface CustomerInfo {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Star, Heart, ShoppingCart, Share2, Sparkles, Check, Send, AlertCircle, Award } from 'lucide-react';
-import { Product, Review, SelectedVariation } from '../types';
+import { Product, Review, SelectedVariation, ProductVariations, getEffectiveVariations } from '../types';
 import { handleImageError } from '../utils/imageUtils';
 import ImageMagnifier from './ImageMagnifier';
 
@@ -38,20 +38,29 @@ export default function ProductDetails({
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [zoomOffset, setZoomOffset] = useState({ x: 0, y: 0 });
   const [isZoomed, setIsZoomed] = useState(false);
-  const [selectedVariationValue, setSelectedVariationValue] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
 
   // Share link animation state
   const [shared, setShared] = useState(false);
 
-  const variation = product.variation?.values?.length ? product.variation : undefined;
+  const variations: ProductVariations | undefined = getEffectiveVariations(product);
 
   useEffect(() => {
-    setSelectedVariationValue(variation?.values[0] || '');
-  }, [product.id, variation?.type, variation?.values?.join('|')]);
+    setSelectedColor(variations?.color?.[0] || '');
+    setSelectedSize(variations?.size?.[0] || '');
+  }, [product.id, variations?.color?.join('|'), variations?.size?.join('|')]);
 
-  const selectedVariation = variation && selectedVariationValue
-    ? { type: variation.type, value: selectedVariationValue }
-    : undefined;
+  const selectedVariation: SelectedVariation | undefined = (() => {
+    if (!variations) return undefined;
+    const color = selectedColor || undefined;
+    const size = selectedSize || undefined;
+    if (!color && !size) return undefined;
+    return { color, size };
+  })();
+
+  const hasColorVariation = !!variations?.color?.length;
+  const hasSizeVariation = !!variations?.size?.length;
 
   // SEO: Update page title, meta tags, and inject product structured data
   useEffect(() => {
@@ -279,31 +288,60 @@ export default function ProductDetails({
             {product.shortDescription}
           </p>
 
-          {variation && (
+          {(hasColorVariation || hasSizeVariation) && (
           <div className="text-left space-y-3 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/70 via-white to-pink-50/70 p-4 shadow-sm dark:border-amber-200/20 dark:from-amber-950/20 dark:via-gray-900 dark:to-pink-950/20">
-              <p className="text-sm text-gray-700 dark:text-gray-200">
-                {variation.type === 'color' ? 'Colour' : 'Size'}:{' '}
-                <strong className="text-gray-950 dark:text-amber-200">{selectedVariationValue || 'Select an option'}</strong>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {variation.values.map((value) => {
-                  const isSelected = selectedVariationValue === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setSelectedVariationValue(value)}
-                      aria-pressed={isSelected}
-                      className={`min-w-12 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${isSelected ? 'border-amber-400 bg-[#0f172a] text-amber-200 ring-2 ring-amber-300/30 shadow-sm' : 'border-gray-300 bg-white text-gray-700 hover:border-amber-300 hover:bg-amber-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-amber-300 dark:hover:bg-gray-800'}`}
-                    >
-                      {variation.type === 'color' && (
-                        <span className="mr-2 inline-block h-3 w-3 rounded-full border border-gray-300 align-[-1px]" style={{ backgroundColor: value }} />
-                      )}
-                      {value}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Color selector */}
+              {hasColorVariation && (
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-200">
+                    Colour:{' '}
+                    <strong className="text-gray-950 dark:text-amber-200">{selectedColor || 'Select a color'}</strong>
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {variations!.color!.map((value) => {
+                      const isSelected = selectedColor === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setSelectedColor(value)}
+                          aria-pressed={isSelected}
+                          className={`min-w-12 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${isSelected ? 'border-amber-400 bg-[#0f172a] text-amber-200 ring-2 ring-amber-300/30 shadow-sm' : 'border-gray-300 bg-white text-gray-700 hover:border-amber-300 hover:bg-amber-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-amber-300 dark:hover:bg-gray-800'}`}
+                        >
+                          <span className="mr-2 inline-block h-3 w-3 rounded-full border border-gray-300 align-[-1px]" style={{ backgroundColor: value }} />
+                          {value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Size selector */}
+              {hasSizeVariation && (
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-200">
+                    Size:{' '}
+                    <strong className="text-gray-950 dark:text-amber-200">{selectedSize || 'Select a size'}</strong>
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {variations!.size!.map((value) => {
+                      const isSelected = selectedSize === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setSelectedSize(value)}
+                          aria-pressed={isSelected}
+                          className={`min-w-12 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${isSelected ? 'border-amber-400 bg-[#0f172a] text-amber-200 ring-2 ring-amber-300/30 shadow-sm' : 'border-gray-300 bg-white text-gray-700 hover:border-amber-300 hover:bg-amber-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-amber-300 dark:hover:bg-gray-800'}`}
+                        >
+                          {value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

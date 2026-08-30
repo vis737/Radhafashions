@@ -35,7 +35,7 @@ import {
 
 import { calculateCartTotals } from './utils/premiumData';
 
-import { Product, CartItem, Coupon, Order, CustomerInfo, ActivityLog, CMSConfig, Review, BannerCampaign, SelectedVariation, getCartItemKey } from './types';
+import { Product, CartItem, Coupon, Order, CustomerInfo, ActivityLog, CMSConfig, Review, BannerCampaign, SelectedVariation, getCartItemKey, hasVariations, getEffectiveVariations } from './types';
 
 type AppView = 'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'ordersuccess' | 'about';
 
@@ -448,10 +448,14 @@ export default function App() {
 
   // Add to cart state logic
   const handleAddProductToCart = (product: Product, selectedVariation?: SelectedVariation, quantity = 1) => {
-    if (product.variation?.values?.length && !selectedVariation) {
+    if (hasVariations(product) && !selectedVariation) {
       setCurrentProductId(product.id);
       handleSwapView('product', { productId: product.id });
-      alert(`Please choose a ${product.variation.type === 'color' ? 'colour' : 'size'} before adding this product to your bag.`);
+      const eff = getEffectiveVariations(product);
+      const parts: string[] = [];
+      if (eff?.color?.length) parts.push('colour');
+      if (eff?.size?.length) parts.push('size');
+      alert(`Please choose ${parts.join(' and ')} before adding this product to your bag.`);
       return;
     }
 
@@ -516,9 +520,13 @@ export default function App() {
 
   // Quick buy trigger (adds and redirects to checkout) - requires login
   const handleBuyNowTrigger = (product: Product, selectedVariation?: SelectedVariation) => {
-    if (product.variation?.values?.length && !selectedVariation) {
+    if (hasVariations(product) && !selectedVariation) {
       setCurrentProductId(product.id);
-      alert(`Please choose a ${product.variation.type === 'color' ? 'colour' : 'size'} before checkout.`);
+      const eff = getEffectiveVariations(product);
+      const parts: string[] = [];
+      if (eff?.color?.length) parts.push('colour');
+      if (eff?.size?.length) parts.push('size');
+      alert(`Please choose ${parts.join(' and ')} before checkout.`);
       return;
     }
     handleAddProductToCart(product, selectedVariation, 1);
