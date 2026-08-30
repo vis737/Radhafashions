@@ -86,6 +86,7 @@ async function seedSupabaseDatabase() {
         availability: p.availability,
         vendor_id: p.vendorId || null,
         variation: p.variation || null,
+        variations: p.variations || null,
         specifications: { ...(p.specifications || {}), Weight: parseProductWeightKg(p) ? `${parseProductWeightKg(p)} kg` : p.specifications?.Weight }
       }));
       await supabase.from('products').insert(mapped);
@@ -303,6 +304,7 @@ async function syncProductsFromSupabase() {
         availability: p.availability || 'in-stock',
         vendorId: p.vendor_id || null,
         variation: p.variation || undefined,
+        variations: p.variations || undefined,
         isTestProduct: p.id === 'TEST-RF-001'
       }));
       writeLocalJsonDb(PRODUCTS_FILE_PATH, mapped);
@@ -913,7 +915,8 @@ app.get('/api/catalog/products', async (req, res) => {
             brand: p.brand || 'Radha Fashions',
             availability: p.availability || 'in-stock',
             vendorId: p.vendor_id || null,
-            variation: p.variation || undefined
+            variation: p.variation || undefined,
+            variations: p.variations || undefined
           };
         });
         return res.json(mapped);
@@ -972,7 +975,8 @@ app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb'
           brand: p.brand || 'Radha Fashions',
           availability: p.availability || 'in-stock',
           vendor_id: p.vendorId || null,
-          variation: p.variation || null
+          variation: p.variation || null,
+          variations: p.variations || null
         }));
         
         if (mapped.length > 0) {
@@ -1831,9 +1835,10 @@ async function sendBookingEmail(order: any, emailType: 'received' | 'confirmatio
       order.items.forEach((item: any) => {
         const productObj = item.product || item;
         const productName = productObj.name || 'Radha Fashions Gift';
-        const variation = item.selectedVariation?.value
-          ? ` (${item.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${item.selectedVariation.value})`
-          : '';
+        const variationParts: string[] = [];
+        if (item.selectedVariation?.color) variationParts.push(`Color: ${item.selectedVariation.color}`);
+        if (item.selectedVariation?.size) variationParts.push(`Size: ${item.selectedVariation.size}`);
+        const variation = variationParts.length ? ` (${variationParts.join(', ')})` : '';
         const qty = item.quantity || 1;
         const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
         const imageUrl = (Array.isArray(productObj.images) && productObj.images[0])
@@ -2049,9 +2054,10 @@ async function sendAdminVendorNotificationEmail(order: any) {
       order.items.forEach((item: any) => {
         const productObj = item.product || item;
         const productName = productObj.name || 'Radha Fashions Product';
-        const variation = item.selectedVariation?.value
-          ? ` (${item.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${item.selectedVariation.value})`
-          : '';
+        const variationParts: string[] = [];
+        if (item.selectedVariation?.color) variationParts.push(`Color: ${item.selectedVariation.color}`);
+        if (item.selectedVariation?.size) variationParts.push(`Size: ${item.selectedVariation.size}`);
+        const variation = variationParts.length ? ` (${variationParts.join(', ')})` : '';
         const qty = item.quantity || 1;
         const price = Number(productObj.discountPrice ?? productObj.price ?? item.price ?? 0);
         const vendorId = productObj.vendorId || item.vendorId || 'Store Direct';
@@ -3870,9 +3876,10 @@ app.post('/api/gemini/invoice', async (req, res) => {
 
   const customerName = order?.customerInfo?.name || 'Customer';
   const itemNames = order?.items?.map((it: any) => {
-    const variation = it.selectedVariation?.value
-      ? ` (${it.selectedVariation.type === 'size' ? 'Size' : 'Color'}: ${it.selectedVariation.value})`
-      : '';
+    const variationParts: string[] = [];
+    if (it.selectedVariation?.color) variationParts.push(`Color: ${it.selectedVariation.color}`);
+    if (it.selectedVariation?.size) variationParts.push(`Size: ${it.selectedVariation.size}`);
+    const variation = variationParts.length ? ` (${variationParts.join(', ')})` : '';
     return `${it.product.name}${variation} (x${it.quantity})`;
   }).join(', ') || 'Items';
 
@@ -4223,7 +4230,8 @@ if (!process.env.VERCEL) {
             brand: 'Radha Fashions',
             availability: 'In Stock',
             vendor_id: 'admin',
-            variation: null
+            variation: null,
+            variations: null
           });
           if (error) console.error('[Seed] Failed to insert test product:', error);
           else console.log('[Seed] Test product (TEST-RF-001) added to Supabase.');

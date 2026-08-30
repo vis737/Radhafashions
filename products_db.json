@@ -25,8 +25,7 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
+    "vendorId": null
   },
   {
     "id": "prod_1787073594012_dh2sene",
@@ -63,8 +62,7 @@
         "2/6",
         "2/8"
       ]
-    },
-    "isTestProduct": false
+    }
   },
   {
     "id": "prod_1787659636321_1p5go99",
@@ -100,8 +98,36 @@
         "2/6",
         "2/8"
       ]
+    }
+  },
+  {
+    "id": "TEST-RF-001",
+    "sku": "TEST-10",
+    "name": "Test Product — ₹10 Trial Order",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 10,
+    "discountPrice": 10,
+    "stock": 999,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Test product for verifying checkout. ₹10 with free shipping and free GST.",
+    "description": "Test product to verify checkout and payment flow. Price ₹10, free shipping, zero GST. Use to test Razorpay and UPI QR payments.",
+    "specifications": {
+      "Origin": "India",
+      "Weight": "0.1 kg",
+      "Material": "Test"
     },
-    "isTestProduct": false
+    "weightKg": 0.1,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "In Stock",
+    "vendorId": "admin"
   },
   {
     "id": "prod_1787659281714_m5bushn",
@@ -129,8 +155,48 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
+    "vendorId": null
+  },
+  {
+    "id": "prod_1788088589034_exxzybm",
+    "sku": "ds-1",
+    "name": "Hand Batik Cotton Kurta Set for Women – Elegant Printed Kurta with Straight Pants & Dupatta",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 2000,
+    "discountPrice": 1700,
+    "stock": 3,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/d9f6c28f-204e-432b-8364-f051bbb88f0d.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/334a9bb8-d925-45ba-8504-8dcbe952b786.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/06e5eb33-6fa5-45ae-ba05-8a1199c376d9.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/babbaae8-ca36-4aeb-a5a2-2da2de66f0aa.png"
+    ],
+    "shortDescription": "Add a touch of traditional elegance to your everyday wardrobe with this beautiful Hand Batik Cotton Kurta Set. Crafted in soft, comfortable cotton fabric, this set features a graceful hand-batik floral pattern with traditional geometric detailing.",
+    "description": "Premium cotton fabric\nTraditional Hand Batik-inspired floral prints\nElegant geometric border detailing\nComfortable straight-fit pants\nMatching printed dupatta\nSoft, breathable and suitable for everyday wear\nPerfect for casual outings, office wear, family gatherings and festive occasions\nBeautiful ethnic design with a contemporary silhouette\n\nStyle: Ethnic / Traditional\nFabric: Cotton\nSet Includes: Kurta, Straight Pants & Dupatta\nOccasion: Casual, Office Wear, Festive & Daily Wear\n\n🌸 Radha Fashions Boutique\nTimeless. Elegant. Naturally You.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "reviews": [],
+    "variations": {
+      "color": [
+        "Purple",
+        "blue",
+        "green"
+      ],
+      "size": [
+        "L",
+        "XL",
+        "XXL"
+      ]
+    },
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "weightKg": 0.5
   },
   {
     "id": "prod_1787659472635_r5mwacy",
@@ -157,7 +223,6 @@
     "isBestseller": false,
     "brand": "Radha Fashions",
     "availability": "in-stock",
-    "vendorId": null,
-    "isTestProduct": false
+    "vendorId": null
   }
 ]

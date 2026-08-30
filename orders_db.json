@@ -170,5 +170,66 @@
     "giftMessage": null,
     "accountEmail": "vishnuvardhan7219@gmail.com",
     "accountName": "Vishnu vardhan"
+  },
+  {
+    "id": "ord-1787917146602",
+    "orderNumber": "MR-714660-861",
+    "customerInfo": {
+      "name": "Vishnu vardhan",
+      "email": "vishnuvardhan7219@gmail.com",
+      "phone": "+919108319758",
+      "address": "Muthkur\nYadagondanahalli",
+      "pincode": "560067"
+    },
+    "items": [
+      {
+        "product": {
+          "id": "TEST-RF-001",
+          "sku": "TEST-10",
+          "name": "Test Product — ₹10 Trial Order",
+          "brand": "Radha Fashions",
+          "isNew": true,
+          "price": 10,
+          "stock": 999,
+          "images": [
+            "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop"
+          ],
+          "rating": 5,
+          "reviews": [],
+          "category": "kurtis",
+          "vendorId": "admin",
+          "weightKg": 0.1,
+          "description": "Test product to verify checkout and payment flow. Price ₹10, free shipping, zero GST. Use to test Razorpay and UPI QR payments.",
+          "ratingCount": 1,
+          "availability": "In Stock",
+          "categorySlug": "kurtis",
+          "isBestseller": false,
+          "discountPrice": 10,
+          "specifications": {
+            "Origin": "India",
+            "Weight": "0.1 kg",
+            "Material": "Test"
+          },
+          "shortDescription": "Test product for verifying checkout. ₹10 with free shipping and free GST."
+        },
+        "quantity": 1
+      }
+    ],
+    "shippingMethod": "standard",
+    "shippingCost": 0,
+    "tax": 0,
+    "discount": 0,
+    "subtotal": 10,
+    "total": 10,
+    "status": "pending",
+    "couponCode": null,
+    "date": "2026-08-28",
+    "paymentMethod": "Razorpay Online Payment",
+    "paymentStatus": "paid",
+    "giftWrappingRequested": false,
+    "giftWrappingType": "Generic",
+    "giftMessage": null,
+    "accountEmail": "vishnuvardhan7219@gmail.com",
+    "accountName": "Vishnu vardhan"
   }
 ]
