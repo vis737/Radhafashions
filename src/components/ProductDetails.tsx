@@ -81,7 +81,7 @@ export default function ProductDetails({
       'brand': { '@type': 'Brand', 'name': product.brand || 'Radha Fashions' },
       'offers': {
         '@type': 'Offer',
-        'url': `https://radhafashions.in/product/${product.id}`,
+        'url': `https://radhafashions.in/products/${encodeURIComponent(product.id)}`,
         'priceCurrency': 'INR',
         'price': displayPrice,
         'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',

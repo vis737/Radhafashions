@@ -47,6 +47,67 @@ type StorefrontHistoryState = {
   };
 };
 
+type StorefrontRoute = NonNullable<StorefrontHistoryState['radhaFashions']>;
+
+/**
+ * Convert a public storefront URL into the view state used by this SPA.  The
+ * server serves index.html for unknown paths, so this also makes a product
+ * URL work when it is opened directly or refreshed.
+ */
+const getRouteFromPathname = (pathname: string): StorefrontRoute => {
+  const cleanPath = pathname.replace(/\/+$/, '') || '/';
+  const productMatch = cleanPath.match(/^\/products?\/([^/]+)$/);
+  if (productMatch) {
+    try {
+      return { view: 'product', productId: decodeURIComponent(productMatch[1]) };
+    } catch {
+      return { view: 'home' };
+    }
+  }
+
+  const categoryMatch = cleanPath.match(/^\/(?:collections|category)\/([^/]+)$/);
+  if (categoryMatch) {
+    try {
+      return { view: 'category', categorySlug: decodeURIComponent(categoryMatch[1]) };
+    } catch {
+      return { view: 'home' };
+    }
+  }
+
+  const staticRoutes: Record<string, AppView> = {
+    '/about': 'about',
+    '/account': 'account',
+    '/checkout': 'checkout',
+    '/admin': 'admin',
+    '/order-success': 'ordersuccess'
+  };
+  return { view: staticRoutes[cleanPath] || 'home' };
+};
+
+const getPathnameForRoute = (route: StorefrontRoute) => {
+  if (route.view === 'product' && route.productId) {
+    return `/products/${encodeURIComponent(route.productId)}`;
+  }
+  if (route.view === 'category' && route.categorySlug) {
+    return `/collections/${encodeURIComponent(route.categorySlug)}`;
+  }
+
+  const staticPaths: Partial<Record<AppView, string>> = {
+    about: '/about',
+    account: '/account',
+    checkout: '/checkout',
+    admin: '/admin',
+    ordersuccess: '/order-success'
+  };
+  return staticPaths[route.view] || '/';
+};
+
+const getUrlForRoute = (route: StorefrontRoute) => {
+  const url = new URL(window.location.href);
+  url.pathname = getPathnameForRoute(route);
+  return `${url.pathname}${url.search}${url.hash}`;
+};
+
 // Framer Motion staggered grid entrance variants
 const staggersContainerVariants = {
   hidden: { opacity: 0 },
@@ -163,13 +224,9 @@ export default function App() {
   // the storefront from a product, category, checkout, or account screen.
   useEffect(() => {
     const restoreViewFromHistory = (state: StorefrontHistoryState | null) => {
-      const route = state?.radhaFashions;
-      if (!route) {
-        setActiveView('home');
-        setCurrentCategorySlug('');
-        setCurrentProductId('');
-        return;
-      }
+      // The path is the source of truth so a shared link, refresh, and a
+      // history entry all resolve to the same storefront screen.
+      const route = state?.radhaFashions || getRouteFromPathname(window.location.pathname);
 
       setActiveView(route.view);
       setCurrentCategorySlug(route.categorySlug || '');
@@ -178,15 +235,13 @@ export default function App() {
     };
 
     const initialState = window.history.state as StorefrontHistoryState | null;
-    if (initialState?.radhaFashions) {
-      restoreViewFromHistory(initialState);
-    } else {
-      window.history.replaceState(
-        { ...initialState, radhaFashions: { view: 'home' } } satisfies StorefrontHistoryState,
-        '',
-        window.location.href
-      );
-    }
+    const initialRoute = getRouteFromPathname(window.location.pathname);
+    window.history.replaceState(
+      { ...initialState, radhaFashions: initialRoute } satisfies StorefrontHistoryState,
+      '',
+      getUrlForRoute(initialRoute)
+    );
+    restoreViewFromHistory({ ...initialState, radhaFashions: initialRoute });
 
     const handlePopState = (event: PopStateEvent) => {
       restoreViewFromHistory(event.state as StorefrontHistoryState | null);
@@ -414,18 +469,19 @@ export default function App() {
 
   // Scroll back up on swapping screens layout
   const handleSwapView = (view: AppView, routeState: Pick<NonNullable<StorefrontHistoryState['radhaFashions']>, 'categorySlug' | 'productId'> = {}) => {
+    const route: StorefrontRoute = {
+      view,
+      categorySlug: routeState.categorySlug ?? (view === 'category' ? currentCategorySlug : undefined),
+      productId: routeState.productId ?? (view === 'product' ? currentProductId : undefined)
+    };
     setActiveView(view);
     window.history.pushState(
       {
         ...(window.history.state as StorefrontHistoryState | null),
-        radhaFashions: {
-          view,
-          categorySlug: routeState.categorySlug ?? (view === 'category' ? currentCategorySlug : undefined),
-          productId: routeState.productId ?? (view === 'product' ? currentProductId : undefined)
-        }
+        radhaFashions: route
       } satisfies StorefrontHistoryState,
       '',
-      window.location.href
+      getUrlForRoute(route)
     );
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -850,7 +906,7 @@ export default function App() {
   };
 
   // --- DERIVED RENDER PARAMS ---
-  const activeProductModel = products.find((p) => p.id === currentProductId) || products[0];
+  const activeProductModel = products.find((p) => p.id === currentProductId);
 
   const relatedProductsList = activeProductModel
     ? products.filter(

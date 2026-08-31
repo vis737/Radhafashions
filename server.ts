@@ -3786,7 +3786,7 @@ app.get('/sitemap.xml', async (req, res) => {
     categories.forEach((cat) => {
       xml += `
   <url>
-    <loc>https://radhafashions.in/category/${cat}</loc>
+    <loc>https://radhafashions.in/collections/${cat}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3796,7 +3796,7 @@ app.get('/sitemap.xml', async (req, res) => {
       const lastMod = p.updatedAt || p.date || today;
       xml += `
   <url>
-    <loc>https://radhafashions.in/product/${p.id}</loc>
+    <loc>https://radhafashions.in/products/${encodeURIComponent(p.id)}</loc>
     <lastmod>${lastMod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>`;
@@ -4056,7 +4056,7 @@ app.get('/api/product-schema/:productId', (req, res) => {
       'brand': { '@type': 'Brand', 'name': product.brand || 'Radha Fashions' },
       'offers': {
         '@type': 'Offer',
-        'url': `https://radhafashions.in/product/${product.id}`,
+        'url': `https://radhafashions.in/products/${encodeURIComponent(product.id)}`,
         'priceCurrency': 'INR',
         'price': displayPrice,
         'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',

@@ -25,6 +25,7 @@ export default function ProductCard({
   variants
 }: ProductCardProps) {
   const [hovered, setHovered] = useState(false);
+  const productPath = `/products/${encodeURIComponent(product.id)}`;
 
   // Derive stock badge labels
   let stockLabel = 'In Stock';
@@ -82,8 +83,12 @@ export default function ProductCard({
       </button>
 
       {/* Product Image Stage */}
-      <div
-        onClick={() => onSelectProduct(product.id)}
+      <a
+        href={productPath}
+        onClick={(event) => {
+          event.preventDefault();
+          onSelectProduct(product.id);
+        }}
         className="relative aspect-[3/4] w-full overflow-hidden rounded-sm bg-primary-soft cursor-pointer"
       >
         <img
@@ -100,7 +105,7 @@ export default function ProductCard({
         {hovered && product.stock > 0 && (
           <div className="absolute inset-0 bg-background/25 backdrop-blur-[1px] transition flex items-center justify-center gap-3">
             <button
-              onClick={(e) => { e.stopPropagation(); onQuickView(product); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
               className="p-3 bg-background hover:bg-accent rounded-full border border-border shadow-soft text-foreground hover:text-primary active:scale-95 transition cursor-pointer"
               title="Quick View Details"
             >
@@ -108,7 +113,7 @@ export default function ProductCard({
             </button>
           </div>
         )}
-      </div>
+      </a>
 
       {/* Card Information metadata */}
       <div className="flex flex-1 flex-col pt-4 justify-between">
@@ -118,12 +123,16 @@ export default function ProductCard({
             {product.category}
           </span>
           
-          <h3
-            onClick={() => onSelectProduct(product.id)}
+          <a
+            href={productPath}
+            onClick={(event) => {
+              event.preventDefault();
+              onSelectProduct(product.id);
+            }}
             className="font-display font-light text-base sm:text-xl leading-snug text-foreground hover:text-primary transition cursor-pointer line-clamp-2 sm:line-clamp-1 pr-1 sm:pr-4"
           >
             {product.name}
-          </h3>
+          </a>
           
           <p className="line-clamp-1 sm:line-clamp-2 text-xs sm:text-sm text-muted-foreground font-light leading-relaxed">
             {product.shortDescription}
