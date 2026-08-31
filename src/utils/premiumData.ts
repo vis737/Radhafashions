@@ -344,9 +344,15 @@ function calculateLocalShippingCost(
   const rateProfile = getShippingRateProfileFromPincode(destinationPincode);
   const zone = rateProfile.zone;
 
+  // Standard delivery is a permanent free-shipping benefit. Keeping this
+  // rule in the shared calculator makes it apply to every current and future
+  // product, regardless of its price, weight, or delivery zone.
+  if (shippingMethod === 'standard') {
+    return { cost: 0, billableWeightKg, zone };
+  }
+
   if (pin.length !== 6) {
-    const fallbackCost = shippingMethod === 'express' ? 95 : subtotal > 1500 ? 0 : 45;
-    return { cost: addShippingHandlingSurcharge(fallbackCost), billableWeightKg, zone };
+    return { cost: addShippingHandlingSurcharge(95), billableWeightKg, zone };
   }
 
   const halfKgSlabs = Math.ceil(billableWeightKg / 0.5);
@@ -355,15 +361,11 @@ function calculateLocalShippingCost(
     Math.max(0, halfKgSlabs - 1) * rateProfile.additionalHalfKgRate +
     rateProfile.remoteSurcharge;
 
-  if (shippingMethod === 'express') {
-    return {
-      cost: addShippingHandlingSurcharge(Math.round(standardCost * 1.30 + 25)),
-      billableWeightKg,
-      zone
-    };
-  }
-
-  return { cost: addShippingHandlingSurcharge(standardCost), billableWeightKg, zone };
+  return {
+    cost: addShippingHandlingSurcharge(Math.round(standardCost * 1.30 + 25)),
+    billableWeightKg,
+    zone
+  };
 }
 
 export function calculateCartTotals(
@@ -426,20 +428,13 @@ export function calculateCartTotals(
   // 5. Gift wrapping cost (+ Rs.100 for premium wraps)
   const giftWrappingCost = giftWrappingRequested ? 100 : 0;
 
-  // 6. Tax (2% GST on adjusted net) — exempt for test products
+  // 6. Tax (3% GST on adjusted net)
   const taxableAmount = Math.max(0, adjustedSubtotal - couponDiscount);
-  const allTestProducts = cartItems.length > 0 && cartItems.every(({ product }) =>
-    product.isTestProduct || product.id === 'TEST-RF-001' || product.sku === 'TEST-10'
-  );
-  const tax = allTestProducts ? 0 : Math.round(taxableAmount * 0.02);
+  const tax = Math.round(taxableAmount * 0.03);
 
   // 7. Local shipping logic: billable weight slab + destination pincode zone
-  // Older carts can contain a cached copy of the test product without the
-  // isTestProduct flag. Keep its checkout shipping-free using its stable ID/SKU.
   const shippingWeightKg = getCartShipmentWeightKg(cartItems);
-  const shippingQuote = allTestProducts
-    ? { cost: 0, billableWeightKg: 0, zone: 'Test — Free Shipping' }
-    : calculateLocalShippingCost(shippingWeightKg, destinationPincode, shippingMethod, subtotal);
+  const shippingQuote = calculateLocalShippingCost(shippingWeightKg, destinationPincode, shippingMethod, subtotal);
   const shippingCost = shippingQuote.cost;
 
   // 8. Grand total payable

@@ -318,12 +318,12 @@ export default function CartDrawer({
                   </div>
                 )}
                 <div className="flex justify-between items-center text-gray-950 dark:text-gray-100 font-semibold">
-                  <span className="text-gray-800 dark:text-gray-200 font-bold">GST / Tax (2%)</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-bold">GST / Tax (3%)</span>
                   <span className="font-mono text-sm font-extrabold text-gray-950 dark:text-white">Rs.{gstTax}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-950 dark:text-gray-100 font-semibold pb-2 border-b-2 border-gray-200 dark:border-gray-800">
                   <span className="text-gray-800 dark:text-gray-200 font-bold">
-                    Delivery Charges <span className="text-xs text-gray-600 dark:text-gray-500 font-medium">(final by pincode, {billableWeightKg.toFixed(2)} kg)</span>
+                    Delivery Charges <span className="text-xs text-gray-600 dark:text-gray-500 font-medium">{shippingMethod === 'standard' ? '(free standard delivery)' : `(final by pincode, ${billableWeightKg.toFixed(2)} kg)`}</span>
                   </span>
                   <span className="font-mono text-sm font-extrabold text-gray-950 dark:text-white">{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
                 </div>

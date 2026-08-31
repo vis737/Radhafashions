@@ -374,6 +374,50 @@ function writeLocalJsonDb(filePath: string, data: any) {
   }
 }
 
+// Social crawlers such as WhatsApp and Facebook read the HTML response, but
+// do not execute the React app. Generate the product's Open Graph metadata on
+// the server so sharing a product URL shows its photo instead of the homepage
+// logo.
+const escapeHtmlAttribute = (value: unknown) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+
+const replaceMetaContent = (html: string, attribute: 'name' | 'property', key: string, value: string) => {
+  const pattern = new RegExp(`(<meta\\s+${attribute}="${key}"\\s+content=")[^"]*("\\s*\\/?>)`, 'i');
+  return html.replace(pattern, `$1${escapeHtmlAttribute(value)}$2`);
+};
+
+function createProductSocialPreviewHtml(indexHtml: string, product: any) {
+  const productUrl = `https://radhafashions.in/products/${encodeURIComponent(product.id)}`;
+  const imageUrl = Array.isArray(product.images) && product.images.find((image: unknown) => typeof image === 'string' && image.trim())
+    || 'https://radhafashions.in/radha-fashions-logo.png';
+  const displayPrice = product.discountPrice || product.price;
+  const title = `${product.name} | Radha Fashions Boutique`;
+  const description = `${product.shortDescription || product.description || product.name} Shop now for ₹${displayPrice}.`;
+  const imageAlt = product.name;
+
+  let html = indexHtml
+    .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtmlAttribute(title)}</title>`)
+    .replace(/<link rel="canonical" href="[^"]*"\s*\/>/i, `<link rel="canonical" href="${escapeHtmlAttribute(productUrl)}" />`);
+
+  html = replaceMetaContent(html, 'name', 'description', description);
+  html = replaceMetaContent(html, 'property', 'og:type', 'product');
+  html = replaceMetaContent(html, 'property', 'og:url', productUrl);
+  html = replaceMetaContent(html, 'property', 'og:title', title);
+  html = replaceMetaContent(html, 'property', 'og:description', description);
+  html = replaceMetaContent(html, 'property', 'og:image', imageUrl);
+  html = replaceMetaContent(html, 'property', 'og:image:alt', imageAlt);
+  html = replaceMetaContent(html, 'name', 'twitter:card', 'summary_large_image');
+  html = replaceMetaContent(html, 'name', 'twitter:url', productUrl);
+  html = replaceMetaContent(html, 'name', 'twitter:title', title);
+  html = replaceMetaContent(html, 'name', 'twitter:description', description);
+  html = replaceMetaContent(html, 'name', 'twitter:image', imageUrl);
+
+  return html;
+}
+
 /**
  * Make a Supabase table exactly match an administrator's submitted catalog.
  * Querying IDs first works for string/UUID identifiers and also supports an
@@ -1959,7 +2003,7 @@ async function sendBookingEmail(order: any, emailType: 'received' | 'confirmatio
           <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${shippingCost}</td>
         </tr>
         <tr>
-          <td style="padding: 6px 0; color: #6b7280;">GST (2%):</td>
+          <td style="padding: 6px 0; color: #6b7280;">GST (3%):</td>
           <td style="padding: 6px 0; text-align: right; font-family: monospace; color: #1f2937;">₹${tax}</td>
         </tr>
         <tr style="border-top: 2px solid #fbcfe8;">
@@ -4164,6 +4208,25 @@ if (!process.env.VERCEL) {
 
     if (isProductionBuild && fs.existsSync(distIndexHtml)) {
       const distPath = path.join(process.cwd(), 'dist');
+      app.get(['/products/:productId', '/product/:productId'], (req, res, next) => {
+        const product = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS)
+          .find((item: any) => item.id === req.params.productId);
+
+        // Unknown product paths continue to the normal SPA fallback, which
+        // lets the client render its standard not-found/home state.
+        if (!product) return next();
+
+        try {
+          const indexHtml = fs.readFileSync(distIndexHtml, 'utf-8');
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+          return res.type('html').send(createProductSocialPreviewHtml(indexHtml, product));
+        } catch (error) {
+          console.error('Failed to generate product social preview:', error);
+          return next();
+        }
+      });
       // Cache hashed assets (JS/CSS) for 1 year, but never cache index.html itself
       app.use(express.static(distPath, {
         setHeaders: (res, filePath) => {

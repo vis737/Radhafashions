@@ -137,7 +137,7 @@ export default function CheckoutPanel({
   const hasCompletePincode = normalizedPincode.length === 6;
   const shippingPreviewLabel = shippingMethod === 'express'
     ? `BLUEDART EXPRESS DELIVERY - RS.${shippingCharges} - ${shippingZone} - 3 DAYS`
-    : `NATIONAL STANDARD DELIVERY - RS.${shippingCharges} - ${shippingZone} - 6 DAYS`;
+    : `FREE NATIONAL STANDARD DELIVERY - ${shippingZone} - 6 DAYS`;
 
   const handleNextStep = (step: number) => {
     if (step === 1) {
@@ -887,11 +887,11 @@ export default function CheckoutPanel({
                         </div>
                       )}
                       <div className="flex justify-between text-gray-200 text-sm">
-                        <span>GST (2%)</span>
+                        <span>GST (3%)</span>
                         <span>Rs.{gstTax}</span>
                       </div>
                       <div className="flex justify-between text-gray-200 text-sm">
-                        <span>Shipping ({shippingMethod}, {billableWeightKg.toFixed(2)} kg)</span>
+                        <span>{shippingMethod === 'standard' ? 'Standard delivery' : `Express shipping (${billableWeightKg.toFixed(2)} kg)`}</span>
                         <span>{shippingCharges === 0 ? 'FREE' : `Rs.${shippingCharges}`}</span>
                       </div>
                       <div className="flex justify-between text-gray-300 text-xs">
