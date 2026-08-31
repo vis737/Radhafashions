@@ -950,10 +950,32 @@ export default function App() {
       return 0;
     });
 
-  const bestSellersList = products
-    .filter((product) => product.isBestseller)
-    .slice(0, 4);
-  const newArrivalsList = products.filter((p) => p.isNew).slice(0, 4);
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  // Rotate best sellers and new arrivals every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => setShuffleSeed(s => s + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const shuffleArray = <T,>(arr: T[], seed: number): T[] => {
+    const copy = [...arr];
+    // Simple seeded Fisher-Yates shuffle
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.abs(((seed * 9301 + 49297 + i * 233) % 233280)) % (i + 1);
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
+
+  const bestSellersList = useMemo(() => {
+    const all = products.filter(p => p.isBestseller);
+    return shuffleArray(all, shuffleSeed).slice(0, 4);
+  }, [products, shuffleSeed]);
+
+  const newArrivalsList = useMemo(() => {
+    const all = products.filter(p => p.isNew);
+    return shuffleArray(all, shuffleSeed).slice(0, 4);
+  }, [products, shuffleSeed]);
 
   // Group all products by category for the home page category sections
   const productsByCategory = useMemo(() => {
