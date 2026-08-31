@@ -1214,6 +1214,68 @@ export default function App() {
                 </div>
               </section>
 
+              {/* Best Sellers showcase lists */}
+              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
+                <div className="flex justify-between items-end mb-4 sm:mb-6">
+                  <div>
+                    <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
+                      Best Sellers
+                    </h3>
+                    <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
+                  </div>
+                  <button
+                    onClick={() => handleSelectCategoryGroup('sarees')}
+                    className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
+                  >
+                    View All <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+                  {bestSellersList.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isWishlisted={wishlistIds.includes(product.id)}
+                      onToggleWishlist={handleToggleProductWishlist}
+                      onAddToCart={(p) => handleAddProductToCart(p)}
+                      onQuickView={(p) => setQuickViewProduct(p)}
+                      onSelectProduct={handleViewProductDetails}
+                    />
+                  ))}
+                </div>
+              </section>
+
+              {/* New Arrivals Section */}
+              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
+                <div className="flex justify-between items-end mb-4 sm:mb-6">
+                  <div>
+                    <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
+                      New Fashion Arrivals
+                    </h3>
+                    <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
+                  </div>
+                  <button
+                    onClick={() => handleSelectCategoryGroup('lehengas')}
+                    className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
+                  >
+                    View Arrivals <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+                  {newArrivalsList.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isWishlisted={wishlistIds.includes(product.id)}
+                      onToggleWishlist={handleToggleProductWishlist}
+                      onAddToCart={(p) => handleAddProductToCart(p)}
+                      onQuickView={(p) => setQuickViewProduct(p)}
+                      onSelectProduct={handleViewProductDetails}
+                    />
+                  ))}
+                </div>
+              </section>
+
               {/* Products by Category — each category gets its own titled section */}
               {productsByCategory.map(({ category, products: catProducts }) => (
                 <section key={category.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
