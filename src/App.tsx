@@ -1028,6 +1028,7 @@ export default function App() {
         cartItems={cartItems}
         wishlistIds={wishlistIds}
         allProducts={products}
+        categories={categories}
         currentCategory={currentCategorySlug}
         onSelectCategory={handleSelectCategoryGroup}
         onNavigate={handleSwapView}
@@ -1224,7 +1225,7 @@ export default function App() {
                     <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
                   </div>
                   <button
-                    onClick={() => handleSelectCategoryGroup('sarees')}
+                    onClick={() => productsByCategory[0] && handleSelectCategoryGroup(productsByCategory[0].category.id)}
                     className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
                   >
                     View All <ChevronRight className="w-4 h-4" />
@@ -1255,7 +1256,7 @@ export default function App() {
                     <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
                   </div>
                   <button
-                    onClick={() => handleSelectCategoryGroup('lehengas')}
+                    onClick={() => productsByCategory[1] && handleSelectCategoryGroup(productsByCategory[1].category.id)}
                     className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
                   >
                     View Arrivals <ChevronRight className="w-4 h-4" />
@@ -1295,7 +1296,7 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-                    {catProducts.slice(0, 4).map((product) => (
+                    {catProducts.map((product) => (
                       <ProductCard
                         key={product.id}
                         product={product}
@@ -2162,9 +2163,9 @@ export default function App() {
           <div className="space-y-2">
             <h4 className="font-display font-semibold text-xs text-pink-300 uppercase tracking-widest leading-none">Shop Categories</h4>
             <div className="flex flex-col gap-1.5 font-light text-pink-200 dark:text-gray-400">
-              <button onClick={() => handleSelectCategoryGroup('sarees')} className="text-left hover:text-pink-300 transition cursor-pointer">Sarees & Lehengas</button>
-              <button onClick={() => handleSelectCategoryGroup('kurtis')} className="text-left hover:text-pink-300 transition cursor-pointer">Kurtis & Salwar Suits</button>
-              <button onClick={() => handleSelectCategoryGroup('jewellery')} className="text-left hover:text-pink-300 transition cursor-pointer">Ethnic Jewellery & Bags</button>
+              {categories.slice(0, 6).map(cat => (
+                <button key={cat.id} onClick={() => handleSelectCategoryGroup(cat.id)} className="text-left hover:text-pink-300 transition cursor-pointer">{cat.name}</button>
+              ))}
             </div>
           </div>
 

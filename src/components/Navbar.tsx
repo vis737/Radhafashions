@@ -153,6 +153,7 @@ interface NavbarProps {
   cartItems: CartItem[];
   wishlistIds: string[];
   allProducts: Product[];
+  categories?: Array<{id: string; name: string; description: string; imageUrl: string}>;
   currentCategory: string;
   onSelectCategory: (categorySlug: string) => void;
   onNavigate: (view: 'home' | 'category' | 'product' | 'checkout' | 'account' | 'admin' | 'about') => void;
@@ -172,6 +173,7 @@ function NavbarContent({
   cartItems,
   wishlistIds,
   allProducts,
+  categories: dynamicCategories,
   currentCategory,
   onSelectCategory,
   onNavigate,
@@ -189,6 +191,7 @@ function NavbarContent({
   const [suggestedSlug, setSuggestedSlug] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const navCategories = dynamicCategories && dynamicCategories.length > 0 ? dynamicCategories : CATEGORIES;
   
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileMenuChangedByHistoryRef = useRef(false);
@@ -388,7 +391,7 @@ function NavbarContent({
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="absolute top-8 left-0 w-64 bg-card border border-border rounded-xl shadow-2xl p-2 grid grid-cols-1 gap-1 z-50 text-left"
                   >
-                    {CATEGORIES.map((category, idx) => (
+                    {navCategories.map((category, idx) => (
                       <motion.button
                         key={category.id}
                         initial={{ opacity: 0, x: -10 }}
@@ -633,7 +636,7 @@ function NavbarContent({
                     </span>
                     
                     <div className="space-y-2 pt-1">
-                      {CATEGORIES.map((category) => (
+                      {navCategories.map((category) => (
                         <button
                           key={category.id}
                           onClick={() => {
