@@ -8,6 +8,7 @@ import {
 import { Product, Coupon, BannerCampaign, CMSConfig, Order, ActivityLog, Review } from '../types';
 import { jsPDF } from 'jspdf';
 import ToastNotification, { ToastMessage } from './ToastNotification';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 // Tab component imports (split architecture)
 import AdminDashboardTab from './admin/AdminDashboardTab';
@@ -88,6 +89,9 @@ export default function AdminDashboard({
   onLogoutAdmin
 }: AdminDashboardProps) {
   const categories = propCategories || [];
+  const isMobile = useIsMobile();
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [moreDrawerOpen, setMoreDrawerOpen] = useState(false);
 
   // Authentication Gate
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -208,6 +212,15 @@ export default function AdminDashboard({
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
+  const bottomNavTabs = [
+    { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+    { id: 'orders', label: 'Orders', icon: ShoppingBag, count: orders.length },
+    { id: 'products', label: 'Products', icon: Package },
+    { id: 'payments', label: 'Payments', icon: CreditCard, count: orders.filter(o => o.paymentStatus === 'pending').length || undefined },
+    { id: 'more', label: 'More', icon: Menu },
+  ];
+  const currentTabLabel = sidebarTabs.find(t => t.id === activeTab)?.label || 'Admin';
+
   // Product handlers (kept in shell for callback compatibility)
   const handleAddProductOpen = () => setActiveTab('products');
   const handleCreateCouponOpen = () => setActiveTab('coupons');
@@ -276,8 +289,9 @@ export default function AdminDashboard({
           >
             <Menu className="w-5 h-5 text-gray-500" />
           </button>
+          {isMobile && (<button onClick={() => setMobileSearchOpen(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl cursor-pointer"><Search className="w-5 h-5 text-gray-500" /></button>)}
           <span className="font-display font-extrabold text-sm uppercase tracking-widest text-pink-600 dark:text-pink-400">
-            Radha Fashions Admin Hub
+{isMobile ? currentTabLabel : 'Radha Fashions Admin Hub'}
           </span>
         </div>
 
@@ -385,9 +399,10 @@ export default function AdminDashboard({
       </header>
 
       {/* Main layout area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden" style={{paddingBottom: isMobile ? "64px" : "0"}}>
 
-        {/* Collapsible Sidebar */}
+        {/* Collapsible Sidebar - desktop only */}
+        {!isMobile && (
         <aside className={`${isSidebarCollapsed ? 'w-16' : 'w-60'} bg-white dark:bg-gray-900 border-r border-pink-100 dark:border-pink-900/20 transition-all duration-300 flex flex-col shrink-0 justify-between select-none`}>
           <div className="py-4 space-y-0.5 overflow-y-auto">
             {sidebarTabs.map((tab) => {
@@ -429,9 +444,10 @@ export default function AdminDashboard({
             </button>
           </div>
         </aside>
+        )}
 
         {/* Main viewport */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+        <main className={"flex-1 overflow-y-auto " + (isMobile ? "p-3" : "p-6 md:p-8")}>
           <AnimatePresence mode="wait">
 
             {activeTab === 'dashboard' && (
@@ -584,6 +600,75 @@ export default function AdminDashboard({
         </main>
 
       </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      {isMobile && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-pink-100 dark:border-pink-900/20 px-1 py-1 flex items-center justify-around shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+          {bottomNavTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isMore = tab.id === "more";
+            const isActive = !isMore && activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => isMore ? setMoreDrawerOpen(true) : setActiveTab(tab.id)} className={"flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition cursor-pointer min-w-[56px] " + (isActive ? "text-pink-600 dark:text-pink-400" : "text-gray-400")}>
+                <div className="relative">
+                  <Icon className="w-5 h-5" />
+                  {tab.count !== undefined && tab.count > 0 && (<span className="absolute -top-1 -right-2 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">{tab.count > 9 ? "9+" : tab.count}</span>)}
+                </div>
+                <span className="text-[10px] font-semibold">{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
+
+      {/* Mobile More Drawer */}
+      <AnimatePresence>
+        {isMobile && moreDrawerOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-[60]" onClick={() => setMoreDrawerOpen(false)} />
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="fixed bottom-0 left-0 right-0 z-[61] bg-white dark:bg-gray-900 rounded-t-3xl max-h-[75vh] overflow-y-auto shadow-xl">
+              <div className="sticky top-0 bg-white dark:bg-gray-900 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-pink-900/20">
+                <div className="w-10 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-3" />
+                <h3 className="font-bold text-sm text-gray-900 dark:text-white">More Sections</h3>
+              </div>
+              <div className="p-3 grid grid-cols-3 gap-2">
+                {sidebarTabs.filter(t => !bottomNavTabs.some(b => b.id === t.id)).map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button key={tab.id} onClick={() => { setActiveTab(tab.id); setMoreDrawerOpen(false); }} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition cursor-pointer bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <Icon className="w-5 h-5" />
+                      <span className="text-[10px] font-semibold text-center leading-tight">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="p-3 border-t border-gray-100 dark:border-pink-900/20">
+                <button onClick={() => { onLogoutAdmin?.(); setMoreDrawerOpen(false); }} className="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer">
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Search Overlay */}
+      <AnimatePresence>
+        {isMobile && mobileSearchOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-[60]" onClick={() => setMobileSearchOpen(false)} />
+            <motion.div initial={{ y: "-100%" }} animate={{ y: 0 }} exit={{ y: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="fixed top-0 left-0 right-0 z-[61] bg-white dark:bg-gray-900 p-4 shadow-xl">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setMobileSearchOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl cursor-pointer"><span className="text-gray-500 text-lg">X</span></button>
+                <div className="flex-1 flex items-center gap-2 bg-gray-50 dark:bg-gray-950 border border-pink-200 dark:border-pink-900/20 px-3 py-2 rounded-xl">
+                  <Search className="w-4 h-4 text-gray-400" />
+                  <input type="text" autoFocus value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} placeholder="Search products, orders, coupons..." className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-white text-sm" />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
