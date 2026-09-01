@@ -4,7 +4,11 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Pink Circle with White RF -->
+    <path
+        android:fillColor="#e91e63"
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
     <path
         android:fillColor="#ffffff"
-        android:pathData="M31,31h46v46h-46z" />
+        android:pathData="M35,40h10v28h-10z M45,40h15v8h-15z M45,52h12v8h-12z M65,40h10v28h-10z M75,40h15v8h-15z M75,52h12v8h-12z" />
 </vector>
