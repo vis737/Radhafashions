@@ -1,8 +1,42 @@
 [
   {
-    "id": "prod_1787659127536_wllz6kb",
-    "sku": "jw-2",
-    "name": "Elegant Pink Radiance CZ Necklace & Earring Set",
+    "id": "prod_1788098252347_jweyiup",
+    "sku": "ds-13",
+    "name": "Maroon Ethnic Printed Tunic with Wide-Leg Palazzo Co-ord Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1200,
+    "discountPrice": 850,
+    "stock": 1,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/eab7c395-3770-4675-8f87-f828c0978b45.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/d364d6a2-b2ad-4e6e-89af-e9aa5e24c4f6.png"
+    ],
+    "shortDescription": "Outfit: Stylish Indo-Western co-ord set",
+    "description": "Top: Printed straight-fit tunic/kurti with a short V-slit neckline and rounded hem.\nSleeves: 3/4-length sleeves with slightly gathered cuffs.\nPrint: Intricate ethnic paisley and geometric print with decorative motifs.\nTop Colors: Rich brown/maroon base with olive green, mustard, teal, beige, and subtle multicolor accents.\nBottom: Solid maroon wide-leg palazzo pants, designed with a relaxed and comfortable fit.\nFabric: Lightweight, soft, and flowy-looking material with a smooth fall.\nStyle: Modern ethnic / Indo-Western fashion, combining traditional prints with a contemporary silhouette.\nOccasions: Perfect for office wear, brunches, casual outings, festive gatherings, and small celebrations.\nAccessories shown: Metallic pointed heels, drop earrings, bracelet, and a compact metallic clutch.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1787659281714_m5bushn",
+    "sku": "jw-3",
+    "name": "Royal Emerald Glow Pearl Pendant Necklace Set",
     "category": "jewellery",
     "categorySlug": "jewellery",
     "price": 1000,
@@ -11,11 +45,11 @@
     "rating": 5,
     "ratingCount": 1,
     "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/4e05ca60-beec-4cc1-a0d4-98a44ba4879b.jpg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/7f18ed9f-5904-4c98-98f0-74a5dec0aa92.jpg"
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/edacb965-b622-4776-8f56-764c2feb410e.jpg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/eea8e7f1-1f88-4ba9-aca2-74e253104256.jpg"
     ],
-    "shortDescription": "Add a touch of timeless sparkle to your look with this elegant necklace and matching earrings set. Featuring brilliant white CZ stones, delicate gold-tone detailing, and a beautiful pink-stone centerpiece, this set creates a graceful and luxurious appearance. Perfect for weddings, festive occasions, parties, and special celebrations.",
-    "description": "Highlights:\n\n✨ Sparkling CZ stone detailing\n💖 Beautiful pink centerpiece\n🌟 Elegant gold-tone finish\n👑 Matching necklace & earrings\n🎉 Perfect for festive and wedding wear",
+    "shortDescription": "Make a statement with this stunning traditional-inspired necklace set, beautifully designed with green and pink stones, intricate gold-tone work, and elegant pearl drops. The statement pendant adds a rich royal touch, while the matching earrings complete the look beautifully. Ideal for weddings, traditional outfits, festivals, and special occasions.",
+    "description": "Highlights:\n\n💚 Green & pink stone combination\n🤍 Elegant pearl drop detailing\n👑 Royal traditional design\n✨ Matching earrings included\n💃 Perfect with sarees, lehengas & ethnic wear",
     "specifications": {
       "Weight": "0.5 kg"
     },
@@ -67,6 +101,247 @@
     "isTestProduct": false
   },
   {
+    "id": "prod_1787659127536_wllz6kb",
+    "sku": "jw-2",
+    "name": "Elegant Pink Radiance CZ Necklace & Earring Set",
+    "category": "jewellery",
+    "categorySlug": "jewellery",
+    "price": 1000,
+    "discountPrice": 650,
+    "stock": 4,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/4e05ca60-beec-4cc1-a0d4-98a44ba4879b.jpg",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/7f18ed9f-5904-4c98-98f0-74a5dec0aa92.jpg"
+    ],
+    "shortDescription": "Add a touch of timeless sparkle to your look with this elegant necklace and matching earrings set. Featuring brilliant white CZ stones, delicate gold-tone detailing, and a beautiful pink-stone centerpiece, this set creates a graceful and luxurious appearance. Perfect for weddings, festive occasions, parties, and special celebrations.",
+    "description": "Highlights:\n\n✨ Sparkling CZ stone detailing\n💖 Beautiful pink centerpiece\n🌟 Elegant gold-tone finish\n👑 Matching necklace & earrings\n🎉 Perfect for festive and wedding wear",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "isTestProduct": false
+  },
+  {
+    "id": "TEST-RF-001",
+    "sku": "TEST-10",
+    "name": "Test Product — ₹10 Trial Order",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 10,
+    "discountPrice": 10,
+    "stock": 999,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop"
+    ],
+    "shortDescription": "Test product for verifying checkout. ₹10 with free shipping and free GST.",
+    "description": "Test product to verify checkout and payment flow. Price ₹10, free shipping, zero GST. Use to test Razorpay and UPI QR payments.",
+    "specifications": {
+      "Origin": "India",
+      "Weight": "0.1 kg",
+      "Material": "Test"
+    },
+    "weightKg": 0.1,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": false,
+    "brand": "Radha Fashions",
+    "availability": "In Stock",
+    "vendorId": "admin",
+    "isTestProduct": true
+  },
+  {
+    "id": "prod_1788088589034_exxzybm",
+    "sku": "ds-1",
+    "name": "Hand Batik Cotton Kurta Set for Women – Elegant Printed Kurta with Straight Pants & Dupatta",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 2000,
+    "discountPrice": 1700,
+    "stock": 3,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/d9f6c28f-204e-432b-8364-f051bbb88f0d.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/334a9bb8-d925-45ba-8504-8dcbe952b786.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/06e5eb33-6fa5-45ae-ba05-8a1199c376d9.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/babbaae8-ca36-4aeb-a5a2-2da2de66f0aa.png"
+    ],
+    "shortDescription": "Add a touch of traditional elegance to your everyday wardrobe with this beautiful Hand Batik Cotton Kurta Set. Crafted in soft, comfortable cotton fabric, this set features a graceful hand-batik floral pattern with traditional geometric detailing.",
+    "description": "Premium cotton fabric\nTraditional Hand Batik-inspired floral prints\nElegant geometric border detailing\nComfortable straight-fit pants\nMatching printed dupatta\nSoft, breathable and suitable for everyday wear\nPerfect for casual outings, office wear, family gatherings and festive occasions\nBeautiful ethnic design with a contemporary silhouette\n\nStyle: Ethnic / Traditional\nFabric: Cotton\nSet Includes: Kurta, Straight Pants & Dupatta\nOccasion: Casual, Office Wear, Festive & Daily Wear\n\n🛑  *DUE TO PHOTOGRAPHY MINOR LIGHT DARK DIFFERENCE MAY BE APPEAR*\n\n🌸 Radha Fashions Boutique\nTimeless. Elegant. Naturally You.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "color": [
+        "purple",
+        "green",
+        "blue"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788096487515_mx4nduj",
+    "sku": "ds-6",
+    "name": "Teal Blue Floral Embroidered Kurta Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1500,
+    "discountPrice": 935,
+    "stock": 2,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/6887fde2-3920-4d1c-8225-46f613ff219e.png"
+    ],
+    "shortDescription": "Refresh your ethnic wardrobe with this elegant Teal Blue Floral Embroidered Kurta Set. Featuring a rich teal-blue base adorned with delicate white floral motifs, this kurta offers a graceful and contemporary look. The button-front design and comfortable straight silhouette are paired with matching pants for an effortlessly stylish outfit—perfect for everyday wear, office styling and casual occasions.",
+    "description": "Color: Deep Teal Blue / Peacock Blue\nStyle: Straight-cut long kurta with matching pants\nNeck: Simple round neckline with a small front slit\nSleeves: 3/4 sleeves\nFront: Full button-down detailing with small white buttons\nEmbroidery: Repeated white floral/leaf motifs scattered evenly across the front and sleeves\nKurta Length: Calf/below-knee length\nBottom: Matching straight-fit pants\nBack: Plain teal blue with no visible embroidery\nSet Type: Kurta + matching pants\n\nThe combination of a blue base, scattered white embroidery, button-front design and matching trousers is a common styling format for contemporary ethnic kurta sets.\n\n✨ Key Features\nRich teal-blue color\nElegant white floral embroidery\nButton-front design\nComfortable 3/4 sleeves\nStraight silhouette\nMatching pants\nMinimal and elegant ethnic look\nSuitable for daily wear, office wear, casual outings and small festive occasions",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XL",
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788092903483_ixqf66l",
+    "sku": "ds-2",
+    "name": "Purple and half white Embroidered Designer Salwar Suit",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 2100,
+    "discountPrice": 1550,
+    "stock": 2,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/6fa9ba2f-9c73-49ca-81b8-86169523960b.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/71c07ec8-c889-4e17-b1ab-49cd82de6de8.png"
+    ],
+    "shortDescription": "The combination of floral embroidery, pleated detailing, and the beautifully bordered dupatta gives this outfit a rich and graceful designer look. Similar three-piece purple embroidered suit sets commonly feature a coordinated top, bottom, and dupatta with embroidery and decorative work.",
+    "description": "Fabric: Premium soft purple fabric with a comfortable, elegant fall\nDesign: Beautiful V-neck panel with intricate floral embroidery, mirror/sequin detailing, and pleated waist detailing\nSleeves: Full-length sleeves with matching embroidery\nBottom: Matching purple straight-fit pants\nDupatta: Matching purple dupatta featuring an elegant floral embroidered border and delicate scattered embellishments\nColor: Rich Royal Purple\nStyle: Elegant ethnic / designer wear\nOccasion: Festive occasions, weddings, parties, family functions & celebrations\nSet Includes: Kurta + matching bottom + dupatta",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ],
+      "color": [
+        "purple",
+        "half white"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788098107109_mvz3hmh",
+    "sku": "ds-12",
+    "name": "Maroon Paisley Printed Tunic with Wide-Leg Palazzo Co-ord Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1200,
+    "discountPrice": 850,
+    "stock": 1,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/728ee99a-b5ce-4cdb-9cf6-e7599598a10c.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/c3393e0d-63c7-49ab-835e-8f96ee4c4905.png"
+    ],
+    "shortDescription": "Outfit: Elegant Indo-Western printed co-ord set",
+    "description": "Top: Long, straight-cut printed tunic/kurti with a subtle V-slit neckline.\nSleeves: Full-length sleeves with a relaxed, slightly loose fit and simple cuffs.\nPrint: Rich paisley-inspired all-over print with intricate floral and ornamental motifs.\nColors: Maroon/burgundy base combined with muted olive green, beige, dusty pink, and brown detailing.\nBottom: Solid deep-maroon wide-leg palazzo pants with a comfortable, flowing silhouette.\nFabric look: Lightweight, soft, and flowy with a refined printed finish.\nStyle: Sophisticated contemporary ethnic / Indo-Western wear.\nOccasions: Brunches, festive gatherings, office events, casual parties, and elegant day outings.\nAccessories shown: Metallic pointed heels, statement drop earrings, bracelet, and a small textured clutch.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788097893174_4vxubf8",
+    "sku": "ds-10",
+    "name": "Burgundy Floral Printed Designer Co-Ord Set with Wide-Leg Palazzo Pants",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1500,
+    "discountPrice": 850,
+    "stock": 1,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/b9fea142-8202-4955-806e-61c96d7630fa.png"
+    ],
+    "shortDescription": "Outfit: Contemporary floral printed co-ord set",
+    "description": "Top: Straight-cut long tunic/kurti with a mandarin/short V-slit neckline and 3/4 sleeves with a slightly gathered cuff.\nPrint: Rich burgundy/maroon base with an all-over pink floral and abstract botanical print.\nBottom: Matching wide-leg palazzo pants, giving the outfit a relaxed and elegant silhouette.\nFabric look: Lightweight, smooth, flowy fabric suitable for comfortable all-day wear.\nColor: Deep wine/burgundy with dusty pink, rose, and muted earthy accents.\nStyle: Elegant Indo-western / contemporary ethnic wear, suitable for casual outings, office wear, brunches, and small gatherings.",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
     "id": "prod_1787659636321_1p5go99",
     "sku": "jw-5",
     "name": "Black & Gold Royal Stone Bangle Set",
@@ -104,93 +379,36 @@
     "isTestProduct": false
   },
   {
-    "id": "TEST-RF-001",
-    "sku": "TEST-10",
-    "name": "Test Product — ₹10 Trial Order",
+    "id": "prod_1788097995967_1jymw1o",
+    "sku": "ds-11",
+    "name": "Black Abstract Printed Shirt-Style Top with Wide-Leg Palazzo Co-ord Set",
     "category": "kurtis",
     "categorySlug": "kurtis",
-    "price": 10,
-    "discountPrice": 10,
-    "stock": 999,
+    "price": 1200,
+    "discountPrice": 850,
+    "stock": 1,
     "rating": 5,
     "ratingCount": 1,
     "images": [
-      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop"
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/75cb7202-bd07-4181-b036-a64996b5177f.png"
     ],
-    "shortDescription": "Test product for verifying checkout. ₹10 with free shipping and free GST.",
-    "description": "Test product to verify checkout and payment flow. Price ₹10, free shipping, zero GST. Use to test Razorpay and UPI QR payments.",
-    "specifications": {
-      "Origin": "India",
-      "Weight": "0.1 kg",
-      "Material": "Test"
-    },
-    "weightKg": 0.1,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "In Stock",
-    "vendorId": "admin",
-    "isTestProduct": true
-  },
-  {
-    "id": "prod_1787659281714_m5bushn",
-    "sku": "jw-3",
-    "name": "Royal Emerald Glow Pearl Pendant Necklace Set",
-    "category": "jewellery",
-    "categorySlug": "jewellery",
-    "price": 1000,
-    "discountPrice": 650,
-    "stock": 4,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/edacb965-b622-4776-8f56-764c2feb410e.jpg",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-25/eea8e7f1-1f88-4ba9-aca2-74e253104256.jpg"
-    ],
-    "shortDescription": "Make a statement with this stunning traditional-inspired necklace set, beautifully designed with green and pink stones, intricate gold-tone work, and elegant pearl drops. The statement pendant adds a rich royal touch, while the matching earrings complete the look beautifully. Ideal for weddings, traditional outfits, festivals, and special occasions.",
-    "description": "Highlights:\n\n💚 Green & pink stone combination\n🤍 Elegant pearl drop detailing\n👑 Royal traditional design\n✨ Matching earrings included\n💃 Perfect with sarees, lehengas & ethnic wear",
+    "shortDescription": "Outfit: Contemporary printed co-ord set",
+    "description": "Top: Relaxed straight-cut tunic with a collared neckline and front button placket.\nSleeves: 3/4 sleeves with neatly finished cuffs.\nPrint: Abstract geometric/architectural print featuring rectangles, lines, and blocks in muted beige, brown, dusty rose, and blue-grey.\nBase color: Black / deep charcoal.\nBottom: Plain black wide-leg palazzo pants with a comfortable, flowing fit.\nFabric: Lightweight, soft, and flowy-looking fabric, suitable for comfortable everyday wear.\nStyle: Modern Indo-western / smart-casual co-ord outfit.\nBest for: Office wear, brunches, casual outings, travel, and semi-formal occasions.",
     "specifications": {
       "Weight": "0.5 kg"
     },
     "weightKg": 0.5,
     "reviews": [],
     "isNew": true,
-    "isBestseller": false,
+    "isBestseller": true,
     "brand": "Radha Fashions",
     "availability": "in-stock",
     "vendorId": null,
-    "isTestProduct": false
-  },
-  {
-    "id": "prod_1788088589034_exxzybm",
-    "sku": "ds-1",
-    "name": "Hand Batik Cotton Kurta Set for Women – Elegant Printed Kurta with Straight Pants & Dupatta",
-    "category": "kurtis",
-    "categorySlug": "kurtis",
-    "price": 2000,
-    "discountPrice": 1700,
-    "stock": 3,
-    "rating": 5,
-    "ratingCount": 1,
-    "images": [
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/d9f6c28f-204e-432b-8364-f051bbb88f0d.png",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/334a9bb8-d925-45ba-8504-8dcbe952b786.png",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/06e5eb33-6fa5-45ae-ba05-8a1199c376d9.png",
-      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/babbaae8-ca36-4aeb-a5a2-2da2de66f0aa.png"
-    ],
-    "shortDescription": "Add a touch of traditional elegance to your everyday wardrobe with this beautiful Hand Batik Cotton Kurta Set. Crafted in soft, comfortable cotton fabric, this set features a graceful hand-batik floral pattern with traditional geometric detailing.",
-    "description": "Premium cotton fabric\nTraditional Hand Batik-inspired floral prints\nElegant geometric border detailing\nComfortable straight-fit pants\nMatching printed dupatta\nSoft, breathable and suitable for everyday wear\nPerfect for casual outings, office wear, family gatherings and festive occasions\nBeautiful ethnic design with a contemporary silhouette\n\nStyle: Ethnic / Traditional\nFabric: Cotton\nSet Includes: Kurta, Straight Pants & Dupatta\nOccasion: Casual, Office Wear, Festive & Daily Wear\n\n🌸 Radha Fashions Boutique\nTimeless. Elegant. Naturally You.",
-    "specifications": {
-      "Weight": "0.5 kg"
+    "variations": {
+      "size": [
+        "XXL"
+      ]
     },
-    "weightKg": 0.5,
-    "reviews": [],
-    "isNew": true,
-    "isBestseller": false,
-    "brand": "Radha Fashions",
-    "availability": "in-stock",
-    "vendorId": null,
     "isTestProduct": false
   },
   {
@@ -219,6 +437,217 @@
     "brand": "Radha Fashions",
     "availability": "in-stock",
     "vendorId": null,
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788096106463_al1c137",
+    "sku": "ds-5",
+    "name": "Purple Floral Embroidered Straight Kurta Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1100,
+    "discountPrice": 895,
+    "stock": 1,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/39e2745c-30cf-49fa-9d12-904e9ffa0e8e.png"
+    ],
+    "shortDescription": "Make a graceful statement with this Royal Purple Floral Embroidered Kurta Set. Crafted in a rich purple shade, the straight-fit kurta features delicate white floral embroidery flowing beautifully across the front, complemented by a stylish V-slit neckline and button detailing. Paired with matching straight pants, this elegant set offers a sophisticated ethnic look that is perfect for everyday wear, office styling and festive occasions.",
+    "description": "Color: Deep Purple / Plum\nStyle: Straight-cut long kurta with matching pants\nNeck: Stylish V-slit neckline with a simple collar-style finish\nSleeves: Full-length sleeves with button detailing at the cuffs\nFront: Button-down closure with decorative buttons\nEmbroidery: Elegant white floral thread embroidery, arranged diagonally across the upper chest and continuing down the lower front of the kurta\nKurta Length: Calf length\nBottom: Matching purple straight-fit pants\nBack: Plain purple with a clean, minimal finish\nOverall Look: Elegant, minimal and sophisticated ethnic wear\n\nThe straight silhouette, floral embroidery, three-quarter/full-sleeve styling and matching trousers are also commonly used in purple embroidered kurta sets\nRich deep-purple color\nIntricate white floral embroidery\nElegant V-slit neckline\nFront button detailing\nSleeve cuff detailing\nStraight-cut silhouette\nMatching purple pants\nSuitable for office wear, casual outings, festive occasions and family functions",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788096853389_zy6vbcy",
+    "sku": "ds-8",
+    "name": "Plum Printed Floral Kurta Pant Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1200,
+    "discountPrice": 980,
+    "stock": 1,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/f189e0f5-31d8-4922-b95a-3e3cea632029.png"
+    ],
+    "shortDescription": "Add a touch of sophisticated ethnic charm to your wardrobe with this Plum Purple Printed Kurta Set. Featuring an elegant all-over floral and geometric print in rich multicolor tones, the kurta is enhanced with intricate embroidery around the neckline and front placket. Paired with matching printed pants, this comfortable and stylish set is perfect for everyday wear, office styling, casual outings and festive occasions.",
+    "description": "Color: Plum / Dusty Purple\nStyle: Straight-cut printed kurta set\nNeck: Round neckline with a small front slit and decorative embroidered detailing\nSleeves: 3/4 sleeves\nFront: Decorative vertical embroidery around the neckline and button/placket area in blue, orange, white and purple\nPrint: All-over floral and geometric/mughal-inspired motifs in shades of beige, lavender, blue, mustard and rust\nKurta Length: Calf length\nBottom: Matching printed straight-fit pants\nSet Includes: Kurta + matching pants\n\nThe straight silhouette, printed floral motifs and matching trousers are typical features of contemporary kurta-pant sets.\n\n✨ Key Features\nRich plum-purple base\nMulticolor floral & geometric print\nDetailed embroidered neckline/placket\n3/4 sleeves\nMatching printed pants\nElegant straight-fit silhouette\nSuitable for daily wear, office wear, casual outings and festive gatherings",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788097051883_v8ij1zm",
+    "sku": "ds-9",
+    "name": "Red Embroidered Anarkali Kurta Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 2300,
+    "discountPrice": 1800,
+    "stock": -2,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/719d72ca-cd46-47ba-8aa3-2774ae2e52a4.png"
+    ],
+    "shortDescription": "Add a touch of elegance to your ethnic wardrobe with this beautiful red embroidered kurta set. The rich red shade is complemented by intricate floral embroidery, a graceful gathered silhouette, matching pants, and a beautifully detailed dupatta. A perfect choice for festive occasions and special gatherings",
+    "description": "Color: Rich Red\nSet Includes: Kurta, matching pants & dupatta\nKurta Style: Flared/Anarkali silhouette with gathered detailing\nNeck: Round neckline\nSleeves: 3/4 sleeves with embroidered borders\nWork: Multicolor floral embroidery with decorative threadwork\nKurta Detail: Heavy embroidered front yoke with floral motifs\nBottom: Matching straight-fit pants\nDupatta: Matching red dupatta with floral embroidered border\nStyle: Elegant ethnic / festive wear\nOccasion: Festivals, family functions, celebrations, parties & traditional events",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Raadha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788096723976_9r3mvn4",
+    "sku": "ds-7",
+    "name": "Cream Floral Embroidered Kurta Pant Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1100,
+    "discountPrice": 897,
+    "stock": 2,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/e8f3fd36-fa5e-4f49-8edf-dd073ab58299.png"
+    ],
+    "shortDescription": "Elegance meets effortless comfort in this beautiful Ivory Cream Floral Embroidered Kurta Set. Featuring delicate multicolor floral and bird embroidery on a soothing cream base, the kurta is enhanced with a beautifully embroidered neckline and sleeve borders. Paired with matching straight-fit pants, this graceful set is perfect for everyday ethnic styling, office wear, festive gatherings and casual celebrations.",
+    "description": "Color: Cream / Ivory\nStyle: Straight-cut kurta set\nNeck: Round neckline with a beautiful multicolor floral embroidered border\nSleeves: Short sleeves with matching floral embroidered detailing on the sleeve edges\nFront: Elegant central floral-and-bird embroidery featuring maroon, mustard yellow, green and white threadwork\nKurta: Straight, calf-length silhouette with delicate small floral motifs scattered throughout\nBottom: Matching cream straight-fit pants\nBack: Minimal cream design with subtle scattered motifs\nSet Includes: Kurta + matching pants\n\nThe cream base with floral embroidery, matching pants, and short-sleeve styling gives it a simple but elegant ethnic look. Similar cream embroidered kurta-pant sets are commonly offered in cotton or cotton-blend fabrics, but the exact fabric of your garment should be confirmed from its label.\n\n✨ Key Features\nElegant cream/ivory shade\nMulticolor floral & bird embroidery\nEmbroidered neckline and sleeve borders\nDelicate all-over motifs\nShort sleeves\nMatching straight pants\nComfortable everyday ethnic style\nSuitable for office wear, casual outings, festive occasions and daytime functions",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XL",
+        "XXL"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788094754973_joh18t8",
+    "sku": "ds-4",
+    "name": "Olive Green and pink Floral Embroidered Kurta Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1100,
+    "discountPrice": 880,
+    "stock": 2,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/71bdf202-43a9-4e93-861a-714622ceb89c.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/400c7cec-92ae-4ad2-ab14-ab83080328c9.png"
+    ],
+    "shortDescription": "Add a fresh touch to your ethnic wardrobe with this elegant Olive Green Floral Kurta Set. Designed in a beautiful olive-green shade and decorated with delicate cream floral motifs, this outfit offers a perfect balance of simplicity and elegance. The detailed V-neck adds a refined finish, while the matching straight-fit pants complete the comfortable and stylish look. Perfect for everyday wear, office occasions, festive gatherings and casual celebrations.",
+    "description": "Color: Olive Green / Moss Green\nStyle: Straight-cut ethnic kurta set\nNeck: Elegant V-neck with layered decorative lace/embroidered detailing\nSleeves: 3/4 sleeves\nKurta: Straight silhouette with floral appliqué/embroidery placed across the front\nFloral Work: Beautiful cream/off-white 5-petal floral motifs with small decorative centers, scattered across the kurta\nBottom: Matching olive-green straight-fit pants\nDupatta: Matching olive-green fabric piece/dupatta, depending on the actual set configuration\nOverall Look: Minimal, elegant and contemporary ethnic wear\n\nSimilar olive-green kurta sets are commonly styled with V-necklines, three-quarter sleeves, matching trousers and floral embroidery.\n\n✨ Product Features\nRich olive-green base\nCream floral appliqué detailing\nDecorative V-neck\n3/4 sleeves\nMatching bottom\nComfortable straight silhouette\nSuitable for casual wear, office wear, small functions, festive gatherings and everyday ethnic styling",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XL",
+        "XXL"
+      ],
+      "color": [
+        "olive green",
+        "pink"
+      ]
+    },
+    "isTestProduct": false
+  },
+  {
+    "id": "prod_1788093372319_jfjmg6z",
+    "sku": "jw-3",
+    "name": "Light Grey and blue Floral Embroidered Kurta Set",
+    "category": "kurtis",
+    "categorySlug": "kurtis",
+    "price": 1500,
+    "discountPrice": 800,
+    "stock": 2,
+    "rating": 5,
+    "ratingCount": 1,
+    "images": [
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/b39c38a4-1456-4304-89cf-ab76016b71a2.png",
+      "https://mubdyrfgaamgvaddoppo.supabase.co/storage/v1/object/public/product-images/products/2026-08-30/6067ad79-e69d-4ca4-b591-f0d2edcaa29c.png"
+    ],
+    "shortDescription": "Elevate your ethnic wardrobe with this elegant Light Grey Floral Embroidered Kurta Set. Designed with vibrant multicolor floral embroidery, delicate sleeve detailing and a comfortable straight silhouette, this outfit beautifully combines traditional charm with a contemporary look. Paired with matching pants, it is perfect for everyday elegance as well as festive occasions.",
+    "description": "Color: Light Grey / Ash Grey\nStyle: Straight-cut ethnic kurta set\nFabric: Looks like a lightweight cotton/cotton-blend fabric based on the visible texture.\nNeck: Round/mandarin-style neckline with a small front slit\nFront: Button-down detailing with small decorative buttons\nSleeves: 3/4 sleeves with a beautiful embroidered border at the cuffs\nEmbroidery: Multicolor floral embroidery in maroon, lime green, white and olive green, arranged vertically on the front and lower side of the kurta\nKurta Length: Calf/below-knee length\nBottom: Matching straight-fit grey pants with an elasticated waistband\nDupatta: The original product appears to include a matching grey dupatta, depending on the set configuration.\n\nThe combination of a grey base with colorful floral embroidery is a common styling approach in contemporary kurta sets.\n\n✨ Key Features\nElegant floral embroidery\nComfortable everyday ethnic design\nButton-front detailing\n3/4 embroidered sleeves\nMatching straight pants\nSubtle, sophisticated grey base\nSuitable for office wear, casual outings, pooja, festive occasions and family gatherings",
+    "specifications": {
+      "Weight": "0.5 kg"
+    },
+    "weightKg": 0.5,
+    "reviews": [],
+    "isNew": true,
+    "isBestseller": true,
+    "brand": "Radha Fashions",
+    "availability": "in-stock",
+    "vendorId": null,
+    "variations": {
+      "size": [
+        "XL",
+        "XXL"
+      ],
+      "color": [
+        "Grey",
+        "Peacock blue"
+      ]
+    },
     "isTestProduct": false
   }
 ]

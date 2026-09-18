@@ -35,6 +35,7 @@ interface AdminDashboardProps {
   onAddProduct: (product: Product) => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onBulkDeleteProducts?: (ids: string[]) => void;
   onAddCoupon: (coupon: Coupon) => void;
   onDeleteCoupon: (code: string) => void;
   onBulkDeleteCoupons?: (codes: string[]) => void;
@@ -68,6 +69,7 @@ export default function AdminDashboard({
   onAddProduct,
   onEditProduct,
   onDeleteProduct,
+  onBulkDeleteProducts,
   onAddCoupon,
   onDeleteCoupon,
   onBulkDeleteCoupons,
@@ -181,6 +183,8 @@ export default function AdminDashboard({
         body: JSON.stringify({ username: adminUsername, password: adminPassword })
       });
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.token) localStorage.setItem('adminToken', data.token);
         setIsAuthenticated(true);
         addToast('Admin authentication successful.', 'success');
         onLogActivity('Admin Login Success', `Administrative console unlocked by ${adminUsername}`);
@@ -494,6 +498,7 @@ export default function AdminDashboard({
                 onAddProduct={onAddProduct}
                 onEditProduct={onEditProduct}
                 onDeleteProduct={onDeleteProduct}
+                onBulkDeleteProducts={onBulkDeleteProducts}
                 onLogActivity={onLogActivity}
                 addToast={addToast}
               />

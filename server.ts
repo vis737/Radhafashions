@@ -61,6 +61,12 @@ if (supabase) {
 async function seedSupabaseDatabase() {
   if (!supabase) return;
   try {
+    // Check if database was already initialized once. Never re-seed deleted items on restart.
+    const { data: seedFlag } = await supabase.from('cms_config').select('key').eq('key', 'system_seeded').single();
+    if (seedFlag) {
+      return;
+    }
+
     // 1. Seed products
     const { data: prods, error: prodErr } = await supabase.from('products').select('id').limit(1);
     if (!prodErr && (!prods || prods.length === 0)) {
@@ -146,6 +152,9 @@ async function seedSupabaseDatabase() {
         await supabase.from('admin_config').insert({ username: targetUser, password: hashedPass });
       }
     }
+
+    // Mark system as initialized so future server restarts will not resurrect deleted catalog items
+    await supabase.from('cms_config').upsert({ key: 'system_seeded', value: { seeded: true, at: new Date().toISOString() } });
   } catch (err) {
     console.error('Failed to seed Supabase database:', err);
   }
@@ -389,8 +398,22 @@ const replaceMetaContent = (html: string, attribute: 'name' | 'property', key: s
   return html.replace(pattern, `$1${escapeHtmlAttribute(value)}$2`);
 };
 
+function slugifyProduct(nameOrSlug?: string, id?: string): string {
+  if (nameOrSlug) {
+    const clean = String(nameOrSlug)
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    if (clean) return clean;
+  }
+  return id || '';
+}
+
 function createProductSocialPreviewHtml(indexHtml: string, product: any) {
-  const productUrl = `https://radhafashions.in/products/${encodeURIComponent(product.id)}`;
+  const productSlug = slugifyProduct(product.slug || product.name, product.id);
+  const productUrl = `https://radhafashions.in/products/${encodeURIComponent(productSlug)}`;
   const imageUrl = Array.isArray(product.images) && product.images.find((image: unknown) => typeof image === 'string' && image.trim())
     || 'https://radhafashions.in/radha-fashions-logo.png';
   const displayPrice = product.discountPrice || product.price;
@@ -566,7 +589,13 @@ function verifyAndUpgradeAdminPassword(plainInput: string, storedHashOrPlain: st
 // Authentication verification middleware
 const verifyAdminToken = (req: any, res: any, next: any) => {
   try {
-    const token = req.cookies?.admin_session;
+    let token = req.cookies?.admin_session;
+    if (!token && req.headers?.authorization) {
+      const authHeader = req.headers.authorization;
+      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7).trim();
+      }
+    }
     if (!token) {
       return res.status(401).json({ error: 'Unauthenticated administrative request.' });
     }
@@ -1053,6 +1082,67 @@ app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb'
   }
 });
 
+// Single product permanent delete endpoint
+app.delete('/api/catalog/products/:id', verifyAdminToken, async (req, res) => {
+  try {
+    const prodId = req.params.id;
+    if (!prodId) {
+      return res.status(400).json({ error: 'Product ID is required.' });
+    }
+
+    if (supabase) {
+      const { error: delErr } = await supabase.from('products').delete().eq('id', prodId);
+      if (delErr) {
+        console.error('Supabase product delete failed:', delErr);
+        return res.status(500).json({ error: 'Failed to delete product from Supabase.' });
+      }
+    }
+
+    // Update local JSON cache
+    const currentProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const filteredProds = currentProds.filter((p: any) => p.id !== prodId);
+    writeLocalJsonDb(PRODUCTS_FILE_PATH, filteredProds);
+
+    notifyCatalogChanged('products');
+    console.log(`[Catalog] Product permanently deleted: ${prodId}`);
+    res.json({ success: true, message: `Product ${prodId} deleted successfully.` });
+  } catch (err) {
+    console.error('Exception deleting product:', err);
+    res.status(500).json({ error: 'Server error deleting product.' });
+  }
+});
+
+// Bulk product permanent delete endpoint
+app.post('/api/catalog/products/bulk-delete', verifyAdminToken, express.json(), async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Body must contain an array of product IDs.' });
+    }
+
+    if (supabase) {
+      const { error: delErr } = await supabase.from('products').delete().in('id', ids);
+      if (delErr) {
+        console.error('Supabase bulk delete products failed:', delErr);
+        return res.status(500).json({ error: 'Failed to bulk delete products from Supabase.' });
+      }
+    }
+
+    // Update local JSON cache
+    const currentProds = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const idSet = new Set(ids);
+    const filteredProds = currentProds.filter((p: any) => !idSet.has(p.id));
+    writeLocalJsonDb(PRODUCTS_FILE_PATH, filteredProds);
+
+    notifyCatalogChanged('products');
+    console.log(`[Catalog] Bulk deleted ${ids.length} products:`, ids);
+    res.json({ success: true, message: `Successfully deleted ${ids.length} products.` });
+  } catch (err) {
+    console.error('Exception bulk deleting products:', err);
+    res.status(500).json({ error: 'Server error bulk deleting products.' });
+  }
+});
+
 // Public review submission endpoint
 app.post('/api/products/:productId/reviews', express.json(), async (req, res) => {
   try {
@@ -1267,6 +1357,34 @@ app.post('/api/catalog/campaigns', verifyAdminToken, async (req, res) => {
   }
 });
 
+// Single campaign permanent delete endpoint
+app.delete('/api/catalog/campaigns/:id', verifyAdminToken, async (req, res) => {
+  try {
+    const campId = req.params.id;
+    if (!campId) {
+      return res.status(400).json({ error: 'Campaign ID is required.' });
+    }
+
+    if (supabase) {
+      const { error: delErr } = await supabase.from('campaigns').delete().eq('id', campId);
+      if (delErr) {
+        console.error('Supabase campaign delete failed:', delErr);
+        return res.status(500).json({ error: 'Failed to delete campaign from Supabase.' });
+      }
+    }
+
+    const currentCamps = readLocalJsonDb(CAMPAIGNS_FILE_PATH, INITIAL_CAMPAIGNS);
+    const filteredCamps = currentCamps.filter((c: any) => c.id !== campId);
+    writeLocalJsonDb(CAMPAIGNS_FILE_PATH, filteredCamps);
+
+    console.log(`[Catalog] Campaign permanently deleted: ${campId}`);
+    res.json({ success: true, message: `Campaign ${campId} deleted successfully.` });
+  } catch (err) {
+    console.error('Exception deleting campaign:', err);
+    res.status(500).json({ error: 'Server error deleting campaign.' });
+  }
+});
+
 // --- CMS CONFIG ENDPOINTS ---
 app.get('/api/catalog/cms', async (req, res) => {
   try {
@@ -1380,6 +1498,35 @@ app.post('/api/catalog/categories', verifyAdminToken, async (req, res) => {
     res.json({ success: true, message: 'Categories synced successfully.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to sync categories.' });
+  }
+});
+
+// Single category permanent delete endpoint
+app.delete('/api/catalog/categories/:id', verifyAdminToken, async (req, res) => {
+  try {
+    const catId = req.params.id;
+    if (!catId) {
+      return res.status(400).json({ error: 'Category ID is required.' });
+    }
+
+    if (supabase) {
+      const { error: delErr } = await supabase.from('categories').delete().eq('id', catId);
+      if (delErr) {
+        console.error('Supabase category delete failed:', delErr);
+        return res.status(500).json({ error: 'Failed to delete category from Supabase.' });
+      }
+    }
+
+    const currentCats = readLocalJsonDb(CATEGORIES_FILE_PATH, []);
+    const filteredCats = currentCats.filter((c: any) => c.id !== catId);
+    writeLocalJsonDb(CATEGORIES_FILE_PATH, filteredCats);
+
+    notifyCatalogChanged('categories');
+    console.log(`[Catalog] Category permanently deleted: ${catId}`);
+    res.json({ success: true, message: `Category ${catId} deleted successfully.` });
+  } catch (err) {
+    console.error('Exception deleting category:', err);
+    res.status(500).json({ error: 'Server error deleting category.' });
   }
 });
 
@@ -3671,17 +3818,18 @@ app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), (req, res) => {
       const token = jwt.sign(
         { username, role: 'admin' },
         JWT_SECRET,
-        { expiresIn: '2h' }
+        { expiresIn: '7d' }
       );
       
       res.cookie('admin_session', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 2 * 60 * 60 * 1000 // 2 hours
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
-      return res.json({ success: true, username });
+      return res.json({ success: true, username, token });
     }
     return res.status(401).json({ error: 'Invalid administrative credentials.' });
   } catch (err) {
@@ -4209,8 +4357,12 @@ if (!process.env.VERCEL) {
     if (isProductionBuild && fs.existsSync(distIndexHtml)) {
       const distPath = path.join(process.cwd(), 'dist');
       app.get(['/products/:productId', '/product/:productId'], (req, res, next) => {
+        const param = String(req.params.productId || '').toLowerCase().trim();
         const product = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS)
-          .find((item: any) => item.id === req.params.productId);
+          .find((item: any) => 
+            (item.id && item.id.toLowerCase() === param) ||
+            slugifyProduct(item.slug || item.name, item.id) === param
+          );
 
         // Unknown product paths continue to the normal SPA fallback, which
         // lets the client render its standard not-found/home state.

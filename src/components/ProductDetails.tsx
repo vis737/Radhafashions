@@ -4,6 +4,7 @@ import { ChevronLeft, Star, Heart, ShoppingCart, Share2, Sparkles, Check, Send, 
 import { Product, Review, SelectedVariation, ProductVariations, getEffectiveVariations } from '../types';
 import { handleImageError } from '../utils/imageUtils';
 import ImageMagnifier from './ImageMagnifier';
+import { getProductSlug } from '../utils/slugUtils';
 
 interface ProductDetailsProps {
   product: Product;
@@ -81,7 +82,7 @@ export default function ProductDetails({
       'brand': { '@type': 'Brand', 'name': product.brand || 'Radha Fashions' },
       'offers': {
         '@type': 'Offer',
-        'url': `https://radhafashions.in/products/${encodeURIComponent(product.id)}`,
+        'url': `https://radhafashions.in/products/${encodeURIComponent(getProductSlug(product))}`,
         'priceCurrency': 'INR',
         'price': displayPrice,
         'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -113,7 +114,9 @@ export default function ProductDetails({
 
   const handleShare = () => {
     setShared(true);
-    navigator.clipboard.writeText(window.location.href);
+    const shareSlug = getProductSlug(product);
+    const shareUrl = `${window.location.origin}/products/${encodeURIComponent(shareSlug)}`;
+    navigator.clipboard.writeText(shareUrl);
     setTimeout(() => setShared(false), 2000);
   };
 
@@ -643,7 +646,7 @@ export default function ProductDetails({
             {relatedProducts.slice(0, 4).map((relProduct) => (
               <div
                 key={relProduct.id}
-                onClick={() => onSelectProduct(relProduct.id)}
+                onClick={() => onSelectProduct(getProductSlug(relProduct))}
                 className="bg-white hover:bg-pink-50/20 border border-gray-100 rounded-2xl p-3 shadow-sm hover:shadow-md cursor-pointer transition flex gap-3 h-28 items-center"
               >
                 <img

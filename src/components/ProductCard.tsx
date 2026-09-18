@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Heart, Star, Eye, Sparkles } from 'lucide-react';
 import { Product } from '../types';
 import { handleImageError, getProductPrimaryImage } from '../utils/imageUtils';
+import { getProductSlug } from '../utils/slugUtils';
 
 interface ProductCardProps {
   product: Product;
@@ -25,7 +26,8 @@ export default function ProductCard({
   variants
 }: ProductCardProps) {
   const [hovered, setHovered] = useState(false);
-  const productPath = `/products/${encodeURIComponent(product.id)}`;
+  const productSlug = getProductSlug(product);
+  const productPath = `/products/${encodeURIComponent(productSlug)}`;
 
   // Derive stock badge labels
   let stockLabel = 'In Stock';
@@ -87,7 +89,7 @@ export default function ProductCard({
         href={productPath}
         onClick={(event) => {
           event.preventDefault();
-          onSelectProduct(product.id);
+          onSelectProduct(productSlug);
         }}
         className="relative aspect-[3/4] w-full overflow-hidden rounded-sm bg-primary-soft cursor-pointer"
       >
@@ -127,7 +129,7 @@ export default function ProductCard({
             href={productPath}
             onClick={(event) => {
               event.preventDefault();
-              onSelectProduct(product.id);
+              onSelectProduct(productSlug);
             }}
             className="font-display font-light text-base sm:text-xl leading-snug text-foreground hover:text-primary transition cursor-pointer line-clamp-2 sm:line-clamp-1 pr-1 sm:pr-4"
           >

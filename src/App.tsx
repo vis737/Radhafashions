@@ -34,6 +34,8 @@ import {
 } from './utils/mockData';
 
 import { calculateCartTotals } from './utils/premiumData';
+import { adminFetch } from './utils/adminApi';
+import { getProductSlug, findProductBySlugOrId } from './utils/slugUtils';
 
 import { Product, CartItem, Coupon, Order, CustomerInfo, ActivityLog, CMSConfig, Review, BannerCampaign, SelectedVariation, getCartItemKey, hasVariations, getEffectiveVariations } from './types';
 
@@ -227,6 +229,24 @@ export default function App() {
       // The path is the source of truth so a shared link, refresh, and a
       // history entry all resolve to the same storefront screen.
       const route = state?.radhaFashions || getRouteFromPathname(window.location.pathname);
+
+      // Auto-canonicalize: if the URL contains a raw product ID (e.g. prod_...),
+      // replace it with the SEO-friendly slug in the address bar.
+      if (route.view === 'product' && route.productId && products.length > 0) {
+        const resolved = findProductBySlugOrId(route.productId, products);
+        if (resolved) {
+          const slug = getProductSlug(resolved);
+          route.productId = slug;
+          const canonicalUrl = getUrlForRoute(route);
+          if (window.location.pathname !== canonicalUrl) {
+            window.history.replaceState(
+              { ...window.history.state, radhaFashions: route } satisfies StorefrontHistoryState,
+              '',
+              canonicalUrl
+            );
+          }
+        }
+      }
 
       setActiveView(route.view);
       setCurrentCategorySlug(route.categorySlug || '');
@@ -564,14 +584,18 @@ export default function App() {
   };
 
   // Track product clicks to recently viewed
-  const handleViewProductDetails = (productId: string) => {
+  const handleViewProductDetails = (productIdentifier: string) => {
+    // Resolve the identifier (slug or ID) to the actual product
+    const resolved = findProductBySlugOrId(productIdentifier, products);
+    const actualId = resolved ? resolved.id : productIdentifier;
+    const slug = resolved ? getProductSlug(resolved) : productIdentifier;
     setRecentlyViewedIds((prev) => {
-      const filtered = prev.filter((id) => id !== productId);
-      const updated = [productId, ...filtered].slice(0, 5);
+      const filtered = prev.filter((id) => id !== actualId);
+      const updated = [actualId, ...filtered].slice(0, 5);
       return updated;
     });
-    setCurrentProductId(productId);
-    handleSwapView('product', { productId });
+    setCurrentProductId(slug);
+    handleSwapView('product', { productId: slug });
   };
 
   // Quick buy trigger (adds and redirects to checkout) - requires login
@@ -906,7 +930,7 @@ export default function App() {
   };
 
   // --- DERIVED RENDER PARAMS ---
-  const activeProductModel = products.find((p) => p.id === currentProductId);
+  const activeProductModel = findProductBySlugOrId(currentProductId, products);
 
   const relatedProductsList = activeProductModel
     ? products.filter(
@@ -1778,58 +1802,67 @@ export default function App() {
                     return updated;
                   });
                 }}
-                onDeleteProduct={(delId) => {
-                  setProducts((prev) => {
-                    const updated = prev.filter((p) => p.id !== delId);
-                    fetch('/api/catalog/products', {
+                onDeleteProduct={async (delId) => {
+                  setProducts((prev) => prev.filter((p) => p.id !== delId));
+                  try {
+                    const res = await adminFetch(`/api/catalog/products/${encodeURIComponent(delId)}`, { method: 'DELETE' });
+                    if (!res.ok) console.error('Product delete API failed:', res.status);
+                  } catch (err) { console.error('Product delete sync error:', err); }
+                }}
+                onBulkDeleteProducts={async (ids) => {
+                  setProducts((prev) => prev.filter((p) => !ids.includes(p.id)));
+                  try {
+                    const res = await adminFetch('/api/catalog/products/bulk-delete', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(updated)
-                    }).catch(err => console.error('Product delete sync error:', err));
-                    return updated;
-                  });
+                      body: JSON.stringify({ ids })
+                    });
+                    if (!res.ok) console.error('Bulk product delete API failed:', res.status);
+                  } catch (err) { console.error('Bulk product delete sync error:', err); }
                 }}
                 onAddCoupon={(c) => setCoupons((prev) => [c, ...prev])}
                 onDeleteCoupon={async (codeStr) => {
                   setCoupons((prev) => prev.filter((c) => c.code !== codeStr));
                   try {
-                    const token = localStorage.getItem('adminToken') || '';
-                    await fetch('/api/catalog/coupons/bulk-delete', {
+                    const res = await adminFetch('/api/catalog/coupons/bulk-delete', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ codes: [codeStr] })
                     });
+                    if (!res.ok) console.error('Coupon delete API failed:', res.status);
                   } catch (err) { console.error('Failed to delete coupon:', err); }
                 }}
                 onBulkDeleteCoupons={async (codes) => {
                   setCoupons((prev) => prev.filter((c) => !codes.includes(c.code)));
                   try {
-                    const token = localStorage.getItem('adminToken') || '';
-                    await fetch('/api/catalog/coupons/bulk-delete', {
+                    const res = await adminFetch('/api/catalog/coupons/bulk-delete', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ codes })
                     });
+                    if (!res.ok) console.error('Bulk coupon delete API failed:', res.status);
                   } catch (err) { console.error('Failed to bulk delete coupons:', err); }
                 }}
                 onDeleteAllCoupons={async () => {
                   setCoupons([]);
                   try {
-                    const token = localStorage.getItem('adminToken') || '';
-                    await fetch('/api/catalog/coupons', {
-                      method: 'DELETE',
-                      headers: { 'Authorization': `Bearer ${token}` }
-                    });
+                    const res = await adminFetch('/api/catalog/coupons', { method: 'DELETE' });
+                    if (!res.ok) console.error('Delete all coupons API failed:', res.status);
                   } catch (err) { console.error('Failed to delete all coupons:', err); }
                 }}
-                onDeleteCampaign={(campId) => setCampaigns((prev) => prev.filter((c) => c.id !== campId))}
+                onDeleteCampaign={async (campId) => {
+                  setCampaigns((prev) => prev.filter((c) => c.id !== campId));
+                  try {
+                    const res = await adminFetch(`/api/catalog/campaigns/${encodeURIComponent(campId)}`, { method: 'DELETE' });
+                    if (!res.ok) console.error('Campaign delete API failed:', res.status);
+                  } catch (err) { console.error('Campaign delete sync error:', err); }
+                }}
                 onDeleteOrder={async (ordId, ordNum) => {
                   setOrders((prev) => prev.filter((o) => o.id !== ordId));
                   try {
-                    await fetch(`/api/orders/${ordNum}`, { method: 'DELETE' });
-                  } catch (err) {
-                    console.error('Failed to delete order from backend:', err);
-                  }
+                    const res = await adminFetch(`/api/orders/${ordNum}`, { method: 'DELETE' });
+                    if (!res.ok) console.error('Order delete API failed:', res.status);
+                  } catch (err) { console.error('Failed to delete order from backend:', err); }
                 }}
                 onDeleteLog={(logId) => setActivityLogs((prev) => prev.filter((l) => l.id !== logId))}
                 onClearLogs={() => setActivityLogs([])}
@@ -2024,6 +2057,7 @@ export default function App() {
                     setAdminLoginPass('');
                     
                     if (res.ok && data.success) {
+                      if (data.token) localStorage.setItem('adminToken', data.token);
                       setAdminBypassed(true);
                       setShowAdminLoginPrompt(false);
                       setAdminLoginError('');
@@ -2135,7 +2169,7 @@ export default function App() {
                     </button>
                     <button
                       onClick={() => {
-                        handleViewProductDetails(quickViewProduct.id);
+                        handleViewProductDetails(getProductSlug(quickViewProduct));
                         setQuickViewProduct(null);
                       }}
                       className="py-2.5 px-3 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer"

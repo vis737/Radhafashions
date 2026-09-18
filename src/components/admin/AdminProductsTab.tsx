@@ -15,6 +15,7 @@ export interface AdminProductsTabProps {
   onAddProduct: (product: Product) => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onBulkDeleteProducts?: (ids: string[]) => void;
   onLogActivity: (action: string, details: string) => void;
   addToast: (text: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
@@ -41,6 +42,7 @@ export default function AdminProductsTab({
   onAddProduct,
   onEditProduct,
   onDeleteProduct,
+  onBulkDeleteProducts,
   onLogActivity,
   addToast
 }: AdminProductsTabProps) {
@@ -189,7 +191,11 @@ export default function AdminProductsTab({
 
   const handleBulkDelete = () => {
     if (window.confirm(`Are you sure you want to delete ${selectedIds.length} selected products?`)) {
-      selectedIds.forEach(id => onDeleteProduct(id));
+      if (onBulkDeleteProducts) {
+        onBulkDeleteProducts(selectedIds);
+      } else {
+        selectedIds.forEach(id => onDeleteProduct(id));
+      }
       onLogActivity('Bulk Delete', `Deleted ${selectedIds.length} products`);
       addToast(`${selectedIds.length} products deleted`, 'success');
       setSelectedIds([]);
