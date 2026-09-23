@@ -3,14 +3,15 @@
 -- https://supabase.com/dashboard/project/zzwxnnzzwxsdvggpumze/sql/new
 -- =============================================================================
 
--- Drop legacy template tables if they exist
+-- Do not drop public.products here. This file may be run against the live
+-- project, and dropping it would permanently remove the product catalogue.
+-- product images are stored in the product record and Supabase Storage.
 DROP TABLE IF EXISTS public.product_images CASCADE;
-DROP TABLE IF EXISTS public.products CASCADE;
 
 -- ---------------------------------------------------------------------------
 -- 1. PRODUCTS TABLE & COLUMNS
 -- ---------------------------------------------------------------------------
-CREATE TABLE public.products (
+CREATE TABLE IF NOT EXISTS public.products (
   id TEXT PRIMARY KEY,
   sku TEXT,
   name TEXT NOT NULL,

@@ -974,45 +974,43 @@ export default function App() {
       return 0;
     });
 
-  const [shuffleSeed, setShuffleSeed] = useState(0);
-  // Rotate best sellers and new arrivals every 60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => setShuffleSeed(s => s + 1), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const shuffleArray = <T,>(arr: T[], seed: number): T[] => {
-    const copy = [...arr];
-    // Simple seeded Fisher-Yates shuffle
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.abs(((seed * 9301 + 49297 + i * 233) % 233280)) % (i + 1);
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  };
-
-  const bestSellersList = useMemo(() => {
-    const all = products.filter(p => p.isBestseller);
-    return shuffleArray(all, shuffleSeed).slice(0, 4);
-  }, [products, shuffleSeed]);
-
-  const newArrivalsList = useMemo(() => {
-    const all = products.filter(p => p.isNew);
-    return shuffleArray(all, shuffleSeed).slice(0, 4);
-  }, [products, shuffleSeed]);
-
-  // Group all products by category for the home page category sections
+  // Group every product for the home page category sections. Configured
+  // categories retain their configured order, then any new product category
+  // is added automatically so future catalog entries are never hidden.
   const productsByCategory = useMemo(() => {
-    const map = new Map<string, { category: typeof categories[number]; products: Product[] }>();
+    const productGroups = new Map<string, Product[]>();
+    for (const product of products) {
+      const categoryId = product.categorySlug || product.category || 'other';
+      const group = productGroups.get(categoryId) || [];
+      group.push(product);
+      productGroups.set(categoryId, group);
+    }
+
+    const sections: { category: { id: string; name: string; description: string; imageUrl: string; enabled?: boolean }; products: Product[] }[] = [];
     for (const cat of categories) {
-      const catProducts = products.filter(p =>
-        p.categorySlug === cat.id || p.category?.toLowerCase() === cat.name?.toLowerCase()
+      const catProducts = productGroups.get(cat.id) || products.filter(p =>
+        p.category?.toLowerCase() === cat.name?.toLowerCase()
       );
       if (catProducts.length > 0) {
-        map.set(cat.id, { category: cat, products: catProducts });
+        sections.push({ category: cat, products: catProducts });
       }
     }
-    return Array.from(map.values());
+
+    const configuredCategoryIds = new Set(categories.map((category) => category.id));
+    for (const [categoryId, categoryProducts] of productGroups) {
+      if (configuredCategoryIds.has(categoryId)) continue;
+      sections.push({
+        category: {
+          id: categoryId,
+          name: categoryProducts[0]?.category || categoryId,
+          description: '',
+          imageUrl: ''
+        },
+        products: categoryProducts
+      });
+    }
+
+    return sections;
   }, [products, categories]);
 
   const searchResultsList =
@@ -1261,69 +1259,8 @@ export default function App() {
                 </div>
               </section>
 
-              {/* Best Sellers showcase lists */}
-              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
-                <div className="flex justify-between items-end mb-4 sm:mb-6">
-                  <div>
-                    <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
-                      Best Sellers
-                    </h3>
-                    <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
-                  </div>
-                  <button
-                    onClick={() => productsByCategory[0] && handleSelectCategoryGroup(productsByCategory[0].category.id)}
-                    className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
-                  >
-                    View All <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-                  {bestSellersList.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      isWishlisted={wishlistIds.includes(product.id)}
-                      onToggleWishlist={handleToggleProductWishlist}
-                      onAddToCart={(p) => handleAddProductToCart(p)}
-                      onQuickView={(p) => setQuickViewProduct(p)}
-                      onSelectProduct={handleViewProductDetails}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* New Arrivals Section */}
-              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
-                <div className="flex justify-between items-end mb-4 sm:mb-6">
-                  <div>
-                    <h3 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider text-gray-800 dark:text-white">
-                      New Fashion Arrivals
-                    </h3>
-                    <div className="w-10 h-0.5 bg-pink-500 mt-1.5 sm:mt-2 rounded"></div>
-                  </div>
-                  <button
-                    onClick={() => productsByCategory[1] && handleSelectCategoryGroup(productsByCategory[1].category.id)}
-                    className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-500 flex items-center gap-1"
-                  >
-                    View Arrivals <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-                  {newArrivalsList.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      isWishlisted={wishlistIds.includes(product.id)}
-                      onToggleWishlist={handleToggleProductWishlist}
-                      onAddToCart={(p) => handleAddProductToCart(p)}
-                      onQuickView={(p) => setQuickViewProduct(p)}
-                      onSelectProduct={handleViewProductDetails}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Products by Category — each category gets its own titled section */}
+              {/* Full home catalogue — every category title is followed by all
+                  of the products currently assigned to that category. */}
               {productsByCategory.map(({ category, products: catProducts }) => (
                 <section key={category.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left select-none">
                   <div className="flex justify-between items-end mb-4 sm:mb-6">
