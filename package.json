@@ -11,7 +11,17 @@
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "dev:cf": "npm run build && wrangler dev",
+    "dev:cf:remote": "npm run build && wrangler dev --remote",
+    "cf:deploy": "npm run build && wrangler deploy",
+    "cf:deploy:dry": "npm run build && wrangler deploy --dry-run",
+    "cf:logs": "wrangler tail",
+    "cf-typegen": "wrangler types"
+  },
+  "//overrides": "iconv-lite is pulled in transitively by raw-body <- body-parser <- express. 0.4.x ships a `browser` field that stubs out ./lib/streams while lib/index.js still calls it, so the Workers bundle crashes at start-up with `require_streams(...) is not a function` (cloudflare/workers-sdk#9309). 0.7.x keeps the entry point consistent, so the override pins the Workers-compatible build for Node too.",
+  "overrides": {
+    "iconv-lite": "^0.7.3"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.9",
@@ -54,6 +64,7 @@
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "wrangler": "^4.147.0"
   }
 }

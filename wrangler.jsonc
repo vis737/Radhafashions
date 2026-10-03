@@ -1,0 +1,68 @@
+{
+  // Radha Fashions — Cloudflare Workers deployment configuration.
+  //
+  // `wrangler deploy` uploads this Worker plus everything in `dist/`. Because
+  // the Worker has a real script (`worker.ts`), the Cloudflare dashboard will
+  // accept variables and secrets for it — a static-assets-only Worker cannot
+  // have any, which is the error shown in the deployment dashboard.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "radha-fashions",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-03",
+
+  // `nodejs_compat` is what makes Express, bcryptjs, nodemailer and Razorpay
+  // work at all. It is implied by a compatibility date of 2026-08-04 or later
+  // but is listed explicitly so the requirement stays obvious.
+  // `nodejs_compat_populate_process_env` copies every variable and secret from
+  // the dashboard into `process.env`, which is how the 4,600-line Express
+  // server reads its configuration. It is also on by default at this
+  // compatibility date; both are kept for clarity.
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+
+  // Static assets are served straight from Cloudflare's edge cache. Only the
+  // dynamic routes are handed to the Worker.
+  "assets": {
+    "directory": "./dist/",
+    "binding": "ASSETS",
+    // Any path with no matching file renders the SPA shell, so client-side
+    // routes such as /account and /admin survive a hard refresh.
+    "not_found_handling": "single-page-application",
+    // Everything else is served as a static asset without waking the Worker,
+    // which is both faster and cheaper. These globs are the paths the Express
+    // app has to handle itself:
+    //   /api/*       – every JSON endpoint
+    //   /health      – liveness/readiness probe used by uptime monitors
+    //   /sitemap.xml – generated from the Supabase product catalogue
+    //   /robots.txt  – generated per deployment
+    //   /products/*  – per-product Open Graph tags for social crawlers
+    //   /product/*   – alias of the above
+    "run_worker_first": [
+      "/api/*",
+      "/health",
+      "/sitemap.xml",
+      "/robots.txt",
+      "/products/*",
+      "/product/*"
+    ]
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Non-secret configuration. Anything sensitive belongs in `wrangler secret
+  // put <NAME>` (or the dashboard), never here — see CLOUDFLARE.md.
+  "vars": {
+    // Public origin. Used for CORS, cookie security and PayU callback URLs.
+    "APP_URL": "https://radhafashions.in",
+    // Fail loudly rather than silently serving an empty catalogue if Supabase
+    // is missing. Workers has no fallback database.
+    "REQUIRE_SUPABASE": "true",
+    // Never re-seed the catalogue on boot; it would resurrect deleted products.
+    "SEED_SUPABASE_DATA": "false",
+    // Product images live in Supabase Storage. The Worker cannot write to a
+    // filesystem, so this bucket is the only durable image store.
+    "SUPABASE_STORAGE_BUCKET": "product-images",
+    "ENABLE_REAL_NOTIFICATIONS": "true"
+  }
+}

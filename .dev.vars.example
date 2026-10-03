@@ -1,0 +1,57 @@
+# GEMINI AI STUDIO CONFIGURATION
+# Required for product recommendations, smart search, and invoice text generation.
+GEMINI_API_KEY=""
+
+# JWT Secret — used to sign admin session tokens. Must be at least 32 chars.
+JWT_SECRET=""
+
+# APP_URL: The URL where this app is hosted
+APP_URL=""
+
+# SMTP Configuration for sending order confirmation emails
+SMTP_HOST=""
+SMTP_PORT=""
+SMTP_SECURE=""
+SMTP_USER=""
+SMTP_PASS=""
+SMTP_FROM_NAME=""
+SMTP_FROM_EMAIL=""
+RESEND_API_KEY=""
+RESEND_FROM_EMAIL=""
+ENABLE_REAL_NOTIFICATIONS=""
+
+# Twilio WhatsApp & SMS Gateway Configurations for notifications
+TWILIO_ACCOUNT_SID=""
+TWILIO_AUTH_TOKEN=""
+TWILIO_WHATSAPP_NUMBER=""
+TWILIO_SMS_NUMBER=""
+
+# Razorpay Payment Gateway Configurations
+RAZORPAY_KEY_ID=""
+RAZORPAY_KEY_SECRET=""
+VITE_RAZORPAY_KEY_ID=""
+
+# Admin Portal Secure Credentials
+ADMIN_USERNAME=""
+ADMIN_PASSWORD=""
+
+# Supabase Database Settings
+SUPABASE_URL=""
+SUPABASE_KEY=""
+
+# Clerk Authentication Keys
+VITE_CLERK_PUBLISHABLE_KEY=""
+CLERK_PUBLISHABLE_KEY=""
+CLERK_SECRET_KEY=""
+
+# --- Cloudflare Workers local development (added from .env) --------------------
+# Supabase is the only persistent store on Workers; these three are what the
+# Worker needs in addition to the credentials above.
+REQUIRE_SUPABASE=""
+SEED_SUPABASE_DATA=""
+SUPABASE_STORAGE_BUCKET=""
+ADMIN_NOTIFICATION_EMAIL=""
+
+# NOTE: .dev.vars.example is a blank template. Real local secrets live in
+# .dev.vars (gitignored) and production secrets live in the Cloudflare dashboard.
+# Keep in sync with .env.example.

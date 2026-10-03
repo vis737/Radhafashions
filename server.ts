@@ -28,7 +28,70 @@ try {
   // Ignore on older node versions
 }
 
-dotenv.config();
+try {
+  dotenv.config();
+} catch (err) {
+  // Workers has no readable .env file; every secret arrives as a Worker binding.
+  console.warn('dotenv.config() skipped:', (err as Error)?.message);
+}
+
+// ---------------------------------------------------------------------------
+// Cloudflare Workers runtime detection
+// ---------------------------------------------------------------------------
+// `worker.ts` sets `__RADHA_CF_WORKER__` before it imports this module, because
+// ES module imports are hoisted and the flag has to already exist. The
+// `navigator.userAgent` probe is the fallback for anyone who bundles this app
+// behind their own entry point.
+//
+// Workers gives us no durable disk: every `fs.*` call below resolves against an
+// in-memory virtual filesystem that is discarded when the isolate recycles and
+// is never shared between isolates. Supabase therefore has to be the only
+// source of truth there, and the `ASSETS` binding has to stand in for `dist/`.
+const isCloudflareWorker =
+  Boolean((globalThis as any).__RADHA_CF_WORKER__) ||
+  (typeof navigator !== 'undefined' &&
+    typeof (navigator as any).userAgent === 'string' &&
+    (navigator as any).userAgent === 'Cloudflare-Workers');
+
+if (isCloudflareWorker) {
+  // Wrangler statically replaces `process.env.NODE_ENV` at build time, so it
+  // must never be assigned here. Workers builds already run as production.
+  console.log('◇ Cloudflare Workers runtime detected — Supabase is the only persistent store.');
+}
+
+/** The Workers static-asset binding, injected by `worker.ts`. Null elsewhere. */
+const cloudflareAssets = (): any => (globalThis as any).__RADHA_CF_ASSETS__ ?? null;
+
+/**
+ * bcrypt work factor, tunable from the dashboard without a redeploy.
+ *
+ * bcrypt is pure CPU, and the Cloudflare Workers **Free** plan only grants
+ * 10 ms of CPU per request. A cost-12 hash costs several hundred milliseconds
+ * of CPU, so Free-plan deployments need this lowered (or Workers Paid). The cost
+ * is baked into every stored hash, so lowering it does not retroactively
+ * re-hash existing passwords — those are compared at whatever cost they were
+ * created with.
+ */
+const readBcryptCost = (envVar: string, fallback: number): number => {
+  const raw = Number(process.env[envVar]);
+  if (!Number.isInteger(raw) || raw < 4 || raw > 15) return fallback;
+  return raw;
+};
+const adminBcryptCost = (): number => readBcryptCost('ADMIN_BCRYPT_COST', 12);
+const customerBcryptCost = (): number => readBcryptCost('CUSTOMER_BCRYPT_COST', 10);
+
+/**
+ * Best-effort on-disk JSON cache. Workers has no durable filesystem, so this is
+ * a deliberate no-op there — Supabase is the only store that survives a deploy.
+ */
+function writeLocalCache(filePath: string, data: unknown): void {
+  if (isCloudflareWorker) return;
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn(`[Storage] Could not write local cache ${filePath}:`, err);
+  }
+}
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
@@ -47,14 +110,18 @@ const isSupabaseConfigured = () => {
 const supabase = isSupabaseConfigured()
   ? createClient(supabaseUrl!, supabaseKey!)
   : null;
-const shouldRequireSupabase = process.env.REQUIRE_SUPABASE === 'true' || process.env.NODE_ENV === 'production';
+// Workers has no persistent filesystem to fall back on, so Supabase is never optional there.
+const shouldRequireSupabase =
+  process.env.REQUIRE_SUPABASE === 'true' ||
+  process.env.NODE_ENV === 'production' ||
+  isCloudflareWorker;
 
 if (supabase) {
   console.log('◇ Supabase connected successfully as main database.');
 } else {
   console.log('◇ Supabase credentials missing/default. Using offline fallback JSON database.');
   if (shouldRequireSupabase) {
-    console.error('⨯ Supabase is required for this deployment. Set SUPABASE_URL and SUPABASE_KEY in Railway.');
+    console.error('⨯ Supabase is required for this deployment. Set SUPABASE_URL and SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY) as environment variables / Worker secrets.');
   }
 }
 
@@ -148,7 +215,7 @@ async function seedSupabaseDatabase() {
       if (!targetPass) {
         console.warn('⚠️  WARNING: ADMIN_PASSWORD not set in .env — skipping admin seeding to Supabase.');
       } else {
-        const hashedPass = bcrypt.hashSync(targetPass, 12);
+        const hashedPass = bcrypt.hashSync(targetPass, adminBcryptCost());
         await supabase.from('admin_config').insert({ username: targetUser, password: hashedPass });
       }
     }
@@ -165,29 +232,8 @@ async function syncOrdersFromSupabase() {
   try {
     const { data, error } = await supabase.from('orders').select('*');
     if (!error && data) {
-      const mapped = data.map(o => ({
-        id: o.id,
-        orderNumber: o.order_number,
-        customerInfo: o.customer_info,
-        items: o.items,
-        shippingMethod: o.shipping_method,
-        shippingCost: o.shipping_cost,
-        tax: o.tax,
-        discount: o.discount,
-        subtotal: o.subtotal,
-        total: o.total,
-        status: o.status,
-        couponCode: o.coupon_code,
-        date: o.date,
-        paymentMethod: o.payment_method,
-        paymentStatus: o.payment_status,
-        giftWrappingRequested: o.gift_wrapping_requested,
-        giftWrappingType: o.gift_wrapping_type,
-        giftMessage: o.gift_message,
-        accountEmail: o.account_email,
-        accountName: o.account_name
-      }));
-      fs.writeFileSync(ORDERS_FILE_PATH, JSON.stringify(mapped, null, 2));
+      const mapped = data.map(mapOrderRow);
+      writeLocalCache(ORDERS_FILE_PATH, mapped);
       console.log(`◇ Synced ${mapped.length} orders from Supabase database.`);
     }
   } catch (err) {
@@ -200,7 +246,7 @@ async function syncAdminConfigFromSupabase() {
   try {
     const { data, error } = await supabase.from('admin_config').select('*').limit(1).single();
     if (!error && data) {
-      fs.writeFileSync(adminConfigPath, JSON.stringify({ username: data.username, password: data.password }, null, 2), 'utf8');
+      writeLocalCache(adminConfigPath, { username: data.username, password: data.password });
       console.log('◇ Synced administrative credentials from Supabase.');
     }
   } catch (err) {
@@ -213,8 +259,8 @@ const inMemoryCustomers: any[] = [];
 const CUSTOMERS_FILE_PATH = path.join(process.cwd(), 'customers_db.json');
 
 async function syncCustomersFromSupabase() {
-  // 1. Preload local JSON accounts into memory cache
-  if (fs.existsSync(CUSTOMERS_FILE_PATH)) {
+  // 1. Preload local JSON accounts into memory cache (no durable disk on Workers)
+  if (!isCloudflareWorker && fs.existsSync(CUSTOMERS_FILE_PATH)) {
     try {
       const localData: any[] = JSON.parse(fs.readFileSync(CUSTOMERS_FILE_PATH, 'utf-8') || '[]');
       for (const c of localData) {
@@ -276,7 +322,7 @@ async function syncCustomersFromSupabase() {
     }
 
     // 4. Save synced memory dataset back to local JSON file for offline resilience
-    fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2), 'utf-8');
+    writeLocalCache(CUSTOMERS_FILE_PATH, inMemoryCustomers);
   } catch (err) {
     console.error('Failed to sync customers from Supabase on startup:', err);
   }
@@ -287,35 +333,10 @@ async function syncProductsFromSupabase() {
   try {
     const { data, error } = await supabase.from('products').select('*');
     if (!error && data) {
-      // Supabase is authoritative.  Do not merge repository JSON here: Railway
-      // rebuilds the checkout on every deploy, and merging it would recreate
+      // Supabase is authoritative.  Do not merge repository JSON here: a deploy
+      // rebuilds the checkout from scratch, and merging it would recreate
       // products that were deliberately removed from Supabase.
-      const mapped = data.map(p => ({
-        id: p.id,
-        sku: p.sku,
-        name: p.name,
-        category: p.category || 'Handbags',
-        categorySlug: p.category_slug || 'handbags',
-        price: Number(p.price || 999),
-        discountPrice: p.discount_price ? Number(p.discount_price) : undefined,
-        stock: p.stock !== undefined ? Number(p.stock) : 10,
-        rating: p.rating ? Number(p.rating) : 4.8,
-        ratingCount: p.rating_count ? Number(p.rating_count) : 50,
-        images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'],
-        shortDescription: p.short_description || '',
-        description: p.description || '',
-        specifications: p.specifications || {},
-        weightKg: parseProductWeightKg(p),
-        reviews: Array.isArray(p.reviews) ? p.reviews : [],
-        isNew: Boolean(p.is_new),
-        isBestseller: Boolean(p.is_bestseller),
-        brand: p.brand || 'Radha Fashions',
-        availability: p.availability || 'in-stock',
-        vendorId: p.vendor_id || null,
-        variation: p.variation || undefined,
-        variations: p.variations || undefined,
-        isTestProduct: p.id === 'TEST-RF-001'
-      }));
+      const mapped = data.map(mapProductRow);
       writeLocalJsonDb(PRODUCTS_FILE_PATH, mapped);
       console.log(`◇ Cached ${mapped.length} products from Supabase.`);
     } else {
@@ -326,20 +347,27 @@ async function syncProductsFromSupabase() {
   }
 }
 
-if (supabase) {
-  // A deployment must never seed/restore catalog records. Enable this once only
-  // when intentionally bootstrapping a brand-new Supabase project.
-  const boot = process.env.SEED_SUPABASE_DATA === 'true'
-    ? seedSupabaseDatabase()
-    : Promise.resolve();
-  boot.then(() => {
-    syncProductsFromSupabase();
-    syncOrdersFromSupabase();
-    syncAdminConfigFromSupabase();
+// Warm the on-disk JSON caches at boot. Workers forbids asynchronous I/O in
+// global scope (there is no request to attach it to, and the isolate may be
+// discarded before it settles), and it has no writable disk anyway. Every
+// catalog route already reads through Supabase on demand, so the warm-up is
+// skipped there and each request pays one indexed query instead.
+if (!isCloudflareWorker) {
+  if (supabase) {
+    // A deployment must never seed/restore catalog records. Enable this once
+    // only when intentionally bootstrapping a brand-new Supabase project.
+    const boot = process.env.SEED_SUPABASE_DATA === 'true'
+      ? seedSupabaseDatabase()
+      : Promise.resolve();
+    boot.then(() => {
+      syncProductsFromSupabase();
+      syncOrdersFromSupabase();
+      syncAdminConfigFromSupabase();
+      syncCustomersFromSupabase();
+    });
+  } else {
     syncCustomersFromSupabase();
-  });
-} else {
-  syncCustomersFromSupabase();
+  }
 }
 
 // Local JSON File Database helper utilities. Production should use Supabase;
@@ -347,7 +375,8 @@ if (supabase) {
 const LOCAL_DATA_DIR = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
 const HAS_PERSISTENT_LOCAL_DATA = Boolean(process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH);
 try {
-  if (!fs.existsSync(LOCAL_DATA_DIR)) {
+  // Workers' cwd is /bundle inside an in-memory VFS; there is nothing to create.
+  if (!isCloudflareWorker && !fs.existsSync(LOCAL_DATA_DIR)) {
     fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
   }
 } catch (err) {
@@ -357,10 +386,15 @@ const PRODUCTS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'products_db.json');
 const COUPONS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'coupons_db.json');
 const CAMPAIGNS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'campaigns_db.json');
 const CMS_FILE_PATH = path.join(LOCAL_DATA_DIR, 'cms_db.json');
-// Note: activity_logs.json is intentionally removed — Render has an ephemeral filesystem.
+// Note: activity_logs.json is intentionally removed — every host we deploy to
+// (Railway, Render, Cloudflare Workers) has an ephemeral filesystem.
 // All persistent data is stored in Supabase.
 
 function readLocalJsonDb(filePath: string, defaultData: any) {
+  // Cloudflare Workers has no durable disk, so this in-process cache is always
+  // stale and never shared between isolates. Every catalog route is
+  // Supabase-first, so return the caller's default rather than a lie here.
+  if (isCloudflareWorker) return defaultData;
   try {
     if (!fs.existsSync(filePath)) {
       try {
@@ -376,6 +410,8 @@ function readLocalJsonDb(filePath: string, defaultData: any) {
 }
 
 function writeLocalJsonDb(filePath: string, data: any) {
+  // Best-effort cache only; Supabase already holds the authoritative copy.
+  if (isCloudflareWorker) return;
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
   } catch (error) {
@@ -479,6 +515,53 @@ function parseProductWeightKg(product: any): number | undefined {
   return unit === 'g' || unit === 'gm' || unit === 'grams' ? amount / 1000 : amount;
 }
 
+const DEFAULT_PRODUCT_IMAGE =
+  'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop';
+
+/** Single source of truth for translating a `products` row into the API shape. */
+function mapProductRow(p: any) {
+  return {
+    id: p.id,
+    sku: p.sku,
+    name: p.name,
+    category: p.category || 'Handbags',
+    categorySlug: p.category_slug || 'handbags',
+    price: Number(p.price || 999),
+    discountPrice: p.discount_price ? Number(p.discount_price) : undefined,
+    stock: p.stock !== undefined ? Number(p.stock) : 10,
+    rating: p.rating ? Number(p.rating) : 4.8,
+    ratingCount: p.rating_count ? Number(p.rating_count) : 50,
+    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [DEFAULT_PRODUCT_IMAGE],
+    shortDescription: p.short_description || '',
+    description: p.description || '',
+    specifications: p.specifications || {},
+    weightKg: parseProductWeightKg(p),
+    reviews: Array.isArray(p.reviews) ? p.reviews : [],
+    isNew: Boolean(p.is_new),
+    isBestseller: Boolean(p.is_bestseller),
+    brand: p.brand || 'Radha Fashions',
+    availability: p.availability || 'in-stock',
+    vendorId: p.vendor_id || null,
+    variation: p.variation || undefined,
+    variations: p.variations || undefined,
+    isTestProduct: p.id === 'TEST-RF-001'
+  };
+}
+
+/**
+ * Supabase-first product read for the handful of non-catalog routes that need
+ * the whole catalog (sitemap, product structured data, social previews).
+ * Falls back to the bundled/local JSON only when Supabase is unavailable.
+ */
+async function loadProductsForRead(): Promise<any[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from('products').select('*');
+    if (!error && data) return data.map(mapProductRow);
+    console.error('Supabase products read failed:', error);
+  }
+  return readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+}
+
 const app = express();
 app.set('trust proxy', true);
 app.get('/health', (req, res) => {
@@ -504,7 +587,11 @@ const notifyCatalogChanged = (table: 'products' | 'categories') => {
   }
 };
 
-if (supabase) {
+// Skip the persistent Supabase realtime socket on Workers: every isolate would
+// hold its own outbound WebSocket open for the life of the instance, which
+// prevents idling and burns subrequest quota. `src/App.tsx` already falls back
+// to a 20 s poll plus a window-focus refresh, so the catalogue stays fresh.
+if (supabase && !isCloudflareWorker) {
   supabase
     .channel('railway-catalog-sync')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => notifyCatalogChanged('products'))
@@ -523,7 +610,15 @@ app.get('/api/catalog/stream', (req, res) => {
   res.write('event: connected\ndata: {}\n\n');
   catalogStreamClients.add(res);
 
-  const heartbeat = setInterval(() => res.write(': keepalive\n\n'), 25_000);
+  const heartbeat = setInterval(() => {
+    // A dropped client must never take the request handler down.
+    try {
+      res.write(': keepalive\n\n');
+    } catch {
+      clearInterval(heartbeat);
+      catalogStreamClients.delete(res);
+    }
+  }, 25_000);
   req.on('close', () => {
     clearInterval(heartbeat);
     catalogStreamClients.delete(res);
@@ -539,9 +634,27 @@ const ALLOWED_ORIGIN = process.env.APP_URL || 'http://localhost:3000';
 
 const adminConfigPath = path.join(process.cwd(), 'admin_config.json');
 
-function readAdminConfig() {
+/**
+ * Supabase-first read of the admin credentials. A Cloudflare Worker has no
+ * disk, so the `admin_config` table is the only durable copy; the JSON file is
+ * kept purely as a local/offline cache elsewhere.
+ */
+async function readAdminConfig(): Promise<{ username: string; password: string }> {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('admin_config').select('*').limit(1).maybeSingle();
+      if (!error && data) {
+        writeLocalCache(adminConfigPath, { username: data.username, password: data.password });
+        return { username: data.username, password: data.password };
+      }
+      if (error) console.error('Supabase admin_config read failed:', error);
+    } catch (err) {
+      console.error('Supabase admin_config read threw:', err);
+    }
+  }
+
   try {
-    if (fs.existsSync(adminConfigPath)) {
+    if (!isCloudflareWorker && fs.existsSync(adminConfigPath)) {
       return JSON.parse(fs.readFileSync(adminConfigPath, 'utf8'));
     }
   } catch (err) {
@@ -557,29 +670,31 @@ function readAdminConfig() {
   };
 }
 
-function writeAdminConfig(config: any) {
-  try {
-    fs.writeFileSync(adminConfigPath, JSON.stringify(config, null, 2), 'utf8');
-    if (supabase) {
-      supabase.from('admin_config').upsert({ username: config.username, password: config.password }).then(({ error }) => {
-        if (error) console.error('Supabase admin_config background upsert failed:', error);
-      });
-    }
-  } catch (err) {
-    console.error('Failed to write admin config JSON:', err);
-  }
+async function writeAdminConfig(config: { username: string; password: string }): Promise<void> {
+  writeLocalCache(adminConfigPath, config);
+  if (!supabase) return;
+  // Awaited on purpose: a Worker is frozen the moment the response is returned,
+  // so a detached promise would never reach Supabase.
+  const { error } = await supabase
+    .from('admin_config')
+    .upsert({ username: config.username, password: config.password });
+  if (error) console.error('Supabase admin_config upsert failed:', error);
 }
 
-function verifyAndUpgradeAdminPassword(plainInput: string, storedHashOrPlain: string): boolean {
+async function verifyAndUpgradeAdminPassword(plainInput: string, storedHashOrPlain: string): Promise<boolean> {
   if (storedHashOrPlain.startsWith('$2a$') || storedHashOrPlain.startsWith('$2b$')) {
-    return bcrypt.compareSync(plainInput, storedHashOrPlain);
+    return bcrypt.compare(plainInput, storedHashOrPlain);
   }
-  
-  if (plainInput === storedHashOrPlain) {
-    const freshHash = bcrypt.hashSync(plainInput, 12);
-    const config = readAdminConfig();
+
+  const matchesPlaintext =
+    Buffer.byteLength(plainInput) === Buffer.byteLength(storedHashOrPlain) &&
+    crypto.timingSafeEqual(Buffer.from(plainInput), Buffer.from(storedHashOrPlain));
+
+  if (matchesPlaintext) {
+    const freshHash = await bcrypt.hash(plainInput, adminBcryptCost());
+    const config = await readAdminConfig();
     config.password = freshHash;
-    writeAdminConfig(config);
+    await writeAdminConfig(config);
     console.log('◇ Transparently migrated plain administrative password to bcrypt hash.');
     return true;
   }
@@ -817,13 +932,17 @@ function rateLimiter(limit: number, windowMs: number) {
 const PRODUCT_IMAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || process.env.SUPABASE_PRODUCT_IMAGE_BUCKET || 'product-images';
 const UPLOADS_DIR = path.join(LOCAL_DATA_DIR, 'public', 'uploads');
 try {
-  if (!fs.existsSync(UPLOADS_DIR)) {
+  if (!isCloudflareWorker && !fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
 } catch (err) {
   console.warn('[Uploads] Could not create uploads directory:', err);
 }
-app.use('/uploads', express.static(UPLOADS_DIR));
+// Only mount the on-disk upload directory when it can actually hold anything.
+// On Workers, product images must go to Supabase Storage instead.
+if (!isCloudflareWorker) {
+  app.use('/uploads', express.static(UPLOADS_DIR));
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -905,6 +1024,12 @@ async function uploadProductImageToSupabase(file: Express.Multer.File) {
 }
 
 function saveProductImageLocally(file: Express.Multer.File) {
+  // Workers has no writable disk. Callers must treat this as unavailable there
+  // and surface a clear "configure Supabase Storage" error instead of pretending
+  // the image was saved.
+  if (isCloudflareWorker) {
+    throw new Error('Local image storage is unavailable on Cloudflare Workers. Configure Supabase Storage.');
+  }
   const ext = getImageExtension(file);
   const filename = `prod_${Date.now()}_${Math.floor(Math.random() * 10000)}${ext}`;
   const targetPath = path.join(UPLOADS_DIR, filename);
@@ -962,37 +1087,7 @@ app.get('/api/catalog/products', async (req, res) => {
           // Supabase has the table but it's empty — this is the truth (all products were deleted)
           return res.json([]);
         }
-        const mapped = data.map(p => {
-          const images = (Array.isArray(p.images) && p.images.length > 0)
-            ? p.images
-            : ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop'];
-          return {
-            id: p.id,
-            sku: p.sku || `SKU-${p.id}`,
-            name: p.name || 'Radha Fashions Product',
-            category: p.category || 'Handbags',
-            categorySlug: p.category_slug || 'handbags',
-            price: Number(p.price || 999),
-            discountPrice: p.discount_price ? Number(p.discount_price) : undefined,
-            stock: p.stock !== undefined ? Number(p.stock) : 10,
-            rating: p.rating ? Number(p.rating) : 4.8,
-            ratingCount: p.rating_count ? Number(p.rating_count) : 50,
-            images,
-            shortDescription: p.short_description || '',
-            description: p.description || '',
-            specifications: p.specifications || {},
-            weightKg: parseProductWeightKg(p),
-            reviews: Array.isArray(p.reviews) ? p.reviews : [],
-            isNew: Boolean(p.is_new),
-            isBestseller: Boolean(p.is_bestseller),
-            brand: p.brand || 'Radha Fashions',
-            availability: p.availability || 'in-stock',
-            vendorId: p.vendor_id || null,
-            variation: p.variation || undefined,
-            variations: p.variations || undefined
-          };
-        });
-        return res.json(mapped);
+        return res.json(data.map(mapProductRow));
       }
       console.error('Supabase products query failed:', error);
       return res.status(503).json({ error: 'Product catalog is temporarily unavailable.' });
@@ -1756,12 +1851,104 @@ Output in strict JSON format matching the schema:
 // Live Backend Orders Database & Logistics Tracker
 const ORDERS_FILE_PATH = path.join(process.cwd(), 'orders_db.json');
 
-function readOrdersDb(): any[] {
-  try {
-    if (!fs.existsSync(ORDERS_FILE_PATH)) {
-      fs.writeFileSync(ORDERS_FILE_PATH, JSON.stringify([], null, 2));
-      return [];
+/** Single source of truth for translating an `orders` row into the API shape. */
+function mapOrderRow(o: any) {
+  return {
+    id: o.id,
+    orderNumber: o.order_number,
+    customerInfo: o.customer_info,
+    items: o.items,
+    shippingMethod: o.shipping_method,
+    shippingCost: o.shipping_cost,
+    tax: o.tax,
+    discount: o.discount,
+    subtotal: o.subtotal,
+    total: o.total,
+    status: o.status,
+    codStatus: o.cod_status ?? undefined,
+    couponCode: o.coupon_code,
+    date: o.date,
+    paymentMethod: o.payment_method,
+    paymentStatus: o.payment_status,
+    payuTxnId: o.payu_txn_id ?? undefined,
+    payuPaymentId: o.payu_payment_id ?? undefined,
+    payuHash: o.payu_hash ?? undefined,
+    payuStatus: o.payu_status ?? undefined,
+    upiTxnId: o.upi_txn_id ?? undefined,
+    upiSenderName: o.upi_sender_name ?? undefined,
+    upiScreenshot: o.upi_screenshot ?? undefined,
+    upiNotes: o.upi_notes ?? undefined,
+    upiRejectionReason: o.upi_rejection_reason ?? undefined,
+    giftWrappingRequested: o.gift_wrapping_requested,
+    giftWrappingType: o.gift_wrapping_type,
+    giftMessage: o.gift_message,
+    giftSenderName: o.gift_sender_name ?? undefined,
+    giftHidePrice: o.gift_hide_price ?? undefined,
+    accountEmail: o.account_email,
+    accountName: o.account_name
+  };
+}
+
+/** Single source of truth for translating an application order into an `orders` row. */
+function mapOrderRowToSupabase(o: any) {
+  return {
+    id: o.id,
+    order_number: o.orderNumber,
+    customer_info: o.customerInfo || {},
+    items: o.items || [],
+    shipping_method: o.shippingMethod ?? null,
+    shipping_cost: o.shippingCost ?? null,
+    tax: o.tax ?? null,
+    discount: o.discount ?? null,
+    subtotal: o.subtotal ?? null,
+    total: o.total ?? null,
+    status: o.status ?? 'pending',
+    cod_status: o.codStatus ?? null,
+    coupon_code: o.couponCode || null,
+    date: o.date,
+    payment_method: o.paymentMethod || 'PayU Secure Online Payment',
+    payment_status: o.paymentStatus || 'unpaid',
+    payu_txn_id: o.payuTxnId || null,
+    payu_payment_id: o.payuPaymentId || null,
+    payu_hash: o.payuHash || null,
+    payu_status: o.payuStatus || null,
+    upi_txn_id: o.upiTxnId || null,
+    upi_sender_name: o.upiSenderName || null,
+    upi_screenshot: o.upiScreenshot || null,
+    upi_notes: o.upiNotes || null,
+    upi_rejection_reason: o.upiRejectionReason || null,
+    gift_wrapping_requested: o.giftWrappingRequested || false,
+    gift_wrapping_type: o.giftWrappingType || null,
+    gift_message: o.giftMessage || null,
+    gift_sender_name: o.giftSenderName || null,
+    gift_hide_price: o.giftHidePrice || false,
+    account_email: o.accountEmail || null,
+    account_name: o.accountName || null
+  };
+}
+
+/**
+ * Supabase-first order read. Supabase is the only durable store, so it is
+ * always consulted first and the JSON file is merely an offline cache for
+ * hosts that happen to have a writable disk.
+ */
+async function readOrdersDb(): Promise<any[]> {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('orders').select('*');
+      if (!error && data) {
+        const mapped = data.map(mapOrderRow);
+        writeLocalCache(ORDERS_FILE_PATH, mapped);
+        return mapped;
+      }
+      console.error('Supabase orders query failed:', error);
+    } catch (error) {
+      console.error('Supabase orders read threw:', error);
     }
+  }
+
+  try {
+    if (isCloudflareWorker || !fs.existsSync(ORDERS_FILE_PATH)) return [];
     const data = fs.readFileSync(ORDERS_FILE_PATH, 'utf-8');
     return JSON.parse(data || '[]');
   } catch (error) {
@@ -1770,44 +1957,48 @@ function readOrdersDb(): any[] {
   }
 }
 
-function writeOrdersDb(orders: any[]) {
-  try {
-    fs.writeFileSync(ORDERS_FILE_PATH, JSON.stringify(orders, null, 2));
+/**
+ * Persists the full order list to Supabase and prunes rows that are no longer
+ * present. Awaited by every caller: a Worker is frozen the instant the response
+ * is returned, so a detached `.then()` would silently never persist anything.
+ */
+async function writeOrdersDb(orders: any[]): Promise<void> {
+  writeLocalCache(ORDERS_FILE_PATH, orders);
+  if (!supabase) return;
 
-    if (supabase) {
-      const mapped = orders.map(o => ({
-        id: o.id,
-        order_number: o.orderNumber,
-        customer_info: o.customerInfo || {},
-        items: o.items || [],
-        shipping_method: o.shippingMethod,
-        shipping_cost: o.shippingCost,
-        tax: o.tax,
-        discount: o.discount,
-        subtotal: o.subtotal,
-        total: o.total,
-        status: o.status,
-        coupon_code: o.couponCode || null,
-        date: o.date,
-        payment_method: o.paymentMethod || 'PayU Secure Online Payment',
-        payment_status: o.paymentStatus || 'unpaid',
-        gift_wrapping_requested: o.giftWrappingRequested || false,
-        gift_wrapping_type: o.giftWrappingType || null,
-        gift_message: o.giftMessage || null,
-        account_email: o.accountEmail || null,
-        account_name: o.accountName || null
-      }));
-      
-      supabase.from('orders').upsert(mapped).then(async ({ error }) => {
-        if (error) console.error('Supabase orders background upsert failed:', error);
-        else {
-          const currentOrderIds = orders.map(o => o.id);
-          if (currentOrderIds.length > 0) {
-            const idListStr = currentOrderIds.map(id => `"${id}"`).join(',');
-            await supabase.from('orders').delete().not('id', 'in', `(${idListStr})`);
-          }
-        }
-      });
+  try {
+    const mapped = orders.map(mapOrderRowToSupabase);
+
+    if (mapped.length > 0) {
+      const { error } = await supabase.from('orders').upsert(mapped);
+      if (error) {
+        console.error('Supabase orders upsert failed:', error);
+        return;
+      }
+    }
+
+    // Prune rows the caller removed. Diff against the table instead of using
+    // `not('id','in', …)` so the filter never grows past a URL length limit.
+    const { data: existingRows, error: selectError } = await supabase.from('orders').select('id');
+    if (selectError) {
+      console.error('Supabase orders prune lookup failed:', selectError);
+      return;
+    }
+    const keptIds = new Set(mapped.map(row => String(row.id)));
+    const removedIds = (existingRows || [])
+      .map((row: any) => String(row.id))
+      .filter(id => !keptIds.has(id));
+    if (removedIds.length === 0) return;
+
+    for (let i = 0; i < removedIds.length; i += 100) {
+      const { error: deleteError } = await supabase
+        .from('orders')
+        .delete()
+        .in('id', removedIds.slice(i, i + 100));
+      if (deleteError) {
+        console.error('Supabase orders prune failed:', deleteError);
+        return;
+      }
     }
   } catch (error) {
     console.error('Error writing orders database:', error);
@@ -1959,9 +2150,9 @@ function normalizePhone(value: unknown): string {
 console.log('[Orders] Auto-status-advancement disabled in production. Use admin panel to update order status.');
 
 // Live Tracking & Orders Endpoints
-app.get('/api/orders', verifyAdminToken, (req, res) => {
+app.get('/api/orders', verifyAdminToken, async (req, res) => {
   try {
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     res.json(dbOrders);
   } catch (err) {
     res.status(500).json({ error: 'Failed to read orders database' });
@@ -1970,7 +2161,7 @@ app.get('/api/orders', verifyAdminToken, (req, res) => {
 
 // Secure order lookup — requires orderNumber + accountEmail to prevent PII enumeration.
 // Guests can still track their order using the email they checked out with.
-app.get('/api/orders/:orderNumber', rateLimiter(20, 15 * 60 * 1000), (req, res) => {
+app.get('/api/orders/:orderNumber', rateLimiter(20, 15 * 60 * 1000), async (req, res) => {
   try {
     const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     if (!orderNum || !/^[A-Z0-9\-_]+$/.test(orderNum)) {
@@ -1983,7 +2174,7 @@ app.get('/api/orders/:orderNumber', rateLimiter(20, 15 * 60 * 1000), (req, res) 
       return res.status(400).json({ error: 'Your account email is required to look up an order. Provide ?email=your@email.com' });
     }
 
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     const order = dbOrders.find(
       o => o.orderNumber.toUpperCase() === orderNum || o.id.toUpperCase() === orderNum
     );
@@ -2522,9 +2713,9 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
   }
 
   const whatsappFilePath = path.join(process.cwd(), 'whatsapp_db.json');
-  let currentWhatsApp = [];
+  let currentWhatsApp: any[] = [];
   try {
-    if (fs.existsSync(whatsappFilePath)) {
+    if (!isCloudflareWorker && fs.existsSync(whatsappFilePath)) {
       currentWhatsApp = JSON.parse(fs.readFileSync(whatsappFilePath, 'utf-8') || '[]');
     }
   } catch (err) {
@@ -2546,11 +2737,9 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
   };
 
   currentWhatsApp.unshift(newAlertRecord);
-  try {
-    fs.writeFileSync(whatsappFilePath, JSON.stringify(currentWhatsApp, null, 2));
+  writeLocalCache(whatsappFilePath, currentWhatsApp);
+  if (!isCloudflareWorker) {
     console.log(`[WhatsApp Service] Logged notification to whatsapp_db.json for ${recipientPhone}.`);
-  } catch (err) {
-    console.error('Error writing WhatsApp database:', err);
   }
 
   // Real Twilio WhatsApp Integration
@@ -2651,7 +2840,7 @@ app.post('/api/whatsapp/alert', async (req, res) => {
       return res.status(400).json({ error: 'Missing alert type or orderNumber.' });
     }
 
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     const order = dbOrders.find(
       o => o.orderNumber.toUpperCase() === orderNumber.toUpperCase() || o.id.toUpperCase() === orderNumber.toUpperCase()
     );
@@ -2689,6 +2878,9 @@ interface OtpRecord {
 const otpMemoryStore: Record<string, OtpRecord> = {};
 
 function readOtpDb(): Record<string, OtpRecord> {
+  // Workers recycles isolates unpredictably, so a background sweeper is not a
+  // reliable place to reclaim memory. Purge inline on read instead.
+  if (isCloudflareWorker) return purgeExpiredOtps(otpMemoryStore);
   return otpMemoryStore;
 }
 
@@ -2711,15 +2903,19 @@ function purgeExpiredOtps(db: Record<string, OtpRecord>): Record<string, OtpReco
   return cleaned;
 }
 
-// Periodically purge expired OTPs from memory (every 10 minutes)
-setInterval(() => {
-  const now = Date.now();
-  for (const key of Object.keys(otpMemoryStore)) {
-    if (otpMemoryStore[key].expiresAt <= now) {
-      delete otpMemoryStore[key];
+// Periodically purge expired OTPs from memory (every 10 minutes).
+// Skipped on Workers: a module-scope timer is not tied to a request and can be
+// dropped as soon as the isolate idles. readOtpDb() purges inline instead.
+if (!isCloudflareWorker) {
+  setInterval(() => {
+    const now = Date.now();
+    for (const key of Object.keys(otpMemoryStore)) {
+      if (otpMemoryStore[key].expiresAt <= now) {
+        delete otpMemoryStore[key];
+      }
     }
-  }
-}, 10 * 60 * 1000);
+  }, 10 * 60 * 1000);
+}
 
 function smtpEmailConfigured(): boolean {
   return true;
@@ -2939,9 +3135,7 @@ app.post('/api/login-customer', rateLimiter(60, 15 * 60 * 1000), async (req, res
           if (!inMemoryCustomers.some(c => c.email.toLowerCase() === lowerEmail)) {
             inMemoryCustomers.push(customer);
           }
-          try {
-            fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
-          } catch { /* ignore */ }
+          writeLocalCache(CUSTOMERS_FILE_PATH, inMemoryCustomers);
         }
       } catch (err) {
         console.error('Supabase customer fetch error:', err);
@@ -2950,7 +3144,7 @@ app.post('/api/login-customer', rateLimiter(60, 15 * 60 * 1000), async (req, res
 
     // Tier 3: Local JSON file fallback
     if (!customer) {
-      if (fs.existsSync(CUSTOMERS_FILE_PATH)) {
+      if (!isCloudflareWorker && fs.existsSync(CUSTOMERS_FILE_PATH)) {
         try {
           const localCustomers = JSON.parse(fs.readFileSync(CUSTOMERS_FILE_PATH, 'utf-8') || '[]');
           const found = localCustomers.find((c: any) => c.email.toLowerCase() === lowerEmail);
@@ -3034,7 +3228,7 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     }
 
     // Non-blocking async password hash
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, customerBcryptCost());
 
     const newCustomer = {
       id: `cust_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -3047,20 +3241,19 @@ app.post('/api/register-customer', rateLimiter(30, 15 * 60 * 1000), async (req, 
     inMemoryCustomers.push(newCustomer);
 
     if (supabase) {
-      supabase.from('customers').upsert({
+      // Awaited: Supabase is the only durable store on Workers, where a
+      // detached promise is cancelled as soon as the response is sent.
+      const { error } = await supabase.from('customers').upsert({
         id: newCustomer.id,
         email: newCustomer.email,
         name: newCustomer.name,
         password_hash: newCustomer.passwordHash,
         created_at: newCustomer.createdAt
-      }, { onConflict: 'email' }).then(({ error }) => {
-        if (error) console.error('[Registration] Supabase customer upsert error:', error);
-      });
+      }, { onConflict: 'email' });
+      if (error) console.error('[Registration] Supabase customer upsert error:', error);
     }
 
-    try {
-      fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
-    } catch { /* ignore */ }
+    writeLocalCache(CUSTOMERS_FILE_PATH, inMemoryCustomers);
 
     // Build the welcome email
     const subject = `Welcome to Radha Fashions - Happy Shopping!`;
@@ -3174,12 +3367,8 @@ app.post('/api/auth/clerk-sync', express.json(), async (req, res) => {
       });
     }
 
-    // Persist to local JSON DB
-    try {
-      fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(inMemoryCustomers, null, 2));
-    } catch (e) {
-      console.warn('Error saving local customer db:', e);
-    }
+    // Persist to local JSON DB (no-op on Workers — Supabase is authoritative)
+    writeLocalCache(CUSTOMERS_FILE_PATH, inMemoryCustomers);
 
     // Sync to Supabase if available
     if (supabase) {
@@ -3220,7 +3409,7 @@ app.get('/api/customers', async (req, res) => {
       if (dbOrders) ordersList = dbOrders;
     }
     if (ordersList.length === 0) {
-      ordersList = readOrdersDb();
+      ordersList = await readOrdersDb();
     }
 
     if (supabase) {
@@ -3414,7 +3603,7 @@ async function applyPayUResult(payload: Record<string, any>, fallbackStatus: 'su
   const txnid = sanitizeString(payload.txnid || payload.udf1, 60);
   if (!txnid) return null;
 
-  const dbOrders = readOrdersDb();
+  const dbOrders = await readOrdersDb();
   const index = dbOrders.findIndex(
     o => String(o.orderNumber || '').toUpperCase() === txnid.toUpperCase() ||
       String(o.payuTxnId || '').toUpperCase() === txnid.toUpperCase()
@@ -3437,7 +3626,7 @@ async function applyPayUResult(payload: Record<string, any>, fallbackStatus: 'su
     payuStatus: gatewayStatus
   };
 
-  writeOrdersDb(dbOrders);
+  await writeOrdersDb(dbOrders);
 
   if (previousPaymentStatus === 'pending' && paid) {
     try {
@@ -3598,7 +3787,7 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       newOrder.codStatus = newOrder.codStatus || 'pending';
     }
 
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     const existingIndex = dbOrders.findIndex(
       o => o.orderNumber.toUpperCase() === newOrder.orderNumber.toUpperCase()
     );
@@ -3609,44 +3798,48 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       dbOrders.unshift(newOrder);
     }
 
-    writeOrdersDb(dbOrders);
+    await writeOrdersDb(dbOrders);
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
     
-    // Dispatch order email asynchronously in background (fast response)
+    // Dispatch order notifications.
     // UPI QR → 'received' (awaiting verification); Razorpay/COD → 'confirmation'
+    //
+    // A long-lived Node server can fire these off and forget them. A Cloudflare
+    // Worker cannot: the isolate is frozen the moment the response is returned,
+    // so a detached promise would be cancelled before the first SMTP request
+    // left. `waitUntil` is not reachable from inside an Express handler, so the
+    // notifications are awaited here instead. The order is already committed to
+    // Supabase at this point, and every failure is swallowed, so a flaky mail
+    // provider can never turn a successful checkout into an error response.
     const isUpiQr = newOrder.paymentMethod?.toLowerCase().includes('upi');
     const emailType = isUpiQr ? 'received' : 'confirmation';
-    (async () => {
+    const retryWithBackoff = async (label: string, send: () => Promise<unknown>) => {
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          await sendBookingEmail(newOrder, emailType);
-          console.log(`[Order Service] Dispatched '${emailType}' email for #${newOrder.orderNumber} (attempt ${attempt})`);
-          break;
-        } catch (emailErr) {
-          console.error(`[Order Service] Email attempt ${attempt} failed for #${newOrder.orderNumber}:`, emailErr);
+          await send();
+          console.log(`[Order Service] ${label} dispatched for #${newOrder.orderNumber} (attempt ${attempt})`);
+          return;
+        } catch (err) {
+          console.error(`[Order Service] ${label} attempt ${attempt} failed for #${newOrder.orderNumber}:`, err);
           if (attempt < 3) await new Promise(r => setTimeout(r, 2000 * attempt));
         }
       }
-    })();
+    };
 
-    // Retry admin notification email up to 3 times
-    (async () => {
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await sendAdminVendorNotificationEmail(newOrder);
-          console.log(`[Order Service] Admin notification email sent for #${newOrder.orderNumber} (attempt ${attempt})`);
-          break;
-        } catch (adminErr) {
-          console.error(`[Order Service] Admin email attempt ${attempt} failed for #${newOrder.orderNumber}:`, adminErr);
-          if (attempt < 3) await new Promise(r => setTimeout(r, 2000 * attempt));
-        }
-      }
-    })();
+    const notifications = [
+      retryWithBackoff(`'${emailType}' email`, () => sendBookingEmail(newOrder, emailType)),
+      retryWithBackoff('admin notification email', () => sendAdminVendorNotificationEmail(newOrder)),
+      sendSMSAlert(newOrder).catch(smsErr => {
+        console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
+      })
+    ];
 
-    // Dispatch booking confirmation SMS asynchronously in background
-    sendSMSAlert(newOrder).catch(smsErr => {
-      console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
-    });
+    if (isCloudflareWorker) {
+      await Promise.allSettled(notifications);
+    } else {
+      // Detach on long-lived hosts to keep checkout latency low.
+      void Promise.allSettled(notifications);
+    }
 
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {
@@ -3663,7 +3856,7 @@ app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) =
       return res.status(400).json({ error: 'Status, COD status, or payment status is required.' });
     }
 
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     const index = dbOrders.findIndex(
       o => o.orderNumber.toUpperCase() === orderNum || o.id.toUpperCase() === orderNum
     );
@@ -3672,7 +3865,7 @@ app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) =
       if (status) dbOrders[index].status = status;
       if (codStatus) dbOrders[index].codStatus = codStatus;
       if (paymentStatus) dbOrders[index].paymentStatus = paymentStatus;
-      writeOrdersDb(dbOrders);
+      await writeOrdersDb(dbOrders);
 
       // Dispatch asynchronous status update WhatsApp Alert
       /*
@@ -3697,7 +3890,7 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
     const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
     const updatedOrder = req.body;
 
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     const index = dbOrders.findIndex(
       o => o.orderNumber.toUpperCase() === orderNum || o.id.toUpperCase() === orderNum
     );
@@ -3707,40 +3900,9 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
       const newPaymentStatus = updatedOrder.paymentStatus;
 
       dbOrders[index] = { ...dbOrders[index], ...updatedOrder };
-      writeOrdersDb(dbOrders);
-
-      // If Supabase is connected, update there too
-      if (supabase) {
-        await supabase.from('orders').upsert({
-          id: dbOrders[index].id,
-          order_number: dbOrders[index].orderNumber,
-          customer_info: dbOrders[index].customerInfo,
-          items: dbOrders[index].items,
-          shipping_method: dbOrders[index].shippingMethod,
-          shipping_cost: dbOrders[index].shippingCost,
-          tax: dbOrders[index].tax,
-          discount: dbOrders[index].discount,
-          subtotal: dbOrders[index].subtotal,
-          total: dbOrders[index].total,
-          status: dbOrders[index].status,
-          coupon_code: dbOrders[index].couponCode,
-          date: dbOrders[index].date,
-          payment_method: dbOrders[index].paymentMethod,
-          payment_status: dbOrders[index].paymentStatus,
-          upi_txn_id: dbOrders[index].upiTxnId,
-          upi_sender_name: dbOrders[index].upiSenderName,
-          upi_screenshot: dbOrders[index].upiScreenshot,
-          upi_notes: dbOrders[index].upiNotes,
-          upi_rejection_reason: dbOrders[index].upiRejectionReason,
-          gift_wrapping_requested: dbOrders[index].giftWrappingRequested,
-          gift_wrapping_type: dbOrders[index].giftWrappingType,
-          gift_message: dbOrders[index].giftMessage,
-          gift_sender_name: dbOrders[index].giftSenderName,
-          gift_hide_price: dbOrders[index].giftHidePrice,
-          account_email: dbOrders[index].accountEmail,
-          account_name: dbOrders[index].accountName
-        });
-      }
+      // writeOrdersDb already upserts the full row to Supabase via
+      // mapOrderRowToSupabase, so there is no second write to do here.
+      await writeOrdersDb(dbOrders);
 
       // Check if paymentStatus transitioned from pending to paid or rejected
       if (oldPaymentStatus === 'pending' && newPaymentStatus === 'paid') {
@@ -3788,11 +3950,11 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
 app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
   try {
     const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
-    const dbOrders = readOrdersDb();
+    const dbOrders = await readOrdersDb();
     const filtered = dbOrders.filter(
       o => o.orderNumber.toUpperCase() !== orderNum && o.id.toUpperCase() !== orderNum
     );
-    writeOrdersDb(filtered);
+    await writeOrdersDb(filtered);
     res.json({ success: true, message: `Order ${orderNum} deleted.` });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete order from database' });
@@ -3802,7 +3964,7 @@ app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
 
 
 // Admin authentication endpoints
-app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), (req, res) => {
+app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), async (req, res) => {
   try {
     const username = sanitizeString(req.body?.username, 100);
     const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 256) : '';
@@ -3810,11 +3972,11 @@ app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), (req, res) => {
       return res.status(400).json({ error: 'Username and password fields are required.' });
     }
 
-    const config = readAdminConfig();
+    const config = await readAdminConfig();
     // Use constant-time string compare for username to prevent timing attacks
     const usernameMatch = username.length === config.username.length &&
       crypto.timingSafeEqual(Buffer.from(username), Buffer.from(config.username));
-    if (usernameMatch && verifyAndUpgradeAdminPassword(password, config.password)) {
+    if (usernameMatch && await verifyAndUpgradeAdminPassword(password, config.password)) {
       const token = jwt.sign(
         { username, role: 'admin' },
         JWT_SECRET,
@@ -3957,7 +4119,7 @@ app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=3600');
   try {
-    const products = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const products = await loadProductsForRead();
     const today = new Date().toISOString().split('T')[0];
     const categories = ['sarees', 'lehengas', 'kurtis', 'salwar', 'dupattas', 'jewellery', 'handbags', 'nightwear', 'western'];
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -4053,8 +4215,8 @@ app.post('/api/admin/config', verifyAdminToken, async (req, res) => {
       return res.status(400).json({ error: validation.errors[0] || 'Admin password does not meet strength requirements.' });
     }
 
-    const hashed = bcrypt.hashSync(password, 12);
-    writeAdminConfig({ username, password: hashed });
+    const hashed = await bcrypt.hash(password, adminBcryptCost());
+    await writeAdminConfig({ username, password: hashed });
     res.json({ success: true, message: 'Administrative credentials updated successfully.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to save admin credentials' });
@@ -4230,9 +4392,9 @@ const getRazorpayClient = () => {
 };
 
 // Product Structured Data for Google Rich Results
-app.get('/api/product-schema/:productId', (req, res) => {
+app.get('/api/product-schema/:productId', async (req, res) => {
   try {
-    const products = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS);
+    const products = await loadProductsForRead();
     const product = products.find((p: any) => p.id === req.params.productId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -4348,21 +4510,144 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-// Configure Vite or Static delivery depending on environment
-if (!process.env.VERCEL) {
+// One-time, idempotent bootstrap of the ₹10 checkout test product.
+// Only ever called from the Node startup path: Workers forbids asynchronous I/O
+// in global scope, and the insert is a one-off — run ADD_TEST_PRODUCT.sql
+// against Supabase if you need the trial product on a Workers deployment.
+async function ensureTestProductSeeded() {
+  if (!supabase) return;
+  try {
+    const { data: existing } = await supabase.from('products').select('id').eq('id', 'TEST-RF-001').maybeSingle();
+    if (existing) return;
+
+    const { error } = await supabase.from('products').upsert({
+      id: 'TEST-RF-001',
+      sku: 'TEST-10',
+      name: 'Test Product — ₹10 Trial Order',
+      category: 'kurtis',
+      category_slug: 'kurtis',
+      price: 10,
+      discount_price: 10,
+      stock: 999,
+      rating: 5.0,
+      rating_count: 1,
+      images: ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop'],
+      short_description: 'Test product for verifying checkout. ₹10 with free shipping and free GST.',
+      description: 'Test product to verify checkout and payment flow. Price ₹10, free shipping, zero GST. Use to test Razorpay and UPI QR payments.',
+      specifications: { Weight: '0.1 kg', Material: 'Test', Origin: 'India' },
+      reviews: [],
+      is_new: true,
+      is_bestseller: false,
+      brand: 'Radha Fashions',
+      availability: 'In Stock',
+      vendor_id: 'admin',
+      variation: null,
+      variations: null
+    });
+    if (error) console.error('[Seed] Failed to insert test product:', error);
+    else console.log('[Seed] Test product (TEST-RF-001) added to Supabase.');
+  } catch (seedErr) {
+    console.error('[Seed] Test product seed error:', seedErr);
+  }
+}
+
+/**
+ * Cloudflare Workers static delivery.
+ *
+ * The platform serves `dist/` straight from its asset pipeline for ordinary
+ * paths. `wrangler.jsonc` only routes `/api/*`, `/health` and the handful of
+ * dynamically generated responses (`/sitemap.xml`, `/robots.txt` and the product
+ * social previews) through this Worker, which leaves exactly two things to
+ * implement here: the SPA shell and the per-product Open Graph HTML. Both are
+ * resolved through the `ASSETS` binding, because Workers has no filesystem to
+ * read `dist/index.html` from.
+ */
+function initializeCloudflareWorker() {
+  const assets = cloudflareAssets();
+  if (!assets) {
+    console.error('⨯ Cloudflare ASSETS binding is missing. Check the "assets" block in wrangler.jsonc.');
+    return;
+  }
+
+  const readIndexHtml = async (): Promise<string> => {
+    const response = await assets.fetch(new Request('https://assets.local/index.html'));
+    if (!response.ok) throw new Error(`ASSETS returned ${response.status} for /index.html`);
+    return await response.text();
+  };
+
+  const sendIndexHtml = async (res: any) => {
+    const html = await readIndexHtml();
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.type('html').send(html);
+  };
+
+  // Per-product social preview. Crawlers do not run the React app, so the OG
+  // tags have to be rendered here. An unknown slug falls through to the SPA
+  // shell, which renders its own not-found/home state.
+  app.get(['/products/:productId', '/product/:productId'], async (req, res) => {
+    try {
+      const param = String(req.params.productId || '').toLowerCase().trim();
+      const products = await loadProductsForRead();
+      const product = products.find((item: any) =>
+        (item.id && item.id.toLowerCase() === param) ||
+        slugifyProduct(item.slug || item.name, item.id) === param
+      );
+
+      if (!product) return await sendIndexHtml(res);
+
+      const indexHtml = await readIndexHtml();
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      return res.type('html').send(createProductSocialPreviewHtml(indexHtml, product));
+    } catch (error) {
+      console.error('Failed to generate product social preview:', error);
+      try {
+        return await sendIndexHtml(res);
+      } catch {
+        return res.status(500).send('Application shell is temporarily unavailable.');
+      }
+    }
+  });
+
+  // SPA fallback for any path the Worker receives. `not_found_handling:
+  // "single-page-application"` already covers this at the platform level, so
+  // this is the safety net rather than the primary mechanism.
+  app.get('*', async (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    try {
+      await sendIndexHtml(res);
+    } catch (error) {
+      console.error('Failed to serve index.html from the ASSETS binding:', error);
+      res.status(500).send('Application shell is temporarily unavailable. Please retry shortly.');
+    }
+  });
+
+  console.log('◇ Serving static assets from the Cloudflare ASSETS binding.');
+}
+
+// Configure Vite or static delivery depending on the environment.
+if (isCloudflareWorker) {
+  // `app.listen()` is driven by worker.ts via `httpServerHandler`; the assets
+  // pipeline owns everything else, so there is nothing to mount here.
+  initializeCloudflareWorker();
+} else if (!process.env.VERCEL) {
   async function initializeServer() {
     const distIndexHtml = path.join(process.cwd(), 'dist', 'index.html');
     const isProductionBuild = process.env.NODE_ENV === 'production';
 
     if (isProductionBuild && fs.existsSync(distIndexHtml)) {
       const distPath = path.join(process.cwd(), 'dist');
-      app.get(['/products/:productId', '/product/:productId'], (req, res, next) => {
+      app.get(['/products/:productId', '/product/:productId'], async (req, res, next) => {
         const param = String(req.params.productId || '').toLowerCase().trim();
-        const product = readLocalJsonDb(PRODUCTS_FILE_PATH, INITIAL_PRODUCTS)
-          .find((item: any) => 
-            (item.id && item.id.toLowerCase() === param) ||
-            slugifyProduct(item.slug || item.name, item.id) === param
-          );
+        const product = (await loadProductsForRead()).find((item: any) =>
+          (item.id && item.id.toLowerCase() === param) ||
+          slugifyProduct(item.slug || item.name, item.id) === param
+        );
 
         // Unknown product paths continue to the normal SPA fallback, which
         // lets the client render its standard not-found/home state.
@@ -4398,7 +4683,11 @@ if (!process.env.VERCEL) {
       console.log('◇ Serving production static build from dist/.');
     } else {
       try {
-        const { createServer: createViteServer } = await import('vite');
+        // The specifier is held in a variable so the Workers bundler cannot
+        // statically resolve it. Bundling Vite into a Worker would add several
+        // megabytes to the upload, and this branch never runs there anyway.
+        const viteSpecifier = 'vite';
+        const { createServer: createViteServer } = await import(/* @vite-ignore */ viteSpecifier);
         const vite = await createViteServer({
           server: { middlewareMode: true },
           appType: 'spa',
@@ -4419,42 +4708,7 @@ if (!process.env.VERCEL) {
       }
     }
 
-    // Seed test product into Supabase if it doesn't exist
-    if (supabase) {
-      try {
-        const { data: existing } = await supabase.from('products').select('id').eq('id', 'TEST-RF-001').single();
-        if (!existing) {
-          const { error } = await supabase.from('products').upsert({
-            id: 'TEST-RF-001',
-            sku: 'TEST-10',
-            name: 'Test Product — ₹10 Trial Order',
-            category: 'kurtis',
-            category_slug: 'kurtis',
-            price: 10,
-            discount_price: 10,
-            stock: 999,
-            rating: 5.0,
-            rating_count: 1,
-            images: ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop'],
-            short_description: 'Test product for verifying checkout. ₹10 with free shipping and free GST.',
-            description: 'Test product to verify checkout and payment flow. Price ₹10, free shipping, zero GST. Use to test Razorpay and UPI QR payments.',
-            specifications: { Weight: '0.1 kg', Material: 'Test', Origin: 'India' },
-            reviews: [],
-            is_new: true,
-            is_bestseller: false,
-            brand: 'Radha Fashions',
-            availability: 'In Stock',
-            vendor_id: 'admin',
-            variation: null,
-            variations: null
-          });
-          if (error) console.error('[Seed] Failed to insert test product:', error);
-          else console.log('[Seed] Test product (TEST-RF-001) added to Supabase.');
-        }
-      } catch (seedErr) {
-        console.error('[Seed] Test product seed error:', seedErr);
-      }
-    }
+    void ensureTestProductSeeded();
 
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Radha Fashions Full-Stack Server listening on http://localhost:${PORT}`);
