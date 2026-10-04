@@ -14,6 +14,27 @@ export interface AdminPaymentsTabProps {
   addToast: (text: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
 
+/**
+ * The order number the customer actually quotes — `id` is an internal key like
+ * `ord-1787917146602` and means nothing to a human reading the queue.
+ */
+function displayOrderRef(order: Order): string {
+  return (order.orderNumber || order.id || 'UNKNOWN').toUpperCase();
+}
+
+/**
+ * `date` is stored as a bare `YYYY-MM-DD` string. `new Date('2026-08-28')` is
+ * parsed as UTC midnight, which renders as the previous day for anyone west of
+ * Greenwich — so "today's approvals" was quietly wrong for most of the world.
+ */
+function parseOrderDate(value: string | undefined): Date {
+  if (!value) return new Date();
+  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (ymd) return new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
 export default function AdminPaymentsTab({
   orders,
   onUpdateOrderStatus,
@@ -25,33 +46,45 @@ export default function AdminPaymentsTab({
   const [rejectionReason, setRejectionReason] = useState<Record<string, string>>({});
   const [showRejectInput, setShowRejectInput] = useState<Record<string, boolean>>({});
 
-  const upiOrders = orders.filter(o => o.paymentMethod?.toLowerCase().includes('upi'));
-  
-  const pendingOrders = upiOrders.filter(o => o.paymentStatus === 'pending');
-  
-  const approvedOrders = upiOrders.filter(o => o.paymentStatus === 'paid');
+  // Orders that need a human to confirm the money arrived. This is every manual
+  // rail we support — filtering on 'upi' alone silently hid PayU submissions
+  // from the verification queue, so they could sit unapproved forever.
+  const needsManualVerification = (o: Order) => {
+    const method = (o.paymentMethod || '').toLowerCase();
+    return method.includes('upi') || method.includes('payu');
+  };
+
+  const verificationOrders = orders.filter(needsManualVerification);
+
+  const pendingOrders = verificationOrders.filter(o => o.paymentStatus === 'pending');
+
+  const approvedOrders = verificationOrders.filter(o => o.paymentStatus === 'paid');
   const todaysApproved = approvedOrders.filter(o => {
-    const d = new Date(o.date || new Date());
+    const d = parseOrderDate(o.date);
     const today = new Date();
-    return d.getDate() === today.getDate() && 
-           d.getMonth() === today.getMonth() && 
+    return d.getDate() === today.getDate() &&
+           d.getMonth() === today.getMonth() &&
            d.getFullYear() === today.getFullYear();
   });
 
-  const rejectedOrders = upiOrders.filter(o => o.paymentStatus === 'rejected');
+  const rejectedOrders = verificationOrders.filter(o => o.paymentStatus === 'rejected');
   const thisMonthRejected = rejectedOrders.filter(o => {
-    const d = new Date(o.date || new Date());
+    const d = parseOrderDate(o.date);
     const today = new Date();
     return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
   });
 
   const handleApprove = (order: Order) => {
+    // A single write. This used to call onUpdatePaymentStatus *and*
+    // onUpdateOrderStatus, so one approval issued two independent round-trips
+    // and a failure in the second left the payment approved but the order stuck
+    // in its old state. onUpdatePaymentStatus already moves a paid order to
+    // 'processing' as part of the same persisted update.
     if (onUpdatePaymentStatus) {
       onUpdatePaymentStatus(order.id, 'paid');
     }
-    onUpdateOrderStatus(order.id, 'processing');
-    addToast(`Payment approved for order #${order.id.substring(0,6)}`, 'success');
-    onLogActivity('PAYMENT_APPROVED', `Admin approved UPI payment for order ${order.id}`);
+    addToast(`Payment approved for order #${displayOrderRef(order)}`, 'success');
+    onLogActivity('PAYMENT_APPROVED', `Admin approved payment for order ${displayOrderRef(order)}`);
   };
 
   const handleRejectClick = (orderId: string) => {
@@ -60,12 +93,12 @@ export default function AdminPaymentsTab({
 
   const confirmReject = (order: Order) => {
     const reason = rejectionReason[order.id] || 'Payment verification failed';
+    // Same single-write reasoning as handleApprove.
     if (onUpdatePaymentStatus) {
       onUpdatePaymentStatus(order.id, 'rejected', reason);
     }
-    onUpdateOrderStatus(order.id, 'cancelled');
-    addToast(`Payment rejected for order #${order.id.substring(0,6)}`, 'error');
-    onLogActivity('PAYMENT_REJECTED', `Admin rejected UPI payment for order ${order.id}. Reason: ${reason}`);
+    addToast(`Payment rejected for order #${displayOrderRef(order)}`, 'error');
+    onLogActivity('PAYMENT_REJECTED', `Admin rejected payment for order ${displayOrderRef(order)}. Reason: ${reason}`);
     setShowRejectInput(prev => ({ ...prev, [order.id]: false }));
   };
 
@@ -77,7 +110,7 @@ export default function AdminPaymentsTab({
           <ShieldCheck className="w-10 h-10 text-[#D4648A] mr-4" />
           <div>
             <h1 className="text-3xl font-bold text-white mb-1">UPI Payment Verification Center</h1>
-            <p className="text-gray-300">Review and verify manual UPI payment submissions.</p>
+            <p className="text-gray-300">Review and verify manual UPI and PayU payment submissions.</p>
           </div>
         </div>
       </div>
@@ -86,8 +119,9 @@ export default function AdminPaymentsTab({
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-start text-blue-800 dark:text-blue-300">
         <AlertCircle className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
         <p className="text-sm">
-          <strong>To verify payment:</strong> Check if the UPI screenshot matches the order total and sender name in your bank records. 
-          If verified, click <strong>Approve</strong>. Orders will automatically move to 'Processing' status.
+          <strong>To verify payment:</strong> Check that the submitted transaction ID and screenshot match the order total and
+          sender name in your bank records. If verified, click <strong>Approve</strong> — the order moves to
+          &apos;Processing&apos; in a single saved update.
         </p>
       </div>
 
@@ -190,9 +224,9 @@ export default function AdminPaymentsTab({
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <span className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full mb-2 uppercase tracking-wide">Needs Verification</span>
-                        <h3 className="text-2xl font-mono font-bold text-gray-900 dark:text-white">#{order.id.substring(0, 8).toUpperCase()}</h3>
+                        <h3 className="text-2xl font-mono font-bold text-gray-900 dark:text-white">#{displayOrderRef(order)}</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {new Date(order.date || new Date()).toLocaleString()}
+                          {parseOrderDate(order.date).toLocaleString()}
                         </p>
                       </div>
                       <div className="text-right">
@@ -329,10 +363,10 @@ export default function AdminPaymentsTab({
                   {approvedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="py-4 text-gray-500 dark:text-gray-400 text-xs">
-                        {new Date(order.date || new Date()).toLocaleDateString()}
+                        {parseOrderDate(order.date).toLocaleDateString()}
                       </td>
                       <td className="py-4 font-mono font-medium text-gray-900 dark:text-white">
-                        {order.orderNumber || order.id.substring(0, 8).toUpperCase()}
+                        {displayOrderRef(order)}
                       </td>
                       <td className="py-4 text-gray-600 dark:text-gray-300">
                         {order.customerInfo?.name || 'N/A'}
@@ -376,10 +410,10 @@ export default function AdminPaymentsTab({
                   {rejectedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="py-4 text-gray-500 dark:text-gray-400 text-xs">
-                        {new Date(order.date || new Date()).toLocaleDateString()}
+                        {parseOrderDate(order.date).toLocaleDateString()}
                       </td>
                       <td className="py-4 font-mono font-medium text-gray-900 dark:text-white">
-                        {order.orderNumber || order.id.substring(0, 8).toUpperCase()}
+                        {displayOrderRef(order)}
                       </td>
                       <td className="py-4 font-bold text-gray-900 dark:text-white">
                         Rs. {order.total}
