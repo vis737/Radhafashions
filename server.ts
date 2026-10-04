@@ -63,6 +63,37 @@ if (isCloudflareWorker) {
 const cloudflareAssets = (): any => (globalThis as any).__RADHA_CF_ASSETS__ ?? null;
 
 /**
+ * Runs `work` after the response has been returned, without holding it up.
+ *
+ * A Worker is frozen the moment the response is returned, so a detached promise
+ * is cancelled and the work never happens — that is what silently swallowed
+ * order confirmation emails. Handing the promise to `ctx.waitUntil()` is the
+ * only correct way to do background work on Workers: it both survives the freeze
+ * and stops the customer from waiting for a third-party mail or SMS provider to
+ * answer before their order confirmation appears.
+ *
+ * The execution context is published by `worker.ts` through AsyncLocalStorage;
+ * when it is missing (a Node host, or a Worker whose context did not propagate)
+ * this degrades to the old detach-and-hope behaviour rather than throwing.
+ */
+function deferBackgroundWork(work: Promise<unknown>): void {
+  const store = (globalThis as any).__RADHA_CF_CTX_STORE__;
+  const ctx = typeof store?.getStore === 'function' ? store.getStore() : undefined;
+  if (ctx && typeof ctx.waitUntil === 'function') {
+    ctx.waitUntil(work.then(
+      () => undefined,
+      (err) => {
+        console.error('[Background] Deferred work rejected:', err);
+      }
+    ));
+    return;
+  }
+  // Outside Workers (or if the context never arrived) the process keeps running,
+  // so letting the promise run on its own is correct.
+  void work;
+}
+
+/**
  * bcrypt work factor, tunable from the dashboard without a redeploy.
  *
  * bcrypt is pure CPU, and the Cloudflare Workers **Free** plan only grants
@@ -706,19 +737,22 @@ const CATALOG_CACHE_KEYS = [
 ];
 
 /**
- * In-isolate catalogue cache.
+ * Catalogue cache: an in-isolate Map backed by the shared edge cache.
  *
- * A plain Map rather than the Workers Cache API: `cache.put()` is async, and on
- * Workers it can only be awaited *before* the response is sent — writing it after
- * the response is cancelled, and awaiting it inline tripped the runtime's
- * "code had hung" detector. A synchronous Map write has none of those failure
- * modes and costs effectively nothing.
+ * The Map alone was not enough. Scope is per isolate, and a single edge PoP
+ * serves requests from many isolates, so a live site missed the cache on most
+ * page loads and paid the ~1 s Supabase query anyway — measured at 4 misses in
+ * 5 consecutive requests.
  *
- * Scope is per isolate, which is exactly the right granularity here: it removes
- * repeated Supabase round-trips for warm isolates without ever serving stale data
- * to a cold one. The catalogue changes only when an admin edits it, and every
- * mutation purges this map, so a 60-second TTL is a backstop rather than the
- * primary invalidation path.
+ * `caches.default` is shared across every isolate, which is what the catalogue
+ * deserves. It could not be used before because `cache.put()` is async and on
+ * Workers it must be handed to `ctx.waitUntil()`: writing it after the response
+ * is cancelled, and awaiting it inline tripped the "code had hung" detector.
+ * `deferBackgroundWork` now provides exactly that, so the edge write happens
+ * alongside the response instead of before it.
+ *
+ * The catalogue changes only when an admin edits it, and every mutation purges
+ * both tiers, so the TTL is a backstop rather than the invalidation path.
  */
 type CatalogCacheEntry = { body: string; statusCode: number; expiresAt: number };
 const catalogCache = new Map<string, CatalogCacheEntry>();
@@ -726,6 +760,19 @@ const catalogCache = new Map<string, CatalogCacheEntry>();
 /** The cache is only worth having when we are actually behind a Worker isolate. */
 function catalogCacheEnabled(): boolean {
   return isCloudflareWorker;
+}
+
+/** The shared Workers cache, or null off-Workers / where it is unavailable. */
+function edgeCache(): Cache | null {
+  if (!isCloudflareWorker) return null;
+  const store = (globalThis as any).caches;
+  const target = store?.default;
+  return target && typeof target.match === 'function' ? (target as Cache) : null;
+}
+
+function catalogCacheUrl(pathname: string): string {
+  const origin = String(process.env.APP_URL || 'https://radhafashions.in').replace(/\/+$/, '');
+  return `${origin}${pathname}`;
 }
 
 function readCatalogCache(pathname: string): CatalogCacheEntry | null {
@@ -739,18 +786,71 @@ function readCatalogCache(pathname: string): CatalogCacheEntry | null {
 }
 
 function writeCatalogCache(pathname: string, payload: unknown, statusCode: number): void {
+  const body = JSON.stringify(payload);
   catalogCache.set(pathname, {
-    body: JSON.stringify(payload),
+    body,
     statusCode,
     expiresAt: Date.now() + CATALOG_CACHE_TTL_SECONDS * 1000,
   });
+  writeEdgeCatalogCache(pathname, body, statusCode);
+}
+
+/** Publishes a payload to the edge cache after the response has been returned. */
+function writeEdgeCatalogCache(pathname: string, body: string, statusCode: number): void {
+  const cache = edgeCache();
+  if (!cache) return;
+  const response = new Response(body, {
+    status: statusCode,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': `public, max-age=${CATALOG_CACHE_TTL_SECONDS}`,
+    },
+  });
+  deferBackgroundWork(
+    Promise.resolve(cache.put(new Request(catalogCacheUrl(pathname)), response)).catch((err) => {
+      console.warn('[Catalog Cache] Edge put failed:', err);
+    })
+  );
+}
+
+/** Reads the shared edge cache. Returns null when unavailable or empty. */
+async function readEdgeCatalogCache(pathname: string): Promise<CatalogCacheEntry | null> {
+  const cache = edgeCache();
+  if (!cache) return null;
+  try {
+    const stored = await cache.match(new Request(catalogCacheUrl(pathname)));
+    if (!stored) return null;
+    const body = await stored.text();
+    if (!body) return null;
+    return {
+      body,
+      statusCode: stored.status,
+      expiresAt: Date.now() + CATALOG_CACHE_TTL_SECONDS * 1000,
+    };
+  } catch (err) {
+    console.warn('[Catalog Cache] Edge read failed:', err);
+    return null;
+  }
 }
 
 /** Drop every cached catalogue entry. Called after any catalogue mutation. */
 function purgeCatalogCache(reason: string): void {
-  if (catalogCache.size === 0) return;
+  const hadIsolateEntries = catalogCache.size > 0;
   catalogCache.clear();
+
+  const cache = edgeCache();
+  if (!cache) {
+    if (hadIsolateEntries) console.log(`[Catalog Cache] Purged (${reason}).`);
+    return;
+  }
   console.log(`[Catalog Cache] Purged (${reason}).`);
+  deferBackgroundWork(
+    Promise.all(
+      CATALOG_CACHE_KEYS.map((key) =>
+        Promise.resolve(cache.delete(new Request(catalogCacheUrl(key)))).catch(() => undefined)
+      )
+    ).then(() => undefined)
+  );
 }
 
 app.get('/api/catalog/stream', (req, res) => {
@@ -1038,11 +1138,15 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://checkout.razorpay.com; " +
+    // static.cloudflareinsights.com serves the Web Analytics beacon and
+    // cloudflareinsights.com receives its reports. Neither was listed, so the
+    // browser blocked the beacon on every page load and no analytics data was
+    // ever collected — it only showed up as a CSP error in the console.
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://checkout.razorpay.com https://static.cloudflareinsights.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' data: https://fonts.gstatic.com; " +
     `img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://api.qrserver.com https://img.clerk.com ${supabaseHttps}; ` +
-    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://api.razorpay.com; ` +
+    `connect-src 'self' ${supabaseHttps} ${supabaseWs} https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://api.razorpay.com https://cloudflareinsights.com; ` +
     "worker-src 'self' blob:; " +
     "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.razorpay.com https://api.razorpay.com https://checkout.razorpay.com; " +
     "form-action 'self' https://test.payu.in https://secure.payu.in https://api.razorpay.com https://checkout.razorpay.com; " +
@@ -1099,16 +1203,17 @@ function withCatalogCache(handler: express.RequestHandler): express.RequestHandl
       return handler(req, res, next);
     }
 
-    const hit = readCatalogCache(req.path);
-    if (hit) {
-      res.set('X-Catalog-Cache', 'HIT');
+    const serveCached = (entry: CatalogCacheEntry, state: 'HIT' | 'MISS') => {
+      res.set('X-Catalog-Cache', state);
       res.set('Content-Type', 'application/json; charset=utf-8');
-      return res.status(hit.statusCode).send(hit.body);
-    }
+      return res.status(entry.statusCode).send(entry.body);
+    };
 
-    // Buffer the payload, cache it synchronously, then emit. The write has to
-    // land before the response goes out; on Workers anything after that point is
-    // cancelled when the isolate is frozen.
+    const local = readCatalogCache(req.path);
+    if (local) return serveCached(local, 'HIT');
+
+    // Buffer the payload, cache it, then emit. The in-isolate write is
+    // synchronous; the edge write is deferred through `waitUntil`.
     let captured: unknown;
     let usedJson = false;
     let finished = false;
@@ -1143,16 +1248,32 @@ function withCatalogCache(handler: express.RequestHandler): express.RequestHandl
       return originalJson(captured);
     };
 
-    try {
-      // `RequestHandler` is typed as returning void, but the wrapped routes are
-      // async, so inspect the runtime value rather than the declared type.
-      const result: unknown = handler(req, res, (err?: any) => (err ? next(err) : finish()));
-      if (result && typeof (result as Promise<unknown>).then === 'function') {
-        (result as Promise<unknown>).then(finish).catch(next);
+    const runHandler = () => {
+      try {
+        // `RequestHandler` is typed as returning void, but the wrapped routes are
+        // async, so inspect the runtime value rather than the declared type.
+        const result: unknown = handler(req, res, (err?: any) => (err ? next(err) : finish()));
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          (result as Promise<unknown>).then(finish).catch(next);
+        }
+      } catch (err) {
+        next(err);
       }
-    } catch (err) {
-      next(err);
-    }
+    };
+
+    // Try the shared edge cache before paying for a Supabase round trip. A hit
+    // is promoted into this isolate so the next request skips the lookup too.
+    readEdgeCatalogCache(req.path)
+      .then((edge) => {
+        if (edge) {
+          catalogCache.set(req.path, edge);
+          return serveCached(edge, 'HIT');
+        }
+        runHandler();
+      })
+      .catch(() => {
+        runHandler();
+      });
   };
 }
 
@@ -2252,11 +2373,24 @@ function mapOrderRowToSupabase(o: any) {
  * always consulted first and the JSON file is merely an offline cache for
  * hosts that happen to have a writable disk.
  */
+/**
+ * Columns the live `orders` table actually has, learned from the last read.
+ *
+ * `select('*')` returns every column of the row, including the null ones, so
+ * the keys of a single fetched row are the table's exact schema — free, from a
+ * query this function already has to make. Upserts use it to strip unknown
+ * columns *before* the first attempt. Null until a read has succeeded.
+ */
+let knownOrdersColumns: Set<string> | null = null;
+
 async function readOrdersDb(): Promise<any[]> {
   if (supabase) {
     try {
       const { data, error } = await supabase.from('orders').select('*');
       if (!error && data) {
+        if (data.length > 0) {
+          knownOrdersColumns = new Set(Object.keys(data[0]));
+        }
         const mapped = data.map(mapOrderRow);
         writeLocalCache(ORDERS_FILE_PATH, mapped);
         return mapped;
@@ -2317,9 +2451,89 @@ function missingColumnFromError(error: { code?: string; message?: string }): str
  * whole order being lost. The error is still logged so the migration stays
  * visible in `/api/supabase-health` and the Worker logs.
  */
+/**
+ * Learns the live `orders` schema once per isolate.
+ *
+ * Callers that write a single row cannot rely on a full read having happened
+ * first, and without the column set the upsert falls back to probing for
+ * unknown columns one failed request at a time.
+ */
+async function ensureOrdersSchemaKnown(): Promise<void> {
+  if (!supabase || knownOrdersColumns) return;
+  try {
+    const { data, error } = await supabase.from('orders').select('*').limit(1);
+    if (!error && data && data.length > 0) {
+      knownOrdersColumns = new Set(Object.keys(data[0]));
+    }
+  } catch (err) {
+    console.warn('Could not probe the orders schema; upserts will retry on failure:', err);
+  }
+}
+
+/**
+ * Writes exactly one order row instead of rewriting the whole table.
+ *
+ * Placing an order used to read every order, merge the new one in memory and
+ * write all of them back. That cost three Supabase round trips and shipped the
+ * entire order table twice, and it was quietly unsafe: two customers checking
+ * out at the same time each read the *same* pre-order list, so whichever write
+ * landed second pruned the other's brand new order back out of existence. The
+ * prune diff cannot see a row it was never told about.
+ *
+ * Reading only the row this order replaces keeps the merge behaviour that
+ * matters — re-posting an existing orderNumber updates it rather than
+ * duplicating it — while making the write a single-row upsert that no
+ * concurrent request can undo.
+ */
+async function persistNewOrderRow(newOrder: any): Promise<boolean> {
+  await ensureOrdersSchemaKnown();
+
+  let merged = newOrder;
+  try {
+    const { data: prior } = await supabase!
+      .from('orders')
+      .select('*')
+      .or(`order_number.ilike.${newOrder.orderNumber},id.ilike.${newOrder.id}`)
+      .limit(1);
+
+    const existing = Array.isArray(prior) ? prior[0] : prior;
+    if (existing) {
+      // Client-supplied fields win, but anything the stored row has and the
+      // incoming payload omits — an admin decision such as a payment approval —
+      // must survive.
+      merged = { ...mapOrderRow(existing), ...newOrder, id: newOrder.id };
+    }
+  } catch (err) {
+    console.error('Supabase order lookup failed before insert:', err);
+    return false;
+  }
+
+  return upsertOrdersToleratingMissingColumns([mapOrderRowToSupabase(merged)]);
+}
+
 async function upsertOrdersToleratingMissingColumns(rows: any[]): Promise<boolean> {
   const dropped = new Set<string>();
   let payload = rows;
+
+  // Strip the columns we already know are absent before the first attempt.
+  //
+  // Discovering them by trial cost one failed round trip each: a table missing
+  // twelve columns made every checkout issue thirteen upserts back to back,
+  // which is most of the checkout latency. The schema harvested by
+  // `readOrdersDb` turns that into a single upsert. If the guess is ever wrong —
+  // the migration lands mid-flight — the first attempt fails with a
+  // missing-column error and the loop below rediscovers the truth, so this
+  // optimises the common case without ever making it worse than before.
+  if (knownOrdersColumns) {
+    payload = payload.map((row) => {
+      const copy: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (knownOrdersColumns!.has(key)) copy[key] = value;
+        else dropped.add(key);
+      }
+      return copy;
+    });
+  }
 
   // One attempt per distinct unknown column, plus the initial try.
   for (let attempt = 0; attempt < 24; attempt++) {
@@ -3358,15 +3572,44 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
 */
 
 // Real Twilio SMS notification helper
+/**
+ * A real Twilio Account SID is 34 characters and starts with `AC`.
+ *
+ * Checking only that the variable is non-empty was not enough: a placeholder
+ * value passed the check, the request went out on every single order, and the
+ * Twilio API rejected it with `accountSid must start with AC`. That is an
+ * error log per order for a feature that was never configured.
+ */
+function isUsableTwilioSid(sid: string | undefined): boolean {
+  return Boolean(sid) && /^AC[a-fA-F0-9]{32}$/.test(sid!.trim());
+}
+
+let twilioMisconfiguredWarned = false;
+
 async function sendSMSAlert(order: any) {
   const recipientPhone = normalizePhone(order.customerInfo?.phone);
   if (!recipientPhone) return;
 
   const message = `Radha Fashions: Order #${order.orderNumber} placed successfully! Total: ₹${order.total}. Est. Delivery: ${order.shippingMethod === 'express' ? 'BlueDart Express Air (2-3 Days)' : 'Standard Ground'}. Live tracking: ${process.env.APP_URL || 'http://localhost:3000'}/?track=${order.orderNumber}`;
 
-  if (realNotificationsEnabled() && isConfigured(process.env.TWILIO_ACCOUNT_SID) && isConfigured(process.env.TWILIO_AUTH_TOKEN) && isConfigured(process.env.TWILIO_SMS_NUMBER)) {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const twilioConfigured =
+    realNotificationsEnabled() &&
+    isUsableTwilioSid(sid) &&
+    isConfigured(process.env.TWILIO_AUTH_TOKEN) &&
+    isConfigured(process.env.TWILIO_SMS_NUMBER);
+
+  if (realNotificationsEnabled() && isConfigured(sid) && !twilioConfigured && !twilioMisconfiguredWarned) {
+    twilioMisconfiguredWarned = true;
+    console.warn(
+      '[SMS Service] TWILIO_ACCOUNT_SID is set but is not a valid Twilio Account SID (expected 34 characters starting with "AC"). ' +
+        'SMS confirmations are disabled until a real SID is configured.'
+    );
+  }
+
+  if (twilioConfigured) {
     try {
-      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      const client = twilio(sid!, process.env.TWILIO_AUTH_TOKEN);
       await client.messages.create({
         body: message,
         from: process.env.TWILIO_SMS_NUMBER,
@@ -4411,18 +4654,9 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       newOrder.paymentStatus = 'pending';
     }
 
-    const dbOrders = await readOrdersDb();
-    const existingIndex = dbOrders.findIndex(
-      o => o.orderNumber.toUpperCase() === newOrder.orderNumber.toUpperCase()
-    );
-
-    if (existingIndex >= 0) {
-      dbOrders[existingIndex] = { ...dbOrders[existingIndex], ...newOrder };
-    } else {
-      dbOrders.unshift(newOrder);
-    }
-
-    const persisted = await writeOrdersDb(dbOrders);
+    // Write only this order's row. See persistNewOrderRow for why the whole
+    // table is no longer read back and rewritten.
+    const persisted = await persistNewOrderRow(newOrder);
     if (!persisted) {
       // Answering 201 here told the customer "order placed" for a row that was
       // never stored. Fail loudly so checkout can surface it.
@@ -4436,13 +4670,13 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     // Dispatch order notifications.
     // UPI QR → 'received' (awaiting verification); Razorpay/COD → 'confirmation'
     //
-    // A long-lived Node server can fire these off and forget them. A Cloudflare
-    // Worker cannot: the isolate is frozen the moment the response is returned,
-    // so a detached promise would be cancelled before the first SMTP request
-    // left. `waitUntil` is not reachable from inside an Express handler, so the
-    // notifications are awaited here instead. The order is already committed to
-    // Supabase at this point, and every failure is swallowed, so a flaky mail
-    // provider can never turn a successful checkout into an error response.
+    // These go out *after* the response. The order is already committed to
+    // Supabase above, so the customer has nothing to wait for except us, and
+    // waiting for Resend and Twilio to answer was measured at roughly ten
+    // seconds per checkout — plus a further six seconds of backoff sleeps
+    // whenever the customer's address was rejected. `ctx.waitUntil()` keeps the
+    // notifications alive across the Worker freeze *and* takes them off the
+    // critical path, which is what makes both behaviours correct at once.
     const isUpiQr = newOrder.paymentMethod?.toLowerCase().includes('upi');
     const emailType = isUpiQr ? 'received' : 'confirmation';
     const retryWithBackoff = async (label: string, send: () => Promise<unknown>) => {
@@ -4458,20 +4692,15 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       }
     };
 
-    const notifications = [
+    const notifications = Promise.allSettled([
       retryWithBackoff(`'${emailType}' email`, () => sendBookingEmail(newOrder, emailType)),
       retryWithBackoff('admin notification email', () => sendAdminVendorNotificationEmail(newOrder)),
       sendSMSAlert(newOrder).catch(smsErr => {
         console.error('Failed to dispatch order booking confirmation SMS:', smsErr);
       })
-    ];
+    ]).then(() => undefined);
 
-    if (isCloudflareWorker) {
-      await Promise.allSettled(notifications);
-    } else {
-      // Detach on long-lived hosts to keep checkout latency low.
-      void Promise.allSettled(notifications);
-    }
+    deferBackgroundWork(notifications);
 
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {

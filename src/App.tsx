@@ -374,11 +374,11 @@ export default function App() {
     // Sync orders from backend DB so admin panel always sees all placed orders,
     // even after a page reload or server restart (backend is source of truth).
     //
-    // This MUST be authenticated. `GET /api/orders` sits behind `verifyAdminToken`,
-    // so a plain `fetch` here always answered 401 and was silently discarded —
-    // the admin panel then rendered whatever happened to be in localStorage, which
-    // is why the payments tab looked empty or showed stale orders after a deploy.
-    refreshOrdersFromBackend();
+    // Deliberately *not* done here. `GET /api/orders` sits behind
+    // `verifyAdminToken`, so calling it on mount meant every anonymous visitor —
+    // that is, every customer — fired a request that could only ever answer
+    // 401. The admin-aware effect below refreshes the moment a session is
+    // active, which is the only time the response is useful.
 
     // Restore the success order screen if the page was reloaded right after checkout
     try {

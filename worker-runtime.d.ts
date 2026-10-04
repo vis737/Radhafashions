@@ -14,6 +14,19 @@ declare module 'cloudflare:workers' {
   export const env: Record<string, unknown>;
 }
 
+/**
+ * The per-request execution context Workers hands to a module worker.
+ *
+ * `waitUntil()` is what keeps asynchronous work alive after the response has
+ * been returned — without it the isolate is frozen and the work is cancelled.
+ * Declared here rather than pulled from `wrangler types` so that
+ * `tsc --noEmit` keeps working on a fresh clone with no Cloudflare account.
+ */
+interface ExecutionContext {
+  waitUntil(promise: Promise<unknown>): void;
+  passThroughOnException(): void;
+}
+
 declare module 'cloudflare:node' {
   /**
    * Bridges a Node `http` server into the Workers fetch handler. Express calls
