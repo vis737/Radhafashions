@@ -267,6 +267,7 @@ running on Workers before it evaluates):
 | Social previews | `fs.readFileSync(dist/index.html)` | `ASSETS.fetch('/index.html')` |
 | Catalogue live updates | Supabase Realtime WebSocket | Skipped; the client polls every 20 s |
 | Order notifications | Fire-and-forget after the response | Awaited before responding |
+| Email transport | Resend, then Brevo, then Nodemailer SMTP | Resend, then Brevo. **SMTP is skipped** — Workers have no raw TCP sockets |
 | OTP cleanup | `setInterval` every 10 min | Purged inline on read |
 
 ### Why order notifications are awaited
@@ -279,6 +280,26 @@ leaves. `ctx.waitUntil()` is not reachable from inside an Express handler, so
 committed to Supabase at that point and every notification failure is
 swallowed, so a flaky mail provider can never turn a successful checkout into an
 error response.
+
+**This applies to every outbound call, not just orders.** `POST /api/send-otp`
+had the same defect once: it fired `dispatchOtpEmail()` without awaiting, so it
+answered `200 "Passcode sent"` in ~18 ms while the Resend request was cancelled
+before leaving the isolate and no email was ever delivered. Anything that must
+survive the response has to be awaited (or handed to `ctx.waitUntil()`).
+
+### Checking email delivery
+
+`GET /api/email-health` is a read-only diagnostic — it never sends a message.
+It reports which transports are configured, the resolved `from` address,
+whether that sending domain is actually verified in Resend, and the result of
+the most recent dispatch attempt on that isolate.
+
+```bash
+curl -s https://radhafashions.in/api/email-health | jq
+```
+
+`domainVerified` must be `"verified"`. The Free plan is not a factor here:
+outbound HTTPS to `api.resend.com` works identically on every plan.
 
 ### Known trade-offs
 
@@ -325,3 +346,7 @@ plain Node server with hot reload.
 | Upload returns 500 | Storage bucket missing or private | Create a public `product-images` bucket |
 | Admin login times out on Free plan | 10 ms CPU limit | Set `ADMIN_BCRYPT_COST=6`, or move to Workers Paid |
 | Login fails with `1101` / "exceeded resource limits" | Same cause, on Workers rather than locally | Same fix; `wrangler dev` cannot reproduce this |
+| Emails never arrive, but the API says success | An un-awaited dispatch. A Worker is frozen the instant the response is returned, so a detached promise is cancelled mid-flight | Await every outbound call. `POST /api/send-otp` had exactly this bug; it now returns `502` instead of a false success |
+| `GET /api/email-health` reports `domainVerified: false` | The `from` domain is missing or unverified in Resend | Verify `radhafashions.in` at <https://resend.com/domains>, or change `RESEND_FROM_EMAIL` |
+| `/api/send-otp` returns `502` | Resend rejected the send | Read `lastDispatch` in `/api/email-health`, or the `[Resend]` line in `npm run cf:logs` |
+| Emails stopped after a `SMTP_*` misconfiguration | Workers cannot open raw TCP sockets, so the Nodemailer fallback can never succeed there | Set `RESEND_API_KEY` and remove the dependency on SMTP |

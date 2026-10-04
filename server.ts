@@ -2273,7 +2273,8 @@ function createSmtpTransporter() {
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
   const user = process.env.SMTP_USER || 'admin@radhafashions.in';
-  const pass = process.env.SMTP_PASS || 'lljl hfcn geye rdlt';
+  // No baked-in fallback: a committed app password is a live credential leak.
+  const pass = process.env.SMTP_PASS || '';
 
   return nodemailer.createTransport({
     host,
@@ -2287,47 +2288,91 @@ function createSmtpTransporter() {
   });
 }
 
-async function dispatchLiveEmail(to: string, subject: string, html: string): Promise<boolean> {
+type EmailDispatchResult = {
+  ok: boolean;
+  provider: 'resend' | 'brevo' | 'smtp' | 'none';
+  from?: string;
+  status?: number;
+  code?: string;
+  message?: string;
+};
+
+/** Result of the most recent dispatch attempt, surfaced by `/api/email-health`. */
+let lastEmailDispatch: EmailDispatchResult | null = null;
+
+/**
+ * Sends one transactional email through the first provider that accepts it.
+ *
+ * Returns a structured result rather than a bare boolean so callers can report
+ * *why* a send failed. The previous boolean-only signature is what let this
+ * break silently in production.
+ */
+async function dispatchLiveEmail(to: string, subject: string, html: string): Promise<EmailDispatchResult> {
   const recipient = sanitizeEmail(to);
-  if (!recipient) return false;
+  if (!recipient) {
+    const rejected: EmailDispatchResult = {
+      ok: false,
+      provider: 'none',
+      message: `Invalid recipient address: ${String(to).slice(0, 80)}`,
+    };
+    lastEmailDispatch = rejected;
+    return rejected;
+  }
 
-  // 1. Try Resend HTTP REST API (Primary for Cloud / Custom Domain admin@radhafashions.in - Port 443)
+  // 1. Resend HTTP REST API (primary). Plain outbound fetch — identical on every
+  //    Cloudflare plan, so this path is safe on the Free plan.
   if (isConfigured(process.env.RESEND_API_KEY)) {
-    try {
-      const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
-      const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.in').trim();
-      let fromFormatted = rawFrom;
-      if (rawFrom.includes('onboarding@resend.dev')) {
-        fromFormatted = 'onboarding@resend.dev';
-      } else if (!rawFrom.includes('<')) {
-        fromFormatted = `${fromName} <${rawFrom}>`;
-      }
+    const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
+    const rawFrom = (process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.in').trim();
+    const fromFormatted =
+      rawFrom.includes('onboarding@resend.dev') || rawFrom.includes('<')
+        ? rawFrom
+        : `${fromName} <${rawFrom}>`;
 
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY!.trim()}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+    // One retry covers a transient 429/5xx without slowing the happy path.
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY!.trim()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ from: fromFormatted, to: [recipient], subject, html }),
+        });
+        const data: any = await res.json().catch(() => ({}));
+        if (res.ok && data.id) {
+          console.log(`[Resend] Delivered to ${recipient} (id ${data.id}) from ${fromFormatted}`);
+          return recordEmailDispatch({ ok: true, provider: 'resend', from: fromFormatted, status: res.status });
+        }
+        const failure: EmailDispatchResult = {
+          ok: false,
+          provider: 'resend',
           from: fromFormatted,
-          to: [recipient],
-          subject: subject,
-          html: html
-        })
-      });
-      const data: any = await res.json();
-      if (res.ok && data.id) {
-        console.log(`[Resend API] Live email delivered to ${recipient} (ID: ${data.id}) from ${fromFormatted}`);
-        return true;
+          status: res.status,
+          code: data?.name || `http_${res.status}`,
+          message: data?.message || 'Resend rejected the request',
+        };
+        console.error(`[Resend] ${res.status} ${failure.code}: ${failure.message}`);
+        recordEmailDispatch(failure);
+        // Anything that is not rate limiting or a server fault is a permanent
+        // configuration problem (unverified domain, bad address) — retrying is
+        // pointless and only delays the caller.
+        if (res.status !== 429 && res.status < 500) return failure;
+      } catch (err: any) {
+        console.error('[Resend] request threw:', err?.message || err);
+        recordEmailDispatch({
+          ok: false,
+          provider: 'resend',
+          from: fromFormatted,
+          message: err?.message || 'Network error calling Resend',
+        });
       }
-      console.warn(`[Resend API Warning] Failed sending to ${recipient}:`, data);
-    } catch (err) {
-      console.error('[Resend API Exception]:', err);
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 1500));
     }
   }
 
-  // 2. Try Brevo v3 HTTP REST API (Secondary if BREVO_API_KEY configured - Fast, Reliable Port 443)
+  // 2. Brevo v3 HTTP REST API (secondary, only when BREVO_API_KEY is set).
   if (isConfigured(process.env.BREVO_API_KEY)) {
     try {
       const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
@@ -2335,29 +2380,58 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'content-type': 'application/json',
-          'api-key': process.env.BREVO_API_KEY!.trim()
+          'api-key': process.env.BREVO_API_KEY!.trim(),
         },
         body: JSON.stringify({
           sender: { name: fromName, email: fromEmail },
           to: [{ email: recipient }],
-          subject: subject,
-          htmlContent: html
-        })
+          subject,
+          htmlContent: html,
+        }),
       });
-      const data: any = await res.json();
+      const data: any = await res.json().catch(() => ({}));
       if (res.ok && (data.messageId || data.messageIds)) {
-        console.log(`[Brevo REST API] Live email delivered to ${recipient} (ID: ${data.messageId || data.messageIds})`);
-        return true;
+        console.log(`[Brevo] Delivered to ${recipient} (id ${data.messageId || data.messageIds})`);
+        return recordEmailDispatch({ ok: true, provider: 'brevo', from: fromEmail, status: res.status });
       }
-      console.warn(`[Brevo REST API Warning] Failed sending to ${recipient}:`, data);
-    } catch (err) {
-      console.error('[Brevo REST API Exception]:', err);
+      const failure: EmailDispatchResult = {
+        ok: false,
+        provider: 'brevo',
+        from: fromEmail,
+        status: res.status,
+        code: data?.code || `http_${res.status}`,
+        message: data?.message || 'Brevo rejected the request',
+      };
+      console.error(`[Brevo] ${res.status} ${failure.code}: ${failure.message}`);
+      recordEmailDispatch(failure);
+    } catch (err: any) {
+      console.error('[Brevo] request threw:', err?.message || err);
+      recordEmailDispatch({ ok: false, provider: 'brevo', message: err?.message || 'Network error calling Brevo' });
     }
   }
 
-  // 3. Fallback: Nodemailer SMTP
+  // 3. Nodemailer SMTP fallback — Node hosts only.
+  //    Cloudflare Workers have no raw TCP sockets, so this branch can never
+  //    succeed there. Reaching it on a Worker means the HTTP API above already
+  //    failed; falling back would only burn the CPU budget and add latency.
+  if (isCloudflareWorker) {
+    const prior = lastEmailDispatch;
+    const detail = prior?.message
+      ? `${prior.provider}: ${prior.code || prior.status || 'error'} — ${prior.message}`
+      : 'no usable email provider is configured';
+    console.error(`[Email] Sending failed on Workers (${detail}). Configure RESEND_API_KEY plus a verified sending domain.`);
+    return recordEmailDispatch({
+      ok: false,
+      provider: prior?.provider ?? 'none',
+      status: prior?.status,
+      code: prior?.code,
+      from: prior?.from,
+      message: prior?.message || 'No usable email provider is configured',
+    });
+  }
+
   try {
     const transporter = createSmtpTransporter();
     const fromName = process.env.SMTP_FROM_NAME || 'Radha Fashions';
@@ -2366,16 +2440,92 @@ async function dispatchLiveEmail(to: string, subject: string, html: string): Pro
     await transporter.sendMail({
       from: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
       to: recipient,
-      subject: subject,
-      html: html
+      subject,
+      html,
     });
-    console.log(`[SMTP Mailer] Live email delivered to ${recipient} via SMTP.`);
-    return true;
+    console.log(`[SMTP] Delivered to ${recipient} via SMTP.`);
+    return recordEmailDispatch({ ok: true, provider: 'smtp', from: fromEmail });
   } catch (smtpErr: any) {
-    console.error(`[SMTP Mailer Error] Failed sending to ${recipient}:`, smtpErr?.message || smtpErr);
-    return false;
+    console.error(`[SMTP] Failed sending to ${recipient}:`, smtpErr?.message || smtpErr);
+    return recordEmailDispatch({
+      ok: false,
+      provider: 'smtp',
+      message: smtpErr?.message || String(smtpErr),
+    });
   }
 }
+
+function recordEmailDispatch(result: EmailDispatchResult): EmailDispatchResult {
+  lastEmailDispatch = result;
+  return result;
+}
+
+/** Read-only probe of the configured email providers. Never sends a message. */
+app.get('/api/email-health', async (_req, res) => {
+  const fromRaw = (
+    process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'admin@radhafashions.in'
+  ).trim();
+
+  const report: any = {
+    ok: false,
+    runtime: isCloudflareWorker ? 'cloudflare-workers' : 'node',
+    notificationsEnabled: realNotificationsEnabled(),
+    providers: {
+      resend: isConfigured(process.env.RESEND_API_KEY),
+      brevo: isConfigured(process.env.BREVO_API_KEY),
+      smtp: isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER) && isConfigured(process.env.SMTP_PASS),
+    },
+    // Workers cannot open raw TCP, so SMTP is dead weight there even when set.
+    smtpUsable: !isCloudflareWorker && realNotificationsEnabled(),
+    from: fromRaw,
+    domainVerified: null,
+    problems: [],
+    warnings: [],
+    lastDispatch: lastEmailDispatch,
+  };
+
+  if (!report.providers.resend && !report.providers.brevo && !report.providers.smtp) {
+    report.problems.push(
+      'No email transport is configured. Set RESEND_API_KEY (plus a verified sending domain) as a Worker secret.'
+    );
+  } else if (!report.providers.resend && isCloudflareWorker) {
+    report.problems.push(
+      'RESEND_API_KEY is not set on this Worker. On Cloudflare Workers it is the only transport that works.'
+    );
+  }
+  if (isCloudflareWorker && report.providers.smtp) {
+    report.warnings.push(
+      'SMTP_* is configured but unusable on Cloudflare Workers (no raw TCP sockets). Resend handles all mail there.'
+    );
+  }
+  if (report.providers.resend) {
+    try {
+      const r = await fetch('https://api.resend.com/domains', {
+        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY!.trim()}` },
+      });
+      const body: any = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        report.problems.push(`Resend rejected the API key (${r.status} ${body?.message || ''}).`);
+      } else {
+        const domains: any[] = Array.isArray(body?.data) ? body.data : [];
+        const domain = domains.find((d) => d.name === fromRaw.split('@').pop());
+        report.domainVerified = domain ? domain.status : false;
+        if (!domain) {
+          report.problems.push(
+            `Sending domain "${fromRaw.split('@').pop()}" is not present in the Resend account — add and verify it before sending.`
+          );
+        } else if (domain.status !== 'verified') {
+          report.problems.push(`Sending domain "${domain.name}" is "${domain.status}", not "verified".`);
+        }
+      }
+    } catch (err: any) {
+      report.problems.push(`Could not reach the Resend API: ${err?.message || err}`);
+    }
+  }
+
+  report.ok = report.problems.length === 0;
+  res.status(report.ok ? 200 : 503).json(report);
+});
 
 function normalizeEmail(value: unknown): string {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -2649,7 +2799,7 @@ async function sendBookingEmail(order: any, emailType: 'received' | 'confirmatio
     }
 
     // Dispatch live email via REST API (Resend / Brevo) or SMTP
-    const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+    const { ok: sent } = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
     if (sent) {
       console.log(`[Order Service] ${isReceived ? 'Order received' : 'Order confirmation'} email delivered to ${recipientEmail} for #${orderNum}`);
     } else {
@@ -2771,9 +2921,11 @@ async function sendAdminVendorNotificationEmail(order: any) {
 
     // Send to Store Admin
     if (adminEmail) {
-      const sent = await dispatchLiveEmail(adminEmail, subject, htmlContent);
+      const { ok: sent, provider, message } = await dispatchLiveEmail(adminEmail, subject, htmlContent);
       if (!sent) {
-        throw new Error(`Admin notification email dispatch failed for ${adminEmail} (#${orderNum})`);
+        throw new Error(
+          `Admin notification email dispatch failed for ${adminEmail} (#${orderNum}): ${provider} ${message || ''}`.trim()
+        );
       }
       console.log(`[Order Service] Dispatched store order alert notification to admin ${adminEmail} for #${orderNum}`);
     }
@@ -2791,8 +2943,16 @@ async function sendAdminVendorNotificationEmail(order: any) {
 
     for (const vEmail of vendorEmails) {
       if (vEmail !== adminEmail) {
-        await dispatchLiveEmail(vEmail, `Listing Order Alert - Radha Fashions (#${orderNum})`, htmlContent);
-        console.log(`[Order Service] Dispatched listing order alert to vendor ${vEmail} for #${orderNum}`);
+        const { ok: vendorSent } = await dispatchLiveEmail(
+          vEmail,
+          `Listing Order Alert - Radha Fashions (#${orderNum})`,
+          htmlContent
+        );
+        console.log(
+          vendorSent
+            ? `[Order Service] Dispatched listing order alert to vendor ${vEmail} for #${orderNum}`
+            : `[Order Service] Listing order alert to vendor ${vEmail} FAILED for #${orderNum}`
+        );
       }
     }
   } catch (err) {
@@ -2920,7 +3080,7 @@ async function sendPaymentEmail(order: any, type: 'approved' | 'rejected', reaso
   }
 
   // Dispatch live email via REST API (Resend / Brevo) or SMTP
-  const sent = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
+  const { ok: sent } = await dispatchLiveEmail(recipientEmail, subject, htmlContent);
   if (!sent) {
     throw new Error(`Payment email dispatch failed for ${recipientEmail} (#${order.orderNumber})`);
   }
@@ -3164,11 +3324,12 @@ if (!isCloudflareWorker) {
   }, 10 * 60 * 1000);
 }
 
+/** True when at least one real transport (Resend / Brevo / SMTP) is usable. */
 function smtpEmailConfigured(): boolean {
-  return true;
+  return realNotificationsEnabled();
 }
 
-async function dispatchOtpEmail(email: string, code: string): Promise<void> {
+async function dispatchOtpEmail(email: string, code: string): Promise<boolean> {
   const subject = 'Your Radha Fashions verification code';
   const html = `
     <!DOCTYPE html>
@@ -3197,7 +3358,11 @@ async function dispatchOtpEmail(email: string, code: string): Promise<void> {
     </body>
     </html>
   `;
-  await dispatchLiveEmail(email, subject, html);
+  const result = await dispatchLiveEmail(email, subject, html);
+  if (!result.ok) {
+    console.error(`[Email OTP] Dispatch failed for ${email} (${result.provider}: ${result.message})`);
+  }
+  return result.ok;
 }
 
 app.post('/api/send-otp', rateLimiter(30, 15 * 60 * 1000), async (req, res) => {
@@ -3247,16 +3412,29 @@ app.post('/api/send-otp', rateLimiter(30, 15 * 60 * 1000), async (req, res) => {
 
     const emailEnabled = smtpEmailConfigured();
     if (emailEnabled) {
-      // Async non-blocking SMTP dispatch in background
-      dispatchOtpEmail(email, code).catch((err) => {
-        console.warn('[Email OTP] Background SMTP dispatch notice:', err?.message || err);
+      // This dispatch MUST be awaited on Cloudflare Workers. Detaching it means
+      // the isolate is torn down the instant the response is returned, which
+      // cancels the in-flight Resend request before it ever leaves the Worker —
+      // the client saw "passcode sent" while no email was ever delivered.
+      const delivered = await dispatchOtpEmail(email, code).catch((err) => {
+        console.error('[Email OTP] Dispatch threw:', err?.message || err);
+        return false;
       });
+
+      if (!delivered) {
+        // Don't tell the user to check an inbox that will stay empty.
+        return res.status(502).json({
+          error:
+            'We could not send your passcode email right now. Please try again in a minute.',
+        });
+      }
 
       return res.json({
         success: true,
         requiresOtp: true,
         message: `Passcode sent to ${email}. Please check your inbox.`,
         emailMode: 'live',
+        emailDelivered: true,
         expiresInSec: OTP_EXPIRY_MS / 1000,
       });
     }
@@ -4349,11 +4527,21 @@ app.post('/api/admin/test-email', verifyAdminToken, async (req, res) => {
       </div>
     `;
 
-    const sent = await dispatchLiveEmail(targetEmail, '🧪 Radha Fashions: Live Email Dispatch Test', html);
-    if (sent) {
-      res.json({ success: true, message: `Test email successfully delivered to ${targetEmail}!` });
+    const result = await dispatchLiveEmail(targetEmail, '🧪 Radha Fashions: Live Email Dispatch Test', html);
+    if (result.ok) {
+      res.json({
+        success: true,
+        message: `Test email successfully delivered to ${targetEmail}!`,
+        provider: result.provider,
+      });
     } else {
-      res.status(500).json({ error: 'Failed to dispatch test email. Check server logs in Railway.' });
+      res.status(502).json({
+        error: `Failed to dispatch test email via ${result.provider}.`,
+        provider: result.provider,
+        status: result.status,
+        code: result.code,
+        detail: result.message,
+      });
     }
   } catch (err: any) {
     console.error('[Email Diagnostic Test Error]:', err);
