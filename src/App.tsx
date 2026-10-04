@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ArrowRight, Truck, ShieldCheck, Heart, Award, ArrowUp, Star, Trash2, Eye, Mail, Info, Send, ChevronRight, ChevronLeft, Smartphone, RefreshCw, Layers, X, Key } from 'lucide-react';
 
@@ -154,6 +154,41 @@ export default function App() {
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(INITIAL_LOGS);
+
+  // Mirror of `orders` so event handlers can read the latest list without
+  // capturing a stale render's closure.
+  const ordersRef = useRef<Order[]>(orders);
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
+
+  /**
+   * Pull the authoritative order list from the API.
+   *
+   * Requires the admin Bearer token: without it `GET /api/orders` answers 401
+   * and the payments/pending tab falls back to an empty or stale local list.
+   */
+  const refreshOrdersFromBackend = useCallback(async () => {
+    try {
+      const res = await adminFetch('/api/orders', { cache: 'no-store' });
+      if (res.status === 401) return; // not signed in yet — keep whatever we have
+      if (!res.ok) {
+        console.warn('[Orders] Backend refresh failed with status', res.status);
+        return;
+      }
+      const backendOrders: Order[] = await res.json();
+      if (!Array.isArray(backendOrders) || backendOrders.length === 0) return;
+      setOrders(prev => {
+        const backendIds = new Set(backendOrders.map(o => o.orderNumber));
+        const localOnly = prev.filter(o => !backendIds.has(o.orderNumber));
+        return [...localOnly, ...backendOrders].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+      });
+    } catch (err) {
+      console.warn('[Orders] Backend refresh failed:', err);
+    }
+  }, []);
 
   // Active contextual models
   const [currentCategorySlug, setCurrentCategorySlug] = useState<string>('');
@@ -334,22 +369,12 @@ export default function App() {
 
     // Sync orders from backend DB so admin panel always sees all placed orders,
     // even after a page reload or server restart (backend is source of truth).
-    fetch('/api/orders')
-      .then(res => res.ok ? res.json() : [])
-      .then((backendOrders: Order[]) => {
-        if (!Array.isArray(backendOrders) || backendOrders.length === 0) return;
-        setOrders(prev => {
-          // Merge: backend orders + any local-only orders not yet synced
-          const backendIds = new Set(backendOrders.map(o => o.orderNumber));
-          const localOnly = prev.filter(o => !backendIds.has(o.orderNumber));
-          // Deduplicate: backend wins for status, put newest first
-          const merged = [...localOnly, ...backendOrders].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-          return merged;
-        });
-      })
-      .catch(() => { /* backend unavailable - localStorage orders are still loaded */ });
+    //
+    // This MUST be authenticated. `GET /api/orders` sits behind `verifyAdminToken`,
+    // so a plain `fetch` here always answered 401 and was silently discarded —
+    // the admin panel then rendered whatever happened to be in localStorage, which
+    // is why the payments tab looked empty or showed stale orders after a deploy.
+    refreshOrdersFromBackend();
 
     // Restore the success order screen if the page was reloaded right after checkout
     try {
@@ -362,6 +387,12 @@ export default function App() {
     } catch { /* ignore corrupt session data */ }
   }, []);
 
+  // Re-read orders as soon as the admin session becomes active, so the panel
+  // stops depending on whatever localStorage happened to contain.
+  useEffect(() => {
+    if (adminBypassed) refreshOrdersFromBackend();
+  }, [adminBypassed, refreshOrdersFromBackend]);
+
   // Save changes back to browser memory
   useEffect(() => {
     saveToStorage({
@@ -373,6 +404,10 @@ export default function App() {
     });  }, [cartItems, wishlistIds, orders, recentlyViewedIds, currentUser]);
 
   const isCatalogLoadedRef = useRef(false);
+
+  // Runtime reported by the API, plus the SSE handle once it is safe to open.
+  const runtimeRef = useRef<string | null>(null);
+  const catalogStreamRef = useRef<EventSource | null>(null);
 
   // Fetch centralized catalog data (products, coupons, campaigns, cms config) from server database on mount
   useEffect(() => {
@@ -388,6 +423,8 @@ export default function App() {
         ]);
         
         if (prodsRes && prodsRes.ok) {
+          runtimeRef.current = prodsRes.headers.get('x-radha-runtime');
+          maybeOpenCatalogStream();
           const prods = await prodsRes.json();
           if (Array.isArray(prods)) {
             setProducts(prods);
@@ -429,26 +466,41 @@ export default function App() {
         console.error('Failed to fetch catalog from backend:', err);
       }
     };
+    /**
+     * Open the SSE catalog channel once we know which runtime we are on.
+     *
+     * Skipped on Cloudflare Workers: `/api/catalog/stream` never completes, so
+     * every open tab would pin a Worker invocation for the life of the page.
+     * The polling timer and the focus refresh already cover the same ground.
+     */
+    const maybeOpenCatalogStream = () => {
+      if (catalogStreamRef.current) return;
+      if (!runtimeRef.current || runtimeRef.current === 'cloudflare-workers') return;
+      const stream = new EventSource('/api/catalog/stream');
+      stream.addEventListener('catalog-change', loadCatalogFromBackend);
+      catalogStreamRef.current = stream;
+    };
+
     loadCatalogFromBackend();
 
     // Keep every open storefront aligned with the current Supabase catalog.
     // The API uses no-store responses, so a deployment cannot serve a stale
     // product/category snapshot from a browser or proxy cache.
+    //
+    // 45s rather than 20s: each tick fires six concurrent Worker requests, and
+    // the admin panel was re-running the whole set while an admin worked in it.
+    // Focus and the SSE channel still deliver a near-instant refresh.
     const refreshTimer = window.setInterval(() => {
       if (document.visibilityState === 'visible') loadCatalogFromBackend();
-    }, 20_000);
+    }, 45_000);
     const refreshOnFocus = () => loadCatalogFromBackend();
     window.addEventListener('focus', refreshOnFocus);
-
-    // Supabase changes are relayed through the backend as an SSE notification.
-    // Polling above remains as a safe fallback if a proxy closes the stream.
-    const catalogStream = new EventSource('/api/catalog/stream');
-    catalogStream.addEventListener('catalog-change', loadCatalogFromBackend);
 
     return () => {
       window.clearInterval(refreshTimer);
       window.removeEventListener('focus', refreshOnFocus);
-      catalogStream.close();
+      catalogStreamRef.current?.close();
+      catalogStreamRef.current = null;
     };
   }, []);
 
@@ -690,7 +742,11 @@ export default function App() {
       status: 'pending',
       paymentMethod,
       shippingMethod,
-      paymentStatus: isUpiPayment || isPayUPayment ? 'pending' : (isCodPayment ? 'unpaid' : (isRazorpayPayment ? 'paid' : 'paid')),
+      // Only Razorpay (which returns a verified server-side signature) may mark a
+                      // payment as paid up front. Anything we do not recognise stays
+                      // `pending` so it lands in the manual verification tab instead of
+                      // being silently auto-approved by the catch-all branch.
+                      paymentStatus: isRazorpayPayment ? 'paid' : isCodPayment ? 'unpaid' : 'pending',
       codStatus: isCodPayment ? 'pending' : undefined,
       giftWrappingRequested: giftWrapped,
       giftMessage: giftMsg,
@@ -1803,35 +1859,59 @@ export default function App() {
                 }}
                 onDeleteLog={(logId) => setActivityLogs((prev) => prev.filter((l) => l.id !== logId))}
                 onClearLogs={() => setActivityLogs([])}
-                onUpdateOrderStatus={(ordId, nextStatus) =>
+                onUpdateOrderStatus={async (ordId, nextStatus) => {
+                  const target = ordersRef.current.find((o) => o.id === ordId);
                   setOrders((prev) =>
                     prev.map((o) => (o.id === ordId ? { ...o, status: nextStatus } : o))
-                  )
-                }
-                onUpdatePaymentStatus={(ordId, nextPaymentStatus, reason) => {
-                  setOrders((prev) => {
-                    const next = prev.map((o) => {
-                      if (o.id === ordId) {
-                        const updated = {
-                          ...o,
-                          paymentStatus: nextPaymentStatus,
-                          upiRejectionReason: reason || '',
-                          status: nextPaymentStatus === 'paid' ? ('processing' as const) : o.status
-                        };
-                        
-                        // Sync updates back to server database
-                        fetch(`/api/orders/${o.orderNumber}`, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify(updated)
-                        }).catch(err => console.error('Failed to sync payment validation:', err));
-                        
-                        return updated;
-                      }
-                      return o;
+                  );
+                  if (!target) return;
+                  // Persist it. This used to be local state only, so every admin
+                  // status change vanished on the next refresh.
+                  try {
+                    const res = await adminFetch(`/api/orders/${encodeURIComponent(target.orderNumber)}/status`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ status: nextStatus }),
                     });
-                    return next;
-                  });
+                    if (!res.ok) throw new Error(`status ${res.status}`);
+                  } catch (err) {
+                    console.error('Failed to persist order status:', err);
+                    handleLogActivity('STATUS_SYNC_FAILED', `Order ${target.orderNumber} status change to "${nextStatus}" was rejected by the server and has been reverted.`);
+                    refreshOrdersFromBackend();
+                  }
+                }}
+                onUpdatePaymentStatus={async (ordId, nextPaymentStatus, reason) => {
+                  const target = ordersRef.current.find((o) => o.id === ordId);
+                  if (!target) return;
+
+                  const updated = {
+                    ...target,
+                    paymentStatus: nextPaymentStatus,
+                    upiRejectionReason: reason || '',
+                    status: nextPaymentStatus === 'paid' ? ('processing' as const) : target.status,
+                  };
+
+                  // Optimistic update, reverted below if the server rejects it.
+                  setOrders((prev) => prev.map((o) => (o.id === ordId ? updated : o)));
+
+                  try {
+                    // adminFetch adds the admin Bearer token. The plain fetch that
+                    // used to sit here was rejected 401 by `verifyAdminToken` — and
+                    // because `fetch` does not reject on 4xx, the `.catch` never
+                    // fired. The row looked approved in the UI but was never saved,
+                    // then reappeared as still-pending on the next load.
+                    const res = await adminFetch(`/api/orders/${encodeURIComponent(target.orderNumber)}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(updated),
+                    });
+                    if (!res.ok) throw new Error(`status ${res.status}`);
+                    refreshOrdersFromBackend();
+                  } catch (err) {
+                    console.error('Failed to persist payment verification:', err);
+                    setOrders((prev) => prev.map((o) => (o.id === ordId ? target : o)));
+                    handleLogActivity('PAYMENT_SYNC_FAILED', `Payment verification for order ${target.orderNumber} was rejected by the server and has been reverted.`);
+                  }
                 }}
                  onApproveReview={handleApproveReviewContent}
                  onDeleteReview={handleDeleteReviewContent}

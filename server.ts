@@ -1236,6 +1236,9 @@ app.post('/api/upload-image', verifyAdminToken, upload.single('image'), async (r
 // --- PRODUCTS ENDPOINTS ---
 app.get('/api/catalog/products', async (req, res) => {
   try {
+    // Lets the client detect Workers and avoid opening a long-lived SSE request,
+    // which pins a Worker invocation open indefinitely.
+    res.set('X-Radha-Runtime', isCloudflareWorker ? 'cloudflare-workers' : 'node');
     // Supabase is the single source of truth when configured
     if (supabase) {
       const { data, error } = await supabase.from('products').select('*');
