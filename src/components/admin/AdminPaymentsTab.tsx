@@ -5,6 +5,7 @@ import {
   ShieldCheck, AlertCircle, Search
 } from 'lucide-react';
 import { Order } from '../../types';
+import { displayOrderRef, parseOrderDate, needsManualVerification } from '../../lib/orderFormat';
 
 export interface AdminPaymentsTabProps {
   orders: Order[];
@@ -12,27 +13,6 @@ export interface AdminPaymentsTabProps {
   onUpdatePaymentStatus?: (orderId: string, status: Order['paymentStatus'], reason?: string) => void;
   onLogActivity: (action: string, details: string) => void;
   addToast: (text: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
-}
-
-/**
- * The order number the customer actually quotes — `id` is an internal key like
- * `ord-1787917146602` and means nothing to a human reading the queue.
- */
-function displayOrderRef(order: Order): string {
-  return (order.orderNumber || order.id || 'UNKNOWN').toUpperCase();
-}
-
-/**
- * `date` is stored as a bare `YYYY-MM-DD` string. `new Date('2026-08-28')` is
- * parsed as UTC midnight, which renders as the previous day for anyone west of
- * Greenwich — so "today's approvals" was quietly wrong for most of the world.
- */
-function parseOrderDate(value: string | undefined): Date {
-  if (!value) return new Date();
-  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
-  if (ymd) return new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
 export default function AdminPaymentsTab({
@@ -45,14 +25,6 @@ export default function AdminPaymentsTab({
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [rejectionReason, setRejectionReason] = useState<Record<string, string>>({});
   const [showRejectInput, setShowRejectInput] = useState<Record<string, boolean>>({});
-
-  // Orders that need a human to confirm the money arrived. This is every manual
-  // rail we support — filtering on 'upi' alone silently hid PayU submissions
-  // from the verification queue, so they could sit unapproved forever.
-  const needsManualVerification = (o: Order) => {
-    const method = (o.paymentMethod || '').toLowerCase();
-    return method.includes('upi') || method.includes('payu');
-  };
 
   const verificationOrders = orders.filter(needsManualVerification);
 

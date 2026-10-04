@@ -1,4 +1,6 @@
 import express from 'express';
+import { missingColumnFromError } from './src/lib/supabaseSchema';
+import { isUsableTwilioSid, derivePaymentStatus, isCodMethod, isRazorpayMethod } from './src/lib/orderPolicy';
 import path from 'path';
 import dns from 'dns';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -2418,22 +2420,9 @@ async function readOrdersDb(): Promise<any[]> {
  */
 /**
  * Extracts the column Postgres complains about from a PostgREST/PG error.
- *
- * Two shapes are seen in practice:
- *   PGRST204 — "Could not find the 'cod_status' column of 'orders' in the
- *              schema cache"
- *   42703    — "column orders.cod_status does not exist"
- * Returns null for anything else, so unrelated failures are never mistaken for
- * a missing column.
+ * Lives in `src/lib/supabaseSchema` so it can be unit tested; re-exported here
+ * because every caller in this file refers to it unqualified.
  */
-function missingColumnFromError(error: { code?: string; message?: string }): string | null {
-  const message = error?.message || '';
-  const quoted = message.match(/Could not find the '([a-z0-9_]+)' column/i);
-  if (quoted) return quoted[1];
-  const qualified = message.match(/column\s+[a-z0-9_]+\.([a-z0-9_]+)\s+does not exist/i);
-  if (qualified) return qualified[1];
-  return null;
-}
 
 /**
  * Upserts orders, retrying without columns the live database does not have.
@@ -3573,16 +3562,10 @@ async function sendWhatsAppAlert(alertType: 'booking' | 'status_update' | 'refun
 
 // Real Twilio SMS notification helper
 /**
- * A real Twilio Account SID is 34 characters and starts with `AC`.
- *
- * Checking only that the variable is non-empty was not enough: a placeholder
- * value passed the check, the request went out on every single order, and the
- * Twilio API rejected it with `accountSid must start with AC`. That is an
- * error log per order for a feature that was never configured.
+ * A real Twilio Account SID is 34 characters and starts with `AC`; see
+ * `src/lib/orderPolicy`. Re-exported here so callers in this file stay
+ * unqualified and the rule itself remains unit testable.
  */
-function isUsableTwilioSid(sid: string | undefined): boolean {
-  return Boolean(sid) && /^AC[a-fA-F0-9]{32}$/.test(sid!.trim());
-}
 
 let twilioMisconfiguredWarned = false;
 
@@ -4632,10 +4615,9 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     newOrder.id = sanitizeString(newOrder.id, 60);
 
     const methodRaw = String(newOrder.paymentMethod || '');
-    const isCodOrder = methodRaw.toLowerCase().includes('cash on delivery') || methodRaw.toUpperCase() === 'COD';
+    const isCodOrder = isCodMethod(methodRaw);
     if (isCodOrder) {
       newOrder.paymentMethod = 'Cash on Delivery';
-      newOrder.paymentStatus = 'unpaid';
       newOrder.codStatus = newOrder.codStatus || 'pending';
     }
 
@@ -4644,15 +4626,16 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     // for a UPI/PayU order, which auto-approves a payment nobody ever checked —
     // exactly what happened to a real UPI order here. Razorpay is left alone
     // because it has its own signature check at /api/razorpay/verify-payment.
-    const isRazorpayOrder = methodRaw.toLowerCase().includes('razorpay');
-    if (!isRazorpayOrder && !isCodOrder) {
-      if (newOrder.paymentStatus === 'paid') {
-        console.warn(
-          `[Backend Database] Order ${newOrder.orderNumber} claimed paymentStatus "paid" for "${methodRaw}"; forcing it back to "pending" for manual verification.`
-        );
-      }
-      newOrder.paymentStatus = 'pending';
+    // The rule itself lives in `src/lib/orderPolicy` so it is covered by tests.
+    const derivedStatus = derivePaymentStatus(methodRaw, newOrder.paymentStatus);
+    if (derivedStatus !== newOrder.paymentStatus && newOrder.paymentStatus === 'paid') {
+      console.warn(
+        `[Backend Database] Order ${newOrder.orderNumber} claimed paymentStatus "paid" for "${methodRaw}"; forcing it back to "${derivedStatus}" for manual verification.`
+      );
     }
+    newOrder.paymentStatus = derivedStatus;
+
+    const isRazorpayOrder = isRazorpayMethod(methodRaw);
 
     // Write only this order's row. See persistNewOrderRow for why the whole
     // table is no longer read back and rewritten.

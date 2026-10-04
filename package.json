@@ -17,7 +17,10 @@
     "cf:deploy": "npm run build && wrangler deploy",
     "cf:deploy:dry": "npm run build && wrangler deploy --dry-run",
     "cf:logs": "wrangler tail",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "test": "tsx --test tests/*.test.ts",
+    "test:watch": "tsx --test --watch tests/*.test.ts",
+    "smoke": "tsx scripts/smoke.mts"
   },
   "//overrides": "iconv-lite is pulled in transitively by raw-body <- body-parser <- express. 0.4.x ships a `browser` field that stubs out ./lib/streams while lib/index.js still calls it, so the Workers bundle crashes at start-up with `require_streams(...) is not a function` (cloudflare/workers-sdk#9309). 0.7.x keeps the entry point consistent, so the override pins the Workers-compatible build for Node too.",
   "overrides": {
