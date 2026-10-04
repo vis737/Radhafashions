@@ -570,6 +570,93 @@ app.get('/health', (req, res) => {
   }
   res.status(200).send('OK');
 });
+
+/**
+ * Diagnostics for the Supabase link.
+ *
+ * Open this in a browser after deploying to answer three questions at once
+ * without guessing from an empty page: is the Worker actually configured, can
+ * it reach the project, and has the schema migration been applied? The third
+ * one matters most — `supabase_cloudflare_migration.sql` adds 17 columns the
+ * application already reads and writes, and until they exist, order writes fail
+ * with Postgres error 42703.
+ *
+ * Read-only. Exposes no credentials and no row data, only counts.
+ */
+const REQUIRED_SUPABASE_COLUMNS: Array<{ table: string; column: string }> = [
+  { table: 'orders', column: 'cod_status' },
+  { table: 'orders', column: 'payu_txn_id' },
+  { table: 'orders', column: 'payu_payment_id' },
+  { table: 'orders', column: 'payu_hash' },
+  { table: 'orders', column: 'payu_status' },
+  { table: 'orders', column: 'upi_txn_id' },
+  { table: 'orders', column: 'upi_sender_name' },
+  { table: 'orders', column: 'upi_screenshot' },
+  { table: 'orders', column: 'upi_notes' },
+  { table: 'orders', column: 'upi_rejection_reason' },
+  { table: 'orders', column: 'gift_sender_name' },
+  { table: 'orders', column: 'gift_hide_price' },
+  { table: 'customers', column: 'clerk_id' },
+  { table: 'customers', column: 'phone' },
+  { table: 'customers', column: 'image_url' },
+  { table: 'customers', column: 'auth_provider' },
+  { table: 'customers', column: 'last_sign_in_at' }
+];
+
+const SUPABASE_TABLES = ['orders', 'products', 'categories', 'customers', 'coupons', 'campaigns', 'cms_config', 'admin_config', 'email_logs'];
+
+app.get('/api/supabase-health', async (_req, res) => {
+  const report: any = {
+    ok: false,
+    runtime: isCloudflareWorker ? 'cloudflare-workers' : 'node',
+    configured: false,
+    project: supabaseUrl ? new URL(supabaseUrl).hostname : null,
+    keyKind: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service-role' : process.env.SUPABASE_KEY ? 'configured' : 'missing',
+    tables: {},
+    missingColumns: [],
+    problems: []
+  };
+
+  if (!supabase) {
+    report.problems.push(
+      'No Supabase client. SUPABASE_URL is set in wrangler.jsonc, but SUPABASE_KEY is not present as a Worker secret. Run: npx wrangler secret put SUPABASE_KEY'
+    );
+    return res.status(503).json(report);
+  }
+
+  report.configured = true;
+
+  // One cheap round trip that proves the credentials authenticate.
+  const probe = await supabase.from('products').select('id').limit(1);
+  if (probe.error) {
+    report.problems.push(`Cannot reach Supabase: ${probe.error.message} (code ${probe.error.code})`);
+    return res.status(503).json(report);
+  }
+
+  await Promise.all(
+    SUPABASE_TABLES.map(async (table) => {
+      const { count, error } = await supabase!.from(table).select('*', { count: 'exact', head: true });
+      report.tables[table] = error ? { error: `${error.code}: ${error.message}` } : { rows: count };
+    })
+  );
+
+  await Promise.all(
+    REQUIRED_SUPABASE_COLUMNS.map(async ({ table, column }) => {
+      const { error } = await supabase!.from(table).select(column).limit(1);
+      if (error) report.missingColumns.push(`${table}.${column}`);
+    })
+  );
+
+  if (report.missingColumns.length > 0) {
+    report.problems.push(
+      `${report.missingColumns.length} of ${REQUIRED_SUPABASE_COLUMNS.length} required columns are missing (${report.missingColumns.slice(0, 4).join(', ')}...). ` +
+        'Order writes will fail with Postgres 42703. Run supabase_cloudflare_migration.sql in Supabase ▸ SQL Editor.'
+    );
+  }
+
+  report.ok = report.problems.length === 0;
+  return res.status(report.ok ? 200 : 503).json(report);
+});
 const PORT = Number(process.env.PORT || 3000);
 
 // Browser clients use this stream to refresh immediately after a product or
@@ -778,6 +865,27 @@ const verifyAdminToken = (req: any, res: any, next: any) => {
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: true }));
 app.use(cookieParser());
+
+// A deployment that requires Supabase but cannot reach it must say so. Without
+// this guard the catalogue routes quietly fall through to the on-disk JSON
+// store, which does not exist on Workers — the site loads, renders an empty
+// catalogue and an empty order list, and looks exactly like "the database lost
+// my data" instead of "the Worker has no database credentials".
+//
+// Authentication routes are exempt so an administrator can still get in and use
+// the config screen to repair the deployment.
+const SUPABASE_CRITICAL_PATH = /^\/api\/(catalog|orders|products|customers|checkout|admin\/(orders|config))/;
+app.use((req, res, next) => {
+  if (!shouldRequireSupabase || supabase) return next();
+  if (!req.path.startsWith('/api/') || !SUPABASE_CRITICAL_PATH.test(req.path)) return next();
+  return res.status(503).json({
+    error: 'Supabase is not connected to this Worker.',
+    detail:
+      'Set SUPABASE_KEY as a Worker secret (wrangler secret put SUPABASE_KEY, or the Cloudflare dashboard ▸ Settings ▸ Variables and Secrets). ' +
+      'SUPABASE_URL is already set in wrangler.jsonc.',
+    probe: '/api/supabase-health'
+  });
+});
 
 // HTTP to HTTPS Redirect & HSTS implementation
 app.use((req, res, next) => {
@@ -2011,6 +2119,77 @@ async function readOrdersDb(): Promise<any[]> {
  * present. Awaited by every caller: a Worker is frozen the instant the response
  * is returned, so a detached `.then()` would silently never persist anything.
  */
+/**
+ * Extracts the column Postgres complains about from a PostgREST/PG error.
+ *
+ * Two shapes are seen in practice:
+ *   PGRST204 — "Could not find the 'cod_status' column of 'orders' in the
+ *              schema cache"
+ *   42703    — "column orders.cod_status does not exist"
+ * Returns null for anything else, so unrelated failures are never mistaken for
+ * a missing column.
+ */
+function missingColumnFromError(error: { code?: string; message?: string }): string | null {
+  const message = error?.message || '';
+  const quoted = message.match(/Could not find the '([a-z0-9_]+)' column/i);
+  if (quoted) return quoted[1];
+  const qualified = message.match(/column\s+[a-z0-9_]+\.([a-z0-9_]+)\s+does not exist/i);
+  if (qualified) return qualified[1];
+  return null;
+}
+
+/**
+ * Upserts orders, retrying without columns the live database does not have.
+ *
+ * Why this exists: the application has always written COD/PayU/UPI/gift columns
+ * that were never added to the live `orders` table (see
+ * `supabase_cloudflare_migration.sql`). Postgres rejects the *entire*
+ * statement when a single column is unknown, so every order placed through the
+ * Worker was being dropped on the floor — the customer got a confirmation and
+ * the admin saw nothing.
+ *
+ * Postgres rejects the statement atomically, so nothing partial is ever written
+ * and retrying is safe. Dropping the unknown column and retrying means the order
+ * itself is saved, with only the unmigrated fields left null, instead of the
+ * whole order being lost. The error is still logged so the migration stays
+ * visible in `/api/supabase-health` and the Worker logs.
+ */
+async function upsertOrdersToleratingMissingColumns(rows: any[]): Promise<void> {
+  const dropped = new Set<string>();
+  let payload = rows;
+
+  // One attempt per distinct unknown column, plus the initial try.
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const { error } = await supabase!.from('orders').upsert(payload);
+    if (!error) {
+      if (dropped.size > 0) {
+        console.error(
+          `Supabase orders upsert succeeded after dropping ${dropped.size} column(s) missing from the live table: ${[...dropped].join(', ')}. ` +
+            'Apply supabase_cloudflare_migration.sql to restore them.'
+        );
+      }
+      return;
+    }
+
+    const missing = missingColumnFromError(error);
+    if (!missing || dropped.has(missing)) {
+      console.error('Supabase orders upsert failed:', error);
+      return;
+    }
+
+    dropped.add(missing);
+    console.error(`Supabase orders table has no "${missing}" column; retrying without it.`);
+    payload = payload.map((row) => {
+      if (!(missing in row)) return row;
+      const copy = { ...row };
+      delete copy[missing];
+      return copy;
+    });
+  }
+
+  console.error(`Supabase orders upsert gave up after ${dropped.size} missing column(s).`);
+}
+
 async function writeOrdersDb(orders: any[]): Promise<void> {
   writeLocalCache(ORDERS_FILE_PATH, orders);
   if (!supabase) return;
@@ -2018,12 +2197,31 @@ async function writeOrdersDb(orders: any[]): Promise<void> {
   try {
     const mapped = orders.map(mapOrderRowToSupabase);
 
-    if (mapped.length > 0) {
-      const { error } = await supabase.from('orders').upsert(mapped);
-      if (error) {
-        console.error('Supabase orders upsert failed:', error);
+    // Never treat "no rows" as "delete every order". `readOrdersDb` returns []
+    // whenever Supabase is unreachable or a query fails, and several callers do
+    // read -> mutate -> write. Pruning against an empty input would erase the
+    // entire order history in a single write.
+    //
+    // Known trade-off: an administrator deleting the very last remaining order
+    // will not see that deletion persist — the guard cannot distinguish it from
+    // a failed read. That is deliberate. Losing an order by accident is far
+    // worse than needing a manual SQL delete, and it logs loudly every time.
+    // Every other delete (removing one of several orders, or any of them once a
+    // newer order exists) is unaffected.
+    if (mapped.length === 0) {
+      const { data: survivors, error: survivalError } = await supabase.from('orders').select('id').limit(1);
+      if (survivalError) {
+        console.error('Supabase orders guard lookup failed; skipping prune to protect existing orders:', survivalError);
         return;
       }
+      if ((survivors || []).length > 0) {
+        console.error('Refusing to prune all orders: write received an empty list while the table still has rows. Skipping.');
+        return;
+      }
+    }
+
+    if (mapped.length > 0) {
+      await upsertOrdersToleratingMissingColumns(mapped);
     }
 
     // Prune rows the caller removed. Diff against the table instead of using

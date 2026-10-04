@@ -58,6 +58,12 @@
   "vars": {
     // Public origin. Used for CORS, cookie security and PayU callback URLs.
     "APP_URL": "https://radhafashions.in",
+    // The one and only database. This is a URL, not a credential, so it is
+    // safe to commit — the matching API key is a Worker *secret* (see below)
+    // and must never be written into this file. The Worker refuses to serve
+    // catalogue or order data without a working pair, so a missing secret
+    // shows up as a 503 instead of a silently empty site.
+    "SUPABASE_URL": "https://mubdyrfgaamgvaddoppo.supabase.co",
     // Fail loudly rather than silently serving an empty catalogue if Supabase
     // is missing. Workers has no fallback database.
     "REQUIRE_SUPABASE": "true",
@@ -68,4 +74,10 @@
     "SUPABASE_STORAGE_BUCKET": "product-images",
     "ENABLE_REAL_NOTIFICATIONS": "true"
   }
+
+  // Set once, then it survives every future deploy:
+  //   npx wrangler secret put SUPABASE_KEY
+  // Use the project's secret key (starts with sb_secret_), not the anon key —
+  // RLS is enabled and only a real secret can read orders and write them.
+  // The server also accepts it under the name SUPABASE_SERVICE_ROLE_KEY.
 }
