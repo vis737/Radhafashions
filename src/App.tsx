@@ -177,14 +177,18 @@ export default function App() {
         return;
       }
       const backendOrders: Order[] = await res.json();
-      if (!Array.isArray(backendOrders) || backendOrders.length === 0) return;
-      setOrders(prev => {
-        const backendIds = new Set(backendOrders.map(o => o.orderNumber));
-        const localOnly = prev.filter(o => !backendIds.has(o.orderNumber));
-        return [...localOnly, ...backendOrders].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-      });
+      if (!Array.isArray(backendOrders) || backendOrders.length === 0) {
+        setOrders(backendOrders);
+        return;
+      }
+      // The backend answered, so it is the source of truth. Rows the API does
+      // not know about are stale browser state — orders that were never saved
+      // because their write silently failed. Keeping them meant an admin could
+      // reject such an order, see it snap back on the next load, and never be
+      // able to clear it, because the server had no record to update.
+      setOrders(
+        [...backendOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      );
     } catch (err) {
       console.warn('[Orders] Backend refresh failed:', err);
     }
@@ -1853,9 +1857,18 @@ export default function App() {
                 onDeleteOrder={async (ordId, ordNum) => {
                   setOrders((prev) => prev.filter((o) => o.id !== ordId));
                   try {
-                    const res = await adminFetch(`/api/orders/${ordNum}`, { method: 'DELETE' });
-                    if (!res.ok) console.error('Order delete API failed:', res.status);
-                  } catch (err) { console.error('Failed to delete order from backend:', err); }
+                    const res = await adminFetch(`/api/orders/${encodeURIComponent(ordNum)}`, { method: 'DELETE' });
+                    if (!res.ok) {
+                      // The server refused the delete (missing or unauthorized).
+                      // Put the row back and re-read the authoritative list so
+                      // the panel can never show something the database rejected.
+                      handleLogActivity('ORDER_DELETE_FAILED', `Delete of order ${ordNum} was rejected by the server (${res.status}).`);
+                    }
+                  } catch (err) {
+                    console.error('Failed to delete order from backend:', err);
+                  } finally {
+                    refreshOrdersFromBackend();
+                  }
                 }}
                 onDeleteLog={(logId) => setActivityLogs((prev) => prev.filter((l) => l.id !== logId))}
                 onClearLogs={() => setActivityLogs([])}

@@ -686,6 +686,73 @@ if (supabase && !isCloudflareWorker) {
     .subscribe((status) => console.log(`[Catalog realtime] ${status}`));
 }
 
+// --------------------------------------------------------------------------
+// Public catalogue edge cache
+// --------------------------------------------------------------------------
+//
+// Every storefront load fires six catalogue reads, and each one used to run a
+// fresh PostgREST query against Supabase (~250-550 ms apiece, ~1.5 s total).
+// The catalogue only changes when an administrator edits it, so these reads are
+// cached at the Cloudflare edge for a short window and purged explicitly on any
+// write. Admin endpoints are never cached.
+
+const CATALOG_CACHE_TTL_SECONDS = 60;
+const CATALOG_CACHE_KEYS = [
+  '/api/catalog/products',
+  '/api/catalog/categories',
+  '/api/catalog/coupons',
+  '/api/catalog/campaigns',
+  '/api/catalog/cms',
+];
+
+/**
+ * In-isolate catalogue cache.
+ *
+ * A plain Map rather than the Workers Cache API: `cache.put()` is async, and on
+ * Workers it can only be awaited *before* the response is sent — writing it after
+ * the response is cancelled, and awaiting it inline tripped the runtime's
+ * "code had hung" detector. A synchronous Map write has none of those failure
+ * modes and costs effectively nothing.
+ *
+ * Scope is per isolate, which is exactly the right granularity here: it removes
+ * repeated Supabase round-trips for warm isolates without ever serving stale data
+ * to a cold one. The catalogue changes only when an admin edits it, and every
+ * mutation purges this map, so a 60-second TTL is a backstop rather than the
+ * primary invalidation path.
+ */
+type CatalogCacheEntry = { body: string; statusCode: number; expiresAt: number };
+const catalogCache = new Map<string, CatalogCacheEntry>();
+
+/** The cache is only worth having when we are actually behind a Worker isolate. */
+function catalogCacheEnabled(): boolean {
+  return isCloudflareWorker;
+}
+
+function readCatalogCache(pathname: string): CatalogCacheEntry | null {
+  const entry = catalogCache.get(pathname);
+  if (!entry) return null;
+  if (Date.now() >= entry.expiresAt) {
+    catalogCache.delete(pathname);
+    return null;
+  }
+  return entry;
+}
+
+function writeCatalogCache(pathname: string, payload: unknown, statusCode: number): void {
+  catalogCache.set(pathname, {
+    body: JSON.stringify(payload),
+    statusCode,
+    expiresAt: Date.now() + CATALOG_CACHE_TTL_SECONDS * 1000,
+  });
+}
+
+/** Drop every cached catalogue entry. Called after any catalogue mutation. */
+function purgeCatalogCache(reason: string): void {
+  if (catalogCache.size === 0) return;
+  catalogCache.clear();
+  console.log(`[Catalog Cache] Purged (${reason}).`);
+}
+
 app.get('/api/catalog/stream', (req, res) => {
   res.status(200).set({
     'Content-Type': 'text/event-stream',
@@ -991,10 +1058,15 @@ app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
 
+  const isPublicCatalogRead =
+    req.method === 'GET' &&
+    CATALOG_CACHE_KEYS.includes(req.path) &&
+    catalogCacheEnabled();
+
   if (
     req.path.startsWith('/api/admin') ||
     req.path.startsWith('/api/orders') ||
-    req.path.startsWith('/api/catalog') ||
+    (req.path.startsWith('/api/catalog') && !isPublicCatalogRead) ||
     req.path.startsWith('/api/upload-image') ||
     req.path.startsWith('/api/verify-otp')
   ) {
@@ -1002,10 +1074,98 @@ app.use((req, res, next) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
+  } else if (isPublicCatalogRead) {
+    // Public catalogue reads are cached at the edge. Browsers are kept out of it
+    // (max-age=0) so an admin always sees a fresh value after a purge.
+    res.setHeader('Cache-Control', `public, max-age=0, s-maxage=${CATALOG_CACHE_TTL_SECONDS}`);
   } else {
     res.setHeader('Cache-Control', 'public, max-age=3600');
   }
 
+  next();
+});
+
+/**
+ * Wrap a catalogue read route with the Cloudflare edge cache.
+ *
+ * A miss runs the real handler, then **awaits** the cache write before the
+ * handler returns. That await is the whole point: a detached `cache.put()` is
+ * frozen the moment the response is sent, which stored an empty body and made
+ * every subsequent "hit" return zero bytes.
+ */
+function withCatalogCache(handler: express.RequestHandler): express.RequestHandler {
+  return (req: any, res: any, next: any) => {
+    if (!catalogCacheEnabled() || !CATALOG_CACHE_KEYS.includes(req.path)) {
+      return handler(req, res, next);
+    }
+
+    const hit = readCatalogCache(req.path);
+    if (hit) {
+      res.set('X-Catalog-Cache', 'HIT');
+      res.set('Content-Type', 'application/json; charset=utf-8');
+      return res.status(hit.statusCode).send(hit.body);
+    }
+
+    // Buffer the payload, cache it synchronously, then emit. The write has to
+    // land before the response goes out; on Workers anything after that point is
+    // cancelled when the isolate is frozen.
+    let captured: unknown;
+    let usedJson = false;
+    let finished = false;
+    let statusCode = 200;
+    const originalStatus = res.status.bind(res);
+    const originalJson = res.json.bind(res);
+
+    res.status = (code: number) => {
+      statusCode = code;
+      return originalStatus(code);
+    };
+    res.json = (body: any) => {
+      captured = body;
+      usedJson = true;
+      return res;
+    };
+
+    const finish = () => {
+      // Guard against a handler that both calls next() and resolves: without
+      // this, finish() would run twice and Express would try to send twice.
+      if (finished) return res;
+      finished = true;
+      // The handler responded with something other than res.json.
+      if (!usedJson) return originalJson(captured);
+      if (statusCode >= 200 && statusCode < 300) {
+        writeCatalogCache(req.path, captured, statusCode);
+        res.set('X-Catalog-Cache', 'MISS');
+      }
+      // Use the *original* json: res.json is shadowed above, so going through
+      // res.status(...).json(...) would recurse back into this wrapper.
+      originalStatus(statusCode);
+      return originalJson(captured);
+    };
+
+    try {
+      // `RequestHandler` is typed as returning void, but the wrapped routes are
+      // async, so inspect the runtime value rather than the declared type.
+      const result: unknown = handler(req, res, (err?: any) => (err ? next(err) : finish()));
+      if (result && typeof (result as Promise<unknown>).then === 'function') {
+        (result as Promise<unknown>).then(finish).catch(next);
+      }
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
+// Any catalogue write invalidates the cached reads so the admin panel and the
+// storefront never disagree about what is on sale.
+app.use((req, _res, next) => {
+  if (
+    req.method !== 'GET' &&
+    req.method !== 'HEAD' &&
+    (req.path.startsWith('/api/catalog/') || req.path.startsWith('/api/admin/'))
+  ) {
+    purgeCatalogCache(`${req.method} ${req.path}`);
+  }
   next();
 });
 
@@ -1234,7 +1394,7 @@ app.post('/api/upload-image', verifyAdminToken, upload.single('image'), async (r
 });
 
 // --- PRODUCTS ENDPOINTS ---
-app.get('/api/catalog/products', async (req, res) => {
+app.get('/api/catalog/products', withCatalogCache(async (req, res) => {
   try {
     // Lets the client detect Workers and avoid opening a long-lived SSE request,
     // which pins a Worker invocation open indefinitely.
@@ -1267,7 +1427,7 @@ app.get('/api/catalog/products', async (req, res) => {
       res.status(503).json({ error: 'Product catalog is temporarily unavailable.' });
     }
   }
-});
+}));
 
 app.post('/api/catalog/products', verifyAdminToken, express.json({ limit: '10mb' }), async (req, res) => {
   try {
@@ -1445,7 +1605,7 @@ app.post('/api/products/:productId/reviews', express.json(), async (req, res) =>
 });
 
 // --- COUPONS ENDPOINTS ---
-app.get('/api/catalog/coupons', async (req, res) => {
+app.get('/api/catalog/coupons', withCatalogCache(async (req, res) => {
   try {
     if (supabase) {
       const { data, error } = await supabase.from('coupons').select('*');
@@ -1472,7 +1632,7 @@ app.get('/api/catalog/coupons', async (req, res) => {
   } catch (err) {
     res.status(503).json({ error: 'Coupon catalog is temporarily unavailable.' });
   }
-});
+}));
 
 app.post('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
   try {
@@ -1554,7 +1714,7 @@ app.delete('/api/catalog/coupons', verifyAdminToken, async (req, res) => {
 });
 
 // --- CAMPAIGNS ENDPOINTS ---
-app.get('/api/catalog/campaigns', async (req, res) => {
+app.get('/api/catalog/campaigns', withCatalogCache(async (req, res) => {
   try {
     // Supabase is the single source of truth when configured
     if (supabase) {
@@ -1580,7 +1740,7 @@ app.get('/api/catalog/campaigns', async (req, res) => {
   } catch (err) {
     res.status(503).json({ error: 'Campaign catalog is temporarily unavailable.' });
   }
-});
+}));
 
 app.post('/api/catalog/campaigns', verifyAdminToken, async (req, res) => {
   try {
@@ -1641,7 +1801,7 @@ app.delete('/api/catalog/campaigns/:id', verifyAdminToken, async (req, res) => {
 });
 
 // --- CMS CONFIG ENDPOINTS ---
-app.get('/api/catalog/cms', async (req, res) => {
+app.get('/api/catalog/cms', withCatalogCache(async (req, res) => {
   try {
     if (supabase) {
       const { data, error } = await supabase.from('cms_config').select('value').eq('key', 'main').single();
@@ -1654,7 +1814,7 @@ app.get('/api/catalog/cms', async (req, res) => {
   } catch (err) {
     res.json(INITIAL_CMS);
   }
-});
+}));
 
 app.post('/api/catalog/cms', verifyAdminToken, async (req, res) => {
   try {
@@ -1684,7 +1844,7 @@ const INITIAL_CATEGORIES_DATA = [
   { id: 'kids-ethnic', name: 'Kids Ethnic Wear', description: 'Adorable ethnic outfits for kids and toddlers.', imageUrl: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=600&auto=format&fit=crop', enabled: true }
 ];
 
-app.get('/api/catalog/categories', async (req, res) => {
+app.get('/api/catalog/categories', withCatalogCache(async (req, res) => {
   try {
     // Supabase is the single source of truth when configured
     if (supabase) {
@@ -1718,7 +1878,7 @@ app.get('/api/catalog/categories', async (req, res) => {
       res.status(503).json({ error: 'Category catalog is temporarily unavailable.' });
     }
   }
-});
+}));
 
 app.post('/api/catalog/categories', verifyAdminToken, async (req, res) => {
   try {
@@ -2157,7 +2317,7 @@ function missingColumnFromError(error: { code?: string; message?: string }): str
  * whole order being lost. The error is still logged so the migration stays
  * visible in `/api/supabase-health` and the Worker logs.
  */
-async function upsertOrdersToleratingMissingColumns(rows: any[]): Promise<void> {
+async function upsertOrdersToleratingMissingColumns(rows: any[]): Promise<boolean> {
   const dropped = new Set<string>();
   let payload = rows;
 
@@ -2171,13 +2331,15 @@ async function upsertOrdersToleratingMissingColumns(rows: any[]): Promise<void> 
             'Apply supabase_cloudflare_migration.sql to restore them.'
         );
       }
-      return;
+      return true;
     }
 
     const missing = missingColumnFromError(error);
     if (!missing || dropped.has(missing)) {
+      // Previously this returned silently, so POST /api/orders answered 201 for
+      // an order that was never stored. Report it instead.
       console.error('Supabase orders upsert failed:', error);
-      return;
+      return false;
     }
 
     dropped.add(missing);
@@ -2191,11 +2353,12 @@ async function upsertOrdersToleratingMissingColumns(rows: any[]): Promise<void> 
   }
 
   console.error(`Supabase orders upsert gave up after ${dropped.size} missing column(s).`);
+  return false;
 }
 
-async function writeOrdersDb(orders: any[]): Promise<void> {
+async function writeOrdersDb(orders: any[]): Promise<boolean> {
   writeLocalCache(ORDERS_FILE_PATH, orders);
-  if (!supabase) return;
+  if (!supabase) return true;
 
   try {
     const mapped = orders.map(mapOrderRowToSupabase);
@@ -2215,16 +2378,19 @@ async function writeOrdersDb(orders: any[]): Promise<void> {
       const { data: survivors, error: survivalError } = await supabase.from('orders').select('id').limit(1);
       if (survivalError) {
         console.error('Supabase orders guard lookup failed; skipping prune to protect existing orders:', survivalError);
-        return;
+        return false;
       }
       if ((survivors || []).length > 0) {
         console.error('Refusing to prune all orders: write received an empty list while the table still has rows. Skipping.');
-        return;
+        return false;
       }
     }
 
     if (mapped.length > 0) {
-      await upsertOrdersToleratingMissingColumns(mapped);
+      const upserted = await upsertOrdersToleratingMissingColumns(mapped);
+      // Stop before pruning: if the rows we were asked to save did not land, the
+      // diff below would treat them as "removed" and delete live orders.
+      if (!upserted) return false;
     }
 
     // Prune rows the caller removed. Diff against the table instead of using
@@ -2232,13 +2398,13 @@ async function writeOrdersDb(orders: any[]): Promise<void> {
     const { data: existingRows, error: selectError } = await supabase.from('orders').select('id');
     if (selectError) {
       console.error('Supabase orders prune lookup failed:', selectError);
-      return;
+      return false;
     }
     const keptIds = new Set(mapped.map(row => String(row.id)));
     const removedIds = (existingRows || [])
       .map((row: any) => String(row.id))
       .filter(id => !keptIds.has(id));
-    if (removedIds.length === 0) return;
+    if (removedIds.length === 0) return true;
 
     for (let i = 0; i < removedIds.length; i += 100) {
       const { error: deleteError } = await supabase
@@ -2247,11 +2413,13 @@ async function writeOrdersDb(orders: any[]): Promise<void> {
         .in('id', removedIds.slice(i, i + 100));
       if (deleteError) {
         console.error('Supabase orders prune failed:', deleteError);
-        return;
+        return false;
       }
     }
+    return true;
   } catch (error) {
     console.error('Error writing orders database:', error);
+    return false;
   }
 }
 
@@ -3920,7 +4088,10 @@ app.get('/api/emails', verifyAdminToken, async (req, res) => {
       let query = supabase
         .from('email_logs')
         .select('id, recipient, subject, sent_at, order_number, status, date_text')
-        .order('created_at', { ascending: false })
+        // `email_logs` has no `created_at` column — ordering by it made PostgREST
+        // reject the whole query, so this endpoint always returned [] and the
+        // admin email log looked permanently empty despite 35 stored rows.
+        .order('sent_at', { ascending: false })
         .limit(500);
 
       const { recipient } = req.query;
@@ -4207,12 +4378,37 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
     newOrder.accountName = newOrder.account?.name || newOrder.accountName || newOrder.customerInfo?.name || '';
     delete newOrder.account;
 
-    const isCodOrder = newOrder.paymentMethod?.toLowerCase().includes('cash on delivery') ||
-      newOrder.paymentMethod?.toUpperCase() === 'COD';
+    // A missing primary key makes the Supabase upsert insert a row with a NULL
+    // id, which Postgres rejects. The whole statement then fails, yet the old
+    // code still answered 201 — so the customer saw a confirmation, no order was
+    // stored, and the admin panel never showed it. Generate one server-side.
+    if (!newOrder.id || typeof newOrder.id !== 'string' || !newOrder.id.trim()) {
+      newOrder.id = `ord-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      console.warn(`[Backend Database] Order ${newOrder.orderNumber} arrived without an id; assigned ${newOrder.id}.`);
+    }
+    newOrder.id = sanitizeString(newOrder.id, 60);
+
+    const methodRaw = String(newOrder.paymentMethod || '');
+    const isCodOrder = methodRaw.toLowerCase().includes('cash on delivery') || methodRaw.toUpperCase() === 'COD';
     if (isCodOrder) {
       newOrder.paymentMethod = 'Cash on Delivery';
-      newOrder.paymentStatus = newOrder.paymentStatus || 'unpaid';
+      newOrder.paymentStatus = 'unpaid';
       newOrder.codStatus = newOrder.codStatus || 'pending';
+    }
+
+    // Never trust a client-supplied paymentStatus for the manual-verification
+    // rails. A stale or buggy client bundle could post `paymentStatus: 'paid'`
+    // for a UPI/PayU order, which auto-approves a payment nobody ever checked —
+    // exactly what happened to a real UPI order here. Razorpay is left alone
+    // because it has its own signature check at /api/razorpay/verify-payment.
+    const isRazorpayOrder = methodRaw.toLowerCase().includes('razorpay');
+    if (!isRazorpayOrder && !isCodOrder) {
+      if (newOrder.paymentStatus === 'paid') {
+        console.warn(
+          `[Backend Database] Order ${newOrder.orderNumber} claimed paymentStatus "paid" for "${methodRaw}"; forcing it back to "pending" for manual verification.`
+        );
+      }
+      newOrder.paymentStatus = 'pending';
     }
 
     const dbOrders = await readOrdersDb();
@@ -4226,7 +4422,15 @@ app.post('/api/orders', rateLimiter(10, 15 * 60 * 1000), async (req, res) => {
       dbOrders.unshift(newOrder);
     }
 
-    await writeOrdersDb(dbOrders);
+    const persisted = await writeOrdersDb(dbOrders);
+    if (!persisted) {
+      // Answering 201 here told the customer "order placed" for a row that was
+      // never stored. Fail loudly so checkout can surface it.
+      console.error(`[Backend Database] FAILED to persist order ${newOrder.orderNumber}; rejecting checkout.`);
+      return res.status(500).json({
+        error: 'We could not save your order. Please try again in a moment.',
+      });
+    }
     console.log(`[Backend Database] Registered new secure order: ${newOrder.orderNumber} (Method: ${newOrder.paymentMethod})`);
     
     // Dispatch order notifications.
@@ -4293,7 +4497,10 @@ app.post('/api/orders/:orderNumber/status', verifyAdminToken, async (req, res) =
       if (status) dbOrders[index].status = status;
       if (codStatus) dbOrders[index].codStatus = codStatus;
       if (paymentStatus) dbOrders[index].paymentStatus = paymentStatus;
-      await writeOrdersDb(dbOrders);
+      const statusSaved = await writeOrdersDb(dbOrders);
+      if (!statusSaved) {
+        return res.status(500).json({ error: 'Could not save that status change. It has not been applied.' });
+      }
 
       // Dispatch asynchronous status update WhatsApp Alert
       /*
@@ -4330,7 +4537,15 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
       dbOrders[index] = { ...dbOrders[index], ...updatedOrder };
       // writeOrdersDb already upserts the full row to Supabase via
       // mapOrderRowToSupabase, so there is no second write to do here.
-      await writeOrdersDb(dbOrders);
+      const paymentSaved = await writeOrdersDb(dbOrders);
+      if (!paymentSaved) {
+        // Without this the admin saw "approved"/"rejected" in the UI while the
+        // database kept the old value, so a rejected payment came straight back
+        // into the pending tab on the next load.
+        return res.status(500).json({
+          error: 'Could not save that payment verification. It has not been applied.',
+        });
+      }
 
       // Check if paymentStatus transitioned from pending to paid or rejected
       if (oldPaymentStatus === 'pending' && newPaymentStatus === 'paid') {
@@ -4377,12 +4592,55 @@ app.put('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
 
 app.delete('/api/orders/:orderNumber', verifyAdminToken, async (req, res) => {
   try {
-    const orderNum = sanitizeString(req.params.orderNumber, 30).toUpperCase();
-    const dbOrders = await readOrdersDb();
-    const filtered = dbOrders.filter(
-      o => o.orderNumber.toUpperCase() !== orderNum && o.id.toUpperCase() !== orderNum
-    );
-    await writeOrdersDb(filtered);
+    // Strip anything that would terminate a PostgREST `.or()` filter clause.
+    const orderNum = sanitizeString(req.params.orderNumber, 30).replace(/[,()*]/g, '');
+    if (!orderNum) {
+      return res.status(400).json({ error: 'Order number is required.' });
+    }
+
+    if (!supabase) {
+      return res.status(503).json({ error: 'Order storage is unavailable.' });
+    }
+
+    // Delete the single row directly.
+    //
+    // This used to read the entire table, filter in memory and write the whole
+    // list back. Deleting the *last* order produced an empty list, which
+    // `writeOrdersDb` refuses to prune (see the guard there), so the endpoint
+    // answered 200 "deleted" while the row stayed put and reappeared on the
+    // next load. A targeted delete has neither failure mode and avoids
+    // rewriting every order in the table to remove one.
+    const { data: deleted, error: delErr } = await supabase
+      .from('orders')
+      .delete()
+      .or(`order_number.ilike.${orderNum},id.ilike.${orderNum}`)
+      .select('id');
+
+    if (delErr) {
+      console.error('Supabase order delete failed:', delErr);
+      return res.status(500).json({ error: 'Failed to delete order from database' });
+    }
+
+    if (!deleted || deleted.length === 0) {
+      return res.status(404).json({ error: `Order ${orderNum} not found.` });
+    }
+
+    // Keep the on-disk Node cache consistent (a no-op on Workers).
+    try {
+      const dbOrders = await readOrdersDb();
+      writeLocalCache(
+        ORDERS_FILE_PATH,
+        dbOrders.filter(
+          (o: any) =>
+            String(o.orderNumber).toUpperCase() !== orderNum.toUpperCase() &&
+            String(o.id).toUpperCase() !== orderNum.toUpperCase()
+        )
+      );
+    } catch (cacheErr) {
+      console.warn('Order deleted but local cache refresh failed:', cacheErr);
+    }
+
+    console.log(`[Order Service] Deleted order ${orderNum} from Supabase.`);
     res.json({ success: true, message: `Order ${orderNum} deleted.` });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete order from database' });
