@@ -139,7 +139,7 @@ Already in `wrangler.jsonc` under `vars` — confirm they match your deployment:
 | --- | --- | --- |
 | `SUPABASE_URL` | ✅ | `https://<project>.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Service role, **not** anon. RLS is on; only this bypasses it. |
-| `JWT_SECRET` | ✅ | `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`. Without it a random secret is generated per boot and every admin session dies on deploy. |
+| `JWT_SECRET` | ✅ | `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`. Without it the Worker derives a stable key from the Supabase credentials — admin sessions survive, but an explicit secret is one less thing derived. |
 | `ADMIN_USERNAME` | ✅ | Only used until `admin_config` has a row. |
 | `ADMIN_PASSWORD` | ✅ | Only used until `admin_config` has a row. |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | ✅ | Online payments. |
@@ -320,6 +320,7 @@ plain Node server with hot reload.
 | `/api/catalog/products` returns 503 | Supabase unreachable or RLS blocking | Use the service role key, not the anon key |
 | Orders 500 at checkout, log says `42703` | `supabase_cloudflare_migration.sql` not applied | Run it |
 | Admin sessions die on every deploy | `JWT_SECRET` not set | `npx wrangler secret put JWT_SECRET` |
+| Deploy fails with `Disallowed operation called within global scope` (`10021`) | Module-scope async I/O or randomness — most often `crypto.randomBytes` for `JWT_SECRET` | Randomness and timers may only run inside a request handler. `getJwtSecret()` in [server.ts](server.ts) resolves lazily for this reason; keep any new `crypto`/`setTimeout` call out of module top level |
 | `require_streams(...) is not a function` | `iconv-lite` 0.4.x in the bundle | Keep the `overrides` entry; reinstall |
 | Upload returns 500 | Storage bucket missing or private | Create a public `product-images` bucket |
 | Admin login times out on Free plan | 10 ms CPU limit | Set `ADMIN_BCRYPT_COST=6`, or move to Workers Paid |

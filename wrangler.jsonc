@@ -6,7 +6,10 @@
   // accept variables and secrets for it — a static-assets-only Worker cannot
   // have any, which is the error shown in the deployment dashboard.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "radha-fashions",
+  // Must match the Worker the Cloudflare dashboard / Workers Builds CI has
+  // connected to. A mismatch makes wrangler override the name on every deploy
+  // and warns that a pull request will be opened to "fix" the config.
+  "name": "radhafashions",
   "main": "worker.ts",
   "compatibility_date": "2026-10-03",
 

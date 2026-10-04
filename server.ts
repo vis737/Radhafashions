@@ -625,9 +625,58 @@ app.get('/api/catalog/stream', (req, res) => {
   });
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
-if (!process.env.JWT_SECRET) {
+// ---------------------------------------------------------------------------
+// JWT signing secret (resolved lazily)
+// ---------------------------------------------------------------------------
+// This used to be a module-scope constant:
+//
+//   const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+//
+// That is fine on Node but fatal on Cloudflare Workers. Workers forbids
+// random-number generation anywhere in global scope — there is no request to
+// attribute it to — and it fails the whole deployment with validation error
+// 10021 ("Disallowed operation called within global scope"). The short-circuit
+// only saves you when the variable happens to be set: a Worker deployed without
+// a `JWT_SECRET` binding evaluates the `crypto.randomBytes` fallback while the
+// module graph is still being walked, and the Worker never boots.
+//
+// Resolving it inside a function means the fallback can only ever run from a
+// request handler, which is always legal.
+let cachedJwtSecret: string | null = null;
+
+function getJwtSecret(): string {
+  if (cachedJwtSecret) return cachedJwtSecret;
+
+  const fromEnv = process.env.JWT_SECRET;
+  if (fromEnv) {
+    cachedJwtSecret = fromEnv;
+    return cachedJwtSecret;
+  }
+
+  if (isCloudflareWorker) {
+    // A Worker has no .env file and its isolate can be recycled at any moment,
+    // so a genuinely random secret would sign in an admin and then invalidate
+    // that session on the very next cold start. Derive a stable secret from the
+    // credentials the deployment already has instead: it is high-entropy, it
+    // never rotates on its own, and sessions survive redeploys.
+    const material = [
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+    ].filter(Boolean).join('|');
+
+    if (material) {
+      cachedJwtSecret = crypto
+        .createHash('sha256')
+        .update(`radha-fashions:jwt:${material}`)
+        .digest('hex');
+      console.warn('⚠️ WARNING: JWT_SECRET is not set. Falling back to a key derived from the Supabase credentials. Set an explicit JWT_SECRET secret on the Worker for defence in depth.');
+      return cachedJwtSecret;
+    }
+  }
+
+  cachedJwtSecret = crypto.randomBytes(64).toString('hex');
   console.warn('⚠️ WARNING: JWT_SECRET not set — a random secret was generated for this session. Tokens will NOT survive restarts. Set JWT_SECRET in your .env for production.');
+  return cachedJwtSecret;
 }
 
 const ALLOWED_ORIGIN = process.env.APP_URL || 'http://localhost:3000';
@@ -714,7 +763,7 @@ const verifyAdminToken = (req: any, res: any, next: any) => {
     if (!token) {
       return res.status(401).json({ error: 'Unauthenticated administrative request.' });
     }
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, getJwtSecret()) as any;
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied: insufficient privileges.' });
     }
@@ -3979,7 +4028,7 @@ app.post('/api/admin/login', rateLimiter(5, 15 * 60 * 1000), async (req, res) =>
     if (usernameMatch && await verifyAndUpgradeAdminPassword(password, config.password)) {
       const token = jwt.sign(
         { username, role: 'admin' },
-        JWT_SECRET,
+        getJwtSecret(),
         { expiresIn: '7d' }
       );
       
